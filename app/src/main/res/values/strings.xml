@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">Carti</string>
+    <string name="welcome_message">Good morning, Juan! 👋</string>
+    <string name="family_label">Whole family</string>
+    <string name="daily_budget">Daily Budget</string>
+    <string name="current_date">Today • May 22</string>
+    <string name="amount_remaining">₱150 left</string>
+    <string name="budget_amount">₱350</string>
+    <string name="total_budget">/ ₱500</string>
+    <string name="spent_percentage">70% spent</string>
+    <string name="quick_log_title">Quick Expense Log</string>
+    <string name="quick_log_subtitle">Just select, 1 tap!</string>
+    <string name="customize">Customize</string>
+    <string name="recent_transactions">Recent Transactions</string>
+    <string name="see_all">See all</string>
+
+    <!-- Quick Log Items -->
+    <string name="label_food">Food</string>
+    <string name="label_fare">Fare</string>
+    <string name="label_load">Load</string>
+    <string name="label_store">Sari-sari Store</string>
+    <string name="label_electricity">Electricity</string>
+    <string name="label_water">Water</string>
+    <string name="label_debt">Debt</string>
+    <string name="label_others">Others</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_home">Home</string>
+    <string name="nav_expenses">Expenses</string>
+    <string name="nav_add">Add</string>
+    <string name="nav_debt">Debt</string>
+    <string name="nav_ranking">Ranking</string>
+    <string name="nav_profile">Profile</string>
+    <string name="notifications">Notifications</string>
+
+    <!-- Mock Data -->
+    <string name="mock_time_1">Today • 9:35 AM</string>
+    <string name="mock_time_2">Today • 8:20 AM</string>
+    <string name="mock_time_3">Yesterday • 6:15 PM</string>
+    <string name="mock_amount_120">₱120</string>
+    <string name="mock_amount_15">₱15</string>
+    <string name="mock_amount_85">₱85</string>
+    <string name="budget_summary">₱350 / ₱500</string>
+</resources>

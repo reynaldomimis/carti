@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="gray">#6B7280</color>
+    <color name="purple">#8B5CF6</color>
+    <color name="carti_primary_green">#008955</color>
+    <color name="gradient_start">#F9D423</color>
+    <color name="gradient_end">#BAF33C</color>
+    <color name="text_primary">#1D1D1D</color>
+    <color name="text_secondary">#757575</color>
+    <color name="surface_variant">#F5F5F5</color>
+    <color name="white_80">#CCFFFFFF</color>
+    <color name="nav_inactive">#9E9E9E</color>
+    <color name="green_darker">#063D2E</color>
+    <color name="green_primary">#008955</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="text_tertiary">#9E9E9E</color>
+    <color name="text_on_dark">#E0E0E0</color>
+    <color name="green_budget_status">#2E7D32</color>
+    <color name="border_light">#E0E0E0</color>
+    <color name="progress_bg">#20000000</color>
+    <color name="progress_start">#FFEB3B</color>
+    <color name="progress_center">#8BC34A</color>
+    <color name="progress_end">#4CAF50</color>
+
+    <!-- Quick Log Colors -->
+    <color name="log_food">#E8F5E9</color>
+    <color name="icon_food">#4CAF50</color>
+    <color name="log_fare">#E3F2FD</color>
+    <color name="icon_fare">#2196F3</color>
+    <color name="log_load">#FCE4EC</color>
+    <color name="icon_load">#E91E63</color>
+    <color name="log_store">#FFF3E0</color>
+    <color name="icon_store">#FF9800</color>
+    <color name="log_electricity">#FFFDE7</color>
+    <color name="icon_electricity">#FBC02D</color>
+    <color name="log_water">#E1F5FE</color>
+    <color name="icon_water">#03A9F4</color>
+    <color name="log_debt">#F3E5F5</color>
+    <color name="icon_debt">#9C27B0</color>
+    <color name="log_others">#F5F5F5</color>
+    <color name="icon_others">#9E9E9E</color>
+</resources>

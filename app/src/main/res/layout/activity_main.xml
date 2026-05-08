@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_nav_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+
+        <com.upreyvan.carti.widget.CurvedBottomView
+            android:id="@+id/curved_bg"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/nav_indicator"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@color/green_primary"
+            android:elevation="8dp"
+            app:layout_constraintBottom_toTopOf="@id/curved_bg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/curved_bg"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle"
+            app:strokeColor="@color/surface"
+            app:strokeWidth="3dp" />
+
+        <LinearLayout
+            android:id="@+id/bottom_nav_inner"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:elevation="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="@id/curved_bg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <include
+                android:id="@+id/tab_home"
+                layout="@layout/layout_nav_item" />
+
+            <include
+                android:id="@+id/tab_expenses"
+                layout="@layout/layout_nav_item" />
+
+            <include
+                android:id="@+id/tab_add"
+                layout="@layout/layout_nav_item" />
+
+            <include
+                android:id="@+id/tab_debt"
+                layout="@layout/layout_nav_item" />
+
+            <include
+                android:id="@+id/tab_profile"
+                layout="@layout/layout_nav_item" />
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
