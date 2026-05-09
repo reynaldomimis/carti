@@ -1,4 +1,4 @@
-package com.upreyvan.carti.ui;
+package com.upreyvan.carti.adapters;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;

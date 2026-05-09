@@ -11,6 +11,8 @@
     <color name="text_secondary">#757575</color>
     <color name="surface_variant">#F5F5F5</color>
     <color name="white_80">#CCFFFFFF</color>
+    <color name="white_30">#4DFFFFFF</color>
+    <color name="white_20">#33FFFFFF</color>
     <color name="nav_inactive">#9E9E9E</color>
     <color name="green_darker">#063D2E</color>
     <color name="green_primary">#008955</color>
@@ -23,6 +25,13 @@
     <color name="progress_start">#FFEB3B</color>
     <color name="progress_center">#8BC34A</color>
     <color name="progress_end">#4CAF50</color>
+
+    <color name="mint_green">#00C853</color>
+    <color name="mint_green_alpha">#1A00C853</color>
+    <color name="tonal_button_bg">#E8F5E9</color>
+    <color name="card_border">#F0F0F0</color>
+    <color name="text_amount">#1D1D1D</color>
+    <color name="text_percentage">#757575</color>
 
     <!-- Quick Log Colors -->
     <color name="log_food">#E8F5E9</color>
@@ -41,4 +50,15 @@
     <color name="icon_debt">#9C27B0</color>
     <color name="log_others">#F5F5F5</color>
     <color name="icon_others">#9E9E9E</color>
+    <!-- Goal Item Colors -->
+    <color name="goal_card_1">#E0E0E0</color>
+    <color name="goal_card_2">#B2DFDB</color>
+    <color name="goal_card_3">#FFCCBC</color>
+    <color name="goal_card_4">#F8BBD0</color>
+    <color name="goal_card_5">#BBDEFB</color>
+    <color name="goal_card_6">#D1C4E9</color>
+    <color name="goal_card_7">#FFF9C4</color>
+    <color name="goal_card_8">#C8E6C9</color>
+    <color name="goal_card_9">#DCEDC8</color>
+    <color name="goal_card_10">#FFE0B2</color>
 </resources>

@@ -43,7 +43,7 @@
             android:textAlignment="center"
             android:textColor="@color/text_primary"
             android:textSize="11sp"
-            android:textStyle="bold" />
+            android:fontFamily="@font/plus_jakarta_sans_bold" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

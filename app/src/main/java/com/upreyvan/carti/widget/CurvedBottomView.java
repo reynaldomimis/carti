@@ -1,6 +1,5 @@
 package com.upreyvan.carti.widget;
 
-
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;

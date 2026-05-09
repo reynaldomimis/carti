@@ -41,4 +41,40 @@
     <string name="mock_amount_15">₱15</string>
     <string name="mock_amount_85">₱85</string>
     <string name="budget_summary">₱350 / ₱500</string>
+
+    <!-- Goal Fragment -->
+    <string name="goal_title">Goal / Ipon</string>
+    <string name="btn_add_goal">Add New</string>
+    <string name="total_savings_label">Kabuuang Ipon</string>
+    <string name="savings_summary_subtitle">Ang iyong kabuuang naipon</string>
+    <string name="overall_percentage_target_format">%1$d%% target</string>
+    <string name="overall_progress_description">Ipagpatuloy ang pag-iipon para sa iyong mga goals!</string>
+    <string name="overall_progress_subtitle_format">%1$d%% of your total target</string>
+    <string name="target_date_label_format">Target: %1$s</string>
+    <string name="goal_progress_amount_format">₱%1$s / ₱%2$s</string>
+    <string name="percentage_format">%1$d%%</string>
+    <string name="zero_percent">0%</string>
+
+    <!-- Mock Goals Data -->
+    <string name="mock_goal_bicycle">Bili ng Bisikleta</string>
+    <string name="mock_goal_emergency">Emergency Fund</string>
+    <string name="mock_goal_phone">Bagong Cellphone</string>
+    <string name="mock_goal_gift">Pang-regalo kay Nanay</string>
+    <string name="mock_goal_travel">Travel Fund (Boracay)</string>
+    <string name="mock_goal_laptop">Laptop Upgrade</string>
+    <string name="mock_goal_concert">Savings for Concert</string>
+    <string name="mock_goal_gym">Gym Membership</string>
+    <string name="mock_goal_investment">Investment Starter</string>
+    <string name="mock_goal_shoes">Pambili ng Sapatos</string>
+
+    <string name="mock_date_june_30">Jun 30, 2024</string>
+    <string name="mock_date_dec_31">Dec 31, 2024</string>
+    <string name="mock_date_aug_15">Aug 15, 2024</string>
+    <string name="mock_date_may_12">May 12, 2024</string>
+    <string name="mock_date_oct_20">Oct 20, 2024</string>
+    <string name="mock_date_nov_15">Nov 15, 2024</string>
+    <string name="mock_date_july_05">Jul 05, 2024</string>
+    <string name="mock_date_june_01">Jun 01, 2024</string>
+    <string name="mock_date_sept_30">Sep 30, 2024</string>
+    <string name="mock_date_aug_22">Aug 22, 2024</string>
 </resources>

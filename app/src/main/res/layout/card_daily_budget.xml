@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginVertical="@dimen/spacing_small"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="1dp"
+    app:cardCornerRadius="@dimen/pill_corner_radius"
+    app:cardElevation="2dp"
     app:strokeWidth="0dp">
 
     <LinearLayout
@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_header_gradient"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="@dimen/spacing_medium">
 
         <TextView
             android:layout_width="wrap_content"
@@ -28,13 +28,13 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/plus_jakarta_sans_medium"
             android:text="@string/current_date"
-            android:textColor="@color/text_on_dark"
+            android:textColor="@color/white_80"
             android:textSize="12sp" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="@dimen/spacing_medium">
 
             <TextView
                 android:id="@+id/tvAmount"
@@ -46,6 +46,7 @@
                 android:textSize="28sp" />
 
             <TextView
+                android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -53,7 +54,7 @@
                 android:background="@drawable/bg_pill_white"
                 android:fontFamily="@font/plus_jakarta_sans_bold"
                 android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp"
+                android:paddingVertical="6dp"
                 android:text="@string/amount_remaining"
                 android:textColor="@color/green_budget_status"
                 android:textSize="11sp" />
@@ -63,14 +64,14 @@
             style="@android:style/Widget.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="10dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/spacing_medium"
             android:progress="70"
             android:progressDrawable="@drawable/daily_progress_bar" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/spacing_small"
             android:fontFamily="@font/plus_jakarta_sans_medium"
             android:text="@string/spent_percentage"
             android:textColor="@color/white"

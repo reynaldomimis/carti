@@ -42,14 +42,15 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
                 android:textSize="@dimen/text_size_body"
-                android:textStyle="bold" />
+                android:fontFamily="@font/plus_jakarta_sans_bold" />
 
             <TextView
                 android:id="@+id/tvTimestamp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_size_small" />
+                android:textSize="@dimen/text_size_small"
+                android:fontFamily="@font/plus_jakarta_sans_medium" />
         </LinearLayout>
 
         <TextView
@@ -58,7 +59,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/text_primary"
             android:textSize="@dimen/text_size_body"
-            android:textStyle="bold" />
+            android:fontFamily="@font/plus_jakarta_sans_bold" />
 
     </LinearLayout>
 

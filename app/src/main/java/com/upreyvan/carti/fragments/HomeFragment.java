@@ -1,4 +1,4 @@
-package com.upreyvan.carti.ui;
+package com.upreyvan.carti.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,15 +13,17 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.adapters.QuickLogAdapter;
+import com.upreyvan.carti.adapters.TransactionAdapter;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
-import com.upreyvan.carti.databinding.ItemQuickLogBinding;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
@@ -36,64 +38,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         setupDynamicPadding();
         setupHeaders();
         setupQuickLog();
         setupRecentTransactions();
         populateMockData();
-    }
-
-
-    private void setupDynamicPadding() {
-
-        ViewCompat.setOnApplyWindowInsetsListener(
-                getBinding().layoutHeader.getRoot(),
-                (v, insets) -> {
-
-                    int statusBarHeight =
-                            insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-
-                    int topPadding = Math.max(
-                            statusBarHeight / 2,
-                            Utils.dpToPx(requireContext(), 10)
-                    );
-
-                    int bottomPadding =
-                            Utils.dpToPx(requireContext(), 4);
-
-                    v.setPadding(
-                            v.getPaddingLeft(),
-                            topPadding,
-                            v.getPaddingRight(),
-                            bottomPadding
-                    );
-
-                    return insets;
-                });
-
-        ViewCompat.setOnApplyWindowInsetsListener(
-                getBinding().scrollView,
-                (v, insets) -> {
-
-                    int systemBarsBottom =
-                            insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
-
-                    int customBottomNavHeight =
-                            getResources().getDimensionPixelSize(R.dimen.bottom_nav_height);
-
-                    int extraBuffer =
-                            Utils.dpToPx(requireContext(), 80);
-
-                    v.setPadding(
-                            v.getPaddingLeft(),
-                            v.getPaddingTop(),
-                            v.getPaddingRight(),
-                            systemBarsBottom + customBottomNavHeight + extraBuffer
-                    );
-
-                    return insets;
-                });
     }
 
     private void setupHeaders() {
@@ -154,5 +103,15 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         ));
 
         transactionAdapter.submitList(transactions);
+    }
+
+
+    private void setupDynamicPadding() {
+        Utils.applySystemBarInsets(
+                getBinding().layoutHeader,
+                getBinding().home,
+                0.3f,
+                getResources().getDimensionPixelSize(R.dimen.bottom_nav_height)
+        );
     }
 }
