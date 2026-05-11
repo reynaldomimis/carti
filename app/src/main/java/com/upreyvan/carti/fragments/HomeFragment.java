@@ -20,6 +20,7 @@ import com.upreyvan.carti.databinding.FragmentHomeBinding;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.fragments.NotificationsFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,33 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupHeaders();
         setupQuickLog();
         setupRecentTransactions();
+        setupNotifications();
+        updateNotificationBadge(true);
         populateMockData();
+    }
+
+    private void updateNotificationBadge(boolean hasNotifications) {
+        if (hasNotifications) {
+            getBinding().notifBadge.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.carti_primary_green));
+        } else {
+            getBinding().notifBadge.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.gray));
+        }
+    }
+
+    private void setupNotifications() {
+        getBinding().btnNotif.setOnClickListener(v -> {
+            navigateTo(new NotificationsFragment());
+        });
+
+    }
+
+    private void navigateTo(androidx.fragment.app.Fragment fragment) {
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 
     private void setupHeaders() {
@@ -55,6 +82,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         // Recent Transactions Header
         getBinding().headerRecent.tvSectionTitle.setText(R.string.recent_transactions);
         getBinding().headerRecent.btnSectionAction.setText(R.string.see_all);
+        getBinding().headerRecent.btnSectionAction.setOnClickListener(v -> navigateTo(new AllTransactionsFragment()));
     }
 
     private void setupQuickLog() {
@@ -96,7 +124,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         ));
         transactions.add(new Transaction(
                 getString(R.string.label_store),
-                "Kahapon • 6:15 PM",
+                "Yesterday • 6:15 PM",
                 "₱85",
                 android.R.drawable.ic_input_add,
                 ContextCompat.getColor(requireContext(), R.color.log_store)

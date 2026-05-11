@@ -17,6 +17,10 @@ public class Goal {
         this.backgroundColor = backgroundColor;
     }
 
+    public boolean isCompleted() {
+        return currentAmount >= targetAmount && targetAmount > 0;
+    }
+
     public String getTitle() { return title; }
     public double getCurrentAmount() { return currentAmount; }
     public double getTargetAmount() { return targetAmount; }

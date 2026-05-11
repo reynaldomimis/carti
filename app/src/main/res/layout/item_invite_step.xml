@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.microsoft.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingVertical="10dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        app:cardBackgroundColor="@color/tonal_button_bg"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <TextView
+            android:id="@+id/tvStepNumber"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
+            android:gravity="center"
+            android:textColor="@color/carti_primary_green"
+            android:textSize="12sp"
+            tools:text="1" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tvStepDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_weight="1"
+        android:fontFamily="@font/plus_jakarta_sans_medium"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        tools:text="Share this Family ID" />
+
+</LinearLayout>

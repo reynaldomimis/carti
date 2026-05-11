@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@color/white"
     android:paddingHorizontal="@dimen/spacing_medium"
-    android:paddingTop="4dp"
+    android:paddingTop="6dp"
     android:paddingBottom="8dp">
 
     <com.google.android.material.card.MaterialCardView
@@ -55,7 +55,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:minHeight="36dp"
+        android:minHeight="45dp"
         android:paddingHorizontal="12dp"
         android:textAllCaps="false"
         android:textColor="@color/mint_green"
@@ -69,6 +69,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="@string/btn_add_goal"
-        tools:visibility="visible" />
+        tools:visibility="visible"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

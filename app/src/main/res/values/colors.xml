@@ -61,4 +61,7 @@
     <color name="goal_card_8">#C8E6C9</color>
     <color name="goal_card_9">#DCEDC8</color>
     <color name="goal_card_10">#FFE0B2</color>
+
+    <color name="status_red">#EF5350</color>
+    <color name="status_green">#66BB6A</color>
 </resources>

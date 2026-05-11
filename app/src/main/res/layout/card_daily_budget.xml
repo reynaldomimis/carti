@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_small"
             android:fontFamily="@font/plus_jakarta_sans_medium"
-            android:text="@string/spent_percentage"
+            android:text="@string/spent_remaining_days"
             android:textColor="@color/white"
             android:textSize="12sp" />
 

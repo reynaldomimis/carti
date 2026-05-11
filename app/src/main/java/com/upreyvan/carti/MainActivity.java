@@ -1,47 +1,53 @@
 package com.upreyvan.carti;
 
-import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.core.graphics.Insets;
+import androidx.fragment.app.Fragment;
 
+import com.upreyvan.carti.activity.ProfileActivity;
+import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityMainBinding;
 import com.upreyvan.carti.databinding.LayoutNavItemBinding;
-import com.upreyvan.carti.fragments.GoalFragment;
+import com.upreyvan.carti.fragments.AiAssistantFragment;
+import com.upreyvan.carti.fragments.DebtTrackerFragment;
+import com.upreyvan.carti.fragments.ExpensesFragment;
+import com.upreyvan.carti.fragments.FamilyChatFragment;
 import com.upreyvan.carti.fragments.HomeFragment;
+
+import android.content.Intent;
+
 import com.upreyvan.carti.util.Utils;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
-    private ActivityMainBinding binding;
     private LayoutNavItemBinding[] tabBindings;
+
+    @Override
+    protected ActivityMainBinding inflateBinding(LayoutInflater inflater) {
+        return ActivityMainBinding.inflate(inflater);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        setupSystemUI();
+        setupBottomNavInsets();
 
         tabBindings = new LayoutNavItemBinding[]{
-                binding.tabHome, binding.tabExpenses, binding.tabAdd, binding.tabDebt, binding.tabProfile
+                getBinding().tabHome, getBinding().tabExpenses, getBinding().tabAdd, getBinding().tabDebt, getBinding().tabProfile
         };
 
         setupTabs();
-        setTabSelected(binding.tabHome);
+        setTabSelected(getBinding().tabHome);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -50,15 +56,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void setupBottomNavInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().bottomNavContainer, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(0, 0, 0, systemBars.bottom);
+            return insets;
+        });
+    }
+
     private void setupTabs() {
-        initTab(binding.tabHome, R.drawable.ic_home, getString(R.string.nav_home), 1);
-        initTab(binding.tabExpenses, R.drawable.ic_chart, getString(R.string.nav_expenses), 2);
-        initTab(binding.tabAdd, R.drawable.ic_add, getString(R.string.nav_add), -1);
-        binding.tabAdd.navIcon.getLayoutParams().width = Utils.dpToPx(this, 32);
-        binding.tabAdd.navIcon.getLayoutParams().height = Utils.dpToPx(this, 32);
-        binding.tabAdd.navLabel.setTypeface(null, android.graphics.Typeface.BOLD);
-        initTab(binding.tabDebt, R.drawable.ic_trophy, getString(R.string.nav_debt), 3);
-        initTab(binding.tabProfile, R.drawable.ic_person, getString(R.string.nav_profile), 4);
+        initTab(getBinding().tabHome, R.drawable.ic_home, getString(R.string.nav_home), 1);
+        initTab(getBinding().tabExpenses, R.drawable.ic_chart, getString(R.string.nav_expenses), 2);
+        initTab(getBinding().tabAdd, R.drawable.ic_add, getString(R.string.nav_add), -1);
+        getBinding().tabAdd.navIcon.getLayoutParams().width = Utils.dpToPx(this, 32);
+        getBinding().tabAdd.navIcon.getLayoutParams().height = Utils.dpToPx(this, 32);
+        getBinding().tabAdd.navLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+        initTab(getBinding().tabDebt, android.R.drawable.ic_menu_help, getString(R.string.menu_ai), 6); // Swapped icon and ID
+        initTab(getBinding().tabProfile, R.drawable.ic_person, getString(R.string.nav_profile), 4);
     }
 
     private void initTab(LayoutNavItemBinding tab, int iconRes, String label, int navId) {
@@ -79,10 +93,10 @@ public class MainActivity extends AppCompatActivity {
 
         tabRoot.post(() -> {
             float centerX = tabRoot.getX() + (tabRoot.getWidth() / 2f);
-            binding.curvedBg.animateCurveTo(centerX);
+            getBinding().curvedBg.animateCurveTo(centerX);
 
-            float indicatorX = centerX - (binding.navIndicator.getWidth() / 2f);
-            binding.navIndicator.animate()
+            float indicatorX = centerX - (getBinding().navIndicator.getWidth() / 2f);
+            getBinding().navIndicator.animate()
                     .x(indicatorX)
                     .setDuration(450)
                     .setInterpolator(new OvershootInterpolator(1.0f))
@@ -92,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         icon.setColorFilter(ContextCompat.getColor(this, R.color.white));
         label.setTextColor(ContextCompat.getColor(this, R.color.green_primary));
 
-        int targetY = (selectedTab == binding.tabAdd) ? -42 : -38;
+        int targetY = (selectedTab == getBinding().tabAdd) ? -42 : -38;
 
         icon.animate()
                 .translationY(Utils.dpToPx(this, targetY))
@@ -113,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
         int greenColor = ContextCompat.getColor(this, R.color.green_primary);
 
         for (LayoutNavItemBinding tab : tabBindings) {
-            if (tab == binding.tabAdd) {
+            if (tab == getBinding().tabAdd) {
                 tab.navIcon.setColorFilter(greenColor);
                 tab.navLabel.setTextColor(greenColor);
                 tab.navLabel.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -138,12 +152,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void navigateTo(int id) {
-        androidx.fragment.app.Fragment fragment = null;
+        Fragment fragment = null;
 
         if (id == 1) {
             fragment = new HomeFragment();
+        } else if (id == 2) {
+            fragment = new ExpensesFragment();
         } else if (id == 3) {
-            fragment = new GoalFragment();
+            fragment = new DebtTrackerFragment();
+        } else if (id == 6) {
+            fragment = new AiAssistantFragment();
+        } else if (id == 5) {
+            fragment = new FamilyChatFragment();
+        } else if (id == 4) {
+            startActivity(new Intent(this, ProfileActivity.class));
+            return;
         }
 
         if (fragment != null) {
@@ -152,24 +175,5 @@ public class MainActivity extends AppCompatActivity {
                     .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                     .commit();
         }
-    }
-
-    private void setupSystemUI() {
-        Window window = getWindow();
-        WindowCompat.setDecorFitsSystemWindows(window, false);
-        window.setStatusBarColor(Color.TRANSPARENT);
-        window.setNavigationBarColor(Color.TRANSPARENT);
-
-        View decorView = window.getDecorView();
-        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, decorView);
-
-        controller.setAppearanceLightStatusBars(true);
-        controller.setAppearanceLightNavigationBars(true);
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavContainer, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(0, 0, 0, systemBars.bottom);
-            return insets;
-        });
     }
 }

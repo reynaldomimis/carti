@@ -36,8 +36,21 @@ public class GoalAdapter extends BaseAdapter<Goal, ItemGoalBinding> {
         return ItemGoalBinding.inflate(inflater, parent, false);
     }
 
+    public interface OnGoalClickListener {
+        void onGoalClick(Goal goal);
+    }
+
+    private OnGoalClickListener listener;
+
+    public void setOnGoalClickListener(OnGoalClickListener listener) {
+        this.listener = listener;
+    }
+
     @Override
     protected void bind(ItemGoalBinding binding, Goal item) {
+        binding.getRoot().setOnClickListener(v -> {
+            if (listener != null) listener.onGoalClick(item);
+        });
         binding.tvGoalTitle.setText(item.getTitle());
         binding.ivGoalIcon.setImageResource(item.getImageRes());
         binding.ivGoalIcon.setBackgroundColor(item.getBackgroundColor());

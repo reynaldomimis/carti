@@ -11,6 +11,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import com.google.android.material.tabs.TabLayout;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.adapters.GoalAdapter;
@@ -27,6 +28,7 @@ import java.util.Locale;
 public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
 
     private GoalAdapter adapter;
+    private List<Goal> allGoals = new ArrayList<>();
 
     @Override
     protected FragmentGoalBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -37,50 +39,84 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupDynamicPadding();
-        setupToolbar();
+        setupHeader();
+        setupTabs();
         setupRecyclerView();
         populateMockData();
     }
 
-    private void setupToolbar() {
+    private void setupHeader() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.goal_title);
-
+        getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
-            }
+            if (getActivity() != null) getActivity().onBackPressed();
         });
-
         getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnAction.setText(R.string.btn_add_goal);
-        getBinding().layoutToolbar.btnAction.setIconResource(android.R.drawable.ic_input_add);
-        getBinding().layoutToolbar.btnAction.setOnClickListener(v -> {
-            // Handle add goal
+        getBinding().layoutToolbar.btnAction.setOnClickListener(v -> navigateTo(new AddGoalFragment()));
+    }
+
+    private void navigateTo(androidx.fragment.app.Fragment fragment) {
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
+    private void setupTabs() {
+        getBinding().tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                filterGoals(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
+    }
+
+    private void filterGoals(int position) {
+        List<Goal> filteredList = new ArrayList<>();
+        if (position == 0) { // Active
+            for (Goal goal : allGoals) {
+                if (!goal.isCompleted()) filteredList.add(goal);
+            }
+        } else {
+            for (Goal goal : allGoals) {
+                if (goal.isCompleted()) filteredList.add(goal);
+            }
+        }
+        adapter.submitList(filteredList);
     }
 
     private void setupRecyclerView() {
         adapter = new GoalAdapter();
+        adapter.setOnGoalClickListener(goal -> navigateTo(GoalDetailFragment.newInstance(goal)));
         getBinding().rvGoals.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvGoals.setAdapter(adapter);
     }
 
     private void populateMockData() {
-        List<Goal> goals = new ArrayList<>();
+        allGoals.clear();
 
-        goals.add(new Goal(getString(R.string.mock_goal_bicycle), 3000, 5000, getString(R.string.mock_date_june_30), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_1)));
-        goals.add(new Goal(getString(R.string.mock_goal_emergency), 2200, 10000, getString(R.string.mock_date_dec_31), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_2)));
-        goals.add(new Goal(getString(R.string.mock_goal_phone), 8500, 15000, getString(R.string.mock_date_aug_15), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_3)));
-        goals.add(new Goal(getString(R.string.mock_goal_gift), 1500, 3000, getString(R.string.mock_date_may_12), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_4)));
-        goals.add(new Goal(getString(R.string.mock_goal_travel), 5000, 12000, getString(R.string.mock_date_oct_20), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_5)));
-        goals.add(new Goal(getString(R.string.mock_goal_laptop), 12000, 25000, getString(R.string.mock_date_nov_15), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_6)));
-        goals.add(new Goal(getString(R.string.mock_goal_concert), 2500, 6000, getString(R.string.mock_date_july_05), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_7)));
-        goals.add(new Goal(getString(R.string.mock_goal_gym), 1000, 2500, getString(R.string.mock_date_june_01), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_8)));
-        goals.add(new Goal(getString(R.string.mock_goal_investment), 4000, 5000, getString(R.string.mock_date_sept_30), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_9)));
-        goals.add(new Goal(getString(R.string.mock_goal_shoes), 1800, 3500, getString(R.string.mock_date_aug_22), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_10)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_bicycle), 3000, 5000, getString(R.string.mock_date_june_30), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_1)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_emergency), 2200, 10000, getString(R.string.mock_date_dec_31), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_2)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_phone), 8500, 15000, getString(R.string.mock_date_aug_15), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_3)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_gift), 1500, 3000, getString(R.string.mock_date_may_12), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_4)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_travel), 5000, 12000, getString(R.string.mock_date_oct_20), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_5)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_laptop), 12000, 25000, getString(R.string.mock_date_nov_15), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_6)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_concert), 2500, 6000, getString(R.string.mock_date_july_05), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_7)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_gym), 1000, 2500, getString(R.string.mock_date_june_01), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_8)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_investment), 4000, 5000, getString(R.string.mock_date_sept_30), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_9)));
+        allGoals.add(new Goal(getString(R.string.mock_goal_shoes), 1800, 3500, getString(R.string.mock_date_aug_22), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_10)));
 
-        adapter.submitList(goals);
-        updateOverallProgress(goals);
+        filterGoals(getBinding().tabLayout.getSelectedTabPosition());
+        updateOverallProgress(allGoals);
     }
 
     private void updateOverallProgress(List<Goal> goals) {
