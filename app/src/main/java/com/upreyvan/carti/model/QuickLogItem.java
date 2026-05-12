@@ -1,6 +1,8 @@
 package com.upreyvan.carti.model;
 
-public class QuickLogItem {
+import java.io.Serializable;
+
+public class QuickLogItem implements Serializable {
     private String label;
     private int iconRes;
     private int bgColor;
@@ -13,7 +15,7 @@ public class QuickLogItem {
         this.iconColor = iconColor;
     }
 
-    public String getLabel() {
+    public String getTitle() {
         return label;
     }
 

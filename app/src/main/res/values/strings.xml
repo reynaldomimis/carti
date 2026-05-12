@@ -13,6 +13,7 @@
     <string name="customize">Customize</string>
     <string name="recent_transactions">Recent Transactions</string>
     <string name="see_all">See all</string>
+    <string name="see_less">See Less</string>
 
     <!-- Quick Log Items -->
     <string name="label_food">Food</string>
@@ -40,7 +41,8 @@
     <string name="mock_amount_120">₱120</string>
     <string name="mock_amount_15">₱15</string>
     <string name="mock_amount_85">₱85</string>
-    <string name="budget_summary">₱350 / ₱500</string>
+    <string name="mock_store">Store</string>
+    <string name="budget_summary">₱350</string>
 
     <!-- Goal Fragment -->
     <string name="goal_title">Goals / Savings</string>
@@ -298,6 +300,44 @@
 
     <!-- All Transactions Fragment -->
     <string name="all_transactions_title">All Expenses</string>
+
+    <!-- Add Options Fragment -->
+    <string name="add_options_title">What to add?</string>
+    <string name="add_options_expense">Add Expense</string>
+    <string name="add_options_expense_desc">Add a new expense</string>
+    <string name="add_options_debt">Add Debt</string>
+    <string name="add_options_debt_desc">Add a new debt</string>
+    <string name="add_options_goal">Add Goal</string>
+    <string name="add_options_goal_desc">Add a new goal</string>
+    <string name="add_options_invite">Invite Family</string>
+    <string name="add_options_invite_desc">Invite a family member</string>
+    <string name="add_options_category">Add Category</string>
+    <string name="add_options_category_desc">Manage expense categories</string>
+
+    <!-- Add Expense Fragment -->
+    <string name="add_expense_title">Add Expense</string>
+    <string name="label_what_bought">What was bought?</string>
+    <string name="hint_expense_name">e.g., Grocery, Rice, Load</string>
+    <string name="label_amount_peso">Amount (₱)</string>
+    <string name="label_category">Category</string>
+    <string name="hint_select_category">Select a category</string>
+    <string name="label_date">Date</string>
+    <string name="label_payment_source">Paid through</string>
+    <string name="hint_select_source">Select a source</string>
+    <string name="btn_save_expense">Save Expense</string>
+
+    <!-- Add Debt Fragment -->
+    <string name="add_debt_title">Add Debt</string>
+    <string name="label_who_borrowed">Who borrowed?</string>
+    <string name="hint_borrower_name">e.g., Miguel, Ana</string>
+    <string name="label_reason_note">Reason / note</string>
+    <string name="hint_debt_reason">e.g., Buying groceries</string>
+    <string name="label_due_date">Due Date</string>
+    <string name="label_is_recurring">Repeat this?</string>
+    <string name="opt_no">No</string>
+    <string name="opt_yes">Yes</string>
+    <string name="btn_save_debt">Save Debt</string>
+
     <!-- Onboarding Welcome -->
     <string name="onboarding_welcome_title">Family Money</string>
     <string name="onboarding_welcome_desc">Family budget, to make it last until payday.</string>
@@ -373,4 +413,17 @@
     <string name="mock_days_passed">12 days passed</string>
     <string name="mock_progress_percent">60%</string>
     <string name="label_days">days</string>
+    <string name="mock_salary_date_format">(%1$s)</string>
+    <string name="payday_format">%1$dth and %2$dth of the month</string>
+    <string name="salary_info_format">Salary Mode: %1$d days to payday</string>
+
+    <!-- Salary Edit Bottom Sheet -->
+    <string name="title_edit_salary">Edit Salary Amount</string>
+    <string name="desc_edit_salary">Enter your new salary amount</string>
+    <string name="btn_save_salary">Save Salary</string>
+    <string name="title_edit_payday">Edit Payday Schedule</string>
+    <string name="desc_edit_payday">Enter your monthly payday dates</string>
+    <string name="btn_save_schedule">Save Schedule</string>
+    <string name="hint_day1">Day 1</string>
+    <string name="hint_day2">Day 2</string>
 </resources>

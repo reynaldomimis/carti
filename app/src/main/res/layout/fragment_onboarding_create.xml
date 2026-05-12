@@ -31,6 +31,15 @@
                 android:textColor="@color/text_primary"
                 android:textSize="22sp" />
 
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivIllustration"
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:layout_marginTop="40dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/onboarding_request_family"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -81,14 +90,6 @@
                     android:paddingHorizontal="12dp" />
 
             </com.google.android.material.card.MaterialCardView>
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:layout_marginTop="40dp"
-                android:contentDescription="@null"
-                android:src="@android:drawable/ic_menu_myplaces"
-                app:tint="@color/surface_variant" />
 
             <View
                 android:layout_width="match_parent"

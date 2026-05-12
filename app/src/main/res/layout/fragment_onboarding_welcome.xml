@@ -50,6 +50,7 @@
         android:layout_height="240dp"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
+        android:layout_marginTop="40dp"
         android:scaleType="centerCrop"
         android:src="@drawable/onboarding_welcoming_family"
         app:layout_constraintBottom_toTopOf="@+id/btnStart"

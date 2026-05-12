@@ -1,6 +1,9 @@
 package com.upreyvan.carti;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
@@ -8,23 +11,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.core.graphics.Insets;
 import androidx.fragment.app.Fragment;
 
-import com.upreyvan.carti.activity.ProfileActivity;
+import com.upreyvan.carti.ui.common.AddOptionsActivity;
+import com.upreyvan.carti.ui.profile.ProfileActivity;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityMainBinding;
 import com.upreyvan.carti.databinding.LayoutNavItemBinding;
-import com.upreyvan.carti.fragments.AiAssistantFragment;
-import com.upreyvan.carti.fragments.DebtTrackerFragment;
-import com.upreyvan.carti.fragments.ExpensesFragment;
-import com.upreyvan.carti.fragments.FamilyChatFragment;
-import com.upreyvan.carti.fragments.HomeFragment;
-
-import android.content.Intent;
-
+import com.upreyvan.carti.ui.ai.AiAssistantFragment;
+import com.upreyvan.carti.ui.debt.DebtTrackerFragment;
+import com.upreyvan.carti.ui.expenses.ExpensesFragment;
+import com.upreyvan.carti.ui.family.FamilyChatFragment;
+import com.upreyvan.carti.ui.home.HomeFragment;
 import com.upreyvan.carti.util.Utils;
 
 public class MainActivity extends BaseActivity<ActivityMainBinding> {
@@ -56,6 +57,16 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         }
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent.getBooleanExtra("show_home", false)) {
+            setTabSelected(getBinding().tabHome);
+            navigateTo(1); // Home ID
+        }
+    }
+
     private void setupBottomNavInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(getBinding().bottomNavContainer, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -67,7 +78,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private void setupTabs() {
         initTab(getBinding().tabHome, R.drawable.ic_home, getString(R.string.nav_home), 1);
         initTab(getBinding().tabExpenses, R.drawable.ic_chart, getString(R.string.nav_expenses), 2);
-        initTab(getBinding().tabAdd, R.drawable.ic_add, getString(R.string.nav_add), -1);
+        initTab(getBinding().tabAdd, R.drawable.ic_add, getString(R.string.nav_add), 7);
         getBinding().tabAdd.navIcon.getLayoutParams().width = Utils.dpToPx(this, 32);
         getBinding().tabAdd.navIcon.getLayoutParams().height = Utils.dpToPx(this, 32);
         getBinding().tabAdd.navLabel.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -164,8 +175,17 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             fragment = new AiAssistantFragment();
         } else if (id == 5) {
             fragment = new FamilyChatFragment();
+        } else if (id == 7) {
+            // Add a small delay so the user can see the indicator move to the center
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                startActivity(new Intent(this, AddOptionsActivity.class));
+            }, 300);
+            return;
         } else if (id == 4) {
-            startActivity(new Intent(this, ProfileActivity.class));
+            // Add a small delay so the user can see the indicator move
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                startActivity(new Intent(this, ProfileActivity.class));
+            }, 300);
             return;
         }
 

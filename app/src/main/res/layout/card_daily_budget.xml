@@ -57,10 +57,11 @@
                 android:paddingVertical="6dp"
                 android:text="@string/amount_remaining"
                 android:textColor="@color/green_budget_status"
-                android:textSize="11sp" />
+                android:textSize="14sp" />
         </RelativeLayout>
 
         <ProgressBar
+            android:id="@+id/progressDaily"
             style="@android:style/Widget.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="10dp"
@@ -69,6 +70,7 @@
             android:progressDrawable="@drawable/daily_progress_bar" />
 
         <TextView
+            android:id="@+id/tvSalaryInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_small"

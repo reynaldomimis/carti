@@ -45,52 +45,31 @@ public class Utils {
         });
 
         if (bottomView != null) {
-
-            int originalBottomPadding = bottomView.getPaddingBottom();
+            final int originalBottomPadding = bottomView.getPaddingBottom();
+            final ViewGroup.LayoutParams layoutParams = bottomView.getLayoutParams();
+            final int originalBottomMargin = (layoutParams instanceof ViewGroup.MarginLayoutParams) ? 
+                    ((ViewGroup.MarginLayoutParams) layoutParams).bottomMargin : 0;
 
             ViewCompat.setOnApplyWindowInsetsListener(bottomView, (v, insets) -> {
-
-                Insets systemBars =
-                        insets.getInsets(WindowInsetsCompat.Type.systemBars());
-
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
                 int systemNavHeight = systemBars.bottom;
 
-                int imeHeight =
-                        insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
-
-                if (v.getLayoutParams()
-                        instanceof ViewGroup.MarginLayoutParams) {
-
-                    ViewGroup.MarginLayoutParams params =
-                            (ViewGroup.MarginLayoutParams)
-                                    v.getLayoutParams();
-
-                    params.bottomMargin =
-                            Math.max(systemNavHeight, imeHeight);
-
-                    v.setLayoutParams(params);
+                if (v instanceof androidx.core.widget.NestedScrollView || v instanceof androidx.recyclerview.widget.RecyclerView) {
+                    // For scrollable views, use padding so content scrolls behind nav bar
+                    v.setPadding(
+                            v.getPaddingLeft(),
+                            v.getPaddingTop(),
+                            v.getPaddingRight(),
+                            originalBottomPadding + systemNavHeight + customBarHeight
+                    );
+                } else {
+                    // For buttons and fixed views, use margin to push the whole view up
+                    if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                        lp.bottomMargin = originalBottomMargin + systemNavHeight + customBarHeight;
+                        v.setLayoutParams(lp);
+                    }
                 }
-
-                int extraBuffer =
-                        Utils.dpToPx(v.getContext(), 16);
-
-                int totalBottomPadding =
-                        originalBottomPadding
-                                + customBarHeight
-                                + extraBuffer;
-
-                if (imeHeight > 0) {
-                    totalBottomPadding =
-                            originalBottomPadding
-                                    + Utils.dpToPx(v.getContext(), 12);
-                }
-
-                v.setPadding(
-                        v.getPaddingLeft(),
-                        v.getPaddingTop(),
-                        v.getPaddingRight(),
-                        totalBottomPadding
-                );
 
                 return insets;
             });

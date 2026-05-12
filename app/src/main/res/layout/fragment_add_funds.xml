@@ -243,7 +243,6 @@
 
             </LinearLayout>
 
-            <!-- Note Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -285,13 +284,18 @@
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:layout_margin="24dp"
-        android:backgroundTint="@color/carti_primary_green"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
         android:fontFamily="@font/plus_jakarta_sans_bold"
         android:text="@string/btn_save_funds"
         android:textAllCaps="false"
         android:textColor="@color/white"
+        android:gravity="center"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
         app:cornerRadius="12dp"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

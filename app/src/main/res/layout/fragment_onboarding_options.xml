@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingTop="64dp"
+        android:fillViewport="true"
         app:layout_constraintBottom_toTopOf="@+id/btnSkip"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -18,13 +18,13 @@
             android:id="@+id/onboardingOptionsHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:orientation="vertical"
             android:padding="24dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:fontFamily="@font/plus_jakarta_sans_bold"
                 android:gravity="center"
                 android:text="@string/onboarding_family_opt_title"
@@ -45,7 +45,7 @@
                 android:id="@+id/cardCreate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="100dp"
                 android:clickable="true"
                 android:focusable="true"
                 app:cardCornerRadius="16dp"
