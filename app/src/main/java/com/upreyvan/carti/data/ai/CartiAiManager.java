@@ -9,7 +9,7 @@ public class CartiAiManager {
     private static CartiAiManager instance;
     private final Context context;
 
-    // ✅ Full conversation history
+    // Full conversation history
     private final List<String> conversationHistory = new ArrayList<>();
 
     private CartiAiManager(Context context) {
@@ -30,17 +30,56 @@ public class CartiAiManager {
             return new AiResult("Please enter a message.", IntentType.UNKNOWN);
         }
 
-        // ✅ Add to history
+        // Identity Check
+        if (AiParser.isIdentityInquiry(input)) {
+            return new AiResult(
+                    "Ako si Carti AI, ang iyong personal finance assistant na binuo at denevelop ng Team Upreyvan. " +
+                            "Nandito ako para tulungan ang iyong pamilya sa pag-manage ng budget at expenses!",
+                    IntentType.UNKNOWN
+            );
+        }
+
+        // Offline Check
+        if (AiParser.isOfflineInquiry(input)) {
+            return new AiResult(
+                    "Oo naman! 100% offline ang Carti. Maaari mong i-log ang iyong expenses at gamitin ang AI kahit walang internet o data connection. " +
+                            "Your data is safe and stays on your device!",
+                    IntentType.UNKNOWN
+            );
+        }
+
+        // Compliment Check
+        if (AiParser.isCompliment(input)) {
+            String[] responses = {
+                    "Salamat! Ginagawa ko lang ang makakaya ko para sa inyo. 😊",
+                    "Naks! Salamat sa pag-puri, lalo akong gaganahan mag-track ng expenses niyo! 🚀",
+                    "Wow, salamat! Basta para sa budget ng pamilya, laging handa si Carti. 💪",
+                    "Idol din kita! Basta wag lang kalimutan i-log ang expenses ha? Hehe."
+            };
+            return new AiResult(responses[(int) (Math.random() * responses.length)], IntentType.UNKNOWN);
+        }
+
+        // Laughter / Joke Check
+        if (AiParser.isLaughter(input)) {
+            String[] responses = {
+                    "Hahaha! Nakakatuwa naman. 😂",
+                    "Hehe, buti naman at napasaya kita! 🐧",
+                    "Hahaha! Seryoso tayo sa budget pero dapat happy din ang pamilya! ✨",
+                    "Benta 'yun ah! Hahaha! 😂"
+            };
+            return new AiResult(responses[(int) (Math.random() * responses.length)], IntentType.UNKNOWN);
+        }
+
+        // Add to history
         conversationHistory.add(input);
 
-        // ✅ Scan entire history para hanapin lahat ng info
         String resolvedAmount   = "";
         String resolvedCategory = "";
-        Boolean resolvedType    = null; // true = expense, false = income
+        Boolean resolvedType    = null;
 
         for (String msg : conversationHistory) {
             String clean    = AiParser.normalize(msg);
-            String amount   = AiParser.extractAmount(msg);  // RAW
+            String amount   = AiParser.extractAmount(msg);
 
             if (!amount.isEmpty()) resolvedAmount = amount;
 
@@ -58,7 +97,6 @@ public class CartiAiManager {
         // ✅ May lahat na — i-log na
         if (hasType && hasAmount) {
             if (resolvedType) {
-                // EXPENSE — kailangan pa ng category
                 if (hasCategory) {
                     resetState();
                     return new AiResult(
@@ -81,12 +119,10 @@ public class CartiAiManager {
             }
         }
 
-        // ✅ May type pero walang amount
         if (hasType && !hasAmount) {
             return new AiResult("Magkano?", IntentType.ASK_AMOUNT);
         }
 
-        // ✅ May amount pero walang type
         if (hasAmount && !hasType) {
             return new AiResult(
                     "₱" + resolvedAmount + " — Expense o Income?",
@@ -94,7 +130,6 @@ public class CartiAiManager {
             );
         }
 
-        // ✅ Walang context — hindi naintindihan
         return new AiResult(
                 "Hindi ko naintindihan. Subukan: 'Gastos 100 pagkain'",
                 IntentType.UNKNOWN

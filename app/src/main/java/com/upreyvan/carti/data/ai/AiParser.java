@@ -111,4 +111,36 @@ public class AiParser {
 
         return "Other";
     }
+
+    // =========================
+    // IDENTITY DETECTION
+    // =========================
+    public static boolean isIdentityInquiry(String input) {
+        String text = normalize(input);
+        return text.matches(".*(sino ka|who are you|ano pangalan mo|what is your name|anong pangalan mo|who created you|sino gumawa|sinong gumawa|gumawa sayo|creator|developer|denevelop|upreyvan|carti ai|maker|made you|sino ka ba|kilala mo si upreyvan|anong app ito|ano ka|what are you|saan ka galing|taga saan ka|purpose mo|identity|sinong creator).*");
+    }
+
+    // =========================
+    // OFFLINE CAPABILITY DETECTION
+    // =========================
+    public static boolean isOfflineInquiry(String input) {
+        String text = normalize(input);
+        return text.matches(".*(offline|internet|wifi|data|kailangan ba ng net|no connection|connection|gumagana ba pag walang|without internet|working offline|no wifi|walang net|may internet).*");
+    }
+
+    // =========================
+    // COMPLIMENT DETECTION
+    // =========================
+    public static boolean isCompliment(String input) {
+        String text = normalize(input);
+        return text.matches(".*(galing|ayus|nice|lodi|wow|good job|pogi|magaling|solid|astig|petmalu|mahusay|ang lupet|the best|idol|lodi cakes|galing ah|ayos ah|nice one).*");
+    }
+
+    // =========================
+    // LAUGHTER / JOKE DETECTION
+    // =========================
+    public static boolean isLaughter(String input) {
+        String text = normalize(input);
+        return text.matches(".*(haha|hehe|hihi|hoho|lmao|lol|rofl|joke|biro|tawa|nakakatawa|funny).*");
+    }
 }
