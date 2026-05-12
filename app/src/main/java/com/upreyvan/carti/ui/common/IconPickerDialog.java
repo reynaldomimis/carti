@@ -47,8 +47,6 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
         
         if (dialog.getWindow() != null) {
             dialog.getWindow().setNavigationBarColor(requireContext().getColor(R.color.white));
-            
-            // Ensure icons are dark on the white background
             View decorView = dialog.getWindow().getDecorView();
             int flags = decorView.getSystemUiVisibility();
             flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;

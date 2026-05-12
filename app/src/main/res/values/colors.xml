@@ -64,4 +64,9 @@
 
     <color name="status_red">#EF5350</color>
     <color name="status_green">#66BB6A</color>
+
+    <!-- Switch and UI Elements -->
+    <color name="switch_track_off">#E0E0E0</color>
+    <color name="switch_thumb_off">#9E9E9E</color>
+    <color name="ripple_color">#20000000</color>
 </resources>

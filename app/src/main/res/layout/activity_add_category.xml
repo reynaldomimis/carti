@@ -20,13 +20,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingHorizontal="24dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="120dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:text="Category Name"
+                android:text="@string/label_category_name"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp" />
 
@@ -46,13 +48,13 @@
                     android:layout_height="52dp"
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/plus_jakarta_sans_medium"
-                    android:hint="e.g., Entertainment"
+                    android:hint="@string/hint_category_name"
+                    android:importantForAutofill="no"
                     android:inputType="text"
                     android:paddingHorizontal="16dp"
                     android:textColor="@color/text_primary"
                     android:textColorHint="@color/text_tertiary"
-                    android:textSize="15sp"
-                    android:importantForAutofill="no" />
+                    android:textSize="15sp" />
 
             </com.google.android.material.card.MaterialCardView>
 
@@ -61,7 +63,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:text="Icon (Optional)"
+                android:text="@string/label_choose_icon"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp" />
 
@@ -72,10 +74,12 @@
                 android:layout_marginTop="8dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="@color/log_others"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@android:color/transparent"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                app:strokeColor="@color/card_border"
+                app:strokeWidth="1dp">
 
                 <ImageView
                     android:id="@+id/ivCategoryIcon"
@@ -97,12 +101,12 @@
         android:layout_marginHorizontal="24dp"
         android:layout_marginBottom="24dp"
         android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:text="Save Category"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
         android:gravity="center"
         android:insetTop="0dp"
         android:insetBottom="0dp"
+        android:text="@string/btn_save_category"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
         app:cornerRadius="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

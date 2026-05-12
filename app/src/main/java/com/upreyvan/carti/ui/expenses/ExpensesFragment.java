@@ -51,7 +51,6 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         updateMonthDisplay();
         loadData();
 
-        // Listen for global updates
         ExpenseManager.getInstance().setOnExpenseChangeListener(() -> {
             if (isAdded()) {
                 requireActivity().runOnUiThread(this::loadData);
@@ -69,7 +68,7 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     }
 
     private void loadData() {
-        populateMockData(); // Still needed for Chart/Legend for now
+        populateMockData();
         List<Transaction> transactions = ExpenseManager.getInstance().getRecentTransactions(5);
         if (transactionAdapter != null) {
             transactionAdapter.submitList(transactions);
@@ -137,7 +136,6 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     }
 
     private void populateMockData() {
-        // Legend and Chart Data
         List<ExpenseCategory> categories = new ArrayList<>();
         categories.add(new ExpenseCategory(getString(R.string.label_food), 2250, 36f, ContextCompat.getColor(requireContext(), R.color.icon_food)));
         categories.add(new ExpenseCategory(getString(R.string.label_fare), 1200, 19f, ContextCompat.getColor(requireContext(), R.color.icon_fare)));
@@ -163,13 +161,11 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         getBinding().pieChart.setData(new PieData(dataSet));
         getBinding().pieChart.invalidate();
 
-        // Transaction Data
         List<Transaction> transactions = new ArrayList<>();
         transactions.add(new Transaction(getString(R.string.label_food), "Ngayon • 9:35 AM", "₱120", android.R.drawable.ic_menu_gallery, ContextCompat.getColor(requireContext(), R.color.log_food)));
         transactions.add(new Transaction("Pamasahe", "Ngayon • 8:20 AM", "₱15", android.R.drawable.ic_dialog_map, ContextCompat.getColor(requireContext(), R.color.log_fare)));
         transactionAdapter.submitList(transactions);
 
-        // Summary Text
         String comparisonText = getString(R.string.vs_last_month) + " " +
                 getString(R.string.percentage_decrease_format, "1,250", "16.7");
         getBinding().tvComparison.setText(comparisonText);

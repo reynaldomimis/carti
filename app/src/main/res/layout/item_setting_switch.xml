@@ -8,7 +8,7 @@
     android:clickable="true"
     android:focusable="true"
     android:paddingHorizontal="24dp"
-    android:paddingVertical="16dp">
+    android:paddingVertical="12dp">
 
     <LinearLayout
         android:id="@+id/llText"
@@ -49,14 +49,14 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:thumbTint="@color/white"
-        app:trackTint="@color/carti_primary_green" />
+        app:thumbTint="@color/switch_thumb_selector"
+        app:trackTint="@color/switch_track_selector" />
 
     <View
         android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height="1dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:background="@color/card_border"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

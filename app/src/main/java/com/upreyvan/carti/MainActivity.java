@@ -63,7 +63,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         setIntent(intent);
         if (intent.getBooleanExtra("show_home", false)) {
             setTabSelected(getBinding().tabHome);
-            navigateTo(1); // Home ID
+            navigateTo(1);
         }
     }
 
@@ -176,13 +176,11 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         } else if (id == 5) {
             fragment = new FamilyChatFragment();
         } else if (id == 7) {
-            // Add a small delay so the user can see the indicator move to the center
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 startActivity(new Intent(this, AddOptionsActivity.class));
             }, 300);
             return;
         } else if (id == 4) {
-            // Add a small delay so the user can see the indicator move
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 startActivity(new Intent(this, ProfileActivity.class));
             }, 300);

@@ -6,11 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import android.view.WindowManager;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -24,7 +22,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+import android.view.WindowManager;
+
 public class QuickLogDialog extends BottomSheetDialogFragment {
+
 
     private static final String ARG_ITEM = "arg_item";
     private DialogQuickLogAmountBinding binding;
@@ -52,9 +53,9 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
         
         if (dialog.getWindow() != null) {
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             dialog.getWindow().setNavigationBarColor(requireContext().getColor(R.color.white));
-            
-            // Ensure icons are dark on the white background
+
             View decorView = dialog.getWindow().getDecorView();
             int flags = decorView.getSystemUiVisibility();
             flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
@@ -94,16 +95,18 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
 
             try {
                 double amount = Double.parseDouble(amountStr);
-                
-                // Save to ExpenseManager
                 String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
+                
+                int iconColor = requireContext().getColor(item.getIconColor());
+                int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
+                
                 Transaction transaction = new Transaction(
                         item.getTitle(),
                         time,
                         "₱" + String.format(Locale.getDefault(), "%.2f", amount),
                         item.getIconRes(),
-                        requireContext().getColor(item.getBgColor()),
-                        requireContext().getColor(item.getIconColor())
+                        bgColor,
+                        iconColor
                 );
                 ExpenseManager.getInstance().addTransaction(transaction);
 

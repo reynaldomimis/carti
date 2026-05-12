@@ -8,7 +8,7 @@
     android:clickable="true"
     android:focusable="true"
     android:paddingHorizontal="24dp"
-    android:paddingVertical="16dp">
+    android:paddingVertical="12dp">
 
     <TextView
         android:id="@+id/tvTitle"
@@ -50,7 +50,7 @@
         android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height="1dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:background="@color/card_border"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

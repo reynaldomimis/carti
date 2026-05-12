@@ -6,9 +6,11 @@
     android:layout_margin="4dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardCornerRadius="8dp"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="12dp"
     app:cardElevation="0dp"
-    app:strokeWidth="0dp">
+    app:strokeColor="@color/card_border"
+    app:strokeWidth="1dp">
 
     <ImageView
         android:id="@+id/ivIcon"

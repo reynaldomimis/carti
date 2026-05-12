@@ -15,9 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.local.ExpenseManager;
 import com.upreyvan.carti.data.local.SalaryManager;
-import com.upreyvan.carti.ui.home.CustomizeQuickLogActivity;
-import com.upreyvan.carti.ui.home.QuickLogAdapter;
-import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
 import com.upreyvan.carti.ui.expenses.AllTransactionsFragment;
@@ -30,7 +27,6 @@ import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Locale;
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {

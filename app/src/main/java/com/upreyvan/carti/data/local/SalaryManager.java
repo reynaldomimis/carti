@@ -91,7 +91,7 @@ public class SalaryManager {
     
     public double getDailyBudget() {
         int days = getDaysUntilNextPayday();
-        if (days <= 0) return getSalaryAmount(); // Payday today or error
+        if (days <= 0) return getSalaryAmount();
         return getSalaryAmount() / days;
     }
 }

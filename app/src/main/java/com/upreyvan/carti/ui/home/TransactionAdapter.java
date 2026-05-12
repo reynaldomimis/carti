@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.DiffUtil;
 
 import com.upreyvan.carti.R;
@@ -39,12 +40,16 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
         binding.tvTimestamp.setText(item.getTimestamp());
         binding.tvAmount.setText(item.getAmount());
         binding.ivIcon.setImageResource(item.getIconRes());
-        binding.cvIconBg.setCardBackgroundColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.surface_variant));
 
         if (item.getIconColor() != 0) {
-            binding.ivIcon.setColorFilter(item.getIconColor());
+            int iconColor = item.getIconColor();
+            binding.ivIcon.setColorFilter(iconColor);
+
+            int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
+            binding.cvIconBg.setCardBackgroundColor(bgColor);
         } else {
             binding.ivIcon.setColorFilter(null);
+            binding.cvIconBg.setCardBackgroundColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.surface_variant));
         }
     }
 }

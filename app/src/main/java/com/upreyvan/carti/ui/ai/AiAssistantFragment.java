@@ -4,25 +4,67 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
 
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.ui.ai.AiSuggestionAdapter;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.data.ai.AiResult;
+import com.upreyvan.carti.data.ai.IntentType; // Ensure this is imported
 import com.upreyvan.carti.databinding.FragmentAiAssistantBinding;
 import com.upreyvan.carti.model.AiSuggestion;
 import com.upreyvan.carti.util.Utils;
 
+import android.content.Intent;
+import android.speech.RecognizerIntent;
+import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
+import com.upreyvan.carti.ui.family.ChatAdapter;
+import com.upreyvan.carti.model.ChatMessage;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+import com.upreyvan.carti.data.ai.CartiAiManager;
 
 public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding> {
 
     private AiSuggestionAdapter suggestionAdapter;
+    private ChatAdapter chatAdapter;
+    private final List<ChatMessage> chatMessages = new ArrayList<>();
+
+    private final ActivityResultLauncher<Intent> speechResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    List<String> results = result.getData().getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    if (results != null && !results.isEmpty()) {
+                        getBinding().layoutInput.etInput.setText(results.get(0));
+                        getBinding().layoutInput.etInput.setSelection(results.get(0).length());
+                    }
+                }
+            }
+    );
+
+    @Override
+    public void onDestroyView() {
+        CartiAiManager.getInstance(requireContext()).resetState();
+        super.onDestroyView();
+    }
 
     @Override
     protected FragmentAiAssistantBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -32,10 +74,32 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         setupDynamicPadding();
+        setupChat();
         setupToolbar();
         setupSuggestions();
+        setupKeyboardHandling();
+    }
+
+    private void setupChat() {
+        chatAdapter = new ChatAdapter();
+        getBinding().rvChat.setLayoutManager(new LinearLayoutManager(requireContext()));
+        getBinding().rvChat.setAdapter(chatAdapter);
+    }
+
+    private void setupKeyboardHandling() {
+        getBinding().layoutInput.etInput.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                getBinding().scrollView.postDelayed(() -> {
+                    if (isAdded() && getBinding() != null) {
+                        View child = getBinding().scrollView.getChildAt(0);
+                        if (child != null) {
+                            getBinding().scrollView.smoothScrollTo(0, child.getBottom());
+                        }
+                    }
+                }, 300);
+            }
+        });
     }
 
     private void setupSuggestions() {
@@ -43,60 +107,126 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
         getBinding().rvSuggestions.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         getBinding().rvSuggestions.setAdapter(suggestionAdapter);
 
-        List<AiSuggestion> suggestions = new ArrayList<>();
-        suggestions.add(new AiSuggestion(
-                getString(R.string.ai_suggestion_1),
-                android.R.drawable.ic_menu_myplaces,
-                ContextCompat.getColor(requireContext(), R.color.icon_food),
-                ContextCompat.getColor(requireContext(), R.color.log_food)
-        ));
-        suggestions.add(new AiSuggestion(
-                getString(R.string.ai_suggestion_2),
-                android.R.drawable.btn_star,
-                ContextCompat.getColor(requireContext(), R.color.icon_store),
-                ContextCompat.getColor(requireContext(), R.color.log_store)
-        ));
-        suggestions.add(new AiSuggestion(
-                getString(R.string.ai_suggestion_3),
-                android.R.drawable.ic_menu_search,
-                ContextCompat.getColor(requireContext(), R.color.icon_fare),
-                ContextCompat.getColor(requireContext(), R.color.log_fare)
-        ));
-        suggestions.add(new AiSuggestion(
-                getString(R.string.ai_suggestion_4),
-                android.R.drawable.ic_menu_manage,
-                ContextCompat.getColor(requireContext(), R.color.icon_debt),
-                ContextCompat.getColor(requireContext(), R.color.log_debt)
-        ));
-        suggestions.add(new AiSuggestion(
-                getString(R.string.ai_suggestion_5),
-                android.R.drawable.ic_menu_gallery,
-                ContextCompat.getColor(requireContext(), R.color.icon_load),
-                ContextCompat.getColor(requireContext(), R.color.log_load)
-        ));
+        suggestionAdapter.setOnSuggestionClickListener(suggestion -> {
+            getBinding().layoutInput.etInput.setText(suggestion.getText());
+            getBinding().layoutInput.etInput.setSelection(suggestion.getText().length());
+            getBinding().layoutInput.etInput.requestFocus();
+        });
 
+        List<AiSuggestion> suggestions = new ArrayList<>();
         suggestionAdapter.submitList(suggestions);
     }
 
     private void setupToolbar() {
-        getBinding().btnRefresh.setOnClickListener(v -> {
+        getBinding().layoutInput.btnSend.setEnabled(false);
+        getBinding().layoutInput.btnSend.setAlpha(0.5f);
+
+        getBinding().layoutInput.etInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                boolean hasText = s.toString().trim().length() > 0;
+                getBinding().layoutInput.btnSend.setEnabled(hasText);
+                getBinding().layoutInput.btnSend.setAlpha(hasText ? 1.0f : 0.5f);
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
         });
 
         getBinding().layoutInput.btnSend.setOnClickListener(v -> {
-            // Handle send
+            String message = getBinding().layoutInput.etInput.getText().toString().trim();
+            if (!message.isEmpty()) {
+                sendMessage(message);
+            }
         });
 
         getBinding().layoutInput.btnVoice.setOnClickListener(v -> {
-            // Handle voice
+            try {
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Sabihin ang iyong katanungan...");
+                speechResultLauncher.launch(intent);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "Voice search not supported", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
+    private void sendMessage(String text) {
+
+        getBinding().layoutInput.etInput.setText("");
+        getBinding().scrollView.setVisibility(View.GONE);
+        getBinding().rvChat.setVisibility(View.VISIBLE);
+
+        // =========================
+        // USER MESSAGE (WITH ICON)
+        // =========================
+        chatMessages.add(new ChatMessage(
+                getString(R.string.chat_sender_me),
+                text,
+                getCurrentSystemTime(),
+                true,
+                R.drawable.ic_person
+        ));
+
+        chatAdapter.submitList(new ArrayList<>(chatMessages));
+        scrollToBottom();
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+
+            if (!isAdded()) return;
+
+            AiResult result = CartiAiManager.getInstance(requireContext())
+                    .processMessage(text);
+
+
+            // =========================
+            // AI MESSAGE (WITH ICON)
+            // =========================
+            chatMessages.add(new ChatMessage(
+                    getString(R.string.chat_sender_ai),
+                    result.getMessage(),
+                    getCurrentSystemTime(),
+                    false,
+                    R.drawable.ai_holder
+            ));
+
+            chatAdapter.submitList(new ArrayList<>(chatMessages));
+            scrollToBottom();
+
+        }, 1000);
+    }
+
+    private String getCurrentSystemTime() {
+        return new SimpleDateFormat("hh:mm a", Locale.getDefault())
+                .format(Calendar.getInstance().getTime());
+    }
+
+    private void scrollToBottom() {
+        getBinding().rvChat.postDelayed(() -> {
+            if (chatAdapter.getItemCount() > 0) {
+                getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
+            }
+        }, 200);
+    }
+
     private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutHeader,
-                getBinding().layoutBottom,
-                0.3f,
-                getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium)
-        );
+        Utils.applySystemBarInsets(getBinding().layoutHeader, null, 0.3f, 0);
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutBottom, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            int bottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium);
+            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+
+            if (insets.isVisible(WindowInsetsCompat.Type.ime())) {
+                lp.bottomMargin = ime.bottom;
+            } else {
+                lp.bottomMargin = systemBars.bottom + bottomNavHeight;
+            }
+            v.setLayoutParams(lp);
+            return insets;
+        });
     }
 }

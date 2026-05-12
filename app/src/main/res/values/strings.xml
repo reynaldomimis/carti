@@ -213,6 +213,7 @@
     <string name="label_currency">Currency</string>
     <string name="label_language">Language</string>
     <string name="status_on">On</string>
+    <string name="status_off">Off</string>
     <string name="status_currency_php">Philippine Peso (₱)</string>
     <string name="status_language_english">English</string>
 
@@ -289,7 +290,7 @@
 
     <!-- AI Assistant Fragment -->
     <string name="ai_assistant_title">Carti AI Assistant</string>
-    <string name="ai_greeting">Hello! I\'m your AI Assistant. How can I help your family manage your expenses today?</string>
+    <string name="ai_greeting">Hello! I\'m your Carti Assistant. How can I help your family manage your expenses today?</string>
     <string name="hint_ask_me">Ask me anything...</string>
     <string name="ai_disclaimer">AI responses may not be 100% accurate.</string>
     <string name="ai_suggestion_1">Spent 500 today</string>
@@ -375,12 +376,14 @@
     <string name="onboarding_join_status_desc">Wait for Admin approval to join.</string>
     <string name="btn_view_status">View Status</string>
     <string name="btn_go_back">Go Back</string>
+
     <!-- Goal Detail Fragment -->
     <string name="goal_details_title">Goal Details</string>
     <string name="label_monthly_target">Monthly Target</string>
     <string name="label_progress_history">Progress History</string>
     <string name="btn_add_funds">Add Funds</string>
     <string name="goal_progress_complete_format">%1$d%% Complete</string>
+
     <!-- Add Funds Fragment -->
     <string name="add_to_goal_title">Add to Goal</string>
     <string name="label_current_amount">Current: %1$s / %2$s</string>
@@ -391,6 +394,7 @@
     <string name="opt_other_source">Other source</string>
     <string name="hint_note_example">e.g. Save on coffee</string>
     <string name="btn_save_funds">Save</string>
+
     <!-- Salary Mode Fragment -->
     <string name="salary_mode_title">Salary Mode</string>
     <string name="label_next_sweldo">Next salary in</string>
@@ -404,6 +408,7 @@
     <string name="btn_edit">Edit</string>
     <string name="menu_salary">Salary Mode</string>
     <string name="menu_salary_sub">Manage your salary budget</string>
+
     <!-- Mock Salary Data -->
     <string name="mock_days_left">8</string>
     <string name="mock_salary_date">(May 30, 2024)</string>
@@ -426,4 +431,14 @@
     <string name="btn_save_schedule">Save Schedule</string>
     <string name="hint_day1">Day 1</string>
     <string name="hint_day2">Day 2</string>
+
+    <!-- Add Category Activity -->
+    <string name="label_category_name">Category Name</string>
+    <string name="hint_category_name">e.g., Entertainment</string>
+    <string name="label_choose_icon">Choose Icon</string>
+    <string name="btn_save_category">Save Category</string>
+
+    <!-- AI Chat -->
+    <string name="chat_sender_me">You</string>
+    <string name="chat_sender_ai">Carti AI</string>
 </resources>

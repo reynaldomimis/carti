@@ -7,6 +7,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.core.graphics.ColorUtils;
+
 import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -65,7 +67,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
         ArrayAdapter<String> sourceAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, sources);
         getBinding().etSource.setAdapter(sourceAdapter);
-        getBinding().etSource.setText(sources[0], false); // Default to Cash
+        getBinding().etSource.setText(sources[0], false);
         
         // Default Date
         Calendar calendar = Calendar.getInstance();
@@ -132,7 +134,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
 
             int iconRes = (selectedCategory != null) ? selectedCategory.getIconRes() : R.drawable.ic_chart;
             int iconColor = (selectedCategory != null) ? getColor(selectedCategory.getIconColor()) : getColor(R.color.icon_others);
-            int bgColor = (selectedCategory != null) ? getColor(selectedCategory.getBackgroundColor()) : getColor(R.color.log_others);
+            int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
 
             Transaction transaction = new Transaction(
                     category,

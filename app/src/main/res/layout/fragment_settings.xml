@@ -28,7 +28,7 @@
 
             <include
                 android:id="@+id/itemNotifications"
-                layout="@layout/item_setting_status" />
+                layout="@layout/item_setting_switch" />
 
             <include
                 android:id="@+id/itemCurrency"

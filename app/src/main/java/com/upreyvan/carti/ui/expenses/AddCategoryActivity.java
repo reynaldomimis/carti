@@ -62,15 +62,7 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
         setupListeners();
     }
 
-    private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutToolbar.getRoot(),
-                getBinding().btnSave,
-                1f,
-                0
-        );
-        getBinding().scrollView.setPadding(0, 0, 0, Utils.dpToPx(this, 120));
-    }
+
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText("Add Category");
@@ -126,5 +118,15 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
         uCrop.withAspectRatio(1, 1);
         uCrop.withMaxResultSize(200, 200);
         cropImageLauncher.launch(uCrop.getIntent(this));
+    }
+
+    private void setupDynamicPadding() {
+        Utils.applySystemBarInsets(
+                getBinding().layoutToolbar.getRoot(),
+                getBinding().btnSave,
+                1f,
+                0
+        );
+        getBinding().scrollView.setPadding(0, 0, 0, Utils.dpToPx(this, 120));
     }
 }

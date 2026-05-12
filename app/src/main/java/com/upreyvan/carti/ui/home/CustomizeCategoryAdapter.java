@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.upreyvan.carti.databinding.ItemCustomizeCategoryBinding;
@@ -40,8 +41,12 @@ public class CustomizeCategoryAdapter extends RecyclerView.Adapter<CustomizeCate
         Category category = categories.get(position);
         holder.binding.tvCategoryName.setText(category.getName());
         holder.binding.ivIcon.setImageResource(category.getIconRes());
-        holder.binding.cardIcon.setCardBackgroundColor(holder.itemView.getContext().getColor(category.getBackgroundColor()));
-        holder.binding.ivIcon.setColorFilter(holder.itemView.getContext().getColor(category.getIconColor()));
+        
+        int iconColor = holder.itemView.getContext().getColor(category.getIconColor());
+        int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
+        
+        holder.binding.cardIcon.setCardBackgroundColor(bgColor);
+        holder.binding.ivIcon.setColorFilter(iconColor);
     }
 
     @Override

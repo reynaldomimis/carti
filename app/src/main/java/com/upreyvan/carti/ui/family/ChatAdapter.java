@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
+import com.upreyvan.carti.R;
 import com.upreyvan.carti.databinding.ItemChatLeftBinding;
 import com.upreyvan.carti.databinding.ItemChatRightBinding;
 import com.upreyvan.carti.model.ChatMessage;
@@ -64,6 +65,12 @@ public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHo
             b.tvSenderName.setText(message.getSenderName());
             b.tvMessage.setText(message.getMessage());
             b.tvTime.setText(message.getTime());
+            
+            if (message.getImageResId() != 0) {
+                b.ivAvatar.setImageResource(message.getImageResId());
+            } else {
+                b.ivAvatar.setImageResource(R.drawable.ic_person);
+            }
         }
     }
 

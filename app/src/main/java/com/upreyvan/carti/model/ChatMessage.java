@@ -1,16 +1,25 @@
 package com.upreyvan.carti.model;
 
 public class ChatMessage {
+
     private final String senderName;
     private final String message;
     private final String time;
     private final boolean isMe;
 
-    public ChatMessage(String senderName, String message, String time, boolean isMe) {
+    private final int imageResId;
+
+    public ChatMessage(String senderName,
+                       String message,
+                       String time,
+                       boolean isMe,
+                       int imageResId) {
+
         this.senderName = senderName;
         this.message = message;
         this.time = time;
         this.isMe = isMe;
+        this.imageResId = imageResId;
     }
 
     public String getSenderName() {
@@ -27,5 +36,9 @@ public class ChatMessage {
 
     public boolean isMe() {
         return isMe;
+    }
+
+    public int getImageResId() {
+        return imageResId;
     }
 }

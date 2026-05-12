@@ -21,12 +21,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingHorizontal="24dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="120dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_add_image"
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/surface_variant"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
@@ -140,7 +145,10 @@
                 android:id="@+id/btn_pick_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
 
                 <TextView
                     android:id="@+id/tv_selected_date"

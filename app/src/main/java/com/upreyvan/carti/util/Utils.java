@@ -47,7 +47,7 @@ public class Utils {
         if (bottomView != null) {
             final int originalBottomPadding = bottomView.getPaddingBottom();
             final ViewGroup.LayoutParams layoutParams = bottomView.getLayoutParams();
-            final int originalBottomMargin = (layoutParams instanceof ViewGroup.MarginLayoutParams) ? 
+            final int originalBottomMargin = (layoutParams instanceof ViewGroup.MarginLayoutParams) ?
                     ((ViewGroup.MarginLayoutParams) layoutParams).bottomMargin : 0;
 
             ViewCompat.setOnApplyWindowInsetsListener(bottomView, (v, insets) -> {
@@ -55,7 +55,6 @@ public class Utils {
                 int systemNavHeight = systemBars.bottom;
 
                 if (v instanceof androidx.core.widget.NestedScrollView || v instanceof androidx.recyclerview.widget.RecyclerView) {
-                    // For scrollable views, use padding so content scrolls behind nav bar
                     v.setPadding(
                             v.getPaddingLeft(),
                             v.getPaddingTop(),
@@ -63,7 +62,6 @@ public class Utils {
                             originalBottomPadding + systemNavHeight + customBarHeight
                     );
                 } else {
-                    // For buttons and fixed views, use margin to push the whole view up
                     if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
                         ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
                         lp.bottomMargin = originalBottomMargin + systemNavHeight + customBarHeight;

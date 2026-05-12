@@ -23,11 +23,11 @@
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.profile.ProfileActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.common.AddOptionsActivity"
             android:exported="false"
@@ -36,31 +36,32 @@
             android:name=".ui.expenses.AddExpenseActivity"
             android:exported="false"
             android:theme="@style/Theme.Carti"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.debt.AddDebtActivity"
             android:exported="false"
             android:theme="@style/Theme.Carti"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.goals.AddGoalActivity"
             android:exported="false"
             android:theme="@style/Theme.Carti"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.family.InviteFamilyActivity"
             android:exported="false"
             android:theme="@style/Theme.Carti"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.expenses.AddCategoryActivity"
             android:exported="false"
             android:theme="@style/Theme.Carti"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.home.CustomizeQuickLogActivity"
             android:exported="false"
-            android:theme="@style/Theme.Carti" />
+            android:theme="@style/Theme.Carti"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
     </application>
 
 </manifest>

@@ -39,7 +39,11 @@ public class SettingsFragment extends BaseFragment<FragmentSettingsBinding> {
 
         // Notifications
         getBinding().itemNotifications.tvTitle.setText(R.string.label_notifications);
-        getBinding().itemNotifications.tvStatus.setText(R.string.status_on);
+        getBinding().itemNotifications.tvDescription.setText(R.string.status_on);
+        getBinding().itemNotifications.switchWidget.setChecked(true);
+        getBinding().itemNotifications.switchWidget.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            getBinding().itemNotifications.tvDescription.setText(isChecked ? R.string.status_on : R.string.status_off);
+        });
         getBinding().itemNotifications.getRoot().setOnClickListener(v -> navigateTo(new NotificationSettingsFragment()));
 
         // Currency

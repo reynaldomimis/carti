@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.upreyvan.carti.R;
@@ -42,12 +43,13 @@ public class QuickLogAdapter extends RecyclerView.Adapter<QuickLogAdapter.ViewHo
         QuickLogItem item = items.get(position);
         holder.binding.tvLabel.setText(item.getTitle());
         holder.binding.ivIcon.setImageResource(item.getIconRes());
-        
-        // Standardize icon background color to a light gray (IISA LANG)
-        holder.binding.cvIconBg.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.surface_variant));
-        
-        // Keep unique icon colors (IBA IBA PER ITEM)
-        holder.binding.ivIcon.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), item.getIconColor()));
+
+        int iconColor = ContextCompat.getColor(holder.itemView.getContext(), item.getIconColor());
+
+        int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
+        holder.binding.cvIconBg.setCardBackgroundColor(bgColor);
+
+        holder.binding.ivIcon.setColorFilter(iconColor);
 
         holder.itemView.setOnClickListener(v -> {
             if (onItemClickListener != null) {
