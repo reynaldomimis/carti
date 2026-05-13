@@ -83,6 +83,11 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
 
     private void setupChat() {
         chatAdapter = new ChatAdapter();
+        chatAdapter.setOnCancelListener((message, position) -> {
+            // Logic to actually cancel the database entry if it was already saved
+            // For now, we just show a toast or log it
+            Toast.makeText(requireContext(), R.string.msg_canceled, Toast.LENGTH_SHORT).show();
+        });
         getBinding().rvChat.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvChat.setAdapter(chatAdapter);
     }
@@ -190,7 +195,8 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
                     result.getMessage(),
                     getCurrentSystemTime(),
                     false,
-                    R.drawable.ai_holder
+                    R.drawable.ai_holder,
+                    result.getIntent()
             ));
 
             chatAdapter.submitList(new ArrayList<>(chatMessages));

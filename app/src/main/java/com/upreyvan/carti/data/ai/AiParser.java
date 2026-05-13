@@ -143,4 +143,38 @@ public class AiParser {
         String text = normalize(input);
         return text.matches(".*(haha|hehe|hihi|hoho|lmao|lol|rofl|joke|biro|tawa|nakakatawa|funny).*");
     }
+
+    // =========================
+    // TRAINING ACTIVATION
+    // =========================
+    public static boolean isTrainingActivation(String input) {
+        String text = normalize(input);
+        return text.matches(".*(turuan kita|tandaan mo|learn mode|training mode|mag-aral tayo|ituro ko sayo).*");
+    }
+
+    /**
+     * Extracts a keyword and its category from a training message.
+     * Example: "Ang Bigas ay para sa Food" -> returns ["bigas", "Food"]
+     */
+    public static String[] extractTrainingData(String input) {
+        String text = input.toLowerCase();
+        
+        // Match common patterns: "X is Y", "X for Y", "X ay para sa Y", "X category Y"
+        Pattern p = Pattern.compile("(?i)(?:ang\\s+)?(\\w+)\\s+(?:is|para sa|ay|category|sa)\\s+(\\w+)");
+        Matcher m = p.matcher(text);
+        
+        if (m.find()) {
+            String keyword = m.group(1).trim();
+            String category = m.group(2).trim();
+            
+            // Capitalize first letter of category to match existing categories
+            if (!category.isEmpty()) {
+                category = category.substring(0, 1).toUpperCase() + category.substring(1).toLowerCase();
+            }
+            
+            return new String[]{keyword, category};
+        }
+        
+        return null;
+    }
 }

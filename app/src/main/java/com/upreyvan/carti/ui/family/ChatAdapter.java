@@ -15,10 +15,26 @@ import com.upreyvan.carti.databinding.ItemChatLeftBinding;
 import com.upreyvan.carti.databinding.ItemChatRightBinding;
 import com.upreyvan.carti.model.ChatMessage;
 
+import android.os.CountDownTimer;
+import java.util.HashMap;
+import java.util.Map;
+
 public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHolder> {
 
     private static final int VIEW_TYPE_ME = 1;
     private static final int VIEW_TYPE_OTHER = 2;
+    private static final int TIMER_DURATION = 5000;
+
+    private OnCancelListener cancelListener;
+    private final Map<Integer, CountDownTimer> activeTimers = new HashMap<>();
+
+    public interface OnCancelListener {
+        void onCancel(ChatMessage message, int position);
+    }
+
+    public void setOnCancelListener(OnCancelListener listener) {
+        this.cancelListener = listener;
+    }
 
     public ChatAdapter() {
         super(new DiffUtil.ItemCallback<ChatMessage>() {
@@ -63,7 +79,15 @@ public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHo
         } else {
             ItemChatLeftBinding b = (ItemChatLeftBinding) holder.binding;
             b.tvSenderName.setText(message.getSenderName());
-            b.tvMessage.setText(message.getMessage());
+            
+            if (message.isCanceled()) {
+                b.tvMessage.setText(b.getRoot().getContext().getString(R.string.msg_canceled));
+                b.tvMessage.setAlpha(0.5f);
+            } else {
+                b.tvMessage.setText(message.getMessage());
+                b.tvMessage.setAlpha(1.0f);
+            }
+
             b.tvTime.setText(message.getTime());
             
             if (message.getImageResId() != 0) {
@@ -71,7 +95,53 @@ public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHo
             } else {
                 b.ivAvatar.setImageResource(R.drawable.ic_person);
             }
+
+            // Handle Cancel Button and Timer
+            if (message.isCancelable() && !message.isCanceled()) {
+                b.layoutCancel.setVisibility(View.VISIBLE);
+                startTimer(b, message, holder.getAdapterPosition());
+                b.btnCancel.setOnClickListener(v -> {
+                    cancelTimer(holder.getAdapterPosition());
+                    message.setCanceled(true);
+                    notifyItemChanged(holder.getAdapterPosition());
+                    if (cancelListener != null) {
+                        cancelListener.onCancel(message, holder.getAdapterPosition());
+                    }
+                });
+            } else {
+                b.layoutCancel.setVisibility(View.GONE);
+                cancelTimer(holder.getAdapterPosition());
+            }
         }
+    }
+
+    private void startTimer(ItemChatLeftBinding b, ChatMessage message, int position) {
+        cancelTimer(position);
+        CountDownTimer timer = new CountDownTimer(TIMER_DURATION, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                b.tvTimer.setText(b.getRoot().getContext().getString(R.string.timer_format, (int) (millisUntilFinished / 1000) + 1));
+            }
+
+            @Override
+            public void onFinish() {
+                b.layoutCancel.setVisibility(View.GONE);
+            }
+        }.start();
+        activeTimers.put(position, timer);
+    }
+
+    private void cancelTimer(int position) {
+        if (activeTimers.containsKey(position)) {
+            activeTimers.get(position).cancel();
+            activeTimers.remove(position);
+        }
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull ChatViewHolder holder) {
+        super.onViewRecycled(holder);
+        cancelTimer(holder.getAdapterPosition());
     }
 
     public static class ChatViewHolder extends RecyclerView.ViewHolder {

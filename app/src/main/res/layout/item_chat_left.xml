@@ -61,16 +61,62 @@
                     android:textSize="14sp"
                     tools:text="Magandang umaga pamilya! ☀️" />
 
-                <TextView
-                    android:id="@+id/tvTime"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_marginTop="2dp"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
-                    android:textColor="@color/text_tertiary"
-                    android:textSize="10sp"
-                    tools:text="9:30 AM" />
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/layoutCancel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCancel"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/plus_jakarta_sans_bold"
+                            android:minHeight="32dp"
+                            android:paddingHorizontal="4dp"
+                            android:text="@string/btn_cancel"
+                            android:textAllCaps="false"
+                            android:textColor="@color/status_red"
+                            android:textSize="12sp"
+                            app:rippleColor="@color/ripple_color" />
+
+                        <TextView
+                            android:id="@+id/tvTimer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/plus_jakarta_sans_bold"
+                            android:textColor="@color/status_red"
+                            android:textSize="12sp"
+                            tools:text="5s" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/tvTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/plus_jakarta_sans_medium"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="10sp"
+                        tools:text="9:30 AM" />
+
+                </LinearLayout>
 
             </LinearLayout>
 

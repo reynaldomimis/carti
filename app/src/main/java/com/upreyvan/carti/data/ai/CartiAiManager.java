@@ -2,14 +2,17 @@ package com.upreyvan.carti.data.ai;
 
 import android.content.Context;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CartiAiManager {
 
     private static CartiAiManager instance;
     private final Context context;
 
-    // Full conversation history
+    private boolean isTrainingMode = false;
+    private final Map<String, String> learnedKeywords = new HashMap<>();
     private final List<String> conversationHistory = new ArrayList<>();
 
     private CartiAiManager(Context context) {
@@ -23,6 +26,7 @@ public class CartiAiManager {
 
     public void resetState() {
         conversationHistory.clear();
+        isTrainingMode = false;
     }
 
     public AiResult processMessage(String input) {
@@ -30,7 +34,35 @@ public class CartiAiManager {
             return new AiResult("Please enter a message.", IntentType.UNKNOWN);
         }
 
-        // Identity Check
+        // Training Activation Check
+        if (AiParser.isTrainingActivation(input)) {
+            isTrainingMode = true;
+            return new AiResult(
+                    "Sige po! Nakikinig ako. Ano ang gusto mong ituro sa akin?\n\n" +
+                            "Halimbawa: 'Ang Load ay para sa Utilities'",
+                    IntentType.TRAINING
+            );
+        }
+
+        // If in Training Mode, handle the instruction
+        if (isTrainingMode) {
+            isTrainingMode = false;
+            String[] trainingData = AiParser.extractTrainingData(input);
+            if (trainingData != null) {
+                String keyword = trainingData[0];
+                String category = trainingData[1];
+                learnedKeywords.put(keyword, category);
+                return new AiResult(
+                        "Salamat! Tanda ko na 'yan. Mula ngayon, ang '" + keyword + "' ay i-log ko na sa '" + category + "' category. ✅",
+                        IntentType.LEARNING_CONFIRMATION
+                );
+            }
+            return new AiResult(
+                    "Pasensya na, hindi ko nakuha 'yun. Pwede paki-ulit? Halimbawa: 'Ang Load ay para sa Utilities'",
+                    IntentType.UNKNOWN
+            );
+        }
+        
         if (AiParser.isIdentityInquiry(input)) {
             return new AiResult(
                     "Ako si Carti AI, ang iyong personal finance assistant na binuo at denevelop ng Team Upreyvan. " +
@@ -83,8 +115,20 @@ public class CartiAiManager {
 
             if (!amount.isEmpty()) resolvedAmount = amount;
 
-            String cat = AiParser.detectCategory(clean);
-            if (!cat.equals("Other")) resolvedCategory = cat;
+            // Step 3: Check learned keywords first
+            boolean learnedFound = false;
+            for (Map.Entry<String, String> entry : learnedKeywords.entrySet()) {
+                if (clean.contains(entry.getKey().toLowerCase())) {
+                    resolvedCategory = entry.getValue();
+                    learnedFound = true;
+                    break;
+                }
+            }
+
+            if (!learnedFound) {
+                String cat = AiParser.detectCategory(clean);
+                if (!cat.equals("Other")) resolvedCategory = cat;
+            }
 
             if (AiParser.isExpense(clean)) resolvedType = true;
             if (AiParser.isIncome(clean))  resolvedType = false;
@@ -94,7 +138,7 @@ public class CartiAiManager {
         boolean hasCategory = !resolvedCategory.isEmpty();
         boolean hasType     = resolvedType != null;
 
-        // ✅ May lahat na — i-log na
+        // May lahat na — i-log na
         if (hasType && hasAmount) {
             if (resolvedType) {
                 if (hasCategory) {

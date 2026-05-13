@@ -9,6 +9,9 @@ public enum IntentType {
     ASK_CATEGORY,
     ASK_TYPE,
 
+    TRAINING,
+    LEARNING_CONFIRMATION,
+
     PROFANITY,
     UNKNOWN
 }
