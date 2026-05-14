@@ -15,12 +15,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.ui.debt.DebtAdapter;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.DebtManager;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
 import com.upreyvan.carti.model.Debt;
+import com.upreyvan.carti.data.remote.ApiHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
 
     private DebtAdapter adapter;
     private List<Debt> allDebts = new ArrayList<>();
+    private ApiHelper apiHelper;
 
     @Override
     protected FragmentDebtTrackerBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -38,6 +41,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiHelper = new ApiHelper(requireContext());
         setupToolbar();
         setupTabs();
         setupRecyclerView();
@@ -61,7 +65,8 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnAction.setText(R.string.btn_add_debt);
         getBinding().layoutToolbar.btnAction.setOnClickListener(v -> {
-            // Handle add debt
+            android.content.Intent intent = new android.content.Intent(requireContext(), AddDebtActivity.class);
+            startActivity(intent);
         });
     }
 
@@ -91,15 +96,17 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     }
 
     private void filterDebts(int tabIndex) {
-        if (tabIndex == 0) {
-            adapter.setDebts(allDebts);
-        } else {
-            List<Debt> filtered = new ArrayList<>();
+        List<Debt> filtered = new ArrayList<>();
+        if (tabIndex == 0) { // All or Owed to me
             for (Debt d : allDebts) {
-                if (d.getAmount() > 200) filtered.add(d);
+                if (!d.isPaid()) filtered.add(d);
             }
-            adapter.setDebts(filtered);
+        } else { // History / Paid
+            for (Debt d : allDebts) {
+                if (d.isPaid()) filtered.add(d);
+            }
         }
+        adapter.setDebts(filtered);
     }
 
     private void showDebtDetail(Debt debt) {
@@ -122,9 +129,25 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
             dialogBinding.tvPaymentHistory.setText("Paid on " + debt.getDate());
         } else {
             dialogBinding.btnMarkAsPaid.setOnClickListener(v -> {
-                debt.setPaid(true);
-                adapter.notifyDataSetChanged();
-                dialog.dismiss();
+                dialogBinding.btnMarkAsPaid.setEnabled(false);
+                apiHelper.markDebtPaid(debt.getId(), new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+                    @Override
+                    public void onSuccess(java.util.Map<String, Object> result) {
+                        requireActivity().runOnUiThread(() -> {
+                            debt.setPaid(true);
+                            adapter.notifyDataSetChanged();
+                            dialog.dismiss();
+                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        requireActivity().runOnUiThread(() -> {
+                            dialogBinding.btnMarkAsPaid.setEnabled(true);
+                            com.upreyvan.carti.util.Utils.showToast(requireContext(), "Error: " + error.getMessage());
+                        });
+                    }
+                });
             });
         }
 

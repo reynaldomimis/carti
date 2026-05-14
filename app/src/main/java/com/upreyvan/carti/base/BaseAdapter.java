@@ -26,10 +26,24 @@ public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter
 
     @Override
     public void onBindViewHolder(@NonNull BaseViewHolder<VB> holder, int position) {
-        bind(holder.binding, getItem(position));
+        T item = getItem(position);
+        bind(holder.binding, item);
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onItemClick(item);
+        });
     }
 
     protected abstract void bind(VB binding, T item);
+
+    public interface OnItemClickListener<T> {
+        void onItemClick(T item);
+    }
+
+    private OnItemClickListener<T> listener;
+
+    public void setOnItemClickListener(OnItemClickListener<T> listener) {
+        this.listener = listener;
+    }
 
     public static class BaseViewHolder<VB extends ViewBinding> extends RecyclerView.ViewHolder {
         public final VB binding;

@@ -62,7 +62,8 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
                     String.valueOf(userDoc.get("email")),
                     String.valueOf(userDoc.get("role")),
                     isEmployed,
-                    familyId
+                    familyId,
+                    "" // Initial empty invite code, will be filled upon family creation/sync
                 );
 
                 Toast.makeText(requireContext(), getString(R.string.debug_live_is_employed, isEmployed), Toast.LENGTH_SHORT).show();

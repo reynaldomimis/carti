@@ -10,6 +10,7 @@ public class PreferenceManager {
     private static final String KEY_USER_EMAIL = "user_email";
     private static final String KEY_USER_ROLE = "user_role";
     private static final String KEY_FAMILY_ID = "family_id";
+    private static final String KEY_INVITE_CODE = "invite_code";
     private static final String KEY_IS_EMPLOYED = "is_employed";
     private final SharedPreferences sharedPreferences;
 
@@ -17,12 +18,13 @@ public class PreferenceManager {
         sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    public void setUserData(String name, String email, String role, boolean isEmployed, String familyId) {
+    public void setUserData(String name, String email, String role, boolean isEmployed, String familyId, String inviteCode) {
         sharedPreferences.edit()
                 .putString(KEY_USER_NAME, name)
                 .putString(KEY_USER_EMAIL, email)
                 .putString(KEY_USER_ROLE, role)
                 .putString(KEY_FAMILY_ID, familyId)
+                .putString(KEY_INVITE_CODE, inviteCode)
                 .putBoolean(KEY_IS_EMPLOYED, isEmployed)
                 .apply();
     }
@@ -33,6 +35,14 @@ public class PreferenceManager {
 
     public void setFamilyId(String familyId) {
         sharedPreferences.edit().putString(KEY_FAMILY_ID, familyId).apply();
+    }
+
+    public String getInviteCode() {
+        return sharedPreferences.getString(KEY_INVITE_CODE, "");
+    }
+
+    public void setInviteCode(String inviteCode) {
+        sharedPreferences.edit().putString(KEY_INVITE_CODE, inviteCode).apply();
     }
 
     public String getUserRole() {

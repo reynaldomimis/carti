@@ -68,10 +68,15 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
 
                     Object ic = result.get("inviteCode");
                     String inviteCode = (ic != null && !"null".equals(String.valueOf(ic))) ? String.valueOf(ic) : "";
-                    if (inviteCode.startsWith("FAM-")) {
-                        inviteCode = inviteCode.replace("FAM-", "");
+                    if (!inviteCode.isEmpty()) {
+                        pref.setInviteCode(inviteCode);
                     }
-                    navigateTo(OnboardingStatusFragment.newInstance(inviteCode));
+                    
+                    String displayCode = inviteCode;
+                    if (displayCode.startsWith("FAM-")) {
+                        displayCode = displayCode.replace("FAM-", "");
+                    }
+                    navigateTo(OnboardingStatusFragment.newInstance(displayCode));
                 }
             }
 

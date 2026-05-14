@@ -1,6 +1,7 @@
 package com.upreyvan.carti.model;
 
 public class Goal {
+    private String id;
     private String title;
     private double currentAmount;
     private double targetAmount;
@@ -8,7 +9,8 @@ public class Goal {
     private int imageRes;
     private int backgroundColor;
 
-    public Goal(String title, double currentAmount, double targetAmount, String targetDate, int imageRes, int backgroundColor) {
+    public Goal(String id, String title, double currentAmount, double targetAmount, String targetDate, int imageRes, int backgroundColor) {
+        this.id = id;
         this.title = title;
         this.currentAmount = currentAmount;
         this.targetAmount = targetAmount;
@@ -16,6 +18,8 @@ public class Goal {
         this.imageRes = imageRes;
         this.backgroundColor = backgroundColor;
     }
+
+    public String getId() { return id; }
 
     public boolean isCompleted() {
         return currentAmount >= targetAmount && targetAmount > 0;

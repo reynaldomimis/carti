@@ -33,12 +33,15 @@ import com.upreyvan.carti.model.Goal;
 import com.upreyvan.carti.util.Utils;
 import androidx.core.graphics.ColorUtils;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Senior Developer Refactored: HomeFragment with robust Cloud Syncing.
+ * It fetches Transactions, Goals, and Debts from the Gateway and maps them to local managers.
+ */
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private QuickLogAdapter quickLogAdapter;
@@ -63,6 +66,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         loadTransactions();
         setupDailyBudgetCard();
         
+        // Listener for local changes
         ExpenseManager.getInstance().setOnExpenseChangeListener(() -> {
             if (isAdded()) {
                 requireActivity().runOnUiThread(() -> {
@@ -72,26 +76,28 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             }
         });
 
+        // Fetch data from Cloud
         fetchCloudData();
     }
 
     private void fetchCloudData() {
+        // Fetch all data for the current family period
         new ApiHelper(requireContext()).sync("", "2000-01-01", "2099-12-31", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 if (!isAdded()) return;
 
-                // Handle Summary (Salary/Budget)
-                Map<String, Object> summary = (Map<String, Object>) result.get("summary");
-                if (summary != null) {
-                    Object balance = summary.get("balance");
-                    if (balance != null) {
-                        float amount = Float.parseFloat(String.valueOf(balance));
-                        SalaryManager.getInstance(requireContext()).setSalaryAmount(amount);
-                    }
+                // 1. Handle Family Summary (Balance/Totals)
+                Map<String, Object> family = (Map<String, Object>) result.get("family");
+                if (family != null) {
+                    double balance = 0;
+                    Object b = family.get("balance");
+                    if (b instanceof Number) balance = ((Number) b).doubleValue();
+                    
+                    SalaryManager.getInstance(requireContext()).setSalaryAmount((float) balance);
                 }
 
-                // Handle Transactions
+                // 2. Handle Transactions mapping
                 List<Map<String, Object>> transactionsData = (List<Map<String, Object>>) result.get("transactions");
                 if (transactionsData != null) {
                     List<Transaction> cloudTransactions = new ArrayList<>();
@@ -99,76 +105,36 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                     List<Category> categories = categoryManager.getCategories();
 
                     for (Map<String, Object> data : transactionsData) {
-                        String categoryName = String.valueOf(data.get("category"));
-                        double amount = Double.parseDouble(String.valueOf(data.get("amount")));
-                        long timestamp = Long.parseLong(String.valueOf(data.get("timestamp")));
-
-                        Category cat = findCategory(categories, categoryName);
-                        int iconRes = (cat != null) ? cat.getIconRes() : R.drawable.ic_chart;
-                        int iconColor = (cat != null) ? ContextCompat.getColor(requireContext(), cat.getIconColor()) : ContextCompat.getColor(requireContext(), R.color.icon_others);
-                        int bgColor = (cat != null) ? ContextCompat.getColor(requireContext(), cat.getBackgroundColor()) : ColorUtils.setAlphaComponent(iconColor, 25);
-
-                        String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(timestamp);
-
-                        cloudTransactions.add(new Transaction(
-                                categoryName,
-                                time,
-                                "₱" + String.format(Locale.getDefault(), "%,.0f", amount),
-                                iconRes,
-                                bgColor,
-                                iconColor,
-                                timestamp
-                        ));
+                        cloudTransactions.add(mapToTransaction(data, categories));
                     }
                     ExpenseManager.getInstance().setTransactions(cloudTransactions);
                 }
 
-                // Handle Debts
+                // 3. Handle Debts mapping
                 List<Map<String, Object>> debtsData = (List<Map<String, Object>>) result.get("debts");
                 if (debtsData != null) {
                     List<Debt> cloudDebts = new ArrayList<>();
                     for (Map<String, Object> data : debtsData) {
-                        String name = String.valueOf(data.get("personName"));
-                        String description = String.valueOf(data.get("description"));
-                        if (description == null || "null".equals(description)) description = "";
-                        double amount = Double.parseDouble(String.valueOf(data.get("amount")));
-                        boolean isPaid = false;
-                        Object paid = data.get("isPaid");
-                        if (paid instanceof Boolean) isPaid = (Boolean) paid;
-                        
-                        long timestamp = 0;
-                        if (data.get("timestamp") != null) {
-                            timestamp = Long.parseLong(String.valueOf(data.get("timestamp")));
-                        }
-                        String date = timestamp > 0 ? new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(timestamp) : "Today";
-                        
-                        cloudDebts.add(new Debt(name, description, date, amount, isPaid, R.drawable.ic_person, ""));
+                        cloudDebts.add(mapToDebt(data));
                     }
                     DebtManager.getInstance().setDebts(cloudDebts);
                 }
 
-                // Handle Goals
+                // 4. Handle Goals mapping
                 List<Map<String, Object>> goalsData = (List<Map<String, Object>>) result.get("goals");
                 if (goalsData != null) {
                     List<Goal> cloudGoals = new ArrayList<>();
-                    int[] goalColors = {R.color.goal_card_1, R.color.goal_card_2, R.color.goal_card_3, R.color.goal_card_4, R.color.goal_card_5};
-                    int colorIdx = 0;
-                    
                     for (Map<String, Object> data : goalsData) {
-                        String name = String.valueOf(data.get("name"));
-                        double targetAmount = Double.parseDouble(String.valueOf(data.get("targetAmount")));
-                        double currentAmount = 0;
-                        if (data.get("currentAmount") != null) {
-                            currentAmount = Double.parseDouble(String.valueOf(data.get("currentAmount")));
-                        }
-                        
-                        int bgColor = ContextCompat.getColor(requireContext(), goalColors[colorIdx % goalColors.length]);
-                        colorIdx++;
-                        
-                        cloudGoals.add(new Goal(name, currentAmount, targetAmount, "Target Date", R.drawable.test, bgColor));
+                        cloudGoals.add(mapToGoal(data));
                     }
                     GoalManager.getInstance().setGoals(cloudGoals);
                 }
+
+                // Refresh UI after sync
+                requireActivity().runOnUiThread(() -> {
+                    loadTransactions();
+                    setupDailyBudgetCard();
+                });
             }
 
             @Override
@@ -178,6 +144,63 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 }
             }
         });
+    }
+
+    private Transaction mapToTransaction(Map<String, Object> data, List<Category> categories) {
+        String categoryName = String.valueOf(data.get("category"));
+        double amount = 0;
+        Object amt = data.get("amount");
+        if (amt instanceof Number) amount = ((Number) amt).doubleValue();
+        
+        String type = String.valueOf(data.get("type")); // INCOME or EXPENSE
+        String rawDate = String.valueOf(data.get("$createdAt"));
+        String time = Utils.formatIsoDateToTime(rawDate);
+
+        Category cat = findCategory(categories, categoryName);
+        int iconRes = (cat != null) ? cat.getIconRes() : R.drawable.ic_chart;
+        int iconColor = (cat != null) ? ContextCompat.getColor(requireContext(), cat.getIconColor()) : 0xFF888888;
+        int bgColor = (cat != null) ? ContextCompat.getColor(requireContext(), cat.getBackgroundColor()) : ColorUtils.setAlphaComponent(iconColor, 25);
+
+        String id = String.valueOf(data.get("$id"));
+        String sign = "EXPENSE".equalsIgnoreCase(type) ? "-" : "+";
+
+        return new Transaction(
+                id,
+                categoryName,
+                time,
+                sign + "₱" + String.format(Locale.getDefault(), "%,.0f", amount),
+                iconRes,
+                bgColor,
+                iconColor
+        );
+    }
+
+    private Debt mapToDebt(Map<String, Object> data) {
+        String id = String.valueOf(data.get("$id"));
+        String name = String.valueOf(data.get("personName"));
+        double amount = 0;
+        Object amt = data.get("amount");
+        if (amt instanceof Number) amount = ((Number) amt).doubleValue();
+        
+        boolean isPaid = Boolean.TRUE.equals(data.get("isPaid"));
+        String date = "Upcoming"; // Or parse from $updatedAt if available
+
+        return new Debt(id, name, "", date, amount, isPaid, R.drawable.ic_person, "");
+    }
+
+    private Goal mapToGoal(Map<String, Object> data) {
+        String id = String.valueOf(data.get("$id"));
+        String name = String.valueOf(data.get("name"));
+        double target = 0;
+        Object t = data.get("targetAmount");
+        if (t instanceof Number) target = ((Number) t).doubleValue();
+        
+        double current = 0;
+        Object c = data.get("currentAmount");
+        if (c instanceof Number) current = ((Number) c).doubleValue();
+
+        return new Goal(id, name, current, target, "Target Date", R.drawable.test,
+                ContextCompat.getColor(requireContext(), R.color.goal_card_1));
     }
 
     private Category findCategory(List<Category> categories, String name) {
@@ -244,18 +267,15 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().tvGreetingMain.setText(greeting + ",");
         getBinding().tvUsernameMain.setText(name + " 👋");
 
-        // Quick Log Header
         getBinding().headerQuickLog.tvSectionTitle.setText(R.string.quick_log_title);
         getBinding().headerQuickLog.tvSectionSubTitle.setVisibility(View.VISIBLE);
         getBinding().headerQuickLog.tvSectionSubTitle.setText(R.string.quick_log_subtitle);
         
-        // Palitan ang See All ng Customize (Text lang, action is in setupQuickLog for the adapter's See More item)
         getBinding().headerQuickLog.btnSectionAction.setText(R.string.customize);
         getBinding().headerQuickLog.btnSectionAction.setOnClickListener(v -> {
             startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class));
         });
 
-        // Recent Transactions Header
         getBinding().headerRecent.tvSectionTitle.setText(R.string.recent_transactions);
         getBinding().headerRecent.btnSectionAction.setText(R.string.see_all);
         getBinding().headerRecent.btnSectionAction.setOnClickListener(v -> navigateTo(new AllTransactionsFragment()));
@@ -274,7 +294,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         String othersLabel = getString(R.string.label_others);
         String seeLessLabel = getString(R.string.see_less);
 
-        // See More / Others Item (Pang 8th or last item)
         if (categories.size() > 7 && !isExpanded) {
             items.add(new QuickLogItem(othersLabel, android.R.drawable.ic_menu_more, R.color.log_others, R.color.icon_others));
         } else if (isExpanded) {
@@ -312,7 +331,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().rvTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvTransactions.setAdapter(transactionAdapter);
     }
-
 
     private void setupDynamicPadding() {
         Utils.applySystemBarInsets(getBinding().layoutHeader, getBinding().home, 0.3f, getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium));

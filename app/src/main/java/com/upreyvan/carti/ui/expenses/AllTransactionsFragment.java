@@ -57,6 +57,33 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         adapter = new TransactionAdapter();
         getBinding().rvAllTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvAllTransactions.setAdapter(adapter);
+
+        adapter.setOnItemClickListener(item -> {
+            androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Transaction?")
+                    .setMessage("Are you sure you want to delete this " + item.getTitle() + "?")
+                    .setPositiveButton("Delete", (d, w) -> {
+                        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).deleteTransaction(item.getId(), new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+                            @Override
+                            public void onSuccess(java.util.Map<String, Object> result) {
+                                requireActivity().runOnUiThread(() -> {
+                                    com.upreyvan.carti.util.Utils.showToast(requireContext(), "Deleted successfully");
+                                    // The sync in HomeFragment or a local refresh will update the list
+                                });
+                            }
+
+                            @Override
+                            public void onError(Throwable error) {
+                                requireActivity().runOnUiThread(() -> {
+                                    com.upreyvan.carti.util.Utils.showToast(requireContext(), "Error: " + error.getMessage());
+                                });
+                            }
+                        });
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .create();
+            dialog.show();
+        });
     }
 
 }

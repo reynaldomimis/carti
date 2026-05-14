@@ -34,6 +34,10 @@ import java.util.List;
 
 public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
 
+    private ProfileMenuAdapter adapter;
+    private List<ProfileMenuItem> menuItems;
+    private com.upreyvan.carti.data.remote.ApiHelper apiHelper;
+
     @Override
     protected ActivityProfileBinding inflateBinding(LayoutInflater inflater) {
         return ActivityProfileBinding.inflate(inflater);
@@ -43,10 +47,12 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        apiHelper = new com.upreyvan.carti.data.remote.ApiHelper(this);
         setupDynamicPadding();
         setupToolbar();
         setupUserInfo();
         setupMenuItems();
+        fetchMemberCount();
     }
 
     private void setupUserInfo() {
@@ -110,10 +116,12 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
     }
 
     private void setupMenuItems() {
-        List<ProfileMenuItem> menuItems = new ArrayList<>();
+        menuItems = new ArrayList<>();
 
-        int memberCount = 4;
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_myplaces, R.string.menu_family, getString(R.string.menu_family_sub_format, memberCount), new MembersFragment()));
+        // Initial default (will be updated by fetchMemberCount)
+        String membersSubtitle = getString(R.string.menu_family_sub); 
+        
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_myplaces, R.string.menu_family, membersSubtitle, new MembersFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_add, R.string.menu_invite, getString(R.string.menu_invite_sub), null));
         menuItems.add(new ProfileMenuItem(android.R.drawable.stat_notify_chat, R.string.menu_chat, getString(R.string.menu_chat_sub), new FamilyChatFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_compass, R.string.menu_goals, getString(R.string.menu_goals_sub), new GoalFragment()));
@@ -123,7 +131,7 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_help, R.string.menu_help, getString(R.string.menu_help_sub), null));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_info_details, R.string.menu_about, getString(R.string.menu_about_sub), new AboutFragment(), false));
 
-        ProfileMenuAdapter adapter = new ProfileMenuAdapter(menuItems, item -> {
+        adapter = new ProfileMenuAdapter(menuItems, item -> {
             if (item.getTitleResId() == R.string.menu_invite) {
                 startActivity(new Intent(this, InviteFamilyActivity.class));
             } else if (item.getFragment() != null) {
@@ -133,6 +141,40 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
 
         getBinding().rvProfileMenu.setLayoutManager(new LinearLayoutManager(this));
         getBinding().rvProfileMenu.setAdapter(adapter);
+    }
+
+    private void fetchMemberCount() {
+        apiHelper.getMembers(new AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+            @Override
+            public void onSuccess(java.util.Map<String, Object> result) {
+                Object listObj = result.get("list");
+                if (listObj instanceof List) {
+                    int count = ((List<?>) listObj).size();
+                    updateFamilyMemberCount(count);
+                }
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                // Keep default if failed
+            }
+        });
+    }
+
+    private void updateFamilyMemberCount(int count) {
+        if (menuItems == null || menuItems.isEmpty()) return;
+
+        // Reconstruct the first item (Family Members) with the new count
+        ProfileMenuItem oldItem = menuItems.get(0);
+        ProfileMenuItem newItem = new ProfileMenuItem(
+                oldItem.getIconResId(),
+                oldItem.getTitleResId(),
+                getString(R.string.menu_family_sub_format, count),
+                oldItem.getFragment()
+        );
+
+        menuItems.set(0, newItem);
+        runOnUiThread(() -> adapter.notifyItemChanged(0));
     }
 
     private void navigateTo(androidx.fragment.app.Fragment fragment) {

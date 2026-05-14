@@ -110,7 +110,8 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
             new ApiHelper(this).addTransaction(amountVal, "EXPENSE", category, "Paid through " + source, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                 @Override
                 public void onSuccess(Map<String, Object> result) {
-                    saveLocalAndFinish(amountVal, category, source);
+                    String id = String.valueOf(result.get("$id"));
+                    saveLocalAndFinish(id, amountVal, category, source);
                 }
 
                 @Override
@@ -132,7 +133,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
         }
     }
 
-    private void saveLocalAndFinish(double amountVal, String category, String source) {
+    private void saveLocalAndFinish(String id, double amountVal, String category, String source) {
         // Save to ExpenseManager (Local)
         String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
         
@@ -151,6 +152,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
         int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
 
         Transaction transaction = new Transaction(
+                id,
                 category,
                 time,
                 "₱" + String.format(Locale.getDefault(), "%.2f", amountVal),

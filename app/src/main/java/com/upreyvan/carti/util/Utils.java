@@ -8,9 +8,36 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class Utils {
+
+    public static String formatIsoDateToTime(String isoDate) {
+        if (isoDate == null || isoDate.isEmpty()) return "";
+        try {
+            // Appwrite uses ISO 8601: 2023-05-14T09:45:33.619+00:00 or 2023-05-14T09:45:33Z
+            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
+            parser.setTimeZone(TimeZone.getTimeZone("UTC"));
+            Date date = parser.parse(isoDate);
+            if (date == null) return "";
+            
+            SimpleDateFormat formatter = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+            return formatter.format(date);
+        } catch (Exception e) {
+            // Fallback for different ISO variations
+            try {
+                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
+                Date date = parser.parse(isoDate);
+                return new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(date);
+            } catch (Exception e2) {
+                return "";
+            }
+        }
+    }
 
     public static String getGreeting() {
         Calendar c = Calendar.getInstance();
@@ -86,6 +113,12 @@ public class Utils {
 
                 return insets;
             });
+        }
+    }
+
+    public static void showToast(Context context, String message) {
+        if (context != null && message != null) {
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -160,10 +160,11 @@ public class AppwriteManager {
 
             @Override
             public void onError(Throwable error) {
+                android.util.Log.w("AppwriteManager", "User not logged in, checking action: " + action);
                 if ("register".equals(action)) {
                     executeGatewayCall(action, params, null, callback);
                 } else {
-                    postError(callback, new Exception("Unauthorized: Please login first"));
+                    postError(callback, new Exception("App Error: Unauthorized. Please login first (Action: " + action + ")"));
                 }
             }
         });
@@ -171,9 +172,9 @@ public class AppwriteManager {
 
     private void executeGatewayCall(String action, Map<String, Object> params, String userId, AppwriteCallback<Execution> callback) {
         Map<String, Object> payload = new HashMap<>(params);
-        payload.put("a", action);
+        payload.put("action", action);
         if (userId != null) {
-            payload.put("uid", userId);
+            payload.put("userId", userId);
         }
 
         String functionId = BuildConfig.APPWRITE_GATEWAY_FUNCTION_ID;

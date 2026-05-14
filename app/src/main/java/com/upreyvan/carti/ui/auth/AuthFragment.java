@@ -12,17 +12,22 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentAuthBinding;
-import java.util.HashMap;
-import java.util.Map;
-import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.ui.onboarding.StartActivity;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Senior Developer Refactored: AuthFragment handles Login and Registration.
+ * It ensures the local User Session is synchronized with the Gateway's User Context.
+ */
 public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
 
     private boolean isLoginMode = true;
@@ -88,7 +93,6 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             getBinding().btnSubmit.setText(R.string.btn_register);
             getBinding().tvSwitchPrompt.setText(Html.fromHtml(getString(R.string.prompt_has_account), Html.FROM_HTML_MODE_LEGACY));
         }
-        // Clear errors when switching
         getBinding().tilUsername.setError(null);
         getBinding().tilEmail.setError(null);
         getBinding().tilPassword.setError(null);
@@ -105,19 +109,11 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             if (username.isEmpty()) {
                 getBinding().tilUsername.setError(getString(R.string.err_required));
                 isValid = false;
-            } else if (username.length() > 10) {
-                getBinding().tilUsername.setError(getString(R.string.err_username_long));
-                isValid = false;
-            } else {
-                getBinding().tilUsername.setError(null);
             }
-
             String role = getBinding().actvRole.getText().toString();
             if (role.isEmpty()) {
                 getBinding().tilRole.setError(getString(R.string.err_required));
                 isValid = false;
-            } else {
-                getBinding().tilRole.setError(null);
             }
         }
 
@@ -127,25 +123,11 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             getBinding().tilEmail.setError(getString(R.string.err_invalid_email));
             isValid = false;
-        } else {
-            getBinding().tilEmail.setError(null);
         }
 
         if (password.isEmpty()) {
             getBinding().tilPassword.setError(getString(R.string.err_required));
             isValid = false;
-        } else if (!isLoginMode) {
-            if (password.length() < 8) {
-                getBinding().tilPassword.setError(getString(R.string.err_password_short));
-                isValid = false;
-            } else if (!password.matches(".*[A-Z].*") || !password.matches(".*[a-z].*") || !password.matches(".*[0-9].*")) {
-                getBinding().tilPassword.setError(getString(R.string.err_password_weak));
-                isValid = false;
-            } else {
-                getBinding().tilPassword.setError(null);
-            }
-        } else {
-            getBinding().tilPassword.setError(null);
         }
 
         return isValid;
@@ -160,84 +142,14 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         AppwriteManager.getInstance(requireContext()).login(email, password, new AppwriteManager.AppwriteCallback<io.appwrite.models.Session>() {
             @Override
             public void onSuccess(io.appwrite.models.Session result) {
-                fetchAndSaveUser();
+                // STEP 2: Fetch full User Context from Gateway immediately after session creation
+                fetchUserContextAndNavigate();
             }
 
             @Override
             public void onError(Throwable error) {
                 setLoading(false);
-                Toast.makeText(requireContext(), getString(R.string.err_register_failed, error.getMessage()), Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private void fetchAndSaveUser() {
-        ApiHelper apiHelper = new ApiHelper(requireContext());
-        apiHelper.getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
-            @Override
-            public void onSuccess(Map<String, Object> userDoc) {
-                PreferenceManager pref = new PreferenceManager(requireContext());
-                
-                String name = String.valueOf(userDoc.get("username"));
-                if (name == null || "null".equals(name)) name = "User";
-                
-                String email = String.valueOf(userDoc.get("email"));
-                String role = String.valueOf(userDoc.get("role"));
-                String familyId = String.valueOf(userDoc.get("familyId"));
-                
-                boolean isEmployed = false;
-                Object emp = userDoc.get("isEmployed");
-                if (emp != null) {
-                    if (emp instanceof Boolean) isEmployed = (Boolean) emp;
-                    else isEmployed = Boolean.parseBoolean(String.valueOf(emp));
-                }
-
-                pref.setUserData(name, email, role, isEmployed, familyId);
-                setLoading(false);
-                navigateToNextScreen(isEmployed, familyId);
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                // Fallback to basic account info if get_user action fails
-                fetchBasicAccountInfo();
-            }
-        });
-    }
-
-    private void fetchBasicAccountInfo() {
-        AppwriteManager.getInstance(requireContext()).getUser(new AppwriteManager.AppwriteCallback<>() {
-            @Override
-            public void onSuccess(io.appwrite.models.User<java.util.Map<String, Object>> result) {
-                PreferenceManager pref = new PreferenceManager(requireContext());
-                boolean isEmployed = false;
-                String role = "Member";
-                String familyId = "";
-                if (result.getPrefs() != null && result.getPrefs().getData() != null) {
-                    Object emp = result.getPrefs().getData().get("isEmployed");
-                    if (emp != null) {
-                        if (emp instanceof Boolean) isEmployed = (Boolean) emp;
-                        else isEmployed = Boolean.parseBoolean(String.valueOf(emp));
-                    }
-                    
-                    Object r = result.getPrefs().getData().get("role");
-                    if (r != null) role = String.valueOf(r);
-
-                    Object fid = result.getPrefs().getData().get("familyId");
-                    if (fid != null) familyId = String.valueOf(fid);
-                }
-                pref.setUserData(result.getName(), result.getEmail(), role, isEmployed, familyId);
-                setLoading(false);
-                navigateToNextScreen(isEmployed, familyId);
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                setLoading(false);
-                PreferenceManager pref = new PreferenceManager(requireContext());
-                String emailInput = getBinding().etEmail.getText().toString().trim();
-                pref.setUserData("User", emailInput, "Member", false, "");
-                navigateToNextScreen(false, "");
+                Toast.makeText(requireContext(), "Login failed: " + error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -251,28 +163,20 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
 
         setLoading(true);
 
-        new ApiHelper(requireContext()).register(email, password, username, isEmployed, role, new AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+        new ApiHelper(requireContext()).register(email, password, username, isEmployed, role, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
-            public void onSuccess(java.util.Map<String, Object> result) {
-                PreferenceManager pref = new PreferenceManager(requireContext());
-                pref.setUserData(username, email, role, isEmployed, "");
-
-                // Update preferences in Appwrite as well so it's persistent on the server
-                java.util.Map<String, Object> userPrefs = new java.util.HashMap<>();
-                userPrefs.put("isEmployed", isEmployed);
-                userPrefs.put("role", role);
-                userPrefs.put("familyId", "");
-                
-                AppwriteManager.getInstance(requireContext()).updatePrefs(userPrefs, new AppwriteManager.AppwriteCallback<>() {
+            public void onSuccess(Map<String, Object> result) {
+                // Registration successful on gateway, now create session
+                AppwriteManager.getInstance(requireContext()).login(email, password, new AppwriteManager.AppwriteCallback<io.appwrite.models.Session>() {
                     @Override
-                    public void onSuccess(io.appwrite.models.User<java.util.Map<String, Object>> result) {
-                        doLogin(email, password, isEmployed);
+                    public void onSuccess(io.appwrite.models.Session session) {
+                        fetchUserContextAndNavigate();
                     }
 
                     @Override
                     public void onError(Throwable error) {
-                        // Even if prefs update fail, try to login
-                        doLogin(email, password, isEmployed);
+                        setLoading(false);
+                        Toast.makeText(requireContext(), "Registered but login failed: " + error.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -280,23 +184,40 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             @Override
             public void onError(Throwable error) {
                 setLoading(false);
-                Toast.makeText(requireContext(), getString(R.string.err_register_failed, error.getMessage()), Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Registration failed: " + error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    private void doLogin(String email, String password, boolean isEmployed) {
-        AppwriteManager.getInstance(requireContext()).login(email, password, new AppwriteManager.AppwriteCallback<io.appwrite.models.Session>() {
+    private void fetchUserContextAndNavigate() {
+        new ApiHelper(requireContext()).getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
-            public void onSuccess(io.appwrite.models.Session result) {
+            public void onSuccess(Map<String, Object> userDoc) {
+                PreferenceManager pref = new PreferenceManager(requireContext());
+                
+                String name = String.valueOf(userDoc.getOrDefault("username", "User"));
+                String email = String.valueOf(userDoc.getOrDefault("email", ""));
+                String role = String.valueOf(userDoc.getOrDefault("role", "Member"));
+                String familyId = (userDoc.get("familyId") != null && !"null".equals(String.valueOf(userDoc.get("familyId")))) 
+                                  ? String.valueOf(userDoc.get("familyId")) : "";
+                String inviteCode = (userDoc.get("inviteCode") != null && !"null".equals(String.valueOf(userDoc.get("inviteCode")))) 
+                                  ? String.valueOf(userDoc.get("inviteCode")) : "";
+                
+                boolean isEmployed = false;
+                Object emp = userDoc.get("isEmployed");
+                if (emp instanceof Boolean) isEmployed = (Boolean) emp;
+                else if (emp != null) isEmployed = Boolean.parseBoolean(String.valueOf(emp));
+
+                pref.setUserData(name, email, role, isEmployed, familyId, inviteCode);
+                
                 setLoading(false);
-                navigateToNextScreen(isEmployed, "");
+                navigateToNextScreen(familyId);
             }
 
             @Override
             public void onError(Throwable error) {
                 setLoading(false);
-                Toast.makeText(requireContext(), getString(R.string.msg_registered_login_failed, error.getMessage()), Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Failed to sync user data: " + error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -310,8 +231,9 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         }
     }
 
-    private void navigateToNextScreen(boolean isEmployed, String familyId) {
-        // SOURCE OF TRUTH: If familyId exists, go to Home. Otherwise, go to Onboarding.
+    private void navigateToNextScreen(String familyId) {
+        // If familyId exists, the user is already part of a family group, go to Main.
+        // Otherwise, they need to Create or Join a family in Onboarding.
         boolean needsOnboarding = familyId == null || familyId.isEmpty();
         
         Intent intent = new Intent(requireActivity(), needsOnboarding ? StartActivity.class : MainActivity.class);

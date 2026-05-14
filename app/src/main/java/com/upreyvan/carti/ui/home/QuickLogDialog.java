@@ -103,24 +103,23 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
                 int iconColor = requireContext().getColor(item.getIconColor());
                 int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
                 
-                Transaction transaction = new Transaction(
-                        item.getTitle(),
-                        time,
-                        "₱" + String.format(Locale.getDefault(), "%.2f", amount),
-                        item.getIconRes(),
-                        bgColor,
-                        iconColor,
-                        System.currentTimeMillis()
-                );
-                
-                // Save locally first for instant feedback
-                ExpenseManager.getInstance().addTransaction(transaction);
-
                 // Save to cloud
                 new ApiHelper(requireContext()).addTransaction(amount, "EXPENSE", item.getTitle(), "Quick Log", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                     @Override
                     public void onSuccess(Map<String, Object> result) {
-                        // Cloud sync handled
+                        String id = String.valueOf(result.get("$id"));
+                        Transaction transaction = new Transaction(
+                                id,
+                                item.getTitle(),
+                                time,
+                                "₱" + String.format(Locale.getDefault(), "%.2f", amount),
+                                item.getIconRes(),
+                                bgColor,
+                                iconColor,
+                                System.currentTimeMillis()
+                        );
+                        // Save locally first for instant feedback
+                        ExpenseManager.getInstance().addTransaction(transaction);
                     }
 
                     @Override

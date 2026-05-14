@@ -27,11 +27,38 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
         return FragmentMembersBinding.inflate(inflater, container, false);
     }
 
+    private MemberAdapter adapter;
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupToolbar();
         setupRecyclerView();
+        fetchMembers();
+    }
+
+    private void fetchMembers() {
+        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).getMembers(new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+            @Override
+            public void onSuccess(java.util.Map<String, Object> result) {
+                if (!isAdded()) return;
+                java.util.List<java.util.Map<String, Object>> membersData = (java.util.List<java.util.Map<String, Object>>) result.get("list");
+                if (membersData != null) {
+                    List<Member> members = new ArrayList<>();
+                    for (java.util.Map<String, Object> data : membersData) {
+                        String name = String.valueOf(data.get("username"));
+                        String role = String.valueOf(data.get("role"));
+                        members.add(new Member(name, role, R.drawable.ic_person));
+                    }
+                    requireActivity().runOnUiThread(() -> adapter.submitList(members));
+                }
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                // Keep mocks or show error
+            }
+        });
     }
 
     private void setupToolbar() {
@@ -56,15 +83,13 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
     }
 
     private void setupRecyclerView() {
-        MemberAdapter adapter = new MemberAdapter();
+        adapter = new MemberAdapter();
         getBinding().rvMembers.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvMembers.setAdapter(adapter);
 
+        // Initial mock data until cloud loads
         List<Member> members = new ArrayList<>();
         members.add(new Member(getString(R.string.mock_name_juan), getString(R.string.role_admin), R.drawable.ic_person));
-        members.add(new Member(getString(R.string.mock_name_maria), getString(R.string.role_member), R.drawable.ic_person));
-        members.add(new Member(getString(R.string.mock_name_miguel), getString(R.string.role_member), R.drawable.ic_person));
-        members.add(new Member(getString(R.string.mock_name_ana), getString(R.string.role_member), R.drawable.ic_person));
         adapter.submitList(members);
     }
 }

@@ -47,7 +47,11 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
 
     private void setupContent() {
         PreferenceManager pref = new PreferenceManager(this);
-        String inviteCode = pref.getFamilyId();
+        String inviteCode = pref.getInviteCode();
+        if (inviteCode == null || inviteCode.isEmpty()) {
+            inviteCode = pref.getFamilyId(); // Fallback
+        }
+
         if (inviteCode != null && inviteCode.startsWith("FAM-")) {
             inviteCode = inviteCode.replace("FAM-", "");
         }

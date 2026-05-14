@@ -162,8 +162,8 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         getBinding().pieChart.invalidate();
 
         List<Transaction> transactions = new ArrayList<>();
-        transactions.add(new Transaction(getString(R.string.label_food), "Ngayon • 9:35 AM", "₱120", android.R.drawable.ic_menu_gallery, ContextCompat.getColor(requireContext(), R.color.log_food)));
-        transactions.add(new Transaction("Pamasahe", "Ngayon • 8:20 AM", "₱15", android.R.drawable.ic_dialog_map, ContextCompat.getColor(requireContext(), R.color.log_fare)));
+        transactions.add(new Transaction("1", getString(R.string.label_food), "Ngayon • 9:35 AM", "₱120", android.R.drawable.ic_menu_gallery, ContextCompat.getColor(requireContext(), R.color.log_food)));
+        transactions.add(new Transaction("2", "Pamasahe", "Ngayon • 8:20 AM", "₱15", android.R.drawable.ic_dialog_map, ContextCompat.getColor(requireContext(), R.color.log_fare)));
         transactionAdapter.submitList(transactions);
 
         String comparisonText = getString(R.string.vs_last_month) + " " +

@@ -3,6 +3,7 @@ package com.upreyvan.carti.model;
 import java.util.Objects;
 
 public class Transaction {
+    private String id;
     private final String title;
     private final String timestamp;
     private final String amount;
@@ -11,15 +12,16 @@ public class Transaction {
     private final int iconColor;
     private final long timestampMillis;
 
-    public Transaction(String title, String timestamp, String amount, int iconRes, int iconBgColor) {
-        this(title, timestamp, amount, iconRes, iconBgColor, 0, System.currentTimeMillis());
+    public Transaction(String id, String title, String timestamp, String amount, int iconRes, int iconBgColor) {
+        this(id, title, timestamp, amount, iconRes, iconBgColor, 0, System.currentTimeMillis());
     }
 
-    public Transaction(String title, String timestamp, String amount, int iconRes, int iconBgColor, int iconColor) {
-        this(title, timestamp, amount, iconRes, iconBgColor, iconColor, System.currentTimeMillis());
+    public Transaction(String id, String title, String timestamp, String amount, int iconRes, int iconBgColor, int iconColor) {
+        this(id, title, timestamp, amount, iconRes, iconBgColor, iconColor, System.currentTimeMillis());
     }
 
-    public Transaction(String title, String timestamp, String amount, int iconRes, int iconBgColor, int iconColor, long timestampMillis) {
+    public Transaction(String id, String title, String timestamp, String amount, int iconRes, int iconBgColor, int iconColor, long timestampMillis) {
+        this.id = id;
         this.title = title;
         this.timestamp = timestamp;
         this.amount = amount;
@@ -28,6 +30,8 @@ public class Transaction {
         this.iconColor = iconColor;
         this.timestampMillis = timestampMillis;
     }
+
+    public String getId() { return id; }
 
     public long getTimestampMillis() {
         return timestampMillis;
