@@ -14,6 +14,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.data.local.GoalManager;
 import com.upreyvan.carti.databinding.FragmentGoalBinding;
 import com.upreyvan.carti.model.Goal;
 import com.upreyvan.carti.util.Utils;
@@ -40,7 +41,19 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         setupHeader();
         setupTabs();
         setupRecyclerView();
-        populateMockData();
+        loadGoals();
+
+        GoalManager.getInstance().setOnGoalChangeListener(() -> {
+            if (isAdded()) {
+                requireActivity().runOnUiThread(this::loadGoals);
+            }
+        });
+    }
+
+    private void loadGoals() {
+        allGoals = GoalManager.getInstance().getGoals();
+        filterGoals(getBinding().tabLayout.getSelectedTabPosition());
+        updateOverallProgress(allGoals);
     }
 
     private void setupHeader() {
@@ -102,24 +115,6 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         adapter.setOnGoalClickListener(goal -> navigateTo(GoalDetailFragment.newInstance(goal)));
         getBinding().rvGoals.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvGoals.setAdapter(adapter);
-    }
-
-    private void populateMockData() {
-        allGoals.clear();
-
-        allGoals.add(new Goal(getString(R.string.mock_goal_bicycle), 3000, 5000, getString(R.string.mock_date_june_30), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_1)));
-        allGoals.add(new Goal(getString(R.string.mock_goal_emergency), 2200, 10000, getString(R.string.mock_date_dec_31), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_2)));
-        allGoals.add(new Goal(getString(R.string.mock_goal_phone), 8500, 15000, getString(R.string.mock_date_aug_15), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_3)));
-        allGoals.add(new Goal(getString(R.string.mock_goal_gift), 1500, 3000, getString(R.string.mock_date_may_12), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_4)));
-        allGoals.add(new Goal(getString(R.string.mock_goal_travel), 5000, 12000, getString(R.string.mock_date_oct_20), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_5)));
-        allGoals.add(new Goal(getString(R.string.mock_goal_laptop), 12000, 25000, getString(R.string.mock_date_nov_15), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_6)));
-        allGoals.add(new Goal(getString(R.string.mock_goal_concert), 2500, 6000, getString(R.string.mock_date_july_05), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_7)));
-        allGoals.add(new Goal(getString(R.string.mock_goal_gym), 1000, 2500, getString(R.string.mock_date_june_01), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_8)));
-        allGoals.add(new Goal(getString(R.string.mock_goal_investment), 4000, 5000, getString(R.string.mock_date_sept_30), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_9)));
-        allGoals.add(new Goal(getString(R.string.mock_goal_shoes), 1800, 3500, getString(R.string.mock_date_aug_22), R.drawable.test, androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_10)));
-
-        filterGoals(getBinding().tabLayout.getSelectedTabPosition());
-        updateOverallProgress(allGoals);
     }
 
     private void updateOverallProgress(List<Goal> goals) {

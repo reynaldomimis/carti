@@ -22,6 +22,7 @@
             android:id="@+id/llGreeting"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:orientation="vertical"
             app:layout_constraintEnd_toStartOf="@id/btn_notif_container"
             app:layout_constraintStart_toStartOf="parent"
@@ -29,12 +30,31 @@
 
             <TextView
                 android:id="@+id/tv_greeting_main"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/plus_jakarta_sans_medium"
+                android:text="@string/default_greeting"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_username_main"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-2dp"
+                android:ellipsize="end"
                 android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:text="@string/welcome_message"
+                android:maxLines="1"
+                android:text="@string/user"
                 android:textColor="@color/text_primary"
-                android:textSize="20sp" />
+                android:textSize="26sp" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="70dp"
+                android:layout_height="2dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="6dp"
+                app:dividerColor="@color/surface_variant" />
 
             <TextView
                 android:id="@+id/tv_greeting_sub"
@@ -129,7 +149,6 @@
                     android:nestedScrollingEnabled="false"
                     android:scrollbars="none"
                     tools:listitem="@layout/item_transaction" />
-
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>

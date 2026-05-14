@@ -5,18 +5,24 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
+import android.app.ProgressDialog;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.ActivityAddGoalBinding;
 import com.upreyvan.carti.util.Utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
 
 public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
+
+    private ProgressDialog progressDialog;
 
     @Override
     protected ActivityAddGoalBinding inflateBinding(LayoutInflater inflater) {
@@ -59,21 +65,36 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
     private void setupListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
             String name = getBinding().etGoalName.getText().toString();
-            String amount = getBinding().etTargetAmount.getText().toString();
+            String amountStr = getBinding().etTargetAmount.getText().toString();
 
-            if (name.isEmpty() || amount.isEmpty()) {
+            if (name.isEmpty() || amountStr.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            Toast.makeText(this, "Goal Saved Successfully!", Toast.LENGTH_SHORT).show();
-            
-            // Return to MainActivity and show Home tab
-            Intent intent = new Intent(this, com.upreyvan.carti.MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            intent.putExtra("show_home", true);
-            startActivity(intent);
-            finish();
+            double targetAmount = Double.parseDouble(amountStr);
+            showLoading(true);
+
+            new ApiHelper(this).addGoal(name, targetAmount, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                @Override
+                public void onSuccess(Map<String, Object> result) {
+                    showLoading(false);
+                    Toast.makeText(AddGoalActivity.this, "Goal Saved Successfully!", Toast.LENGTH_SHORT).show();
+                    
+                    // Return to MainActivity and show Home tab
+                    Intent intent = new Intent(AddGoalActivity.this, com.upreyvan.carti.MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    intent.putExtra("show_home", true);
+                    startActivity(intent);
+                    finish();
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    showLoading(false);
+                    Toast.makeText(AddGoalActivity.this, "Error saving goal: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         getBinding().btnPickDate.setOnClickListener(v -> {
@@ -91,5 +112,14 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
 
             datePicker.show(getSupportFragmentManager(), "DATE_PICKER");
         });
+    }
+
+    private void showLoading(boolean loading) {
+        getBinding().btnSave.setEnabled(!loading);
+        if (loading) {
+            progressDialog = ProgressDialog.show(this, "", "Saving goal...", true);
+        } else if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
     }
 }

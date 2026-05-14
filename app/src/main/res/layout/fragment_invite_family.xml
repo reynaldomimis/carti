@@ -31,8 +31,7 @@
             <ImageView
                 android:layout_width="200dp"
                 android:layout_height="160dp"
-                android:src="@drawable/ic_person"
-                app:tint="@color/surface_variant"
+                android:src="@drawable/onboarding_request_family"
                 android:contentDescription="@null" />
 
             <TextView

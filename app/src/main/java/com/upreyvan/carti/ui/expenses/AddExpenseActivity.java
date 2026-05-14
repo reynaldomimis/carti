@@ -14,17 +14,23 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
+import android.app.ProgressDialog;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.local.ExpenseManager;
 import com.upreyvan.carti.databinding.ActivityAddExpenseBinding;
 import com.upreyvan.carti.data.local.CategoryManager;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Utils;
 
+import java.util.Map;
+
 public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> {
+
+    private ProgressDialog progressDialog;
 
     @Override
     protected ActivityAddExpenseBinding inflateBinding(LayoutInflater inflater) {
@@ -68,11 +74,6 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
                 android.R.layout.simple_dropdown_item_1line, sources);
         getBinding().etSource.setAdapter(sourceAdapter);
         getBinding().etSource.setText(sources[0], false);
-        
-        // Default Date
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-        getBinding().tvDate.setText(sdf.format(calendar.getTime()));
     }
 
     private void setupDynamicPadding() {
@@ -92,22 +93,6 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
     }
 
     private void setupClickListeners() {
-        getBinding().btnDate.setOnClickListener(v -> {
-            MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                    .setTitleText("Select Expense Date")
-                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
-                    .build();
-
-            datePicker.addOnPositiveButtonClickListener(selection -> {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(selection);
-                SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-                getBinding().tvDate.setText(sdf.format(calendar.getTime()));
-            });
-
-            datePicker.show(getSupportFragmentManager(), "DATE_PICKER");
-        });
-
         getBinding().btnSave.setOnClickListener(v -> {
             String amount = getBinding().etAmount.getText().toString();
             String category = getBinding().etCategory.getText().toString();
@@ -118,41 +103,71 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
                 return;
             }
 
-            // Save to ExpenseManager
             double amountVal = Double.parseDouble(amount);
-            String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
             
-            // Get Category Icon
-            Category selectedCategory = null;
-            List<Category> categories = CategoryManager.getInstance(this).getCategories();
-            for (Category cat : categories) {
-                if (cat.getName().equals(category)) {
-                    selectedCategory = cat;
-                    break;
+            showLoading(true);
+
+            new ApiHelper(this).addTransaction(amountVal, "EXPENSE", category, "Paid through " + source, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                @Override
+                public void onSuccess(Map<String, Object> result) {
+                    saveLocalAndFinish(amountVal, category, source);
                 }
-            }
 
-            int iconRes = (selectedCategory != null) ? selectedCategory.getIconRes() : R.drawable.ic_chart;
-            int iconColor = (selectedCategory != null) ? getColor(selectedCategory.getIconColor()) : getColor(R.color.icon_others);
-            int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
-
-            Transaction transaction = new Transaction(
-                    category,
-                    time,
-                    "₱" + String.format(Locale.getDefault(), "%.2f", amountVal),
-                    iconRes,
-                    bgColor,
-                    iconColor
-            );
-            ExpenseManager.getInstance().addTransaction(transaction);
-
-            Toast.makeText(this, "Expense Saved!", Toast.LENGTH_SHORT).show();
-            
-            // Return to MainActivity and clear the stack (removes AddOptionsActivity)
-            Intent intent = new Intent(this, com.upreyvan.carti.MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            finish();
+                @Override
+                public void onError(Throwable error) {
+                    showLoading(false);
+                    Toast.makeText(AddExpenseActivity.this, "Failed to save to server: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                    // Optionally save locally anyway? User asked to implement API, so let's stick to success flow
+                }
+            });
         });
+    }
+
+    private void showLoading(boolean loading) {
+        getBinding().btnSave.setEnabled(!loading);
+        if (loading) {
+            progressDialog = ProgressDialog.show(this, "", "Saving expense...", true);
+        } else if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
+    private void saveLocalAndFinish(double amountVal, String category, String source) {
+        // Save to ExpenseManager (Local)
+        String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
+        
+        // Get Category Icon
+        Category selectedCategory = null;
+        List<Category> categories = CategoryManager.getInstance(this).getCategories();
+        for (Category cat : categories) {
+            if (cat.getName().equals(category)) {
+                selectedCategory = cat;
+                break;
+            }
+        }
+
+        int iconRes = (selectedCategory != null) ? selectedCategory.getIconRes() : R.drawable.ic_chart;
+        int iconColor = (selectedCategory != null) ? getColor(selectedCategory.getIconColor()) : getColor(R.color.icon_others);
+        int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
+
+        Transaction transaction = new Transaction(
+                category,
+                time,
+                "₱" + String.format(Locale.getDefault(), "%.2f", amountVal),
+                iconRes,
+                bgColor,
+                iconColor,
+                System.currentTimeMillis()
+        );
+        ExpenseManager.getInstance().addTransaction(transaction);
+
+        showLoading(false);
+        Toast.makeText(this, "Expense Saved!", Toast.LENGTH_SHORT).show();
+        
+        // Return to MainActivity and clear the stack
+        Intent intent = new Intent(this, com.upreyvan.carti.MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
     }
 }

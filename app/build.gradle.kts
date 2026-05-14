@@ -1,5 +1,14 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
+}
+
+val secretsFile = rootProject.file("secrets.properties")
+val secrets = Properties()
+if (secretsFile.exists()) {
+    secrets.load(FileInputStream(secretsFile))
 }
 
 android {
@@ -18,6 +27,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Build Config Fields from secrets.properties
+        buildConfigField("String", "APPWRITE_PROJECT_ID", "\"${secrets.getProperty("APPWRITE_PROJECT_ID", "")}\"")
+        buildConfigField("String", "APPWRITE_ENDPOINT", "\"${secrets.getProperty("APPWRITE_ENDPOINT", "")}\"")
+        buildConfigField("String", "APPWRITE_ENDPOINT_FUNCTION", "\"${secrets.getProperty("APPWRITE_ENDPOINT_FUNCTION", "")}\"")
+        buildConfigField("String", "APPWRITE_GATEWAY_FUNCTION_ID", "\"${secrets.getProperty("APPWRITE_GATEWAY_FUNCTION_ID", "")}\"")
     }
 
     buildTypes {
@@ -31,6 +46,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -47,6 +63,7 @@ dependencies {
     implementation(libs.mpandroidchart)
     implementation(libs.gson)
     implementation(libs.ucrop)
+    implementation(libs.appwrite)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

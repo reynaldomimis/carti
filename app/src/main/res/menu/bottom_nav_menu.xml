@@ -14,9 +14,9 @@
     <!-- Center FAB placeholder - no menu item needed -->
 
     <item
-        android:id="@+id/nav_ranking"
-        android:icon="@android:drawable/btn_star_big_on"
-        android:title="@string/nav_ranking" />
+        android:id="@+id/nav_ai"
+        android:icon="@drawable/ai_holder"
+        android:title="@string/menu_ai" />
 
     <item
         android:id="@+id/nav_profile"

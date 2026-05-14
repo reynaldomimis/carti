@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
+import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.ui.common.AddOptionsActivity;
 import com.upreyvan.carti.ui.profile.ProfileActivity;
 import com.upreyvan.carti.base.BaseActivity;
@@ -41,10 +42,12 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        new PreferenceManager(this).setOnboardingFinished(true);
+
         setupBottomNavInsets();
 
         tabBindings = new LayoutNavItemBinding[]{
-                getBinding().tabHome, getBinding().tabExpenses, getBinding().tabAdd, getBinding().tabDebt, getBinding().tabProfile
+                getBinding().tabHome, getBinding().tabExpenses, getBinding().tabAdd, getBinding().tabAi, getBinding().tabProfile
         };
 
         setupTabs();
@@ -82,7 +85,12 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         getBinding().tabAdd.navIcon.getLayoutParams().width = Utils.dpToPx(this, 32);
         getBinding().tabAdd.navIcon.getLayoutParams().height = Utils.dpToPx(this, 32);
         getBinding().tabAdd.navLabel.setTypeface(null, android.graphics.Typeface.BOLD);
-        initTab(getBinding().tabDebt, android.R.drawable.ic_menu_help, getString(R.string.menu_ai), 6); // Swapped icon and ID
+        initTab(getBinding().tabAi, R.drawable.ai_holder, getString(R.string.menu_ai), 6);
+        getBinding().tabAi.navIcon.getLayoutParams().width = Utils.dpToPx(this, 32);
+        getBinding().tabAi.navIcon.getLayoutParams().height = Utils.dpToPx(this, 32);
+        getBinding().tabAi.navIcon.setScaleType(ImageView.ScaleType.FIT_XY);
+        getBinding().tabAi.navIcon.setImageTintList(null);
+
         initTab(getBinding().tabProfile, R.drawable.ic_person, getString(R.string.nav_profile), 4);
     }
 
@@ -114,7 +122,13 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                     .start();
         });
 
-        icon.setColorFilter(ContextCompat.getColor(this, R.color.white));
+        if (selectedTab == getBinding().tabAi) {
+            icon.setImageTintList(null);
+            icon.clearColorFilter();
+        } else {
+            icon.setColorFilter(ContextCompat.getColor(this, R.color.white));
+        }
+
         label.setTextColor(ContextCompat.getColor(this, R.color.green_primary));
 
         int targetY = (selectedTab == getBinding().tabAdd) ? -42 : -38;
@@ -142,6 +156,11 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                 tab.navIcon.setColorFilter(greenColor);
                 tab.navLabel.setTextColor(greenColor);
                 tab.navLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+            } else if (tab == getBinding().tabAi) {
+                tab.navIcon.setImageTintList(null);
+                tab.navIcon.clearColorFilter();
+                tab.navLabel.setTextColor(inactiveColor);
+                tab.navLabel.setTypeface(null, android.graphics.Typeface.NORMAL);
             } else {
                 tab.navIcon.setColorFilter(inactiveColor);
                 tab.navLabel.setTextColor(inactiveColor);

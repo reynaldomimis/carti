@@ -14,6 +14,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.local.ExpenseManager;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.DialogQuickLogAmountBinding;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.model.Transaction;
@@ -21,6 +23,7 @@ import com.upreyvan.carti.model.Transaction;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
 
 import android.view.WindowManager;
 
@@ -106,9 +109,25 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
                         "₱" + String.format(Locale.getDefault(), "%.2f", amount),
                         item.getIconRes(),
                         bgColor,
-                        iconColor
+                        iconColor,
+                        System.currentTimeMillis()
                 );
+                
+                // Save locally first for instant feedback
                 ExpenseManager.getInstance().addTransaction(transaction);
+
+                // Save to cloud
+                new ApiHelper(requireContext()).addTransaction(amount, "EXPENSE", item.getTitle(), "Quick Log", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                    @Override
+                    public void onSuccess(Map<String, Object> result) {
+                        // Cloud sync handled
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        // Optional: Handle cloud save error
+                    }
+                });
 
                 if (listener != null) {
                     listener.onLog(item, amount);

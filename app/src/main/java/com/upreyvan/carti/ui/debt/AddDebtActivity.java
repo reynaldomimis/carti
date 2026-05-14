@@ -6,18 +6,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+import android.app.ProgressDialog;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.ActivityAddDebtBinding;
 import com.upreyvan.carti.util.Utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
 
 public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
+
+    private ProgressDialog progressDialog;
 
     @Override
     protected ActivityAddDebtBinding inflateBinding(LayoutInflater inflater) {
@@ -87,20 +93,44 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
         getBinding().btnSave.setOnClickListener(v -> {
             String name = getBinding().etBorrowerName.getText().toString();
-            String amount = getBinding().etAmount.getText().toString();
+            String amountStr = getBinding().etAmount.getText().toString();
 
-            if (name.isEmpty() || amount.isEmpty()) {
+            if (name.isEmpty() || amountStr.isEmpty()) {
                 Toast.makeText(this, "Please fill name and amount", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            Toast.makeText(this, "Debt Saved!", Toast.LENGTH_SHORT).show();
-            
-            // Return to MainActivity and clear the stack (removes AddOptionsActivity)
-            Intent intent = new Intent(this, com.upreyvan.carti.MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            finish();
+            double amount = Double.parseDouble(amountStr);
+            showLoading(true);
+
+            new ApiHelper(this).addDebt(name, amount, "OWE", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                @Override
+                public void onSuccess(Map<String, Object> result) {
+                    showLoading(false);
+                    Toast.makeText(AddDebtActivity.this, "Debt Saved!", Toast.LENGTH_SHORT).show();
+                    
+                    // Return to MainActivity and clear the stack (removes AddOptionsActivity)
+                    Intent intent = new Intent(AddDebtActivity.this, com.upreyvan.carti.MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    showLoading(false);
+                    Toast.makeText(AddDebtActivity.this, "Error saving debt: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
+    }
+
+    private void showLoading(boolean loading) {
+        getBinding().btnSave.setEnabled(!loading);
+        if (loading) {
+            progressDialog = ProgressDialog.show(this, "", "Saving debt...", true);
+        } else if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
     }
 }

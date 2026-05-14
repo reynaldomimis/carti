@@ -17,6 +17,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.ui.debt.DebtAdapter;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.data.local.DebtManager;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
 import com.upreyvan.carti.model.Debt;
@@ -40,7 +41,18 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         setupToolbar();
         setupTabs();
         setupRecyclerView();
-        loadDummyData();
+        loadDebts();
+
+        DebtManager.getInstance().setOnDebtChangeListener(() -> {
+            if (isAdded()) {
+                requireActivity().runOnUiThread(this::loadDebts);
+            }
+        });
+    }
+
+    private void loadDebts() {
+        allDebts = DebtManager.getInstance().getDebts();
+        filterDebts(getBinding().tabLayout.getSelectedTabPosition());
     }
 
     private void setupToolbar() {
@@ -76,14 +88,6 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         getBinding().rvDebts.setAdapter(adapter);
 
         adapter.setOnDebtClickListener(this::showDebtDetail);
-    }
-
-    private void loadDummyData() {
-        allDebts.add(new Debt("Ate Liza", "Utang para sa groceries", "May 25, 2024", 500.0, false, R.drawable.ic_person, "Binili sa SM Supermarket"));
-        allDebts.add(new Debt("Tindahan ni Aling Nena", "Utang sa tingi", "May 20, 2024", 120.0, false, R.drawable.ic_person, "Kape at asukal"));
-        allDebts.add(new Debt("Kuya Mario", "Utang na cash", "May 18, 2024", 300.0, true, R.drawable.ic_person, "Pambayad sa kuryente"));
-
-        filterDebts(0);
     }
 
     private void filterDebts(int tabIndex) {

@@ -8,7 +8,22 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.Calendar;
+
 public class Utils {
+
+    public static String getGreeting() {
+        Calendar c = Calendar.getInstance();
+        int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
+
+        if (timeOfDay < 12) {
+            return "Good morning";
+        } else if (timeOfDay < 17) {
+            return "Good afternoon";
+        } else {
+            return "Good evening";
+        }
+    }
 
     public static int dpToPx(Context context, int dp) {
         float density = context.getResources().getDisplayMetrics().density;

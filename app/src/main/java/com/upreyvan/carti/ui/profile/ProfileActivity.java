@@ -1,13 +1,20 @@
 package com.upreyvan.carti.ui.profile;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.ui.auth.LoginActivity;
 import com.upreyvan.carti.ui.profile.ProfileMenuAdapter;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityProfileBinding;
@@ -38,7 +45,44 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
 
         setupDynamicPadding();
         setupToolbar();
+        setupUserInfo();
         setupMenuItems();
+    }
+
+    private void setupUserInfo() {
+        PreferenceManager pref = new PreferenceManager(this);
+        getBinding().tvUserName.setText(pref.getUserName());
+        getBinding().tvUserEmail.setText(pref.getUserEmail());
+        getBinding().btnLogout.setOnClickListener(v -> performLogout());
+    }
+
+    private void performLogout() {
+        setLoading(true);
+        AppwriteManager.getInstance(this).logout(new AppwriteManager.AppwriteCallback<>() {
+            @Override
+            public void onSuccess(Object result) {
+                new PreferenceManager(ProfileActivity.this).clear();
+                navigateToLogin();
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                setLoading(false);
+                Toast.makeText(ProfileActivity.this, "Logout failed: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setLoading(boolean loading) {
+        getBinding().btnLogout.setEnabled(!loading);
+        getBinding().btnLogout.setAlpha(loading ? 0.5f : 1.0f);
+    }
+
+    private void navigateToLogin() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void setupToolbar() {

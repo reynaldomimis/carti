@@ -73,7 +73,7 @@
                 layout="@layout/layout_nav_item" />
 
             <include
-                android:id="@+id/tab_debt"
+                android:id="@+id/tab_ai"
                 layout="@layout/layout_nav_item" />
 
             <include

@@ -37,6 +37,21 @@ public class ExpenseManager {
         }
     }
 
+    public void setTransactions(List<Transaction> newTransactions) {
+        transactions.clear();
+        transactions.addAll(newTransactions);
+        if (listener != null) {
+            listener.onExpensesUpdated();
+        }
+    }
+
+    public void clear() {
+        transactions.clear();
+        if (listener != null) {
+            listener.onExpensesUpdated();
+        }
+    }
+
     public List<Transaction> getTransactions() {
         return new ArrayList<>(transactions);
     }

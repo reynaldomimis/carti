@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Carti</string>
     <string name="welcome_message">Good morning, Juan! 👋</string>
+    <string name="default_greeting">Good morning,</string>
     <string name="family_label">Family Wallet | ₱14,500 net </string>
     <string name="daily_budget">Daily Budget</string>
     <string name="current_date">Today | Sun, May 10 | 12:05pm</string>
@@ -262,6 +263,8 @@
     <string name="join_subtext">Ask your family admin for the Family ID to join your group.</string>
     <string name="hint_family_id">FAM - XXXX - XXXX</string>
     <string name="btn_join_family">Join Family</string>
+    <string name="btn_joining">Joining...</string>
+    <string name="msg_join_success">Successfully joined family!</string>
     <string name="join_info_headline">Don\'t have a Family ID?</string>
     <string name="join_info_subtext">Ask your family admin to invite you. They can generate a Family ID from the invite section.</string>
     <!-- Backup & Sync / Offline Mode Fragment -->
@@ -350,7 +353,8 @@
     <string name="onboarding_role_desc">Choose who you are in the family.</string>
     <string name="role_father">Father</string>
     <string name="role_mother">Mother</string>
-    <string name="role_sibling">Brother / Sister</string>
+    <string name="role_brother">Brother</string>
+    <string name="role_sister">Sister</string>
     <string name="role_child">Child</string>
     <string name="role_others">Others</string>
     <string name="btn_next">Next</string>
@@ -369,13 +373,22 @@
     <string name="label_family_name">Family Name</string>
     <string name="hint_family_name">e.g., Dela Cruz Family</string>
     <string name="label_you_are">You are the:</string>
+    <string name="label_family_head">(Family Head)</string>
     <string name="btn_create">Create</string>
+    <string name="btn_creating">Creating...</string>
 
     <!-- Onboarding Join Status -->
     <string name="onboarding_join_status_title">Join Request Sent!</string>
     <string name="onboarding_join_status_desc">Wait for Admin approval to join.</string>
+    <string name="onboarding_family_created_title">Family Created!</string>
+    <string name="onboarding_family_created_desc">Share this Invite Code with your family members so they can join you.</string>
     <string name="btn_view_status">View Status</string>
+    <string name="btn_go_to_home">Go to Home</string>
     <string name="btn_go_back">Go Back</string>
+    <string name="invite_code_label">Invite Code</string>
+    <string name="invite_code_label_colon">Invite Code: </string>
+    <string name="invite_code_prefix">FAM-</string>
+    <string name="invite_code_copied">Invite code copied!</string>
 
     <!-- Goal Detail Fragment -->
     <string name="goal_details_title">Goal Details</string>
@@ -444,4 +457,41 @@
     <string name="btn_cancel">Cancel</string>
     <string name="timer_format">%1$ds</string>
     <string name="msg_canceled">Action Canceled</string>
+
+    <!-- Login / Register -->
+    <string name="login_title">Welcome Back</string>
+    <string name="login_subtitle">Sign in to manage your family budget</string>
+    <string name="register_title">Join Carti</string>
+    <string name="register_subtitle">Start tracking together with your family</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_email">Email Address</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_logging_in">Logging in...</string>
+    <string name="btn_register">Create Account</string>
+    <string name="btn_registering">Registering...</string>
+    <string name="prompt_no_account">Don\'t have an account? <font color="#008955">Register</font></string>
+    <string name="prompt_has_account">Already have an account? <font color="#008955">Login</font></string>
+    <string name="btn_logout">Logout</string>
+    <string name="err_required">This field is required</string>
+    <string name="err_already_in_family">You are already in a family!</string>
+    <string name="err_invalid_family_id">Please enter a valid Family ID</string>
+    <string name="err_invalid_invite_code">Invalid invite code. Please check and try again.</string>
+    <string name="err_parents_only">Only parents (Father/Mother) can create a family group.</string>
+    <string name="err_error_prefix">Error: %1$s</string>
+    <string name="err_invalid_email">Please enter a valid email</string>
+    <string name="err_password_short">Password must be at least 8 characters</string>
+    <string name="err_password_weak">Use uppercase, lowercase, and numbers</string>
+    <string name="err_username_long">Username must not exceed 10 characters</string>
+    <string name="user">User</string>
+    <string name="err_unauthorized">Unauthorized: Please login first</string>
+    <string name="err_login_failed">Login failed: %1$s</string>
+    <string name="err_register_failed">Registration failed: %1$s</string>
+    <string name="err_server_response">Server error: %1$s</string>
+    <string name="msg_registered_login_failed">Registered, but login failed: %1$s</string>
+    <string name="debug_is_employed">Debug: isEmployed = %1$b</string>
+    <string name="debug_live_is_employed">Live Debug: isEmployed = %1$b</string>
+    <string name="debug_fallback_is_employed">Fallback Debug: isEmployed = %1$b</string>
+    <string name="msg_checking_status">Checking Status...</string>
+    <string name="msg_invite_code_copied">Invite code copied!</string>
 </resources>

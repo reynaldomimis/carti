@@ -10,8 +10,10 @@ constraintlayout = "2.2.1"
 mpandroidchart = "v3.1.0"
 gson = "2.10.1"
 ucrop = "2.2.11"
+appwrite = "24.0.0"
 
 [libraries]
+appwrite = { group = "io.appwrite", name = "sdk-for-android", version.ref = "appwrite" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
