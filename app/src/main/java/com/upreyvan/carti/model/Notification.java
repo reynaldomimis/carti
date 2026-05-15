@@ -8,22 +8,22 @@ public class Notification {
 
     private String title;
     private String description;
-    private String time;
+    private long timestamp;
     private Type type;
 
-    public Notification(String title, String description, String time) {
-        this(title, description, time, Type.INFO);
+    public Notification(String title, String description, long timestamp) {
+        this(title, description, timestamp, Type.INFO);
     }
 
-    public Notification(String title, String description, String time, Type type) {
+    public Notification(String title, String description, long timestamp, Type type) {
         this.title = title;
         this.description = description;
-        this.time = time;
+        this.timestamp = timestamp;
         this.type = type;
     }
 
     public String getTitle() { return title; }
     public String getDescription() { return description; }
-    public String getTime() { return time; }
+    public long getTimestamp() { return timestamp; }
     public Type getType() { return type; }
 }

@@ -154,7 +154,19 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         
         String type = String.valueOf(data.get("type")); // INCOME or EXPENSE
         String rawDate = String.valueOf(data.get("$createdAt"));
-        String time = Utils.formatIsoDateToTime(rawDate);
+        long timestampMillis = System.currentTimeMillis();
+        try {
+            java.text.SimpleDateFormat parser = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.US);
+            parser.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+            java.util.Date date = parser.parse(rawDate);
+            if (date != null) timestampMillis = date.getTime();
+        } catch (Exception e) {
+            try {
+                java.text.SimpleDateFormat parser = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", java.util.Locale.US);
+                java.util.Date date = parser.parse(rawDate);
+                if (date != null) timestampMillis = date.getTime();
+            } catch (Exception e2) {}
+        }
 
         Category cat = findCategory(categories, categoryName);
         int iconRes = (cat != null) ? cat.getIconRes() : R.drawable.ic_chart;
@@ -167,11 +179,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         return new Transaction(
                 id,
                 categoryName,
-                time,
+                "", // Legacy string timestamp
                 sign + "₱" + String.format(Locale.getDefault(), "%,.0f", amount),
                 iconRes,
                 bgColor,
-                iconColor
+                iconColor,
+                timestampMillis
         );
     }
 

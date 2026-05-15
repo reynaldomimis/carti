@@ -16,6 +16,35 @@ import java.util.TimeZone;
 
 public class Utils {
 
+    public static String getTimeAgo(long time) {
+        if (time < 1000000000000L) {
+            // if timestamp given in seconds, convert to millis
+            time *= 1000;
+        }
+
+        long now = System.currentTimeMillis();
+        if (time > now || time <= 0) {
+            return "Just now";
+        }
+
+        final long diff = now - time;
+        if (diff < 60 * 1000) {
+            return "Just now";
+        } else if (diff < 2 * 60 * 1000) {
+            return "1 min ago";
+        } else if (diff < 50 * 60 * 1000) {
+            return diff / (60 * 1000) + " mins ago";
+        } else if (diff < 90 * 60 * 1000) {
+            return "1 hour ago";
+        } else if (diff < 24 * 60 * 60 * 1000) {
+            return diff / (60 * 60 * 1000) + " hours ago";
+        } else if (diff < 48 * 60 * 60 * 1000) {
+            return "yesterday";
+        } else {
+            return diff / (24 * 60 * 60 * 1000) + " days ago";
+        }
+    }
+
     public static String formatIsoDateToTime(String isoDate) {
         if (isoDate == null || isoDate.isEmpty()) return "";
         try {

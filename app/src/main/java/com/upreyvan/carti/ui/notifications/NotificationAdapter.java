@@ -53,7 +53,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         public void bind(Notification notification) {
             binding.tvTitle.setText(notification.getTitle());
             binding.tvDescription.setText(notification.getDescription());
-            binding.tvTime.setText(notification.getTime());
+            binding.tvTime.setText(com.upreyvan.carti.util.Utils.getTimeAgo(notification.getTimestamp()));
 
             if (notification.getType() == Notification.Type.JOIN_REQUEST) {
                 binding.layoutActions.setVisibility(View.VISIBLE);

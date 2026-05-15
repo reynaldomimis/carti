@@ -71,6 +71,8 @@ public class ExpenseManager {
     public void setTransactions(List<Transaction> newTransactions) {
         transactions.clear();
         transactions.addAll(newTransactions);
+        // Sort by timestamp descending
+        transactions.sort((t1, t2) -> Long.compare(t2.getTimestampMillis(), t1.getTimestampMillis()));
         saveTransactions();
         if (listener != null) {
             listener.onExpensesUpdated();
@@ -90,8 +92,11 @@ public class ExpenseManager {
     }
     
     public List<Transaction> getRecentTransactions(int limit) {
-        int size = transactions.size();
-        return new ArrayList<>(transactions.subList(0, Math.min(size, limit)));
+        // Sort by timestamp descending
+        List<Transaction> sorted = new ArrayList<>(transactions);
+        sorted.sort((t1, t2) -> Long.compare(t2.getTimestampMillis(), t1.getTimestampMillis()));
+        int size = sorted.size();
+        return new ArrayList<>(sorted.subList(0, Math.min(size, limit)));
     }
 
     public double getTodayTotalSpent() {

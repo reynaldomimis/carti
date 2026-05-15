@@ -55,10 +55,11 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
 
     private void loadDummyData() {
         List<Notification> list = new ArrayList<>();
-        list.add(new Notification("Maria (Spouse)", "wants to join your family group.", "Just now", Notification.Type.JOIN_REQUEST));
-        list.add(new Notification(getString(R.string.mock_notif_title_1), getString(R.string.mock_notif_desc_1), getString(R.string.mock_notif_time_1)));
-        list.add(new Notification(getString(R.string.mock_notif_title_2), getString(R.string.mock_notif_desc_2), getString(R.string.mock_notif_time_2)));
-        list.add(new Notification(getString(R.string.mock_notif_title_3), getString(R.string.mock_notif_desc_3), getString(R.string.mock_notif_time_3)));
+        long now = System.currentTimeMillis();
+        list.add(new Notification("Maria (Spouse)", "wants to join your family group.", now, Notification.Type.JOIN_REQUEST));
+        list.add(new Notification(getString(R.string.mock_notif_title_1), getString(R.string.mock_notif_desc_1), now - 3600000)); // 1 hour ago
+        list.add(new Notification(getString(R.string.mock_notif_title_2), getString(R.string.mock_notif_desc_2), now - 86400000)); // 1 day ago
+        list.add(new Notification(getString(R.string.mock_notif_title_3), getString(R.string.mock_notif_desc_3), now - 172800000)); // 2 days ago
         
         adapter.setNotifications(list);
         checkEmptyState();

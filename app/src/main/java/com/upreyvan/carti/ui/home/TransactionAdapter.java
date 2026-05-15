@@ -37,7 +37,7 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
     @Override
     protected void bind(ItemTransactionBinding binding, Transaction item) {
         binding.tvTitle.setText(item.getTitle());
-        binding.tvTimestamp.setText(item.getTimestamp());
+        binding.tvTimestamp.setText(com.upreyvan.carti.util.Utils.getTimeAgo(item.getTimestampMillis()));
         binding.tvAmount.setText(item.getAmount());
         binding.ivIcon.setImageResource(item.getIconRes());
 
