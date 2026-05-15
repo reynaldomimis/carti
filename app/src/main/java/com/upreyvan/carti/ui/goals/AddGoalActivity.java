@@ -78,6 +78,12 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
             new ApiHelper(this).addGoal(name, targetAmount, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                 @Override
                 public void onSuccess(Map<String, Object> result) {
+                    String id = String.valueOf(result.get("$id"));
+                    com.upreyvan.carti.data.local.GoalManager.getInstance().addGoal(
+                            new com.upreyvan.carti.model.Goal(id, name, 0, targetAmount, "Target Date", R.drawable.test,
+                                    androidx.core.content.ContextCompat.getColor(AddGoalActivity.this, R.color.goal_card_1))
+                    );
+
                     showLoading(false);
                     Toast.makeText(AddGoalActivity.this, "Goal Saved Successfully!", Toast.LENGTH_SHORT).show();
                     

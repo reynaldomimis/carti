@@ -55,6 +55,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
 
     private void loadDummyData() {
         List<Notification> list = new ArrayList<>();
+        list.add(new Notification("Maria (Spouse)", "wants to join your family group.", "Just now", Notification.Type.JOIN_REQUEST));
         list.add(new Notification(getString(R.string.mock_notif_title_1), getString(R.string.mock_notif_desc_1), getString(R.string.mock_notif_time_1)));
         list.add(new Notification(getString(R.string.mock_notif_title_2), getString(R.string.mock_notif_desc_2), getString(R.string.mock_notif_time_2)));
         list.add(new Notification(getString(R.string.mock_notif_title_3), getString(R.string.mock_notif_desc_3), getString(R.string.mock_notif_time_3)));

@@ -64,6 +64,7 @@
 
     <color name="status_red">#EF5350</color>
     <color name="status_green">#66BB6A</color>
+    <color name="error">#B00020</color>
 
     <!-- Switch and UI Elements -->
     <color name="switch_track_off">#E0E0E0</color>

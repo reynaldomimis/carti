@@ -62,36 +62,75 @@ public class PaydayEditBottomSheet extends BottomSheetDialogFragment {
         SalaryManager manager = SalaryManager.getInstance(requireContext());
         binding.etPayday1.setText(String.valueOf(manager.getFirstPayday()));
         binding.etPayday2.setText(String.valueOf(manager.getSecondPayday()));
+        binding.cbMonthly.setChecked(manager.isMonthly());
+        updateInputStates(manager.isMonthly());
+
+        binding.cbMonthly.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            updateInputStates(isChecked);
+        });
+
         binding.btnSave.setBackgroundColor(requireContext().getColor(R.color.carti_primary_green));
 
         binding.btnSave.setOnClickListener(v -> {
+            boolean isMonthly = binding.cbMonthly.isChecked();
+            manager.setIsMonthly(isMonthly);
+
             String p1Str = binding.etPayday1.getText().toString().trim();
-            String p2Str = binding.etPayday2.getText().toString().trim();
-            
-            if (p1Str.isEmpty() || p2Str.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter both paydays", Toast.LENGTH_SHORT).show();
+            if (p1Str.isEmpty()) {
+                Toast.makeText(requireContext(), "Please enter the payday", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             try {
                 int p1 = Integer.parseInt(p1Str);
-                int p2 = Integer.parseInt(p2Str);
-                
-                if (p1 < 1 || p1 > 31 || p2 < 1 || p2 > 31) {
-                    Toast.makeText(requireContext(), "Days must be between 1 and 31", Toast.LENGTH_SHORT).show();
+                if (p1 < 1 || p1 > 31) {
+                    Toast.makeText(requireContext(), "Day must be between 1 and 31", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                manager.setFirstPayday(p1);
-                manager.setSecondPayday(p2);
-                if (listener != null) {
-                    listener.onPaydayUpdated();
+                if (!isMonthly) {
+                    String p2Str = binding.etPayday2.getText().toString().trim();
+                    if (p2Str.isEmpty()) {
+                        Toast.makeText(requireContext(), "Please enter the second payday", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    int p2 = Integer.parseInt(p2Str);
+                    if (p2 < 1 || p2 > 31) {
+                        Toast.makeText(requireContext(), "Day must be between 1 and 31", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    manager.setFirstPayday(p1);
+                    manager.setSecondPayday(p2);
+                } else {
+                    manager.setFirstPayday(p1);
                 }
-                dismiss();
             } catch (NumberFormatException e) {
                 Toast.makeText(requireContext(), "Invalid day format", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            if (listener != null) {
+                listener.onPaydayUpdated();
+            }
+            dismiss();
         });
+    }
+
+    private void updateInputStates(boolean isMonthly) {
+        binding.etPayday1.setEnabled(true);
+        binding.etPayday2.setEnabled(!isMonthly);
+        
+        // Target the MaterialCardView parents
+        View card1 = (View) binding.etPayday1.getParent();
+        View card2 = (View) binding.etPayday2.getParent();
+        
+        card2.setAlpha(isMonthly ? 0.3f : 1.0f);
+        
+        if (isMonthly) {
+            binding.etPayday1.setHint("Day");
+        } else {
+            binding.etPayday1.setHint("Day 1");
+        }
     }
 
     @Override

@@ -181,7 +181,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         }
     }
 
-    private void navigateTo(int id) {
+    public void navigateTo(int id) {
         Fragment fragment = null;
 
         if (id == 1) {

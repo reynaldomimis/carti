@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import android.widget.Toast;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding> {
 
@@ -57,10 +59,35 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         });
     }
 
+    private void updateOverallDebt(List<Debt> debts) {
+        double totalOwed = 0;
+        double totalPaid = 0;
+
+        for (Debt debt : debts) {
+            if (debt.isPaid()) {
+                totalPaid += debt.getAmount();
+            } else {
+                totalOwed += debt.getAmount();
+            }
+        }
+
+        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "PH"));
+        getBinding().tvTotalAmount.setText(currencyFormat.format(totalOwed));
+
+        double total = totalOwed + totalPaid;
+        if (total > 0) {
+            int progress = (int) ((totalPaid / total) * 100);
+            getBinding().tvOverallPercentage.setText(getString(R.string.overall_debt_percentage_format, progress));
+        } else {
+            getBinding().tvOverallPercentage.setText(getString(R.string.zero_percent));
+        }
+    }
+
     private void loadDebts() {
         // Load local data first
         allDebts = DebtManager.getInstance().getDebts();
         filterDebts(getBinding().tabLayout.getSelectedTabPosition());
+        updateOverallDebt(allDebts);
 
         // Fetch fresh data from Cloud
         apiHelper.getDebts(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
@@ -79,6 +106,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
                 requireActivity().runOnUiThread(() -> {
                     allDebts = cloudDebts;
                     filterDebts(getBinding().tabLayout.getSelectedTabPosition());
+                    updateOverallDebt(allDebts);
                 });
             }
 
@@ -107,7 +135,15 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.debt_tracker_title);
-        getBinding().layoutToolbar.btnBack.setVisibility(View.GONE);
+        getBinding().layoutToolbar.btnBack.setVisibility(View.VISIBLE);
+        if (getBinding().layoutToolbar.backButtonContainer != null) {
+            getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
+        }
+        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                getActivity().onBackPressed();
+            }
+        });
         getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnAction.setText(R.string.btn_add_debt);
         getBinding().layoutToolbar.btnAction.setOnClickListener(v -> {
@@ -159,8 +195,6 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
         DialogDebtDetailBinding dialogBinding = DialogDebtDetailBinding.inflate(getLayoutInflater());
         dialog.setContentView(dialogBinding.getRoot());
-
-        dialogBinding.btnClose.setOnClickListener(v -> dialog.dismiss());
 
         dialogBinding.tvDetailName.setText(debt.getPersonName());
         dialogBinding.tvDetailDesc.setText(debt.getDescription());

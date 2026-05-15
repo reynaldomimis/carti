@@ -93,6 +93,10 @@
 
     <!-- Debt Tracker Fragment -->
     <string name="debt_tracker_title">Debt Tracker</string>
+    <string name="total_debt_label">Total Debt</string>
+    <string name="debt_summary_subtitle">Remaining amount to pay</string>
+    <string name="overall_debt_percentage_format">%1$d%% paid</string>
+    <string name="overall_debt_description">Keep track of your repayments!</string>
     <string name="btn_add_debt">Add Debt</string>
     <string name="tab_i_owe">I owe</string>
     <string name="tab_owes_me">Owes me</string>
@@ -186,6 +190,9 @@
     <string name="menu_goals">Goals / Savings</string>
     <string name="menu_goals_sub">View your savings</string>
 
+    <string name="menu_debt">Debt Tracker</string>
+    <string name="menu_debt_sub">Manage your loans and debts</string>
+
     <string name="menu_ai">AI Assistant</string>
     <string name="menu_ai_sub">Ask about your budget</string>
 
@@ -205,7 +212,36 @@
     <string name="menu_help_sub">FAQs, Contact us</string>
 
     <string name="menu_about">About App</string>
-    <string name="menu_about_sub">Version 1.0.0</string>
+    <string name="menu_about_sub">Version, Developer</string>
+    <string name="menu_security">Login &amp; Security</string>
+    <string name="menu_security_sub">Password, Deletion, Sessions</string>
+
+    <!-- Security Fragment -->
+    <string name="security_title">Login &amp; Security</string>
+    <string name="section_login">Login</string>
+    <string name="label_password">Change Password</string>
+    <string name="desc_password">Update your account password to keep your account secure.</string>
+    <string name="btn_reset_password">Update Password</string>
+
+    <string name="section_security">Security</string>
+    <string name="label_sign_out_all">Sign out from all devices</string>
+    <string name="desc_sign_out_all">Logged in on a shared device but forgot to sign out? End all sessions by signing out from all devices.</string>
+    <string name="btn_sign_out_all">Sign out from all devices</string>
+
+    <string name="section_delete_account">Delete your account</string>
+    <string name="desc_delete_account">By deleting your account, you\'ll no longer be able to access your family data or log in to Carti. This action is permanent.</string>
+    <string name="btn_delete_account">Delete account</string>
+
+    <string name="hint_current_password">Current Password</string>
+    <string name="hint_new_password">New Password</string>
+    <string name="dialog_update_password_title">Update Password</string>
+    <string name="msg_sign_out_all_success">Signed out from all devices.</string>
+    <string name="msg_delete_account_confirm">Are you sure you want to delete your account? This cannot be undone.</string>
+    <string name="msg_account_deleted">Account successfully deleted.</string>
+    <string name="btn_confirm_delete">Confirm Delete</string>
+    <string name="btn_update">Update</string>
+    <string name="msg_password_short">Password must be at least 8 characters</string>
+    <string name="msg_password_updated">Password updated successfully!</string>
 
     <!-- Settings Fragment -->
     <string name="settings_title">Settings</string>
@@ -276,6 +312,8 @@
     <string name="action_view_transactions">View Recent Transactions</string>
     <string name="action_view_summary">View Offline Summary</string>
     <string name="btn_sync_now">Sync Now</string>
+    <string name="msg_syncing">Syncing...</string>
+    <string name="msg_sync_success">Sync successful! Data updated.</string>
     <string name="sync_footer_text">Your data will sync when you\'re back online.</string>
     <!-- Family Chat Fragment -->
     <string name="family_chat_title">Family Chat</string>
@@ -494,4 +532,5 @@
     <string name="debug_fallback_is_employed">Fallback Debug: isEmployed = %1$b</string>
     <string name="msg_checking_status">Checking Status...</string>
     <string name="msg_invite_code_copied">Invite code copied!</string>
+    <string name="msg_reset_link_sent">Password reset link sent to your email.</string>
 </resources>

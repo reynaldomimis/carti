@@ -106,6 +106,11 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
             new ApiHelper(this).addDebt(name, amount, "OWE", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                 @Override
                 public void onSuccess(Map<String, Object> result) {
+                    String id = String.valueOf(result.get("$id"));
+                    com.upreyvan.carti.data.local.DebtManager.getInstance().addDebt(
+                            new com.upreyvan.carti.model.Debt(id, name, "", "Upcoming", amount, false, R.drawable.ic_person, "")
+                    );
+
                     showLoading(false);
                     Toast.makeText(AddDebtActivity.this, "Debt Saved!", Toast.LENGTH_SHORT).show();
                     

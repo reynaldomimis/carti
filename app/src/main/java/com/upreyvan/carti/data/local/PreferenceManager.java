@@ -12,6 +12,7 @@ public class PreferenceManager {
     private static final String KEY_FAMILY_ID = "family_id";
     private static final String KEY_INVITE_CODE = "invite_code";
     private static final String KEY_IS_EMPLOYED = "is_employed";
+    private static final String KEY_LAST_SYNC_TIME = "last_sync_time";
     private final SharedPreferences sharedPreferences;
 
     public PreferenceManager(Context context) {
@@ -27,6 +28,14 @@ public class PreferenceManager {
                 .putString(KEY_INVITE_CODE, inviteCode)
                 .putBoolean(KEY_IS_EMPLOYED, isEmployed)
                 .apply();
+    }
+
+    public String getLastSyncTime() {
+        return sharedPreferences.getString(KEY_LAST_SYNC_TIME, "");
+    }
+
+    public void setLastSyncTime(String time) {
+        sharedPreferences.edit().putString(KEY_LAST_SYNC_TIME, time).apply();
     }
 
     public String getFamilyId() {

@@ -1,7 +1,9 @@
 package com.upreyvan.carti.ui.notifications;
 
+import android.view.View;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.upreyvan.carti.databinding.ItemNotificationBinding;
@@ -52,6 +54,20 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             binding.tvTitle.setText(notification.getTitle());
             binding.tvDescription.setText(notification.getDescription());
             binding.tvTime.setText(notification.getTime());
+
+            if (notification.getType() == Notification.Type.JOIN_REQUEST) {
+                binding.layoutActions.setVisibility(View.VISIBLE);
+                binding.btnAccept.setOnClickListener(v -> {
+                    Toast.makeText(v.getContext(), "Accepted " + notification.getTitle(), Toast.LENGTH_SHORT).show();
+                    // Logic to handle acceptance
+                });
+                binding.btnDeny.setOnClickListener(v -> {
+                    Toast.makeText(v.getContext(), "Denied " + notification.getTitle(), Toast.LENGTH_SHORT).show();
+                    // Logic to handle denial
+                });
+            } else {
+                binding.layoutActions.setVisibility(View.GONE);
+            }
         }
     }
 }

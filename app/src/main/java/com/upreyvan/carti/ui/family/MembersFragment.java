@@ -73,11 +73,6 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
         getBinding().toolbar.btnBack.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().onBackPressed();
         });
-        getBinding().toolbar.btnAction.setVisibility(View.VISIBLE);
-        getBinding().toolbar.btnAction.setText(R.string.btn_invite);
-        getBinding().toolbar.btnAction.setOnClickListener(v -> {
-            startActivity(new Intent(requireContext(), InviteFamilyActivity.class));
-        });
     }
 
     private void navigateTo(androidx.fragment.app.Fragment fragment) {

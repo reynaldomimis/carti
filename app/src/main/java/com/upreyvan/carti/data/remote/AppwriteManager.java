@@ -157,6 +157,93 @@ public class AppwriteManager {
         });
     }
 
+    public void logoutAll(AppwriteCallback<Object> callback) {
+        BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                    try {
+                        return account.deleteSessions((kotlin.coroutines.Continuation<Object>) continuation2);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        });
+    }
+
+    public void createPasswordRecovery(String email, String url, AppwriteCallback<Object> callback) {
+        BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                    try {
+                        return account.createRecovery(email, url, (kotlin.coroutines.Continuation<Object>) continuation2);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        });
+    }
+
+    public void updatePasswordRecovery(String userId, String secret, String password, AppwriteCallback<Object> callback) {
+        BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                    try {
+                        return account.updateRecovery(userId, secret, password, (kotlin.coroutines.Continuation<Object>) continuation2);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        });
+    }
+
+    public void updatePassword(String newPassword, String oldPassword, AppwriteCallback<User<Map<String, Object>>> callback) {
+        BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                User<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                    try {
+                        return account.updatePassword(newPassword, oldPassword, continuation2);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        });
+    }
+
+    public void deleteAccount(AppwriteCallback<Object> callback) {
+        // As suggested, delete account is implemented via a Cloud Function (gateway)
+        callGateway("deleteAccount", new HashMap<>(), new AppwriteCallback<Execution>() {
+            @Override
+            public void onSuccess(Execution result) {
+                postSuccess(callback, result);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                postError(callback, error);
+            }
+        });
+    }
+
     public void listDocuments(String databaseId, String collectionId, List<String> queries, AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {

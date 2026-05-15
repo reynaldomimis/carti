@@ -9,6 +9,9 @@ import androidx.annotation.Nullable;
 
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.base.BaseActivity;
+import com.upreyvan.carti.data.local.DebtManager;
+import com.upreyvan.carti.data.local.ExpenseManager;
+import com.upreyvan.carti.data.local.GoalManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
@@ -30,6 +33,12 @@ public class SplashActivity extends BaseActivity<ActivitySplashBinding> {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Initialize local managers
+        ExpenseManager.init(this);
+        DebtManager.init(this);
+        GoalManager.init(this);
+
         checkSession();
     }
 
@@ -55,7 +64,13 @@ public class SplashActivity extends BaseActivity<ActivitySplashBinding> {
 
             @Override
             public void onError(Throwable error) {
-                navigateToLogin();
+                PreferenceManager pref = new PreferenceManager(SplashActivity.this);
+                if (pref.isOnboardingFinished() && !pref.getFamilyId().isEmpty()) {
+                    // May existing session/data naman, tuloy lang kahit offline
+                    navigateToHome();
+                } else {
+                    navigateToLogin();
+                }
             }
         });
     }

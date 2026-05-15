@@ -18,13 +18,22 @@ public class QuickLogAdapter extends RecyclerView.Adapter<QuickLogAdapter.ViewHo
 
     private final List<QuickLogItem> items;
     private OnItemClickListener onItemClickListener;
+    private OnItemLongClickListener onItemLongClickListener;
 
     public interface OnItemClickListener {
         void onItemClick(QuickLogItem item);
     }
 
+    public interface OnItemLongClickListener {
+        void onItemLongClick(QuickLogItem item);
+    }
+
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.onItemLongClickListener = listener;
     }
 
     public QuickLogAdapter(List<QuickLogItem> items) {
@@ -55,6 +64,14 @@ public class QuickLogAdapter extends RecyclerView.Adapter<QuickLogAdapter.ViewHo
             if (onItemClickListener != null) {
                 onItemClickListener.onItemClick(item);
             }
+        });
+
+        holder.itemView.setOnLongClickListener(v -> {
+            if (onItemLongClickListener != null) {
+                onItemLongClickListener.onItemLongClick(item);
+                return true;
+            }
+            return false;
         });
     }
 

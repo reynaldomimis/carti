@@ -313,7 +313,42 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             }
         });
 
+        quickLogAdapter.setOnItemLongClickListener(item -> {
+            if (!item.getTitle().equals(othersLabel) && !item.getTitle().equals(seeLessLabel)) {
+                showDeleteCategoryDialog(item);
+            }
+        });
+
         getBinding().rvQuickLog.setAdapter(quickLogAdapter);
+    }
+
+    private void showDeleteCategoryDialog(QuickLogItem item) {
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Delete Category")
+                .setMessage("Are you sure you want to delete \"" + item.getTitle() + "\"?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    deleteCategory(item.getTitle());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void deleteCategory(String categoryName) {
+        CategoryManager manager = CategoryManager.getInstance(requireContext());
+        List<Category> categories = manager.getCategories();
+        Category toRemove = null;
+        for (Category cat : categories) {
+            if (cat.getName().equalsIgnoreCase(categoryName)) {
+                toRemove = cat;
+                break;
+            }
+        }
+        if (toRemove != null) {
+            categories.remove(toRemove);
+            manager.updateCategories(categories);
+            setupQuickLog(); // Refresh UI
+            Toast.makeText(requireContext(), categoryName + " deleted", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showQuickLogDialog(QuickLogItem item) {

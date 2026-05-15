@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="@dimen/spacing_medium"
     android:layout_marginVertical="6dp"
+    app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
     app:strokeColor="@color/card_border"
@@ -20,8 +21,11 @@
             android:id="@+id/avatarContainer"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
+            app:strokeColor="@color/card_border"
+            app:strokeWidth="1dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 

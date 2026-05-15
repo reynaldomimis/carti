@@ -1,29 +1,59 @@
 package com.upreyvan.carti.data.local;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.model.Transaction;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 public class ExpenseManager {
+    private static final String PREF_NAME = "expense_prefs";
+    private static final String KEY_TRANSACTIONS = "transactions_list";
     private static ExpenseManager instance;
     private final List<Transaction> transactions;
+    private final SharedPreferences prefs;
+    private final Gson gson;
     private OnExpenseChangeListener listener;
 
     public interface OnExpenseChangeListener {
         void onExpensesUpdated();
     }
 
-    private ExpenseManager() {
-        transactions = new ArrayList<>();
+    private ExpenseManager(Context context) {
+        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        gson = new Gson();
+        transactions = loadTransactions();
     }
 
     public static synchronized ExpenseManager getInstance() {
         if (instance == null) {
-            instance = new ExpenseManager();
+            throw new RuntimeException("ExpenseManager must be initialized with Context first");
         }
         return instance;
+    }
+
+    public static synchronized ExpenseManager init(Context context) {
+        if (instance == null) {
+            instance = new ExpenseManager(context.getApplicationContext());
+        }
+        return instance;
+    }
+
+    private List<Transaction> loadTransactions() {
+        String json = prefs.getString(KEY_TRANSACTIONS, null);
+        if (json == null) return new ArrayList<>();
+        Type type = new TypeToken<ArrayList<Transaction>>() {}.getType();
+        return gson.fromJson(json, type);
+    }
+
+    private void saveTransactions() {
+        prefs.edit().putString(KEY_TRANSACTIONS, gson.toJson(transactions)).apply();
     }
 
     public void setOnExpenseChangeListener(OnExpenseChangeListener listener) {
@@ -32,6 +62,7 @@ public class ExpenseManager {
 
     public void addTransaction(Transaction transaction) {
         transactions.add(0, transaction);
+        saveTransactions();
         if (listener != null) {
             listener.onExpensesUpdated();
         }
@@ -40,6 +71,7 @@ public class ExpenseManager {
     public void setTransactions(List<Transaction> newTransactions) {
         transactions.clear();
         transactions.addAll(newTransactions);
+        saveTransactions();
         if (listener != null) {
             listener.onExpensesUpdated();
         }
@@ -47,6 +79,7 @@ public class ExpenseManager {
 
     public void clear() {
         transactions.clear();
+        saveTransactions();
         if (listener != null) {
             listener.onExpensesUpdated();
         }

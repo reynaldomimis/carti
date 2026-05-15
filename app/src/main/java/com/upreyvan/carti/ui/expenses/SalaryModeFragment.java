@@ -30,8 +30,79 @@ public class SalaryModeFragment extends BaseFragment<FragmentSalaryModeBinding> 
         super.onViewCreated(view, savedInstanceState);
         setupDynamicPadding();
         setupToolbar();
+        fetchTotalIncome();
+        fetchCycleExpenses();
         updateUI();
         setupListeners();
+    }
+
+    private void fetchCycleExpenses() {
+        SalaryManager manager = SalaryManager.getInstance(requireContext());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+        String startDate = sdf.format(manager.getLastPayday().getTime());
+        String endDate = sdf.format(manager.getNextPayday().getTime());
+
+        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).getTransactions(startDate, endDate, null, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<io.appwrite.models.DocumentList<java.util.Map<String, Object>>>() {
+            @Override
+            public void onSuccess(io.appwrite.models.DocumentList<java.util.Map<String, Object>> result) {
+                if (!isAdded()) return;
+                double totalExpense = 0;
+                for (io.appwrite.models.Document<java.util.Map<String, Object>> doc : result.getDocuments()) {
+                    java.util.Map<String, Object> data = doc.getData();
+                    if ("EXPENSE".equals(data.get("type"))) {
+                        Object amountObj = data.get("amount");
+                        if (amountObj instanceof Number) {
+                            totalExpense += ((Number) amountObj).doubleValue();
+                        }
+                    }
+                }
+                final double finalTotal = totalExpense;
+                requireActivity().runOnUiThread(() -> {
+                    getBinding().tvTotalExpenses.setText(String.format(Locale.getDefault(), "₱%,.2f", finalTotal));
+                    updateRemainingBalance(finalTotal);
+                });
+            }
+
+            @Override
+            public void onError(Throwable error) {
+            }
+        });
+    }
+
+    private void updateRemainingBalance(double totalExpense) {
+        float salary = SalaryManager.getInstance(requireContext()).getSalaryAmount();
+        double remaining = salary - totalExpense;
+        getBinding().tvRemainingBalance.setText(String.format(Locale.getDefault(), "₱%,.2f", remaining));
+        
+        if (remaining < 0) {
+            getBinding().tvRemainingBalance.setTextColor(getResources().getColor(R.color.status_red));
+        } else {
+            getBinding().tvRemainingBalance.setTextColor(getResources().getColor(R.color.carti_primary_green));
+        }
+    }
+
+    private void fetchTotalIncome() {
+        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).getFamilySummary(new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<io.appwrite.models.Document<java.util.Map<String, Object>>>() {
+            @Override
+            public void onSuccess(io.appwrite.models.Document<java.util.Map<String, Object>> result) {
+                if (!isAdded()) return;
+                java.util.Map<String, Object> data = result.getData();
+                if (data.containsKey("totalIncome")) {
+                    Object income = data.get("totalIncome");
+                    float amount = 0f;
+                    if (income instanceof Number) {
+                        amount = ((Number) income).floatValue();
+                    }
+                    SalaryManager.getInstance(requireContext()).setSalaryAmount(amount);
+                    requireActivity().runOnUiThread(() -> updateUI());
+                }
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                // Fail silently or log
+            }
+        });
     }
 
     private void setupToolbar() {
@@ -55,14 +126,41 @@ public class SalaryModeFragment extends BaseFragment<FragmentSalaryModeBinding> 
 
         // Details
         getBinding().tvSalaryAmount.setText(String.format(Locale.getDefault(), "₱%,.2f", manager.getSalaryAmount()));
-        getBinding().tvPaydaySchedule.setText(getString(R.string.payday_format, manager.getFirstPayday(), manager.getSecondPayday()));
-        getBinding().tvDailyBudget.setText(String.format(Locale.getDefault(), "₱%,.2f / day", manager.getDailyBudget()));
+        
+        if (manager.isMonthly()) {
+            int day = manager.getFirstPayday();
+            getBinding().tvPaydaySchedule.setText(String.format(Locale.getDefault(), "Every %d%s of the month", 
+                day, getDayNumberSuffix(day)));
+        } else {
+            getBinding().tvPaydaySchedule.setText(getString(R.string.payday_format, manager.getFirstPayday(), manager.getSecondPayday()));
+        }
 
-        // Progress (Simplified logic: assume 15 days cycle)
-        int daysPassed = 15 - daysLeft;
+        
+        double dailyBudget = manager.getDailyBudget();
+        getBinding().tvDailyBudget.setText(String.format(Locale.getDefault(), "₱%,.2f / day", dailyBudget));
+
+        // Progress Calculation
+        int totalDays = manager.getTotalDaysInCycle();
+        int daysPassed = totalDays - daysLeft;
         if (daysPassed < 0) daysPassed = 0;
-        int progress = (int) ((daysPassed / 15f) * 100);
+        
+        int progress = (totalDays > 0) ? (int) ((daysPassed / (float) totalDays) * 100) : 0;
         getBinding().progressSalary.setProgress(Math.min(progress, 100));
+        
+        // Update labels
+        getBinding().tvProgressRange.setText(String.format(Locale.getDefault(), "%s - %s", 
+            sdf.format(manager.getLastPayday().getTime()), 
+            sdf.format(manager.getNextPayday().getTime())));
+    }
+
+    private String getDayNumberSuffix(int day) {
+        if (day >= 11 && day <= 13) return "th";
+        switch (day % 10) {
+            case 1: return "st";
+            case 2: return "nd";
+            case 3: return "rd";
+            default: return "th";
+        }
     }
 
     private void setupListeners() {

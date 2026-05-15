@@ -8,6 +8,8 @@ import android.widget.Toast;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentInviteFamilyBinding;
 import com.upreyvan.carti.util.Utils;
 import android.content.ClipData;
@@ -15,7 +17,12 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 
+import io.appwrite.models.Document;
+import java.util.Map;
+
 public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBinding> {
+
+    private ApiHelper apiHelper;
 
     @Override
     protected FragmentInviteFamilyBinding inflateBinding(LayoutInflater inflater) {
@@ -25,9 +32,11 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        apiHelper = new ApiHelper(this);
         setupDynamicPadding();
         setupToolbar();
         setupContent();
+        fetchInviteCode();
     }
 
     private void setupDynamicPadding() {
@@ -48,16 +57,9 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
     private void setupContent() {
         PreferenceManager pref = new PreferenceManager(this);
         String inviteCode = pref.getInviteCode();
-        if (inviteCode == null || inviteCode.isEmpty()) {
-            inviteCode = pref.getFamilyId(); // Fallback
-        }
-
-        if (inviteCode != null && inviteCode.startsWith("FAM-")) {
-            inviteCode = inviteCode.replace("FAM-", "");
-        }
-
-        getBinding().tvFamilyId.setText(inviteCode != null ? inviteCode : "");
-        getBinding().tvValidity.setText(getString(R.string.validity_format, getString(R.string.mock_validity_date)));
+        
+        // Initial display from prefs
+        updateInviteUI(inviteCode);
 
         // Setup Steps
         getBinding().step1.tvStepNumber.setText("1");
@@ -68,8 +70,43 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
 
         getBinding().step3.tvStepNumber.setText("3");
         getBinding().step3.tvStepDescription.setText(R.string.step_3);
+    }
 
-        String finalInviteCode = inviteCode;
+    private void fetchInviteCode() {
+        apiHelper.getFamilySummary(new AppwriteManager.AppwriteCallback<Document<Map<String, Object>>>() {
+            @Override
+            public void onSuccess(Document<Map<String, Object>> result) {
+                if (result.getData() != null) {
+                    Object code = result.getData().get("inviteCode");
+                    if (code != null) {
+                        String inviteCode = String.valueOf(code);
+                        // Save to prefs for next time
+                        new PreferenceManager(InviteFamilyActivity.this).setInviteCode(inviteCode);
+                        runOnUiThread(() -> updateInviteUI(inviteCode));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                // Keep existing UI
+            }
+        });
+    }
+
+    private void updateInviteUI(String inviteCode) {
+        if (inviteCode == null || inviteCode.isEmpty()) {
+            inviteCode = new PreferenceManager(this).getFamilyId(); // Fallback
+        }
+
+        if (inviteCode != null && inviteCode.startsWith("FAM-")) {
+            inviteCode = inviteCode.replace("FAM-", "");
+        }
+
+        String finalInviteCode = inviteCode != null ? inviteCode : "";
+        getBinding().tvFamilyId.setText(finalInviteCode);
+        getBinding().tvValidity.setText(getString(R.string.validity_format, getString(R.string.mock_validity_date)));
+
         getBinding().btnCopy.setOnClickListener(v -> {
             copyToClipboard(finalInviteCode);
         });
