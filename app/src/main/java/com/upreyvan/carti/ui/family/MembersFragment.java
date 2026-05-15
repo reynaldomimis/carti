@@ -15,10 +15,16 @@ import com.upreyvan.carti.ui.family.InviteFamilyActivity;
 import com.upreyvan.carti.ui.family.MemberAdapter;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentMembersBinding;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.model.Member;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import io.appwrite.models.Document;
+import io.appwrite.models.DocumentList;
 
 public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
 
@@ -38,14 +44,15 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
     }
 
     private void fetchMembers() {
-        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).getMembers(new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+        new ApiHelper(requireContext()).getMembers(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
             @Override
-            public void onSuccess(java.util.Map<String, Object> result) {
+            public void onSuccess(DocumentList<Map<String, Object>> result) {
                 if (!isAdded()) return;
-                java.util.List<java.util.Map<String, Object>> membersData = (java.util.List<java.util.Map<String, Object>>) result.get("list");
-                if (membersData != null) {
+                List<Document<Map<String, Object>>> documents = result.getDocuments();
+                if (documents != null) {
                     List<Member> members = new ArrayList<>();
-                    for (java.util.Map<String, Object> data : membersData) {
+                    for (Document<Map<String, Object>> doc : documents) {
+                        Map<String, Object> data = doc.getData();
                         String name = String.valueOf(data.get("username"));
                         String role = String.valueOf(data.get("role"));
                         members.add(new Member(name, role, R.drawable.ic_person));

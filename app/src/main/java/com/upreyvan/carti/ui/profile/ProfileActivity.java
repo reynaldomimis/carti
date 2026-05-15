@@ -29,14 +29,17 @@ import com.upreyvan.carti.ui.profile.SettingsFragment;
 import com.upreyvan.carti.model.ProfileMenuItem;
 import com.upreyvan.carti.util.Utils;
 
+import com.upreyvan.carti.data.remote.ApiHelper;
+import io.appwrite.models.DocumentList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
 
     private ProfileMenuAdapter adapter;
     private List<ProfileMenuItem> menuItems;
-    private com.upreyvan.carti.data.remote.ApiHelper apiHelper;
+    private ApiHelper apiHelper;
 
     @Override
     protected ActivityProfileBinding inflateBinding(LayoutInflater inflater) {
@@ -47,7 +50,7 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        apiHelper = new com.upreyvan.carti.data.remote.ApiHelper(this);
+        apiHelper = new ApiHelper(this);
         setupDynamicPadding();
         setupToolbar();
         setupUserInfo();
@@ -144,12 +147,11 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
     }
 
     private void fetchMemberCount() {
-        apiHelper.getMembers(new AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+        apiHelper.getMembers(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
             @Override
-            public void onSuccess(java.util.Map<String, Object> result) {
-                Object listObj = result.get("list");
-                if (listObj instanceof List) {
-                    int count = ((List<?>) listObj).size();
+            public void onSuccess(DocumentList<Map<String, Object>> result) {
+                if (result.getDocuments() != null) {
+                    int count = result.getDocuments().size();
                     updateFamilyMemberCount(count);
                 }
             }

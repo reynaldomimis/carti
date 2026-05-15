@@ -3,28 +3,44 @@ package com.upreyvan.carti.data.remote;
 import android.content.Context;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.upreyvan.carti.data.local.PreferenceManager;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import io.appwrite.Query;
+import io.appwrite.models.Document;
+import io.appwrite.models.DocumentList;
 import io.appwrite.models.Execution;
 
 /**
- * Senior Developer Refactored: Helper class to interact with Appwrite Functions (Gateway).
- * This version handles the unified response envelope {s: boolean, data: object, m: string}.
+ * Senior Developer Refactored: Optimized for Production.
+ * - SDK for READS: Saves costs/bandwidth by fetching directly from DB with Delta Sync.
+ * - Functions for WRITES: Maintains security by processing logic on the server.
  */
 public class ApiHelper {
     private final AppwriteManager appwriteManager;
+    private final PreferenceManager pref;
     private final Gson gson = new Gson();
+
+    // DATABASE CONFIGURATION (Ensure these match your Appwrite console)
+    private static final String DATABASE_ID = "69eca97100090be1e45e"; // Actual DB ID
+    private static final String COL_USERS = "users";
+    private static final String COL_TRANSACTIONS = "transactions";
+    private static final String COL_GOALS = "goals";
+    private static final String COL_DEBTS = "debts";
+    private static final String COL_FAMILIES = "families";
 
     public ApiHelper(Context context) {
         this.appwriteManager = AppwriteManager.getInstance(context);
+        this.pref = new PreferenceManager(context);
     }
 
     /**
-     * Unified method to call any action on the gateway function.
-     * It parses the execution response and checks for the success flag 's'.
+     * Unified method to call any action on the gateway function (WRITES).
      */
-    public void callAction(String action, Map<String, Object> params, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+    private void callAction(String action, Map<String, Object> params, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         appwriteManager.callGateway(action, params, new AppwriteManager.AppwriteCallback<Execution>() {
             @Override
             public void onSuccess(Execution result) {
@@ -37,7 +53,6 @@ public class ApiHelper {
                         if (data instanceof Map) {
                             callback.onSuccess((Map<String, Object>) data);
                         } else if (data instanceof java.util.List) {
-                            // If it's a list, wrap it in a map for consistency
                             Map<String, Object> wrapper = new HashMap<>();
                             wrapper.put("list", data);
                             callback.onSuccess(wrapper);
@@ -45,10 +60,7 @@ public class ApiHelper {
                             callback.onSuccess(new HashMap<>());
                         }
                     } else {
-                        String message = "Unknown server error";
-                        if (response != null && response.get("m") != null) {
-                            message = String.valueOf(response.get("m"));
-                        }
+                        String message = response != null && response.get("m") != null ? String.valueOf(response.get("m")) : "Unknown server error";
                         callback.onError(new Exception(message));
                     }
                 } catch (Exception e) {
@@ -63,9 +75,64 @@ public class ApiHelper {
         });
     }
 
-    /* ─────────────────────────────
-       CONVENIENCE METHODS
-    ──────────────────────────── */
+    public void sync(String lastSyncTime, String startDate, String endDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("lastSyncTime", lastSyncTime);
+        params.put("startDate", startDate);
+        params.put("endDate", endDate);
+        callAction("sync", params, callback);
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       SDK READ OPERATIONS (COST OPTIMIZED)
+    ───────────────────────────────────────────────────────────── */
+
+    public void getTransactions(String startDate, String endDate, String lastSyncTime, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) { callback.onError(new Exception("NO_FAMILY")); return; }
+
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", familyId)); // Security
+        queries.add(Query.Companion.greaterThanEqual("$createdAt", startDate));
+        queries.add(Query.Companion.lessThanEqual("$createdAt", endDate));
+        queries.add(Query.Companion.orderDesc("$createdAt"));
+        queries.add(Query.Companion.limit(100));
+
+        if (lastSyncTime != null && !lastSyncTime.isEmpty()) {
+            queries.add(Query.Companion.greaterThan("$updatedAt", lastSyncTime));
+        }
+        appwriteManager.listDocuments(DATABASE_ID, COL_TRANSACTIONS, queries, callback);
+    }
+
+    public void getMembers(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", familyId));
+        appwriteManager.listDocuments(DATABASE_ID, COL_USERS, queries, callback);
+    }
+
+    public void getGoals(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", familyId));
+        appwriteManager.listDocuments(DATABASE_ID, COL_GOALS, queries, callback);
+    }
+
+    public void getDebts(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", familyId));
+        appwriteManager.listDocuments(DATABASE_ID, COL_DEBTS, queries, callback);
+    }
+
+    public void getFamilySummary(AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        appwriteManager.getDocument(DATABASE_ID, COL_FAMILIES, familyId, callback);
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       FUNCTION WRITE OPERATIONS (SECURE GATEWAY)
+    ───────────────────────────────────────────────────────────── */
 
     public void register(String email, String password, String username, boolean isEmployed, String role, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
@@ -75,14 +142,6 @@ public class ApiHelper {
         params.put("isEmployed", isEmployed);
         params.put("role", role);
         callAction("register", params, callback);
-    }
-
-    public void sync(String lastSyncTime, String startDate, String endDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("lastSyncTime", lastSyncTime);
-        params.put("startDate", startDate);
-        params.put("endDate", endDate);
-        callAction("sync", params, callback);
     }
 
     public void getUser(AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
@@ -135,9 +194,5 @@ public class ApiHelper {
         Map<String, Object> params = new HashMap<>();
         params.put("transactionId", transactionId);
         callAction("delete_transaction", params, callback);
-    }
-
-    public void getMembers(AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        callAction("get_members", new HashMap<>(), callback);
     }
 }

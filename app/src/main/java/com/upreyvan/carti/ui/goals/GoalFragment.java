@@ -17,7 +17,13 @@ import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.GoalManager;
 import com.upreyvan.carti.databinding.FragmentGoalBinding;
 import com.upreyvan.carti.model.Goal;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.util.Utils;
+import io.appwrite.models.Document;
+import io.appwrite.models.DocumentList;
+import java.util.Map;
+import android.widget.Toast;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -51,9 +57,54 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     }
 
     private void loadGoals() {
+        // Load from local first for instant UI
         allGoals = GoalManager.getInstance().getGoals();
         filterGoals(getBinding().tabLayout.getSelectedTabPosition());
         updateOverallProgress(allGoals);
+
+        // Then fetch from Cloud (SDK Direct Read)
+        new ApiHelper(requireContext()).getGoals(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
+            @Override
+            public void onSuccess(DocumentList<Map<String, Object>> result) {
+                if (!isAdded()) return;
+                
+                List<Goal> cloudGoals = new ArrayList<>();
+                for (Document<Map<String, Object>> doc : result.getDocuments()) {
+                    cloudGoals.add(mapToGoal(doc.getData(), doc.getId()));
+                }
+
+                // Update Local Manager and UI
+                GoalManager.getInstance().setGoals(cloudGoals);
+                requireActivity().runOnUiThread(() -> {
+                    allGoals = cloudGoals;
+                    filterGoals(getBinding().tabLayout.getSelectedTabPosition());
+                    updateOverallProgress(allGoals);
+                });
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> 
+                        Toast.makeText(requireContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
+                }
+            }
+        });
+    }
+
+    private Goal mapToGoal(Map<String, Object> data, String id) {
+        String name = String.valueOf(data.get("name"));
+        double target = 0;
+        Object t = data.get("targetAmount");
+        if (t instanceof Number) target = ((Number) t).doubleValue();
+        
+        double current = 0;
+        Object c = data.get("currentAmount");
+        if (c instanceof Number) current = ((Number) c).doubleValue();
+
+        return new Goal(id, name, current, target, "Target Date", R.drawable.test,
+                androidx.core.content.ContextCompat.getColor(requireContext(), R.color.goal_card_1));
     }
 
     private void setupHeader() {

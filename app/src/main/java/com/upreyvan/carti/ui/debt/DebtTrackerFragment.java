@@ -22,10 +22,13 @@ import com.upreyvan.carti.data.local.DebtManager;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
 import com.upreyvan.carti.model.Debt;
-import com.upreyvan.carti.data.remote.ApiHelper;
-
+import com.upreyvan.carti.data.remote.AppwriteManager;
+import io.appwrite.models.Document;
+import io.appwrite.models.DocumentList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import android.widget.Toast;
 
 public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding> {
 
@@ -55,8 +58,51 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     }
 
     private void loadDebts() {
+        // Load local data first
         allDebts = DebtManager.getInstance().getDebts();
         filterDebts(getBinding().tabLayout.getSelectedTabPosition());
+
+        // Fetch fresh data from Cloud
+        apiHelper.getDebts(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
+            @Override
+            public void onSuccess(DocumentList<Map<String, Object>> result) {
+                if (!isAdded()) return;
+
+                List<Debt> cloudDebts = new ArrayList<>();
+                for (Document<Map<String, Object>> doc : result.getDocuments()) {
+                    cloudDebts.add(mapToDebt(doc.getData(), doc.getId()));
+                }
+
+                // Update Local Cache
+                DebtManager.getInstance().setDebts(cloudDebts);
+
+                requireActivity().runOnUiThread(() -> {
+                    allDebts = cloudDebts;
+                    filterDebts(getBinding().tabLayout.getSelectedTabPosition());
+                });
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() ->
+                        Toast.makeText(requireContext(), "Sync error: " + error.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
+                }
+            }
+        });
+    }
+
+    private Debt mapToDebt(Map<String, Object> data, String id) {
+        String name = String.valueOf(data.get("personName"));
+        double amount = 0;
+        Object amt = data.get("amount");
+        if (amt instanceof Number) amount = ((Number) amt).doubleValue();
+
+        boolean isPaid = Boolean.TRUE.equals(data.get("isPaid"));
+        String date = "Upcoming";
+
+        return new Debt(id, name, "", date, amount, isPaid, R.drawable.ic_person, "");
     }
 
     private void setupToolbar() {

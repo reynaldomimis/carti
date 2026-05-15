@@ -14,11 +14,15 @@ import java.util.Map;
 import io.appwrite.Client;
 import io.appwrite.ID;
 import io.appwrite.enums.ExecutionMethod;
+import io.appwrite.models.Document;
+import io.appwrite.models.DocumentList;
 import io.appwrite.models.Execution;
 import io.appwrite.models.Session;
 import io.appwrite.models.User;
 import io.appwrite.services.Account;
+import io.appwrite.services.Databases;
 import io.appwrite.services.Functions;
+import java.util.List;
 import kotlin.Unit;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlinx.coroutines.BuildersKt;
@@ -30,6 +34,7 @@ public class AppwriteManager {
     private static AppwriteManager instance;
     private final Account account;
     private final Functions functions;
+    private final Databases databases;
     private final Gson gson = new Gson();
     private final CoroutineScope scope;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -60,6 +65,7 @@ public class AppwriteManager {
 
         account = new Account(client);
         functions = new Functions(client);
+        databases = new Databases(client);
         scope = CoroutineScopeKt.CoroutineScope(Dispatchers.getIO());
     }
 
@@ -139,6 +145,54 @@ public class AppwriteManager {
                 Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
                     try {
                         return account.deleteSession("current", (kotlin.coroutines.Continuation<Object>) continuation2);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        });
+    }
+
+    public void listDocuments(String databaseId, String collectionId, List<String> queries, AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                DocumentList<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                    try {
+                        return databases.listDocuments(
+                                databaseId,
+                                collectionId,
+                                queries,
+                                null,
+                                (Class) Map.class,
+                                continuation2
+                        );
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        });
+    }
+
+    public void getDocument(String databaseId, String collectionId, String documentId, AppwriteCallback<Document<Map<String, Object>>> callback) {
+        BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                Document<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                    try {
+                        return databases.getDocument(
+                                databaseId,
+                                collectionId,
+                                documentId,
+                                continuation2
+                        );
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
