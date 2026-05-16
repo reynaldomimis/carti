@@ -17,8 +17,10 @@ public class CategoryManager {
     private static CategoryManager instance;
     private final SharedPreferences prefs;
     private final Gson gson;
+    private final Context context;
 
     private CategoryManager(Context context) {
+        this.context = context.getApplicationContext();
         prefs = context.getSharedPreferences(Constants.Keys.PREF_CATEGORY, Context.MODE_PRIVATE);
         gson = new Gson();
     }
@@ -31,9 +33,16 @@ public class CategoryManager {
     }
 
     public List<Category> getCategories() {
-        String json = prefs.getString(Constants.Keys.KEY_CATEGORIES, null);
+        // Gagamit tayo ng v2 key para ma-force reset ang mga stale Resource IDs
+        String json = prefs.getString(Constants.Keys.KEY_CATEGORIES + "_v2", null);
         if (json == null) {
-            return getDefaultCategories();
+            List<Category> defaults = getDefaultCategories();
+            saveCategories(defaults);
+            
+            // Also reset transaction sync time to refresh transactions with new IDs
+            PreferenceManager.getInstance(context).resetLastSyncTime();
+
+            return defaults;
         }
         Type type = new TypeToken<ArrayList<Category>>() {}.getType();
         return gson.fromJson(json, type);
@@ -51,7 +60,7 @@ public class CategoryManager {
 
     private void saveCategories(List<Category> categories) {
         String json = gson.toJson(categories);
-        prefs.edit().putString(Constants.Keys.KEY_CATEGORIES, json).apply();
+        prefs.edit().putString(Constants.Keys.KEY_CATEGORIES + "_v2", json).apply();
     }
 
     private List<Category> getDefaultCategories() {

@@ -43,6 +43,11 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     private PreferenceManager pref;
     private Realtime realtime;
     private RealtimeSubscription subscription;
+    
+    private boolean isLoading = false;
+    private boolean isLastPage = false;
+    private long oldestTimestamp = Long.MAX_VALUE;
+    private static final int PAGE_SIZE = 20;
 
     @Override
     protected FragmentFamilyChatBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -71,8 +76,22 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
     private void setupChatList() {
         chatAdapter = new ChatAdapter();
-        getBinding().rvChat.setLayoutManager(new LinearLayoutManager(requireContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
+        layoutManager.setStackFromEnd(true);
+        getBinding().rvChat.setLayoutManager(layoutManager);
         getBinding().rvChat.setAdapter(chatAdapter);
+
+        getBinding().rvChat.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy < 0 && !recyclerView.canScrollVertically(-1)) {
+                    if (!isLoading && !isLastPage) {
+                        loadChatHistory(true);
+                    }
+                }
+            }
+        });
     }
 
     private void initRealtime() {
@@ -90,13 +109,29 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                 
                 if (familyId.equals(msgFamilyId)) {
                     ChatMessage msg = mapToChatMessage(payload);
-                    // Realtime callbacks usually come from a background thread
                     requireActivity().runOnUiThread(() -> {
                         List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
-                        currentList.add(msg);
-                        chatAdapter.submitList(currentList);
-                        getBinding().rvChat.postDelayed(() -> 
-                            getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1), 100);
+                        boolean exists = false;
+                        for (ChatMessage m : currentList) {
+                            if (m.getId() != null && m.getId().equals(msg.getId())) {
+                                exists = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!exists) {
+                            currentList.add(msg);
+                            chatAdapter.submitList(currentList, () -> {
+                                LinearLayoutManager lm = (LinearLayoutManager) getBinding().rvChat.getLayoutManager();
+                                if (lm != null) {
+                                    int lastVisible = lm.findLastVisibleItemPosition();
+                                    int totalItems = chatAdapter.getItemCount();
+                                    if (lastVisible >= totalItems - 3) {
+                                        getBinding().rvChat.scrollToPosition(totalItems - 1);
+                                    }
+                                }
+                            });
+                        }
                     });
                 }
             }
@@ -105,22 +140,30 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     }
 
     private void loadChatHistory() {
-        // Show shimmer effect
-        List<ChatMessage> shimmers = new ArrayList<>();
-        shimmers.add(new ChatMessage(true, false));
-        shimmers.add(new ChatMessage(true, true));
-        shimmers.add(new ChatMessage(true, false));
-        chatAdapter.submitList(shimmers);
+        loadChatHistory(false);
+    }
+
+    private void loadChatHistory(boolean loadMore) {
+        if (isLoading) return;
+        isLoading = true;
+
+        getBinding().pbLoadingMore.show();
+
+        List<String> queries = new ArrayList<>(Arrays.asList(
+            Query.Companion.equal("familyId", pref.getFamilyId()),
+            Query.Companion.orderDesc("timestamp"),
+            Query.Companion.limit(PAGE_SIZE)
+        ));
+
+        if (loadMore) {
+            queries.add(Query.Companion.lessThan("timestamp", oldestTimestamp));
+        }
 
         AppwriteManager.getInstance(requireContext())
             .listDocuments(
                 Constants.Appwrite.DATABASE_ID,
                 Constants.Appwrite.COL_MESSAGES,
-                Arrays.asList(
-                    Query.Companion.equal("familyId", pref.getFamilyId()),
-                    Query.Companion.orderAsc("timestamp"),
-                    Query.Companion.limit(50)
-                ),
+                queries,
                 new AppwriteCallback<DocumentList<Map<String, Object>>>() {
                     @Override
                     public void onSuccess(DocumentList<Map<String, Object>> result) {
@@ -128,15 +171,46 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                         for (Document<Map<String, Object>> doc : result.getDocuments()) {
                             messages.add(mapToChatMessage(doc.getData()));
                         }
-                        chatAdapter.submitList(messages);
-                        if (!messages.isEmpty()) {
-                            getBinding().rvChat.scrollToPosition(messages.size() - 1);
-                        }
+
+                        // Order for UI: ascending timestamp
+                        java.util.Collections.reverse(messages);
+
+                        requireActivity().runOnUiThread(() -> {
+                            getBinding().pbLoadingMore.hide();
+                            List<ChatMessage> currentItems = new ArrayList<>(chatAdapter.getCurrentList());
+                            List<ChatMessage> newList;
+                            
+                            if (loadMore) {
+                                // Prepend older messages
+                                newList = new ArrayList<>(messages);
+                                newList.addAll(currentItems);
+                            } else {
+                                newList = messages;
+                            }
+
+                            if (!messages.isEmpty()) {
+                                oldestTimestamp = messages.get(0).getTimestamp();
+                            }
+
+                            isLastPage = result.getDocuments().size() < PAGE_SIZE;
+                            
+                            // DiffUtil handles the scroll position retention automatically
+                            chatAdapter.submitList(newList, () -> {
+                                if (!loadMore && !newList.isEmpty()) {
+                                    getBinding().rvChat.scrollToPosition(newList.size() - 1);
+                                }
+                            });
+                            isLoading = false;
+                        });
                     }
 
                     @Override
                     public void onError(Throwable error) {
-                        Utils.showToast(requireContext(), "Failed to load chat history");
+                        isLoading = false;
+                        requireActivity().runOnUiThread(() -> getBinding().pbLoadingMore.hide());
+                        if (getContext() != null) {
+                            Utils.showToast(requireContext(), "Error loading messages");
+                        }
                     }
                 }
             );
@@ -206,11 +280,13 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     }
 
     private void setupToolbar() {
-        getBinding().btnBack.setOnClickListener(v -> {
+        getBinding().layoutHeader.setElevation(4f);
+
+        getBinding().backButtonContainer.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().onBackPressed();
         });
 
-        getBinding().btnSettings.setOnClickListener(v -> showAutoDeleteDialog());
+        getBinding().settingsButtonContainer.setOnClickListener(v -> showAutoDeleteDialog());
     }
 
     private void showAutoDeleteDialog() {
@@ -238,20 +314,36 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     }
 
     private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(getBinding().layoutHeader, null, 0.3f, 0);
+        int originalHeaderBottom = getBinding().layoutHeader.getPaddingBottom();
+        int originalInputBottom = getBinding().layoutInputContainer.getPaddingBottom();
+
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutHeader, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            int adjustedTop = (int) (systemBars.top * 0.3f);
+
+            v.setPadding(
+                    v.getPaddingLeft(),
+                     adjustedTop,
+                    v.getPaddingRight(),
+                    originalHeaderBottom
+            );
+            return insets;
+        });
+
 
         ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutInputContainer, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
-            int bottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_height);
 
-            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-            if (ime.bottom > 0) {
-                lp.bottomMargin = ime.bottom;
-            } else {
-                lp.bottomMargin = systemBars.bottom + bottomNavHeight;
-            }
-            v.setLayoutParams(lp);
+            int insetBottom = Math.max(systemBars.bottom, ime.bottom);
+
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    v.getPaddingTop(),
+                    v.getPaddingRight(),
+                    insetBottom + originalInputBottom
+            );
             return insets;
         });
     }

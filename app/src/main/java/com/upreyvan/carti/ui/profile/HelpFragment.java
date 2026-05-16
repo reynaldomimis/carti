@@ -15,6 +15,11 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentHelpBinding;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import com.upreyvan.carti.model.FaqItem;
+import java.util.ArrayList;
+import java.util.List;
+
 public class HelpFragment extends BaseFragment<FragmentHelpBinding> {
 
     @Override
@@ -26,12 +31,29 @@ public class HelpFragment extends BaseFragment<FragmentHelpBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupToolbar();
+        setupFaqList();
         setupListeners();
     }
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.help_title);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+    }
+
+    private void setupFaqList() {
+        List<FaqItem> faqItems = new ArrayList<>();
+        faqItems.add(new FaqItem(getString(R.string.faq_q1), getString(R.string.faq_a1)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q2), getString(R.string.faq_a2)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q3), getString(R.string.faq_a3)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q4), getString(R.string.faq_a4)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q5), getString(R.string.faq_a5)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q6), getString(R.string.faq_a6)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q7), getString(R.string.faq_a7)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q8), getString(R.string.faq_a8)));
+
+        FaqAdapter adapter = new FaqAdapter(faqItems);
+        getBinding().rvFaq.setLayoutManager(new LinearLayoutManager(requireContext()));
+        getBinding().rvFaq.setAdapter(adapter);
     }
 
     private void setupListeners() {

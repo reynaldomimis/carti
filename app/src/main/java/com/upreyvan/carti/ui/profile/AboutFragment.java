@@ -1,9 +1,12 @@
 package com.upreyvan.carti.ui.profile;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,14 +37,30 @@ public class AboutFragment extends BaseFragment<FragmentAboutBinding> {
     }
 
     private void setupInfo() {
-        getBinding().tvVersion.setText(getString(R.string.app_version_format, "1.0.0"));
+        String version;
+        try {
+            version = requireContext().getPackageManager().getPackageInfo(requireContext().getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            version = "1.0.0";
+        }
+        getBinding().tvVersion.setText(getString(R.string.app_version_format, version));
         
-        getBinding().btnTerms.setOnClickListener(v -> {
-            // Open Terms
+        getBinding().btnTerms.setOnClickListener(v -> openUrl(getString(R.string.url_terms)));
+        getBinding().btnCredits.setOnClickListener(v -> {
+            boolean isExpanded = getBinding().layoutCreditsContent.getVisibility() == View.VISIBLE;
+            getBinding().layoutCreditsContent.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
+            getBinding().ivCreditsArrow.animate().rotation(isExpanded ? 0 : 90).start();
+            int strokePx = isExpanded ? 0 : (int) (1 * getResources().getDisplayMetrics().density);
+            getBinding().cardCredits.setStrokeWidth(strokePx);
         });
+    }
 
-        getBinding().btnPrivacy.setOnClickListener(v -> {
-            // Open Privacy
-        });
+    private void openUrl(String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Unable to open link", Toast.LENGTH_SHORT).show();
+        }
     }
 }

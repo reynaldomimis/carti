@@ -11,34 +11,54 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:elevation="2dp"
         android:paddingHorizontal="16dp"
-        android:paddingBottom="4dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="8dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@null"
-            android:src="@drawable/ic_back"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/back_button_container"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/surface_variant"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/text_primary" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:contentDescription="@null"
+                android:padding="8dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_back"
+                app:tint="@color/text_primary" />
+
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:fontFamily="@font/plus_jakarta_sans_bold"
             android:text="@string/family_chat_title"
             android:textColor="@color/text_primary"
             android:textSize="18sp"
+            android:textAlignment="center"
+            app:layout_constraintHorizontal_bias="0.45"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/layoutActions"
-            app:layout_constraintStart_toEndOf="@+id/btnBack"
+            app:layout_constraintStart_toEndOf="@+id/back_button_container"
             app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
@@ -50,17 +70,44 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ImageButton
-                android:id="@+id/btnSettings"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@null"
-                android:src="@android:drawable/ic_menu_manage"
-                app:tint="@color/text_secondary" />
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/settings_button_container"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/surface_variant"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <ImageView
+                    android:id="@+id/btnSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@null"
+                    android:padding="8dp"
+                    android:src="@android:drawable/ic_menu_manage"
+                    app:tint="@color/text_primary" />
+
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/pbLoadingMore"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:trackThickness="1.5dp"
+        app:indicatorColor="@array/chat_progress_colors"
+        app:trackColor="@color/chat_progress_track"
+        app:indeterminateAnimationType="contiguous"
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvChat"

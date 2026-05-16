@@ -11,6 +11,10 @@ public class PreferenceManager {
         sharedPreferences = context.getSharedPreferences(Constants.Keys.PREF_NAME, Context.MODE_PRIVATE);
     }
 
+    public static PreferenceManager getInstance(Context context) {
+        return new PreferenceManager(context);
+    }
+
     public void setUserData(String name, String email, String role, boolean isEmployed, String familyId, String inviteCode, String userId) {
         sharedPreferences.edit()
                 .putString(Constants.Keys.KEY_USER_NAME, name)
@@ -97,6 +101,10 @@ public class PreferenceManager {
 
     public void setLastSyncTime(String timestamp) {
         sharedPreferences.edit().putString(Constants.Keys.KEY_LAST_SYNC_TIME, timestamp).apply();
+    }
+
+    public void resetLastSyncTime() {
+        sharedPreferences.edit().remove(Constants.Keys.KEY_LAST_SYNC_TIME).apply();
     }
 
     public String getLastSyncTime() {

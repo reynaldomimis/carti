@@ -24,10 +24,16 @@ public class ApiHelper {
     private final AppwriteManager appwriteManager;
     private final PreferenceManager pref;
     private final Gson gson = new Gson();
+    private final Context context;
 
     public ApiHelper(Context context) {
         this.appwriteManager = AppwriteManager.getInstance(context);
         this.pref = new PreferenceManager(context);
+        this.context = context.getApplicationContext();
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     /**

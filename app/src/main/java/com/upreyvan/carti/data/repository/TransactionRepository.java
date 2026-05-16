@@ -2,6 +2,7 @@ package com.upreyvan.carti.data.repository;
 
 import android.content.Context;
 import androidx.lifecycle.LiveData;
+import androidx.core.content.ContextCompat;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.db.AppDatabase;
 import com.upreyvan.carti.data.local.db.dao.TransactionDao;
@@ -108,21 +109,33 @@ public class TransactionRepository {
         Map<String, Object> data = doc.getData();
         String type = String.valueOf(data.get("type"));
         double amount = Utils.getDouble(data.get("amount"));
-        String category = String.valueOf(data.get("category"));
+        String categoryName = String.valueOf(data.get("category"));
         
-        // Simple mapping logic for icons based on category
-        int iconRes = R.drawable.ic_person; // Default
-        int bgColor = R.color.carti_light_gray;
+        // Better mapping logic for icons based on category
+        int iconRes = R.drawable.ic_person;
+        int iconColor = ContextCompat.getColor(apiHelper.getContext(), R.color.carti_primary_green);
+
+        // Try to match with existing categories for better visuals
+        List<com.upreyvan.carti.model.Category> categories = com.upreyvan.carti.data.local.CategoryManager.getInstance(apiHelper.getContext()).getCategories();
+        for (com.upreyvan.carti.model.Category cat : categories) {
+            if (cat.getName().equalsIgnoreCase(categoryName)) {
+                iconRes = cat.getIconRes();
+                iconColor = ContextCompat.getColor(apiHelper.getContext(), cat.getIconColor());
+                break;
+            }
+        }
+
+        int bgColor = androidx.core.graphics.ColorUtils.setAlphaComponent(iconColor, 25);
         
         return new Transaction(
             doc.getId(),
             familyId,
-            category,
+            categoryName,
             Utils.formatTimestamp(doc.getCreatedAt()),
             String.format(Locale.US, "₱%,.2f", amount),
             iconRes,
             bgColor,
-            R.color.carti_primary_green,
+            iconColor,
             Utils.getMillisFromIso(doc.getCreatedAt()),
             type
         );

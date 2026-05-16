@@ -73,4 +73,10 @@
     <color name="switch_thumb_off">#9E9E9E</color>
     <color name="ripple_color">#20000000</color>
     <color name="shimmer_color">#E0E0E0</color>
+
+    <!-- Chat Progress Colors -->
+    <color name="chat_progress_primary">#8D4B4B</color>
+    <color name="chat_progress_secondary">#AF5F5F</color>
+    <color name="chat_progress_tertiary">#6D3A3A</color>
+    <color name="chat_progress_track">#F5E0E0</color>
 </resources>

@@ -42,12 +42,17 @@ public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHo
         super(new DiffUtil.ItemCallback<ChatMessage>() {
             @Override
             public boolean areItemsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
+                if (oldItem.isShimmer() || newItem.isShimmer()) return false;
+                if (oldItem.getId() != null && newItem.getId() != null) {
+                    return oldItem.getId().equals(newItem.getId());
+                }
                 return oldItem.getMessage().equals(newItem.getMessage()) && oldItem.getTime().equals(newItem.getTime());
             }
 
             @Override
             public boolean areContentsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
-                return oldItem.getMessage().equals(newItem.getMessage());
+                return oldItem.getMessage().equals(newItem.getMessage()) 
+                        && oldItem.isCanceled() == newItem.isCanceled();
             }
         });
     }

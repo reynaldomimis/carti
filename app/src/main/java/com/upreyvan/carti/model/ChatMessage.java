@@ -104,4 +104,21 @@ public class ChatMessage {
     public boolean isCancelable() {
         return intent == IntentType.EXPENSE_LOG || intent == IntentType.INCOME_LOG;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChatMessage that = (ChatMessage) o;
+        return timestamp == that.timestamp &&
+                isMe == that.isMe &&
+                isCanceled == that.isCanceled &&
+                java.util.Objects.equals(id, that.id) &&
+                java.util.Objects.equals(message, that.message);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, message, timestamp, isMe, isCanceled);
+    }
 }

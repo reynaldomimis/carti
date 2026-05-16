@@ -132,7 +132,7 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_today, R.string.menu_salary, getString(R.string.menu_salary_sub), new SalaryModeFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_lock_idle_lock, R.string.menu_security, getString(R.string.menu_security_sub), new SecurityFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_manage, R.string.menu_settings, getString(R.string.menu_settings_sub), new SettingsFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_help, R.string.menu_help, getString(R.string.menu_help_sub), null));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_help, R.string.menu_help, getString(R.string.menu_help_sub), new HelpFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_info_details, R.string.menu_about, getString(R.string.menu_about_sub), new AboutFragment(), false));
 
         adapter = new ProfileMenuAdapter(menuItems, item -> {
@@ -167,7 +167,6 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
     private void updateFamilyMemberCount(int count) {
         if (menuItems == null || menuItems.isEmpty()) return;
 
-        // Reconstruct the first item (Family Members) with the new count
         ProfileMenuItem oldItem = menuItems.get(0);
         ProfileMenuItem newItem = new ProfileMenuItem(
                 oldItem.getIconResId(),

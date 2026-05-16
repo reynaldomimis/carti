@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -89,7 +90,7 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
         }
 
         binding.tvCategoryName.setText(item.getTitle());
-        binding.btnLog.setBackgroundColor(requireContext().getColor(R.color.carti_primary_green));
+        binding.btnLog.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.carti_primary_green));
 
         binding.btnLog.setOnClickListener(v -> {
             String amountStr = binding.etAmount.getText().toString().trim();
@@ -102,7 +103,7 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
                 double amount = Double.parseDouble(amountStr);
                 String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
                 
-                int iconColor = requireContext().getColor(item.getIconColor());
+                int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
                 int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
                 
                 // Save to cloud

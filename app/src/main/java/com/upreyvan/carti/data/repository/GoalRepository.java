@@ -94,4 +94,3 @@ public class GoalRepository {
             R.color.carti_light_gray
         );
     }
-}
