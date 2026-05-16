@@ -21,6 +21,7 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.repository.DebtRepository;
 import com.upreyvan.carti.data.repository.GoalRepository;
+import com.upreyvan.carti.data.repository.IncomeRepository;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
@@ -91,10 +92,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 transactionAdapter.setLoading(false);
                 transactionAdapter.submitList(transactions);
             }
-        });
-
-        transactionRepository.getTodayTotalSpent().observe(getViewLifecycleOwner(), spent -> {
-            updateBudgetCard(spent != null ? spent : 0.0);
         });
 
         transactionRepository.syncTransactionsIfNeeded();
@@ -236,17 +233,25 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void setupDailyBudgetCard() {
+        IncomeRepository incomeRepository = new IncomeRepository(requireContext());
         SalaryManager salaryManager = SalaryManager.getInstance(requireContext());
-        double dailyBudget = salaryManager.getDailyBudget();
-        int daysLeft = salaryManager.getDaysUntilNextPayday();
         
-        getBinding().cardBudget.tvAmount.setText(String.format(Locale.getDefault(), "₱%,.0f", dailyBudget));
-        getBinding().cardBudget.tvSalaryInfo.setText(getString(R.string.salary_info_format, daysLeft));
+        incomeRepository.getTotalIncome().observe(getViewLifecycleOwner(), totalIncome -> {
+            double amount = totalIncome != null ? totalIncome : 0.0;
+            double dailyBudget = salaryManager.getDailyBudget(amount);
+            int daysLeft = salaryManager.getDaysUntilNextPayday();
+
+            getBinding().cardBudget.tvAmount.setText(String.format(Locale.getDefault(), "₱%,.0f", dailyBudget));
+            getBinding().cardBudget.tvSalaryInfo.setText(getString(R.string.income_info_format, daysLeft));
+
+            transactionRepository.getTodayTotalSpent().observe(getViewLifecycleOwner(), todaySpent -> {
+                updateBudgetCard(dailyBudget, todaySpent != null ? todaySpent : 0.0);
+            });
+        });
+        incomeRepository.refreshIncomes();
     }
 
-    private void updateBudgetCard(double todaySpent) {
-        SalaryManager salaryManager = SalaryManager.getInstance(requireContext());
-        double dailyBudget = salaryManager.getDailyBudget();
+    private void updateBudgetCard(double dailyBudget, double todaySpent) {
         double remaining = dailyBudget - todaySpent;
         
         int progress = (dailyBudget > 0) ? (int) ((todaySpent / dailyBudget) * 100) : 0;
@@ -274,6 +279,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     public void onResume() {
         super.onResume();
         setupQuickLog();
+        setupDailyBudgetCard();
     }
 
     private void updateNotificationBadge(boolean hasNotifications) {

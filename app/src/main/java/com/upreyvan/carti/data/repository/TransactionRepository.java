@@ -57,8 +57,14 @@ public class TransactionRepository {
     }
 
     public void syncTransactionsIfNeeded() {
-        // Delta Sync: Check for updates every time the app opens/needed
-        refreshTransactions();
+        executor.execute(() -> {
+            // Kung walang laman ang local DB, i-reset ang sync time para makuha lahat mula sa server
+            List<Transaction> local = transactionDao.getAllTransactionsList(pref.getFamilyId());
+            if (local == null || local.isEmpty()) {
+                pref.resetLastSyncTime();
+            }
+            refreshTransactions();
+        });
     }
 
     public void refreshTransactions() {

@@ -39,8 +39,8 @@ public class CategoryManager {
             List<Category> defaults = getDefaultCategories();
             saveCategories(defaults);
             
-            // Also reset transaction sync time to refresh transactions with new IDs
-            PreferenceManager.getInstance(context).resetLastSyncTime();
+            // Also reset all sync timestamps to refresh all data with new structure
+            PreferenceManager.getInstance(context).resetAllSyncTimestamps();
 
             return defaults;
         }

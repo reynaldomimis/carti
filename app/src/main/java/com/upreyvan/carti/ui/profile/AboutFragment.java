@@ -47,11 +47,10 @@ public class AboutFragment extends BaseFragment<FragmentAboutBinding> {
         
         getBinding().btnTerms.setOnClickListener(v -> openUrl(getString(R.string.url_terms)));
         getBinding().btnCredits.setOnClickListener(v -> {
-            boolean isExpanded = getBinding().layoutCreditsContent.getVisibility() == View.VISIBLE;
-            getBinding().layoutCreditsContent.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
+            boolean isExpanded = getBinding().tvCreditsContent.getVisibility() == View.VISIBLE;
+            getBinding().tvCreditsContent.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
+            getBinding().tvCreditsContent.setText(getString(R.string.credits_full_desc));
             getBinding().ivCreditsArrow.animate().rotation(isExpanded ? 0 : 90).start();
-            int strokePx = isExpanded ? 0 : (int) (1 * getResources().getDisplayMetrics().density);
-            getBinding().cardCredits.setStrokeWidth(strokePx);
         });
     }
 

@@ -93,8 +93,30 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                     // Create or Update
                     String name = String.valueOf(payload.get("username"));
                     String role = String.valueOf(payload.get("role"));
-                    String status = String.valueOf(payload.get("status"));
-                    Member member = new Member(id, familyId, name, role, status, R.drawable.ic_person);
+                    
+                    // Map isEmployed to status since 'status' doesn't exist in users table
+                    Object isEmployedObj = payload.get("isEmployed");
+                    boolean isEmployed = false;
+                    if (isEmployedObj instanceof Boolean) {
+                        isEmployed = (Boolean) isEmployedObj;
+                    } else if (isEmployedObj instanceof String) {
+                        isEmployed = Boolean.parseBoolean((String) isEmployedObj);
+                    }
+                    String status = isEmployed ? "Employed" : "Unemployed";
+                    
+                    double salary = 0.0;
+                    Object salaryObj = payload.get("salary");
+                    if (salaryObj instanceof Number) {
+                        salary = ((Number) salaryObj).doubleValue();
+                    } else if (salaryObj instanceof String) {
+                        try {
+                            salary = Double.parseDouble((String) salaryObj);
+                        } catch (NumberFormatException e) {
+                            salary = 0.0;
+                        }
+                    }
+                    
+                    Member member = new Member(id, familyId, name, role, status, R.drawable.ic_person, salary);
                     repository.saveMemberLocally(member);
                 }
             }

@@ -33,6 +33,7 @@
     <string name="nav_debt">Debt</string>
     <string name="nav_ranking">Ranking</string>
     <string name="nav_profile">Profile</string>
+    <string name="label_add">Add</string>
     <string name="menu_ai">AI</string>
     <string name="notifications">Notifications</string>
 
@@ -143,11 +144,11 @@
     <string name="hint_select_source">Select Source</string>
     <string name="btn_save_expense">Save Expense</string>
 
-    <!-- Salary Mode -->
-    <string name="salary_mode_title">Salary Mode</string>
-    <string name="label_next_sweldo">Next Sweldo</string>
+    <!-- Income Mode -->
+    <string name="income_mode_title">Income Mode</string>
+    <string name="label_next_payday">Next Payday</string>
     <string name="label_days">Days</string>
-    <string name="label_sweldo_amount">Sweldo Amount</string>
+    <string name="label_income_amount">Total Income</string>
     <string name="label_budget_breakdown">Budget Breakdown</string>
     <string name="btn_edit">Edit</string>
     <string name="title_edit_payday">Edit Payday Schedule</string>
@@ -155,11 +156,19 @@
     <string name="hint_day1">First Payday (Day)</string>
     <string name="hint_day2">Second Payday (Day)</string>
     <string name="btn_save_schedule">Save Schedule</string>
-    <string name="title_edit_salary">Update Salary</string>
-    <string name="desc_edit_salary">Enter your monthly salary amount.</string>
-    <string name="btn_save_salary">Save Salary</string>
+    <string name="title_edit_income">Update Base Salary</string>
+    <string name="title_add_income">Add Extra Income</string>
+    <string name="title_edit_income_extra">Edit Income</string>
+    <string name="desc_edit_income">Enter your monthly base salary amount.</string>
+    <string name="btn_save_income">Save Income</string>
     <string name="payday_format">Paydays: %1$d &amp; %2$d</string>
-    <string name="salary_info_format">%d days left to payday</string>
+    <string name="income_info_format">%d days left to payday</string>
+    <string name="msg_income_updated">Income updated successfully</string>
+    <string name="label_saving">Saving...</string>
+    <string name="label_save">Save</string>
+    <string name="label_update">Update</string>
+    <string name="label_add_income">Add Income</string>
+    <string name="hint_income_source">Source (e.g. Freelance, Bonus)</string>
 
     <!-- Family -->
     <string name="invite_family_title">Invite Family</string>
@@ -201,10 +210,7 @@
     <string name="app_description">Carti is your personal financial companion designed to help families track expenses, manage debts, and achieve savings goals together.</string>
     <string name="label_terms">Privacy and Terms</string>
     <string name="label_credits">Credits</string>
-    <string name="credits_icons_title">Icons &amp; Illustrations</string>
-    <string name="credits_icons_desc">Freepik, Flaticon, and Google Fonts</string>
-    <string name="credits_libraries_title">Libraries</string>
-    <string name="credits_libraries_desc">Firebase, Retrofit, Glide, and Material Components</string>
+    <string name="credits_full_desc">We would like to express our gratitude to Freepik, Flaticon, and Google Fonts for providing the beautiful icons and illustrations used throughout this application. Carti is powered by various open-source libraries and frameworks including Firebase, Appwrite, Retrofit, Glide, and Google Material Components, which helped us build a seamless experience for our users.</string>
     <string name="url_terms">https://mintyai.vercel.app/terms-privacy</string>
     <string name="label_developer">Developer</string>
     <string name="developer_name">Upreyvan</string>
@@ -225,8 +231,8 @@
     <string name="menu_goals_sub">Track your savings</string>
     <string name="menu_debt">Debt Tracker</string>
     <string name="menu_debt_sub">Manage what you owe</string>
-    <string name="menu_salary">Salary Mode</string>
-    <string name="menu_salary_sub">Optimize for payday</string>
+    <string name="menu_salary">Income Mode</string>
+    <string name="menu_salary_sub">Manage your extra incomes</string>
     <string name="menu_security">Security</string>
     <string name="menu_security_sub">Password and privacy</string>
     <string name="menu_settings">Settings</string>

@@ -42,11 +42,22 @@
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                 android:textColor="@color/text_primary"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/chipRole"
                 app:layout_constraintStart_toEndOf="@+id/ivMemberAvatar"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Juan (Ikaw)" />
+
+            <TextView
+                android:id="@+id/tvMemberStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="@color/text_secondary"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/chipRole"
+                app:layout_constraintStart_toStartOf="@+id/tvMemberName"
+                app:layout_constraintTop_toBottomOf="@+id/tvMemberName"
+                tools:text="Employed • ₱50,000.00" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipRole"

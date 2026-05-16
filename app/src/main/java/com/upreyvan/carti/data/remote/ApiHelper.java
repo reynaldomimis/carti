@@ -129,6 +129,14 @@ public class ApiHelper {
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_DEBTS, queries, callback);
     }
 
+    public void getIncomes(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", familyId));
+        queries.add(Query.Companion.orderDesc("$createdAt"));
+        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_INCOMES, queries, callback);
+    }
+
     public void getFamilySummary(AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         appwriteManager.getDocument(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_FAMILIES, familyId, callback);
@@ -192,6 +200,27 @@ public class ApiHelper {
         params.put("amount", amount);
         params.put("type", type);
         callAction(Constants.Actions.ADD_DEBT, params, callback);
+    }
+
+    public void addIncome(String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("source", source);
+        params.put("amount", amount);
+        callAction(Constants.Actions.ADD_INCOME, params, callback);
+    }
+
+    public void updateIncome(String incomeId, String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("incomeId", incomeId);
+        params.put("source", source);
+        params.put("amount", amount);
+        callAction(Constants.Actions.UPDATE_INCOME, params, callback);
+    }
+
+    public void deleteIncome(String incomeId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("incomeId", incomeId);
+        callAction(Constants.Actions.DELETE_INCOME, params, callback);
     }
 
     public void updateGoalAmount(String goalId, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {

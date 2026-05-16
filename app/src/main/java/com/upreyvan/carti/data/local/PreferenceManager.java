@@ -103,6 +103,14 @@ public class PreferenceManager {
         sharedPreferences.edit().putString(Constants.Keys.KEY_LAST_SYNC_TIME, timestamp).apply();
     }
 
+    public void resetAllSyncTimestamps() {
+        sharedPreferences.edit()
+                .remove(Constants.Keys.KEY_LAST_SYNC_TIME)
+                .remove(Constants.Keys.KEY_LAST_GOAL_SYNC_TIME)
+                .remove(Constants.Keys.KEY_LAST_DEBT_SYNC_TIME)
+                .apply();
+    }
+
     public void resetLastSyncTime() {
         sharedPreferences.edit().remove(Constants.Keys.KEY_LAST_SYNC_TIME).apply();
     }

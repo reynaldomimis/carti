@@ -14,14 +14,16 @@ public class Member {
     private String role;
     private String status;
     private int avatarRes;
+    private double salary;
 
-    public Member(@NonNull String id, String familyId, String name, String role, String status, int avatarRes) {
+    public Member(@NonNull String id, String familyId, String name, String role, String status, int avatarRes, double salary) {
         this.id = id;
         this.familyId = familyId;
         this.name = name;
         this.role = role;
         this.status = status;
         this.avatarRes = avatarRes;
+        this.salary = salary;
     }
 
     @NonNull
@@ -31,6 +33,8 @@ public class Member {
     public String getRole() { return role; }
     public String getStatus() { return status; }
     public int getAvatarRes() { return avatarRes; }
+    public double getSalary() { return salary; }
 
     public void setFamilyId(String familyId) { this.familyId = familyId; }
+    public void setSalary(double salary) { this.salary = salary; }
 }

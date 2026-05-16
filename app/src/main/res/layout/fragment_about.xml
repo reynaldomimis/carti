@@ -50,46 +50,82 @@
                 android:textSize="14sp"
                 tools:text="v 1.0.0" />
 
-            <TextView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
-                android:gravity="center"
-                android:lineSpacingExtra="4dp"
-                android:text="@string/app_description"
-                android:textColor="@color/text_secondary"
-                android:textSize="15sp" />
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/card_border"
+                app:strokeWidth="1dp">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="32dp"
-                android:background="@color/card_border" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/plus_jakarta_sans_medium"
+                    android:gravity="center"
+                    android:lineSpacingExtra="4dp"
+                    android:padding="16dp"
+                    android:text="@string/app_description"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="15sp" />
+            </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:id="@+id/btnTerms"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTerms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:paddingVertical="16dp"
-                android:text="@string/label_terms"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp" />
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/card_border"
+                app:strokeWidth="1dp">
+
+                <RelativeLayout
+                    android:id="@+id/btnTerms"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingVertical="16dp"
+                    android:paddingHorizontal="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_toStartOf="@id/ivTermsArrow"
+                        android:fontFamily="@font/plus_jakarta_sans_bold"
+                        android:text="@string/label_terms"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp" />
+
+                    <ImageView
+                        android:id="@+id/ivTermsArrow"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/ic_chevron_right"
+                        android:contentDescription="@null"
+                        app:tint="@color/text_tertiary" />
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardCredits"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/card_border"
-                app:strokeWidth="0dp">
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -104,14 +140,14 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:paddingVertical="16dp"
-                        android:paddingHorizontal="4dp">
+                        android:paddingHorizontal="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"
-                            android:layout_toStartOf="@id/ivCreditsArrow"
                             android:layout_alignParentStart="true"
+                            android:layout_toStartOf="@id/ivCreditsArrow"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
                             android:text="@string/label_credits"
                             android:textColor="@color/text_primary"
@@ -128,81 +164,62 @@
                             app:tint="@color/text_tertiary" />
                     </RelativeLayout>
 
-                    <LinearLayout
-                        android:id="@+id/layoutCreditsContent"
+                    <TextView
+                        android:id="@+id/tvCreditsContent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:paddingBottom="16dp"
-                        android:paddingHorizontal="4dp"
-                        android:visibility="gone">
+                        android:fontFamily="@font/plus_jakarta_sans_medium"
+                        android:lineSpacingExtra="4dp"
+                        android:paddingBottom="20dp"
+                        android:paddingHorizontal="16dp"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:visibility="gone"
+                        tools:text="Credits paragraph here..."
+                        tools:visibility="visible" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/plus_jakarta_sans_bold"
-                            android:text="@string/credits_icons_title"
-                            android:textColor="@color/text_primary"
-                            android:textSize="14sp" />
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/card_border"
+                app:strokeWidth="1dp">
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:fontFamily="@font/plus_jakarta_sans_medium"
-                            android:text="@string/credits_icons_desc"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginVertical="12dp"
-                            android:background="@color/card_border" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/plus_jakarta_sans_medium"
+                        android:text="@string/label_developer"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="13sp" />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/plus_jakarta_sans_bold"
-                            android:text="@string/credits_libraries_title"
-                            android:textColor="@color/text_primary"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:fontFamily="@font/plus_jakarta_sans_medium"
-                            android:text="@string/credits_libraries_desc"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
-
-                    </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="@font/plus_jakarta_sans_bold"
+                        android:text="@string/developer_name"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="48dp"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
-                android:text="@string/label_developer"
-                android:textColor="@color/text_tertiary"
-                android:textSize="13sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:text="@string/developer_name"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="24dp"
                 android:fontFamily="@font/plus_jakarta_sans_medium"
                 android:text="@string/copyright"
                 android:textColor="@color/text_tertiary"

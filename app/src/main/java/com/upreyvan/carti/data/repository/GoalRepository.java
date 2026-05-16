@@ -38,7 +38,14 @@ public class GoalRepository {
     }
 
     public void syncGoalsIfNeeded() {
-        refreshGoals();
+        executor.execute(() -> {
+            List<Goal> local = goalDao.getAllGoalsList(pref.getFamilyId());
+            if (local == null || local.isEmpty()) {
+                // Reset sync time if local DB was wiped
+                pref.setLastGoalSyncTime("1970-01-01T00:00:00.000Z");
+            }
+            refreshGoals();
+        });
     }
 
     public void refreshGoals() {
@@ -56,19 +63,20 @@ public class GoalRepository {
 
                     for (Document<Map<String, Object>> doc : result.getDocuments()) {
                         goals.add(mapToGoal(doc, familyId));
-                        
+
                         if (doc.getCreatedAt().compareTo(latestTimestamp) > 0) {
                             latestTimestamp = doc.getCreatedAt();
                         }
                     }
-                    
+
                     goalDao.insertAll(goals);
                     pref.setLastGoalSyncTime(latestTimestamp);
                 });
             }
 
             @Override
-            public void onError(Throwable error) {}
+            public void onError(Throwable error) {
+            }
         });
     }
 
@@ -84,13 +92,14 @@ public class GoalRepository {
     private Goal mapToGoal(Document<Map<String, Object>> doc, String familyId) {
         Map<String, Object> data = doc.getData();
         return new Goal(
-            doc.getId(),
-            familyId,
-            String.valueOf(data.get("name")),
-            Utils.getDouble(data.get("currentAmount")),
-            Utils.getDouble(data.get("targetAmount")),
-            "", // Date if needed
-            R.drawable.ic_trophy, // Fixed resource ID
-            R.color.carti_light_gray
+                doc.getId(),
+                familyId,
+                String.valueOf(data.get("name")),
+                Utils.getDouble(data.get("currentAmount")),
+                Utils.getDouble(data.get("targetAmount")),
+                "", // Date if needed
+                R.drawable.ic_trophy, // Fixed resource ID
+                R.color.carti_light_gray
         );
     }
+}

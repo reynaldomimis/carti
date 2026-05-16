@@ -21,6 +21,7 @@ public class Constants {
         public static final String COL_DEBTS = com.upreyvan.carti.BuildConfig.APPWRITE_COL_DEBTS;
         public static final String COL_FAMILIES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_FAMILIES;
         public static final String COL_MESSAGES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_MESSAGES;
+        public static final String COL_INCOMES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_INCOMES;
     }
 
     public static final class Actions {
@@ -31,6 +32,9 @@ public class Constants {
         public static final String JOIN_FAMILY = "request_join_family";
         public static final String APPROVE_JOIN = "approve_join_request";
         public static final String ADD_TRANSACTION = "add_transaction";
+        public static final String ADD_INCOME = "add_income";
+        public static final String UPDATE_INCOME = "update_income";
+        public static final String DELETE_INCOME = "delete_income";
         public static final String ADD_GOAL = "add_goal";
         public static final String ADD_DEBT = "add_debt";
         public static final String UPDATE_GOAL = "update_goal_amount";
@@ -76,15 +80,15 @@ public class Constants {
         public static final String KEY_GOALS = "goals_list";
         public static final String KEY_DEBTS = "debts_list";
         public static final String KEY_CATEGORIES = "categories_list";
-        public static final String KEY_SALARY_AMOUNT = "salary_amount";
+        public static final String KEY_IS_MONTHLY = "is_monthly";
         public static final String KEY_FIRST_PAYDAY = "first_payday";
         public static final String KEY_SECOND_PAYDAY = "second_payday";
-        public static final String KEY_IS_MONTHLY = "is_monthly";
 
         // Intent/Bundle Keys
         public static final String KEY_GOAL_ID = "goal_id";
         public static final String KEY_DEBT_ID = "debt_id";
         public static final String KEY_TRANSACTION_ID = "transaction_id";
+        public static final String KEY_INCOME_ID = "income_id";
     }
 
     public static final class ErrorCodes {

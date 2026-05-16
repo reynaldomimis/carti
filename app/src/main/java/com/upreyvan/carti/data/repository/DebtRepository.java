@@ -38,7 +38,14 @@ public class DebtRepository {
     }
 
     public void syncDebtsIfNeeded() {
-        refreshDebts();
+        executor.execute(() -> {
+            List<Debt> local = debtDao.getAllDebtsList(pref.getFamilyId());
+            if (local == null || local.isEmpty()) {
+                // Reset sync time if local DB was wiped
+                pref.setLastDebtSyncTime("1970-01-01T00:00:00.000Z");
+            }
+            refreshDebts();
+        });
     }
 
     public void refreshDebts() {

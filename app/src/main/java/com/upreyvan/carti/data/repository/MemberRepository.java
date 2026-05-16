@@ -36,6 +36,8 @@ public class MemberRepository {
         return memberDao.getAllMembers(pref.getFamilyId());
     }
 
+
+
     public void syncMembersIfNeeded() {
         executor.execute(() -> {
             List<Member> localMembers = memberDao.getAllMembersList(pref.getFamilyId());
@@ -55,13 +57,33 @@ public class MemberRepository {
                     List<Member> members = new ArrayList<>();
                     for (Document<Map<String, Object>> doc : result.getDocuments()) {
                         Map<String, Object> data = doc.getData();
+                        double salary = 0;
+                        if (data.get("salary") != null) {
+                            try {
+                                salary = Double.parseDouble(String.valueOf(data.get("salary")));
+                            } catch (Exception e) {
+                                salary = 0;
+                            }
+                        }
+                        
+                        // Map isEmployed (boolean) to status string base sa screenshot
+                        Object isEmployedObj = data.get("isEmployed");
+                        boolean isEmployed = false;
+                        if (isEmployedObj instanceof Boolean) {
+                            isEmployed = (Boolean) isEmployedObj;
+                        } else if (isEmployedObj instanceof String) {
+                            isEmployed = Boolean.parseBoolean((String) isEmployedObj);
+                        }
+                        String status = isEmployed ? "Employed" : "Unemployed";
+
                         members.add(new Member(
                             doc.getId(),
                             familyId,
                             String.valueOf(data.get("username")),
                             String.valueOf(data.get("role")),
-                            String.valueOf(data.get("status")),
-                            R.drawable.ic_person
+                            status,
+                            R.drawable.ic_person,
+                            salary
                         ));
                     }
                     memberDao.deleteAll(familyId);

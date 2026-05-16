@@ -12,6 +12,7 @@ import com.upreyvan.carti.model.Member;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberViewHolder> {
 
@@ -89,6 +90,9 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             binding.tvMemberName.setText(member.getName());
             binding.chipRole.setText(member.getRole());
             binding.ivMemberAvatar.setImageResource(member.getAvatarRes());
+
+            String statusText = member.getStatus() + " • ₱" + String.format(Locale.getDefault(), "%.2f", member.getSalary());
+            binding.tvMemberStatus.setText(statusText);
         }
 
         public void showShimmer() {

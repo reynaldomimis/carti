@@ -22,14 +22,6 @@ public class SalaryManager {
         return instance;
     }
 
-    public void setSalaryAmount(float amount) {
-        prefs.edit().putFloat(Constants.Keys.KEY_SALARY_AMOUNT, amount).apply();
-    }
-
-    public float getSalaryAmount() {
-        return prefs.getFloat(Constants.Keys.KEY_SALARY_AMOUNT, 0f);
-    }
-
     public void setFirstPayday(int day) {
         prefs.edit().putInt(Constants.Keys.KEY_FIRST_PAYDAY, day).apply();
     }
@@ -135,9 +127,9 @@ public class SalaryManager {
         return (int) (diff / (24 * 60 * 60 * 1000));
     }
 
-    public double getDailyBudget() {
+    public double getDailyBudget(double totalBudget) {
         int daysLeft = getDaysUntilNextPayday();
-        if (daysLeft <= 0) return getSalaryAmount();
-        return getSalaryAmount() / daysLeft;
+        if (daysLeft <= 0) return totalBudget;
+        return totalBudget / daysLeft;
     }
 }

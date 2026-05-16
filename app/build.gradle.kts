@@ -39,6 +39,7 @@ android {
         buildConfigField("String", "APPWRITE_COL_DEBTS", "\"${secrets.getProperty("APPWRITE_COL_DEBTS", "")}\"")
         buildConfigField("String", "APPWRITE_COL_FAMILIES", "\"${secrets.getProperty("APPWRITE_COL_FAMILIES", "")}\"")
         buildConfigField("String", "APPWRITE_COL_MESSAGES", "\"${secrets.getProperty("APPWRITE_COL_MESSAGES", "")}\"")
+        buildConfigField("String", "APPWRITE_COL_INCOMES", "\"${secrets.getProperty("APPWRITE_COL_INCOMES", "")}\"")
     }
 
     buildTypes {

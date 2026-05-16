@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:text="@string/title_edit_salary"
+        android:text="@string/title_edit_income"
         android:textColor="@color/text_primary"
         android:textSize="18sp" />
 
@@ -29,14 +29,41 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:fontFamily="@font/plus_jakarta_sans_medium"
-        android:text="@string/desc_edit_salary"
+        android:text="@string/desc_edit_income"
         android:textColor="@color/text_tertiary"
         android:textSize="14sp" />
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_source"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/card_border"
+        app:strokeWidth="1dp">
+
+        <EditText
+            android:id="@+id/et_income_source"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@android:color/transparent"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
+            android:hint="Source (e.g. Salary, Freelance)"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:paddingHorizontal="16dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_tertiary"
+            android:textSize="16sp" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="12dp"
         app:cardElevation="0dp"
@@ -83,7 +110,7 @@
         android:layout_height="56dp"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:text="@string/btn_save_salary"
+        android:text="@string/btn_save_income"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:insetTop="0dp"
