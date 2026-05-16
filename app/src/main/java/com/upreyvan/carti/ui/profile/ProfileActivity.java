@@ -20,7 +20,6 @@ import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityProfileBinding;
 import com.upreyvan.carti.ui.family.InviteFamilyActivity;
 import com.upreyvan.carti.ui.profile.AboutFragment;
-import com.upreyvan.carti.ui.profile.BackupSyncFragment;
 import com.upreyvan.carti.ui.family.FamilyChatFragment;
 import com.upreyvan.carti.ui.goals.GoalFragment;
 import com.upreyvan.carti.ui.debt.DebtTrackerFragment;
@@ -131,7 +130,6 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_compass, R.string.menu_goals, getString(R.string.menu_goals_sub), new GoalFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_edit, R.string.menu_debt, getString(R.string.menu_debt_sub), new DebtTrackerFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_today, R.string.menu_salary, getString(R.string.menu_salary_sub), new SalaryModeFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_popup_sync, R.string.menu_backup, getString(R.string.menu_backup_sub), new BackupSyncFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_lock_idle_lock, R.string.menu_security, getString(R.string.menu_security_sub), new SecurityFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_manage, R.string.menu_settings, getString(R.string.menu_settings_sub), new SettingsFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_help, R.string.menu_help, getString(R.string.menu_help_sub), null));

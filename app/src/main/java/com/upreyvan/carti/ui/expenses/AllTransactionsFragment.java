@@ -58,17 +58,50 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         getBinding().rvAllTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvAllTransactions.setAdapter(adapter);
 
+        com.upreyvan.carti.data.local.PreferenceManager pref = new com.upreyvan.carti.data.local.PreferenceManager(requireContext());
+
         adapter.setOnItemClickListener(item -> {
             androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                     .setTitle("Delete Transaction?")
                     .setMessage("Are you sure you want to delete this " + item.getTitle() + "?")
                     .setPositiveButton("Delete", (d, w) -> {
-                        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).deleteTransaction(item.getId(), new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+                        com.upreyvan.carti.data.remote.ApiHelper apiHelper = new com.upreyvan.carti.data.remote.ApiHelper(requireContext());
+                        apiHelper.deleteTransaction(item.getId(), new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Object>() {
                             @Override
-                            public void onSuccess(java.util.Map<String, Object> result) {
-                                requireActivity().runOnUiThread(() -> {
-                                    com.upreyvan.carti.util.Utils.showToast(requireContext(), "Deleted successfully");
-                                    // The sync in HomeFragment or a local refresh will update the list
+                            public void onSuccess(Object result) {
+                                // PURE CRUD: Calculate new totals in Java
+                                double amount = item.getAmountDouble();
+                                double currentBalance = pref.getBalance();
+                                double currentIncome = pref.getTotalIncome();
+                                double currentExpense = pref.getTotalExpense();
+
+                                if ("INCOME".equals(item.getType())) {
+                                    currentIncome -= amount;
+                                } else {
+                                    currentExpense -= amount;
+                                }
+                                currentBalance = currentIncome - currentExpense;
+
+                                final double finalBalance = currentBalance;
+                                final double finalIncome = currentIncome;
+                                final double finalExpense = currentExpense;
+
+                                // Update the new totals to Appwrite
+                                apiHelper.updateFamilyTotals(finalBalance, finalIncome, finalExpense, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+                                    @Override
+                                    public void onSuccess(java.util.Map<String, Object> result) {
+                                        requireActivity().runOnUiThread(() -> {
+                                            pref.saveFamilySummary(finalBalance, finalIncome, finalExpense);
+                                            com.upreyvan.carti.data.local.ExpenseManager.getInstance().getTransactions().remove(item);
+                                            com.upreyvan.carti.util.Utils.showToast(requireContext(), "Deleted and balance updated");
+                                            loadTransactions();
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable error) {
+                                        requireActivity().runOnUiThread(() -> loadTransactions());
+                                    }
                                 });
                             }
 

@@ -71,14 +71,15 @@ public class OnboardingOptionsFragment extends BaseFragment<FragmentOnboardingOp
     }
 
     private void fetchUserDocument() {
-        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).sync("", "2000-01-01", "2099-12-31", new AppwriteManager.AppwriteCallback<>() {
+        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).getUser(new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 if (isAdded()) {
                     setLoading(false);
-                    Map<String, Object> summary = (Map<String, Object>) result.get("summary");
-                    if (summary != null && summary.get("balance") != null) {
-                        // If balance exists, it means the family document was successfully fetched
+                    String familyId = (result.get("familyId") != null && !"null".equals(String.valueOf(result.get("familyId"))))
+                            ? String.valueOf(result.get("familyId")) : "";
+                    if (!familyId.isEmpty()) {
+                        // If familyId exists, it means the user is already in a family
                         startActivity(new Intent(requireActivity(), MainActivity.class));
                         requireActivity().finish();
                     }

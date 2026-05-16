@@ -32,6 +32,7 @@ import kotlinx.coroutines.Dispatchers;
 
 public class AppwriteManager {
     private static AppwriteManager instance;
+    private final Client client;
     private final Account account;
     private final Functions functions;
     private final Databases databases;
@@ -55,7 +56,7 @@ public class AppwriteManager {
 
         android.util.Log.d("AppwriteManager", "Initializing with Project: " + projectId + " | Endpoint: " + endpoint);
 
-        Client client = new Client(
+        client = new Client(
                 context,
                 endpoint != null ? endpoint : "https://cloud.appwrite.io/v1",
                 (endpoint != null ? endpoint : "http").replaceFirst("http", "ws"),
@@ -76,6 +77,22 @@ public class AppwriteManager {
         return instance;
     }
 
+    public Client getClient() {
+        return client;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public Databases getDatabases() {
+        return databases;
+    }
+
+    public Functions getFunctions() {
+        return functions;
+    }
+
     private <T> void postSuccess(AppwriteCallback<T> callback, T result) {
         mainHandler.post(() -> callback.onSuccess(result));
     }
@@ -88,6 +105,18 @@ public class AppwriteManager {
     public void login(String email, String password, AppwriteCallback<Session> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
+                // Step 1: Pre-emptively attempt to delete any existing session to avoid "prohibited" error
+                try {
+                    BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                        try {
+                            return account.deleteSession("current", (kotlin.coroutines.Continuation<Object>) continuation2);
+                        } catch (Exception e) {
+                            return null;
+                        }
+                    });
+                } catch (Exception ignored) {}
+
+                // Step 2: Proceed with actual login
                 Session result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
                     try {
                         return account.createEmailPasswordSession(email, password, continuation2);
@@ -255,6 +284,55 @@ public class AppwriteManager {
                                 queries,
                                 null,
                                 (Class) Map.class,
+                                continuation2
+                        );
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        });
+    }
+
+    public void createDocument(String databaseId, String collectionId, String documentId, Map<String, Object> data, List<String> permissions, AppwriteCallback<Document<Map<String, Object>>> callback) {
+        BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                Document<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                    try {
+                        return databases.createDocument(
+                                databaseId,
+                                collectionId,
+                                documentId,
+                                data,
+                                permissions,
+                                (Class) Map.class,
+                                continuation2
+                        );
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        });
+    }
+
+    public void deleteDocument(String databaseId, String collectionId, String documentId, AppwriteCallback<Object> callback) {
+        BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                    try {
+                        return databases.deleteDocument(
+                                databaseId,
+                                collectionId,
+                                documentId,
                                 continuation2
                         );
                     } catch (Exception e) {

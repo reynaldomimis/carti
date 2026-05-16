@@ -13,8 +13,24 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 public class Utils {
+
+    private static final Pattern SENSITIVE_PATTERN = Pattern.compile(
+            "\\b(?:\\d[ -]*?){13,19}\\b|" + // Credit/Debit cards
+            "\\b\\d{10,12}\\b|" +          // General bank account numbers (approx)
+            "password|secret|pin\\s\\d{4,6}", // Simple keywords
+            Pattern.CASE_INSENSITIVE
+    );
+
+    public static boolean containsSensitiveInfo(String text) {
+        if (text == null) return false;
+        return SENSITIVE_PATTERN.matcher(text).find() ||
+                text.toLowerCase().contains("bank account") ||
+                text.toLowerCase().contains("credit card") ||
+                text.toLowerCase().contains("cvv");
+    }
 
     public static String getTimeAgo(long time) {
         if (time < 1000000000000L) {

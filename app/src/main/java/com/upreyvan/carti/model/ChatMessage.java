@@ -11,21 +11,23 @@ public class ChatMessage {
     private final int imageResId;
     private final IntentType intent;
     private boolean isCanceled = false;
+    
+    // Appwrite Fields
+    private String id;
+    private String senderId;
+    private String familyId;
+    private long timestamp;
 
-    public ChatMessage(String senderName,
-                       String message,
-                       String time,
-                       boolean isMe,
-                       int imageResId) {
-        this(senderName, message, time, isMe, imageResId, IntentType.UNKNOWN);
+    public ChatMessage(String senderName, String message, String time, boolean isMe, int imageResId) {
+        this.senderName = senderName;
+        this.message = message;
+        this.time = time;
+        this.isMe = isMe;
+        this.imageResId = imageResId;
+        this.intent = IntentType.UNKNOWN;
     }
 
-    public ChatMessage(String senderName,
-                       String message,
-                       String time,
-                       boolean isMe,
-                       int imageResId,
-                       IntentType intent) {
+    public ChatMessage(String senderName, String message, String time, boolean isMe, int imageResId, IntentType intent) {
         this.senderName = senderName;
         this.message = message;
         this.time = time;
@@ -33,6 +35,24 @@ public class ChatMessage {
         this.imageResId = imageResId;
         this.intent = intent;
     }
+
+    public ChatMessage(String id, String senderId, String familyId, String senderName, String message, long timestamp, boolean isMe) {
+        this.id = id;
+        this.senderId = senderId;
+        this.familyId = familyId;
+        this.senderName = senderName;
+        this.message = message;
+        this.timestamp = timestamp;
+        this.isMe = isMe;
+        this.time = new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault()).format(new java.util.Date(timestamp));
+        this.imageResId = 0;
+        this.intent = IntentType.UNKNOWN;
+    }
+
+    public String getId() { return id; }
+    public String getSenderId() { return senderId; }
+    public String getFamilyId() { return familyId; }
+    public long getTimestamp() { return timestamp; }
 
     public String getSenderName() {
         return senderName;

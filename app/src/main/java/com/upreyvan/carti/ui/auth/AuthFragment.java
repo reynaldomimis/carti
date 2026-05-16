@@ -26,7 +26,7 @@ import java.util.Map;
 
 /**
  * Senior Developer Refactored: AuthFragment handles Login and Registration.
- * It ensures the local User Session is synchronized with the Gateway's User Context.
+ * It ensures the local User Session matches the Gateway's User Context.
  */
 public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
 
@@ -202,13 +202,14 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
                                   ? String.valueOf(userDoc.get("familyId")) : "";
                 String inviteCode = (userDoc.get("inviteCode") != null && !"null".equals(String.valueOf(userDoc.get("inviteCode")))) 
                                   ? String.valueOf(userDoc.get("inviteCode")) : "";
+                String userId = String.valueOf(userDoc.getOrDefault("$id", ""));
                 
                 boolean isEmployed = false;
                 Object emp = userDoc.get("isEmployed");
                 if (emp instanceof Boolean) isEmployed = (Boolean) emp;
                 else if (emp != null) isEmployed = Boolean.parseBoolean(String.valueOf(emp));
 
-                pref.setUserData(name, email, role, isEmployed, familyId, inviteCode);
+                pref.setUserData(name, email, role, isEmployed, familyId, inviteCode, userId);
                 
                 setLoading(false);
                 navigateToNextScreen(familyId);
@@ -217,7 +218,7 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             @Override
             public void onError(Throwable error) {
                 setLoading(false);
-                Toast.makeText(requireContext(), "Failed to sync user data: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Failed to fetch user data: " + error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

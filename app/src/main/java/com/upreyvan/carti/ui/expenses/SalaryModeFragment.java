@@ -42,7 +42,7 @@ public class SalaryModeFragment extends BaseFragment<FragmentSalaryModeBinding> 
         String startDate = sdf.format(manager.getLastPayday().getTime());
         String endDate = sdf.format(manager.getNextPayday().getTime());
 
-        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).getTransactions(startDate, endDate, null, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<io.appwrite.models.DocumentList<java.util.Map<String, Object>>>() {
+        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).getTransactions(startDate, endDate, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<io.appwrite.models.DocumentList<java.util.Map<String, Object>>>() {
             @Override
             public void onSuccess(io.appwrite.models.DocumentList<java.util.Map<String, Object>> result) {
                 if (!isAdded()) return;

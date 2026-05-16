@@ -51,6 +51,15 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@null"
+                android:src="@android:drawable/ic_menu_manage"
+                app:tint="@color/text_secondary" />
+
+            <ImageButton
                 android:id="@+id/btnInfo"
                 android:layout_width="40dp"
                 android:layout_height="40dp"

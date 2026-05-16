@@ -28,11 +28,19 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Build Config Fields from secrets.properties
         buildConfigField("String", "APPWRITE_PROJECT_ID", "\"${secrets.getProperty("APPWRITE_PROJECT_ID", "")}\"")
         buildConfigField("String", "APPWRITE_ENDPOINT", "\"${secrets.getProperty("APPWRITE_ENDPOINT", "")}\"")
         buildConfigField("String", "APPWRITE_ENDPOINT_FUNCTION", "\"${secrets.getProperty("APPWRITE_ENDPOINT_FUNCTION", "")}\"")
         buildConfigField("String", "APPWRITE_GATEWAY_FUNCTION_ID", "\"${secrets.getProperty("APPWRITE_GATEWAY_FUNCTION_ID", "")}\"")
+        buildConfigField("String", "APPWRITE_DATABASE_ID", "\"${secrets.getProperty("APPWRITE_DATABASE_ID", "")}\"")
+
+        // Collection IDs (Table IDs) from secrets.properties
+        buildConfigField("String", "APPWRITE_COL_USERS", "\"${secrets.getProperty("APPWRITE_COL_USERS", "")}\"")
+        buildConfigField("String", "APPWRITE_COL_TRANSACTIONS", "\"${secrets.getProperty("APPWRITE_COL_TRANSACTIONS", "")}\"")
+        buildConfigField("String", "APPWRITE_COL_GOALS", "\"${secrets.getProperty("APPWRITE_COL_GOALS", "")}\"")
+        buildConfigField("String", "APPWRITE_COL_DEBTS", "\"${secrets.getProperty("APPWRITE_COL_DEBTS", "")}\"")
+        buildConfigField("String", "APPWRITE_COL_FAMILIES", "\"${secrets.getProperty("APPWRITE_COL_FAMILIES", "")}\"")
+        buildConfigField("String", "APPWRITE_COL_MESSAGES", "\"${secrets.getProperty("APPWRITE_COL_MESSAGES", "")}\"")
     }
 
     buildTypes {

@@ -4,29 +4,45 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.ui.family.ChatAdapter;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.databinding.FragmentFamilyChatBinding;
 import com.upreyvan.carti.model.ChatMessage;
+import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.graphics.Insets;
-import android.view.ViewGroup;
+import io.appwrite.Query;
+import io.appwrite.models.Document;
+import io.appwrite.models.DocumentList;
+import io.appwrite.models.RealtimeSubscription;
+import io.appwrite.services.Realtime;
 
 public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> {
 
     private ChatAdapter chatAdapter;
+    private ApiHelper apiHelper;
+    private PreferenceManager pref;
+    private Realtime realtime;
+    private RealtimeSubscription subscription;
 
     @Override
     protected FragmentFamilyChatBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -37,11 +53,20 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Prevent screenshots in chat room
+        if (getActivity() != null) {
+            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        }
+
+        apiHelper = new ApiHelper(requireContext());
+        pref = new PreferenceManager(requireContext());
+
         setupDynamicPadding();
         setupToolbar();
         setupChatList();
         setupInput();
-        loadSampleConvo();
+        initRealtime();
+        loadChatHistory();
     }
 
     private void setupChatList() {
@@ -50,18 +75,77 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         getBinding().rvChat.setAdapter(chatAdapter);
     }
 
-    private void loadSampleConvo() {
-        List<ChatMessage> messages = new ArrayList<>();
-        messages.add(new ChatMessage("Juan (You)", "Magandang umaga pamilya! ☀️", "9:30 AM", false, 0));
-        messages.add(new ChatMessage("Maria (Asawa)", "Good morning! 😊", "9:31 AM", true, 0));
-        messages.add(new ChatMessage("Miguel (Anak)", "May update sa budget ngayong araw.", "9:32 AM", false,0));
-        messages.add(new ChatMessage("Ana (Anak)", "Sige! Tingnan ko mamaya.", "9:33 AM", false, 0));
-        messages.add(new ChatMessage("Juan (You)", "Let's keep saving together! 💪", "9:35 AM", true, 0));
-
-        chatAdapter.submitList(messages);
-        getBinding().rvChat.scrollToPosition(messages.size() - 1);
+    private void initRealtime() {
+        realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
+        String familyId = pref.getFamilyId();
+        
+        // Subscribe to the messages collection
+        String channel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_MESSAGES + ".documents";
+        
+        subscription = realtime.subscribe(new String[]{channel}, event -> {
+            if (event.getEvents().contains("databases.*.collections.*.documents.*.create")) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> payload = (Map<String, Object>) event.getPayload();
+                String msgFamilyId = String.valueOf(payload.get("familyId"));
+                
+                if (familyId.equals(msgFamilyId)) {
+                    ChatMessage msg = mapToChatMessage(payload);
+                    // Realtime callbacks usually come from a background thread
+                    requireActivity().runOnUiThread(() -> {
+                        List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
+                        currentList.add(msg);
+                        chatAdapter.submitList(currentList);
+                        getBinding().rvChat.postDelayed(() -> 
+                            getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1), 100);
+                    });
+                }
+            }
+            return null;
+        });
     }
 
+    private void loadChatHistory() {
+        AppwriteManager.getInstance(requireContext())
+            .listDocuments(
+                Constants.Appwrite.DATABASE_ID,
+                Constants.Appwrite.COL_MESSAGES,
+                Arrays.asList(
+                    Query.Companion.equal("familyId", pref.getFamilyId()),
+                    Query.Companion.orderAsc("timestamp"),
+                    Query.Companion.limit(50)
+                ),
+                new AppwriteCallback<DocumentList<Map<String, Object>>>() {
+                    @Override
+                    public void onSuccess(DocumentList<Map<String, Object>> result) {
+                        List<ChatMessage> messages = new ArrayList<>();
+                        for (Document<Map<String, Object>> doc : result.getDocuments()) {
+                            messages.add(mapToChatMessage(doc.getData()));
+                        }
+                        chatAdapter.submitList(messages);
+                        if (!messages.isEmpty()) {
+                            getBinding().rvChat.scrollToPosition(messages.size() - 1);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        Utils.showToast(requireContext(), "Failed to load chat history");
+                    }
+                }
+            );
+    }
+
+    private ChatMessage mapToChatMessage(Map<String, Object> map) {
+        String id = String.valueOf(map.get("$id"));
+        String senderId = String.valueOf(map.get("senderId"));
+        String familyId = String.valueOf(map.get("familyId"));
+        String senderName = String.valueOf(map.get("senderName"));
+        String text = String.valueOf(map.get("text"));
+        long timestamp = ((Number) map.get("timestamp")).longValue();
+        boolean isMe = senderId.equals(pref.getUserId());
+
+        return new ChatMessage(id, senderId, familyId, senderName, text, timestamp, isMe);
+    }
 
     private void setupInput() {
         getBinding().layoutInput.etInput.setOnFocusChangeListener((v, hasFocus) -> {
@@ -75,7 +159,26 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         });
 
         getBinding().layoutInput.btnSend.setOnClickListener(v -> {
+            String text = getBinding().layoutInput.etInput.getText().toString().trim();
+            if (text.isEmpty()) return;
+
+            if (Utils.containsSensitiveInfo(text)) {
+                Utils.showToast(requireContext(), "Security Alert: Sending sensitive information is not allowed.");
+                return;
+            }
+
             getBinding().layoutInput.etInput.setText("");
+            apiHelper.sendMessage(text, new AppwriteCallback<Document<Map<String, Object>>>() {
+                @Override
+                public void onSuccess(Document<Map<String, Object>> result) {
+                    // Handled by Realtime subscription
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    Utils.showToast(requireContext(), "Message failed: " + error.getMessage());
+                }
+            });
         });
 
         getBinding().layoutInput.btnVoice.setOnClickListener(v -> {
@@ -83,34 +186,68 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         });
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Clear secure flag when leaving chat
+        if (getActivity() != null) {
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        }
+        if (subscription != null) {
+            subscription.close();
+        }
+    }
+
     private void setupToolbar() {
         getBinding().btnBack.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().onBackPressed();
         });
+
+        getBinding().btnSettings.setOnClickListener(v -> showAutoDeleteDialog());
 
         getBinding().btnInfo.setOnClickListener(v -> {
             // Chat info logic
         });
     }
 
+    private void showAutoDeleteDialog() {
+        String[] options = {"7 Days (Default)", "15 Days", "1 Month"};
+        int[] daysValues = {7, 15, 30};
+        
+        int currentDays = pref.getChatAutoDeleteDays();
+        int checkedItem = 0;
+        for (int i = 0; i < daysValues.length; i++) {
+            if (daysValues[i] == currentDays) {
+                checkedItem = i;
+                break;
+            }
+        }
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Auto Delete Messages")
+                .setSingleChoiceItems(options, checkedItem, (dialog, which) -> {
+                    pref.setChatAutoDeleteDays(daysValues[which]);
+                    Utils.showToast(requireContext(), "Auto delete set to " + options[which]);
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
     private void setupDynamicPadding() {
-        // Handle top padding via Utils (status bar only)
         Utils.applySystemBarInsets(getBinding().layoutHeader, null, 0.3f, 0);
 
-        // Custom local handle for Bottom Input + Keyboard
         ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutInputContainer, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
             int bottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_height);
 
             ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-            
             if (ime.bottom > 0) {
                 lp.bottomMargin = ime.bottom;
             } else {
                 lp.bottomMargin = systemBars.bottom + bottomNavHeight;
             }
-            
             v.setLayoutParams(lp);
             return insets;
         });

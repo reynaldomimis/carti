@@ -114,7 +114,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
             public void onError(Throwable error) {
                 if (isAdded()) {
                     requireActivity().runOnUiThread(() ->
-                        Toast.makeText(requireContext(), "Sync error: " + error.getMessage(), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Error fetching debts: " + error.getMessage(), Toast.LENGTH_SHORT).show()
                     );
                 }
             }

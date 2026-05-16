@@ -54,8 +54,9 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
 
                 String familyId = String.valueOf(userDoc.get("familyId"));
                 if (familyId == null || "null".equals(familyId)) familyId = "";
+                String userId = String.valueOf(userDoc.getOrDefault("$id", ""));
 
-                // Update preferences as well to keep them in sync
+                // Update preferences to match remote user data
                 PreferenceManager pref = new PreferenceManager(requireContext());
                 pref.setUserData(
                     String.valueOf(userDoc.get("username")),
@@ -63,7 +64,8 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
                     String.valueOf(userDoc.get("role")),
                     isEmployed,
                     familyId,
-                    "" // Initial empty invite code, will be filled upon family creation/sync
+                    "",
+                    userId
                 );
 
                 Toast.makeText(requireContext(), getString(R.string.debug_live_is_employed, isEmployed), Toast.LENGTH_SHORT).show();

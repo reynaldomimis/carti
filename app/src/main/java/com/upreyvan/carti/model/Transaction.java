@@ -11,16 +11,21 @@ public class Transaction {
     private final int iconBgColor;
     private final int iconColor;
     private final long timestampMillis;
+    private final String type;
 
     public Transaction(String id, String title, String timestamp, String amount, int iconRes, int iconBgColor) {
-        this(id, title, timestamp, amount, iconRes, iconBgColor, 0, System.currentTimeMillis());
+        this(id, title, timestamp, amount, iconRes, iconBgColor, 0, System.currentTimeMillis(), "EXPENSE");
     }
 
     public Transaction(String id, String title, String timestamp, String amount, int iconRes, int iconBgColor, int iconColor) {
-        this(id, title, timestamp, amount, iconRes, iconBgColor, iconColor, System.currentTimeMillis());
+        this(id, title, timestamp, amount, iconRes, iconBgColor, iconColor, System.currentTimeMillis(), "EXPENSE");
     }
 
     public Transaction(String id, String title, String timestamp, String amount, int iconRes, int iconBgColor, int iconColor, long timestampMillis) {
+        this(id, title, timestamp, amount, iconRes, iconBgColor, iconColor, timestampMillis, "EXPENSE");
+    }
+
+    public Transaction(String id, String title, String timestamp, String amount, int iconRes, int iconBgColor, int iconColor, long timestampMillis, String type) {
         this.id = id;
         this.title = title;
         this.timestamp = timestamp;
@@ -29,6 +34,19 @@ public class Transaction {
         this.iconBgColor = iconBgColor;
         this.iconColor = iconColor;
         this.timestampMillis = timestampMillis;
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public double getAmountDouble() {
+        try {
+            return Double.parseDouble(amount.replaceAll("[^0-9.]", ""));
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public String getId() { return id; }

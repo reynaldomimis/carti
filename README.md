@@ -13,7 +13,7 @@
 * 💰 **Salary Mode** – Our flagship feature! Automatically distribute your budget based on the number of days remaining until your next payday.
 * 📝 **Debt (Utang) Tracker** – Keep a clear record of money owed or lent. Manage statuses like "Paid" or "Pending" with ease.
 * 🎯 **Goal / Savings System** – Track visual progress for family dreams, from a new bicycle to an Emergency Fund.
-* 🌐 **Offline First** – No internet? No problem. Log your expenses anytime, and the app will automatically sync once you're back online.
+* 🌐 **Cloud Integration** – Log your expenses anytime and keep your family data up-to-date across devices.
 
 ---
 
