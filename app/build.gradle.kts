@@ -71,6 +71,12 @@ dependencies {
     implementation(libs.ucrop)
     implementation(libs.appwrite)
     implementation(libs.shimmer)
+
+    // Room
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
+    implementation(libs.room.ktx)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

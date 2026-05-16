@@ -13,7 +13,7 @@ import androidx.core.graphics.ColorUtils;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.local.ExpenseManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.DialogQuickLogAmountBinding;
@@ -33,6 +33,7 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
     private static final String ARG_ITEM = "arg_item";
     private DialogQuickLogAmountBinding binding;
     private OnLogListener listener;
+    private TransactionRepository transactionRepository;
 
     public interface OnLogListener {
         void onLog(QuickLogItem item, double amount);
@@ -79,6 +80,7 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        transactionRepository = new TransactionRepository(requireContext());
         
         QuickLogItem item = (QuickLogItem) getArguments().getSerializable(ARG_ITEM);
         if (item == null) {
@@ -108,18 +110,21 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
                     @Override
                     public void onSuccess(Map<String, Object> result) {
                         String id = String.valueOf(result.get("$id"));
+                        String familyId = new com.upreyvan.carti.data.local.PreferenceManager(requireContext()).getFamilyId();
                         Transaction transaction = new Transaction(
                                 id,
+                                familyId,
                                 item.getTitle(),
                                 time,
                                 "₱" + String.format(Locale.getDefault(), "%.2f", amount),
                                 item.getIconRes(),
                                 bgColor,
                                 iconColor,
-                                System.currentTimeMillis()
+                                System.currentTimeMillis(),
+                                "EXPENSE"
                         );
                         // Save locally first for instant feedback
-                        ExpenseManager.getInstance().addTransaction(transaction);
+                        transactionRepository.saveLocally(transaction);
                     }
 
                     @Override

@@ -58,7 +58,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/plus_jakarta_sans_bold"
-                        android:text="@string/mock_days_left"
+                        android:text="0"
                         android:textColor="@color/text_primary"
                         android:textSize="32sp"
                         app:layout_constraintStart_toStartOf="parent"
@@ -83,7 +83,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:text="@string/mock_salary_date"
+                        android:text="Date"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp"
                         app:layout_constraintStart_toStartOf="parent"
@@ -228,7 +228,7 @@
                             android:layout_below="@id/labelAmount"
                             android:layout_marginTop="4dp"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
-                            android:text="@string/mock_salary_amount"
+                            android:text="₱0.00"
                             android:textColor="@color/text_primary"
                             android:textSize="20sp" />
 
@@ -315,7 +315,7 @@
                             android:layout_below="@id/labelHati"
                             android:layout_marginTop="4dp"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
-                            android:text="@string/mock_budget_per_day"
+                            android:text="₱0.00 / day"
                             android:textColor="@color/text_primary"
                             android:textSize="18sp" />
                     </RelativeLayout>
@@ -332,7 +332,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/plus_jakarta_sans_bold"
-                        android:text="@string/mock_progress_range"
+                        android:text="Range"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
@@ -345,7 +345,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
-                            android:text="@string/mock_days_passed"
+                            android:text="0 days passed"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
 
@@ -354,7 +354,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
-                            android:text="@string/mock_progress_percent"
+                            android:text="0%"
                             android:textColor="@color/carti_primary_green"
                             android:textSize="14sp" />
                     </RelativeLayout>

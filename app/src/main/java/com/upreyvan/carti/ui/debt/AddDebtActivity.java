@@ -11,6 +11,7 @@ import android.app.ProgressDialog;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
+import com.upreyvan.carti.data.repository.DebtRepository;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.ActivityAddDebtBinding;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
     private ProgressDialog progressDialog;
+    private DebtRepository debtRepository;
 
     @Override
     protected ActivityAddDebtBinding inflateBinding(LayoutInflater inflater) {
@@ -33,6 +35,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        debtRepository = new DebtRepository(this);
         setupDynamicPadding();
         setupToolbar();
         setupDefaults();
@@ -107,8 +110,8 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
                 @Override
                 public void onSuccess(Map<String, Object> result) {
                     String id = String.valueOf(result.get("$id"));
-                    com.upreyvan.carti.data.local.DebtManager.getInstance().addDebt(
-                            new com.upreyvan.carti.model.Debt(id, name, "", "Upcoming", amount, false, R.drawable.ic_person, "")
+                    debtRepository.saveLocally(
+                            new com.upreyvan.carti.model.Debt(id, new com.upreyvan.carti.data.local.PreferenceManager(AddDebtActivity.this).getFamilyId(), name, "", "Upcoming", amount, false, R.drawable.ic_person, "")
                     );
 
                     showLoading(false);

@@ -105,7 +105,7 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
 
         String finalInviteCode = inviteCode != null ? inviteCode : "";
         getBinding().tvFamilyId.setText(finalInviteCode);
-        getBinding().tvValidity.setText(getString(R.string.validity_format, getString(R.string.mock_validity_date)));
+        getBinding().tvValidity.setText(getString(R.string.validity_format, "Never"));
 
         getBinding().btnCopy.setOnClickListener(v -> {
             copyToClipboard(finalInviteCode);

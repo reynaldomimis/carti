@@ -122,7 +122,7 @@ public class SalaryModeFragment extends BaseFragment<FragmentSalaryModeBinding> 
         
         Calendar nextPayday = manager.getNextPayday();
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-        getBinding().tvTargetDate.setText(getString(R.string.mock_salary_date_format, sdf.format(nextPayday.getTime())));
+        getBinding().tvTargetDate.setText(sdf.format(nextPayday.getTime()));
 
         // Details
         float salaryAmount = manager.getSalaryAmount();

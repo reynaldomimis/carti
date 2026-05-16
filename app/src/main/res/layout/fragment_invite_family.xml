@@ -86,7 +86,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/plus_jakarta_sans_bold"
-                        android:text="@string/mock_family_id"
+                        android:text="---"
                         android:textColor="@color/text_primary"
                         android:textSize="20sp"
                         app:layout_constraintEnd_toStartOf="@+id/btnCopy"

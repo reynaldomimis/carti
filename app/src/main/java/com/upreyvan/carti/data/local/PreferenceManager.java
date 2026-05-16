@@ -95,6 +95,30 @@ public class PreferenceManager {
         return sharedPreferences.getInt(Constants.Keys.KEY_CHAT_AUTO_DELETE_DAYS, 7);
     }
 
+    public void setLastSyncTime(String timestamp) {
+        sharedPreferences.edit().putString(Constants.Keys.KEY_LAST_SYNC_TIME, timestamp).apply();
+    }
+
+    public String getLastSyncTime() {
+        return sharedPreferences.getString(Constants.Keys.KEY_LAST_SYNC_TIME, "1970-01-01T00:00:00.000Z");
+    }
+
+    public void setLastGoalSyncTime(String timestamp) {
+        sharedPreferences.edit().putString(Constants.Keys.KEY_LAST_GOAL_SYNC_TIME, timestamp).apply();
+    }
+
+    public String getLastGoalSyncTime() {
+        return sharedPreferences.getString(Constants.Keys.KEY_LAST_GOAL_SYNC_TIME, "1970-01-01T00:00:00.000Z");
+    }
+
+    public void setLastDebtSyncTime(String timestamp) {
+        sharedPreferences.edit().putString(Constants.Keys.KEY_LAST_DEBT_SYNC_TIME, timestamp).apply();
+    }
+
+    public String getLastDebtSyncTime() {
+        return sharedPreferences.getString(Constants.Keys.KEY_LAST_DEBT_SYNC_TIME, "1970-01-01T00:00:00.000Z");
+    }
+
     public void clear() {
         sharedPreferences.edit().clear().apply();
     }

@@ -17,9 +17,9 @@ import java.util.Locale;
 import com.upreyvan.carti.R;
 import android.app.ProgressDialog;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.local.ExpenseManager;
 import com.upreyvan.carti.databinding.ActivityAddExpenseBinding;
 import com.upreyvan.carti.data.local.CategoryManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.model.Category;
@@ -31,6 +31,7 @@ import java.util.Map;
 public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> {
 
     private ProgressDialog progressDialog;
+    private TransactionRepository transactionRepository;
 
     @Override
     protected ActivityAddExpenseBinding inflateBinding(LayoutInflater inflater) {
@@ -40,6 +41,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        transactionRepository = new TransactionRepository(this);
         setupDynamicPadding();
         setupToolbar();
         setupDropdowns();
@@ -135,6 +137,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
 
     private void saveLocalAndFinish(String id, double amountVal, String category, String source) {
         // Save to ExpenseManager (Local)
+        String familyId = new com.upreyvan.carti.data.local.PreferenceManager(this).getFamilyId();
         String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
         
         // Get Category Icon
@@ -153,15 +156,17 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
 
         Transaction transaction = new Transaction(
                 id,
+                familyId,
                 category,
                 time,
                 "₱" + String.format(Locale.getDefault(), "%.2f", amountVal),
                 iconRes,
                 bgColor,
                 iconColor,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                "EXPENSE"
         );
-        ExpenseManager.getInstance().addTransaction(transaction);
+        transactionRepository.saveLocally(transaction);
 
         showLoading(false);
         Toast.makeText(this, "Expense Saved!", Toast.LENGTH_SHORT).show();

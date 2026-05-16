@@ -67,6 +67,9 @@ public class Constants {
         public static final String KEY_TOTAL_INCOME = "total_income";
         public static final String KEY_TOTAL_EXPENSE = "total_expense";
         public static final String KEY_CHAT_AUTO_DELETE_DAYS = "chat_auto_delete_days";
+        public static final String KEY_LAST_SYNC_TIME = "last_sync_time";
+        public static final String KEY_LAST_GOAL_SYNC_TIME = "last_goal_sync_time";
+        public static final String KEY_LAST_DEBT_SYNC_TIME = "last_debt_sync_time";
 
         // Manager Keys
         public static final String KEY_TRANSACTIONS = "transactions_list";

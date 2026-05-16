@@ -4,6 +4,8 @@
     <string name="family_label">Family Wallet | %s net </string>
     <string name="current_date">Today | %s</string>
     <string name="amount_remaining">%s left</string>
+    <string name="daily_budget">Daily Budget</string>
+    <string name="budget_summary">Budget Summary</string>
     <string name="budget_amount">%s</string>
     <string name="total_budget">/ %s</string>
     <string name="spent_remaining_days">Salary Mode: %1$d days to payday | %2$d%% spent </string>
@@ -31,460 +33,333 @@
     <string name="nav_debt">Debt</string>
     <string name="nav_ranking">Ranking</string>
     <string name="nav_profile">Profile</string>
+    <string name="menu_ai">AI</string>
     <string name="notifications">Notifications</string>
-
-    <!-- Mock Data -->
-    <string name="mock_time_1">Today • 9:35 AM</string>
-    <string name="mock_time_2">Today • 8:20 AM</string>
-    <string name="mock_time_3">Yesterday • 6:15 PM</string>
-    <string name="mock_amount_120">₱120</string>
-    <string name="mock_amount_15">₱15</string>
-    <string name="mock_amount_85">₱85</string>
-    <string name="mock_store">Store</string>
-    <string name="mock_salary_date_format">Payday: %s</string>
-    <string name="mock_validity_date">Dec 31, 2024</string>
-    <string name="mock_notif_title_1">Daily Budget Tip</string>
-    <string name="mock_notif_desc_1">You saved ₱50 today! Keep it up.</string>
-    <string name="mock_notif_title_2">Goal Milestone</string>
-    <string name="mock_notif_desc_2">You reached 50% of your "New Laptop" goal!</string>
-    <string name="mock_notif_title_3">Family Update</string>
-    <string name="mock_notif_desc_3">Maria added a new expense: Groceries.</string>
-    <string name="budget_summary">₱350</string>
-
-    <!-- Goal Fragment -->
-    <string name="goal_title">Goals / Savings</string>
-    <string name="btn_add_goal">Add New</string>
-    <string name="total_savings_label">Total Savings</string>
-    <string name="savings_summary_subtitle">Your overall savings</string>
-    <string name="overall_percentage_target_format">%1$d%% target</string>
-    <string name="overall_progress_description">Keep saving for your goals!</string>
-    <string name="overall_progress_subtitle_format">%1$d%% of your total target</string>
-    <string name="target_date_label_format">Target: %1$s</string>
-    <string name="goal_progress_amount_format">%1$s / %2$s</string>
-    <string name="percentage_format">%1$d%%</string>
-    <string name="zero_percent">0%</string>
-
-    <!-- Family Members Fragment -->
-
-    <string name="family_members_title">Family Members</string>
-    <string name="btn_invite">Invite</string>
-    <string name="role_admin">Admin</string>
-    <string name="role_member">Member</string>
-
-    <!-- Debt Tracker Fragment -->
-    <string name="debt_tracker_title">Debt Tracker</string>
-    <string name="total_debt_label">Total Debt</string>
-    <string name="debt_summary_subtitle">Remaining amount to pay</string>
-    <string name="overall_debt_percentage_format">%1$d%% paid</string>
-    <string name="overall_debt_description">Keep track of your repayments!</string>
-    <string name="btn_add_debt">Add Debt</string>
-    <string name="tab_i_owe">I owe</string>
-    <string name="tab_owes_me">Owes me</string>
-    <string name="status_not_paid">Not paid</string>
-    <string name="status_paid">Paid</string>
-    <string name="mark_as_paid">Mark as Paid</string>
-    <string name="payment_history">Payment History</string>
-    <string name="no_payment_yet">No payment yet</string>
-    <string name="notes_label">Notes</string>
-    <string name="currency_php">₱</string>
-
-    <!-- Notifications -->
-
-    <string name="notifications_title">Notifications</string>
-    <string name="btn_clear_all">Clear All</string>
-    <string name="empty_notifications">No notifications yet</string>
-
-    <!-- Add Goal Fragment -->
-
-    <string name="add_goal_title">New Goal</string>
-    <string name="label_add_image">Add an image</string>
-    <string name="label_goal_name">Goal Name</string>
-    <string name="hint_goal_name">e.g., Buy a Bicycle</string>
-    <string name="label_target_amount">Target Amount</string>
-    <string name="hint_amount">₱0.00</string>
-    <string name="label_target_date">Target Date</string>
-    <string name="hint_date">Select a date</string>
-    <string name="label_notes_optional">Notes (Optional)</string>
-    <string name="hint_notes">Additional information...</string>
-    <string name="btn_save_goal">Save Goal</string>
-
-    <!-- Goal List Tabs -->
-    <string name="tab_active_goals">Active Goals</string>
-    <string name="tab_completed_goals">Completed</string>
-
-    <!-- Expenses Fragment -->
-    <string name="expenses_title">Expenses</string>
-    <string name="label_total_spent">Total Spent</string>
-    <string name="vs_last_month">vs %s:</string>
-    <string name="percentage_decrease_format">-%1$s ( ▼ %2$s%% )</string>
-
-    <!-- Profile Fragment -->
-    <string name="profile_title">Profile</string>
-    <string name="mock_name_juan">Juan (Ikaw)</string>
-
-    <string name="menu_family">Family Members</string>
-    <string name="menu_family_sub">Manage members</string>
-    <string name="menu_family_sub_format">%1$d members</string>
-
-    <string name="menu_invite">Invite Family</string>
-
-    <string name="menu_invite_sub">Invite a new member</string>
-
-    <string name="menu_chat">Family Chat Room</string>
-    <string name="menu_chat_sub">Talk with your family</string>
-
-    <string name="menu_reports">Reports</string>
-    <string name="menu_reports_sub">View reports</string>
-
-    <string name="menu_goals">Goals / Savings</string>
-    <string name="menu_goals_sub">View your savings</string>
-
-    <string name="menu_debt">Debt Tracker</string>
-    <string name="menu_debt_sub">Manage your loans and debts</string>
-
-    <string name="menu_ai">AI Assistant</string>
-    <string name="menu_ai_sub">Ask about your budget</string>
-
-    <string name="menu_offline">Offline Mode</string>
-    <string name="menu_offline_sub">Use without internet</string>
-
-    <string name="menu_settings">Settings</string>
-    <string name="menu_settings_sub">Notifications, Privacy</string>
-
-    <string name="menu_backup">Backup</string>
-    <string name="menu_backup_sub">Google Drive (Coming Soon)</string>
-
-    <string name="menu_storage">Data &amp; Storage</string>
-    <string name="menu_storage_sub">Manage offline data</string>
-
-    <string name="menu_help">Help &amp; Support</string>
-    <string name="menu_help_sub">FAQs, Contact us</string>
-    <string name="help_title">Help &amp; Support</string>
-    <string name="section_faq">Frequently Asked Questions</string>
-    <string name="faq_q1">How do I invite family members?</string>
-    <string name="faq_a1">Go to Profile > Invite Family. Copy your Family ID and share it with your family members.</string>
-    <string name="faq_q2">What is Salary Mode?</string>
-    <string name="faq_a2">Salary Mode helps you budget your money between paydays. It calculates how much you can spend per day.</string>
-    <string name="faq_q3">How do I delete my account?</string>
-    <string name="faq_a3">Go to Profile > Login &amp; Security. You will find the option to delete your account at the bottom.</string>
-    <string name="section_contact">Contact Support</string>
-    <string name="label_email_support">Email Support</string>
-    <string name="support_email">support@carti.app</string>
-    <string name="faq_q4">Is my data safe?</string>
-    <string name="faq_a4">Yes, Carti uses Appwrite\'s secure infrastructure to ensure your family\'s financial data is encrypted and protected.</string>
-    <string name="support_email_subject">Support Request - Carti App</string>
-    <string name="bug_report_subject">Bug Report - Carti App</string>
-    <string name="label_report_bug">Report a Bug</string>
-
-    <string name="menu_about">About App</string>
-    <string name="menu_about_sub">Version, Developer</string>
-    <string name="menu_security">Login &amp; Security</string>
-    <string name="menu_security_sub">Password, Deletion, Sessions</string>
-
-    <!-- Security Fragment -->
-    <string name="security_title">Login &amp; Security</string>
-    <string name="section_login">Login</string>
-    <string name="label_password">Change Password</string>
-    <string name="desc_password">Update your account password to keep your account secure.</string>
-    <string name="btn_reset_password">Update Password</string>
-
-    <string name="section_security">Security</string>
-    <string name="label_sign_out_all">Sign out from all devices</string>
-    <string name="desc_sign_out_all">Logged in on a shared device but forgot to sign out? End all sessions by signing out from all devices.</string>
-    <string name="btn_sign_out_all">Sign out from all devices</string>
-
-    <string name="section_delete_account">Delete your account</string>
-    <string name="desc_delete_account">By deleting your account, you\'ll no longer be able to access your family data or log in to Carti. This action is permanent.</string>
-    <string name="btn_delete_account">Delete account</string>
-
-    <string name="hint_current_password">Current Password</string>
-    <string name="hint_new_password">New Password</string>
-    <string name="dialog_update_password_title">Update Password</string>
-    <string name="msg_sign_out_all_success">Signed out from all devices.</string>
-    <string name="msg_delete_account_confirm">Are you sure you want to delete your account? This cannot be undone.</string>
-    <string name="msg_account_deleted">Account successfully deleted.</string>
-    <string name="btn_confirm_delete">Confirm Delete</string>
-    <string name="btn_update">Update</string>
-    <string name="msg_password_short">Password must be at least 8 characters</string>
-    <string name="msg_password_updated">Password updated successfully!</string>
-
-    <!-- Settings Fragment -->
-    <string name="settings_title">Settings</string>
-    <string name="section_general">GENERAL</string>
-    <string name="label_notifications">Notifications</string>
-    <string name="label_currency">Currency</string>
-    <string name="label_language">Language</string>
-    <string name="status_on">On</string>
-    <string name="status_off">Off</string>
-    <string name="status_currency_php">Philippine Peso (₱)</string>
-    <string name="status_language_english">English</string>
-
-    <!-- Notification Settings -->
-    <string name="notification_settings_title">Notification Settings</string>
-    <string name="section_budget_alerts">BUDGET ALERTS</string>
-    <string name="label_daily_budget_alert">Daily Budget Alert</string>
-    <string name="desc_daily_budget_alert">Alert when close to limit</string>
-    <string name="section_salary_reminders">SALARY REMINDERS</string>
-    <string name="label_salary_reminder">Salary Reminder</string>
-    <string name="desc_salary_reminder">Remind salary date</string>
-    <string name="section_other">OTHER</string>
-    <string name="label_goal_milestone">Goal Milestone</string>
-    <string name="desc_goal_milestone">Reach goal progress</string>
-    <string name="label_debt_reminders">Debt Reminders</string>
-    <string name="desc_debt_reminders">Remind due dates</string>
-
-    <!-- About Fragment -->
-    <string name="about_app_title">About App</string>
-    <string name="app_version_format">Version %1$s</string>
-    <string name="app_description">Carti is your personal finance companion designed to help you and your family manage budgets, track expenses, and reach your savings goals together. Simple, social, and smart.</string>
-    <string name="label_terms">Terms of Service</string>
-    <string name="label_privacy">Privacy Policy</string>
-    <string name="label_developer">Developed by</string>
-    <string name="developer_name">Upreyvan Team</string>
-    <string name="copyright">© 2024 Carti App. All rights reserved.</string>
-
-    <!-- Invite Family Member Fragment -->
-    <string name="invite_family_title">Invite Family Member</string>
-    <string name="invite_headline">Build your money team!</string>
-    <string name="invite_subtext">Invite your family members to track and manage expenses together.</string>
-    <string name="label_family_id">Your Family ID</string>
-    <string name="btn_copy">Copy</string>
-    <string name="validity_format">Valid until %1$s</string>
-    <string name="label_how_to_join">How to join?</string>
-    <string name="step_1">Share this Family ID</string>
-    <string name="step_2">Your family joins using this ID</string>
-    <string name="step_3">Start tracking together</string>
-    <string name="btn_share_family_id">Share Family ID</string>
-
-    <!-- Join Family Fragment -->
-    <string name="join_family_title">Join Family</string>
-    <string name="join_headline">Enter Family ID to Join</string>
-    <string name="join_subtext">Ask your family admin for the Family ID to join your group.</string>
-    <string name="hint_family_id">FAM - XXXX - XXXX</string>
-    <string name="btn_join_family">Join Family</string>
-    <string name="btn_joining">Joining...</string>
-    <string name="msg_join_success">Successfully joined family!</string>
-    <string name="join_info_headline">Don\'t have a Family ID?</string>
-    <string name="join_info_subtext">Ask your family admin to invite you. They can generate a Family ID from the invite section.</string>
-    <!-- Backup / Offline Mode Fragment -->
-    <string name="offline_mode_title">Offline Mode</string>
-    <string name="offline_headline">You\'re Offline</string>
-    <string name="offline_description">No internet connection detected.\nYou can still add expenses and\nview your offline data.</string>
-    <string name="label_offline_actions">Offline Actions</string>
-    <string name="action_add_expenses">Add Expenses</string>
-    <string name="action_view_transactions">View Recent Transactions</string>
-    <string name="action_view_summary">View Offline Summary</string>
-    <!-- Family Chat Fragment -->
-    <string name="family_chat_title">Family Chat</string>
-    <string name="hint_type_message">Type a message...</string>
-
-    <!-- AI Assistant Fragment -->
-    <string name="ai_assistant_title">Carti AI Assistant</string>
-    <string name="ai_greeting">Hello! I\'m your Carti Assistant. How can I help your family manage your expenses today?</string>
-    <string name="hint_ask_me">Ask me anything...</string>
-    <string name="ai_disclaimer">AI responses may not be 100% accurate.</string>
-    <string name="ai_suggestion_1">Spent 500 today</string>
-    <string name="ai_suggestion_2">Income 1500</string>
-    <string name="ai_suggestion_3">Weekly Report</string>
-    <string name="ai_suggestion_4">Remaining Budget</string>
-    <string name="ai_suggestion_5">Top Expenses</string>
 
     <!-- All Transactions Fragment -->
     <string name="all_transactions_title">All Expenses</string>
 
-    <!-- Add Options Fragment -->
-    <string name="add_options_title">What to add?</string>
-    <string name="add_options_expense">Add Expense</string>
-    <string name="add_options_expense_desc">Add a new expense</string>
-    <string name="add_options_debt">Add Debt</string>
-    <string name="add_options_debt_desc">Add a new debt</string>
-    <string name="add_options_goal">Add Goal</string>
-    <string name="add_options_goal_desc">Add a new goal</string>
-    <string name="add_options_invite">Invite Family</string>
-    <string name="add_options_invite_desc">Invite a family member</string>
-    <string name="add_options_category">Add Category</string>
-    <string name="add_options_category_desc">Manage expense categories</string>
+    <!-- AI Assistant -->
+    <string name="msg_canceled">Operation canceled</string>
+    <string name="chat_sender_me">Me</string>
+    <string name="chat_sender_ai">Carti AI</string>
+    <string name="timer_format">Wait %d seconds</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="hint_ask_me">Ask me anything...</string>
 
-    <!-- Add Expense Fragment -->
-    <string name="add_expense_title">Add Expense</string>
-    <string name="label_what_bought">What was bought?</string>
-    <string name="hint_expense_name">e.g., Grocery, Rice, Load</string>
-    <string name="label_amount_peso">Amount (₱)</string>
-    <string name="label_category">Category</string>
-    <string name="hint_select_category">Select a category</string>
-    <string name="label_date">Date</string>
-    <string name="label_payment_source">Paid through</string>
-    <string name="hint_select_source">Select a source</string>
-    <string name="btn_save_expense">Save Expense</string>
-
-    <!-- Add Debt Fragment -->
-    <string name="add_debt_title">Add Debt</string>
-    <string name="label_who_borrowed">Who borrowed?</string>
-    <string name="hint_borrower_name">e.g., Miguel, Ana</string>
-    <string name="label_reason_note">Reason / note</string>
-    <string name="hint_debt_reason">e.g., Buying groceries</string>
-    <string name="label_due_date">Due Date</string>
-    <string name="label_is_recurring">Repeat this?</string>
-    <string name="opt_no">No</string>
-    <string name="opt_yes">Yes</string>
-    <string name="btn_save_debt">Save Debt</string>
-
-    <!-- Onboarding Welcome -->
-    <string name="onboarding_welcome_title">Family Money</string>
-    <string name="onboarding_welcome_desc">Family budget, to make it last until payday.</string>
-    <string name="btn_start">Start</string>
-    <string name="footer_login_prompt">Already have an account? <font color="#008955">Login</font></string>
-
-    <!-- Onboarding Role Selection -->
-    <string name="onboarding_role_title">Who are you in the family?</string>
-    <string name="onboarding_role_desc">Choose who you are in the family.</string>
+    <!-- Auth -->
     <string name="role_father">Father</string>
     <string name="role_mother">Mother</string>
     <string name="role_brother">Brother</string>
     <string name="role_sister">Sister</string>
     <string name="role_child">Child</string>
-    <string name="role_others">Others</string>
-    <string name="btn_next">Next</string>
+    <string name="role_admin">Admin</string>
+    <string name="login_title">Welcome Back</string>
+    <string name="login_subtitle">Login to your account</string>
+    <string name="btn_login">Login</string>
+    <string name="prompt_no_account">&lt;u&gt;Don\'t have an account? Register&lt;/u&gt;</string>
+    <string name="register_title">Create Account</string>
+    <string name="register_subtitle">Start your financial journey</string>
+    <string name="btn_register">Register</string>
+    <string name="prompt_has_account">&lt;u&gt;Already have an account? Login&lt;/u&gt;</string>
+    <string name="err_required">This field is required</string>
+    <string name="err_invalid_email">Invalid email address</string>
+    <string name="btn_logging_in">Logging in...</string>
+    <string name="btn_registering">Registering...</string>
 
-    <!-- Onboarding Family Options -->
-    <string name="onboarding_family_opt_title">Create or Join a Family</string>
-    <string name="onboarding_family_opt_desc">Create your own family or join an existing family.</string>
-    <string name="opt_create_title">Create a Family</string>
-    <string name="opt_create_desc">I will be the one to invite.</string>
-    <string name="opt_join_title">Join a Family</string>
-    <string name="opt_join_desc">I have a Family ID.</string>
-    <string name="btn_skip">Skip for now</string>
-
-    <!-- Onboarding Create Family -->
-    <string name="onboarding_create_title">Create a Family</string>
-    <string name="label_family_name">Family Name</string>
-    <string name="hint_family_name">e.g., Dela Cruz Family</string>
-    <string name="label_you_are">You are the:</string>
-    <string name="label_family_head">(Family Head)</string>
-    <string name="btn_create">Create</string>
-    <string name="btn_creating">Creating...</string>
-
-    <!-- Onboarding Join Status -->
-    <string name="onboarding_join_status_title">Join Request Sent!</string>
-    <string name="onboarding_join_status_desc">Wait for Admin approval to join.</string>
-    <string name="onboarding_family_created_title">Family Created!</string>
-    <string name="onboarding_family_created_desc">Share this Invite Code with your family members so they can join you.</string>
-    <string name="btn_view_status">View Status</string>
-    <string name="btn_go_to_home">Go to Home</string>
-    <string name="btn_go_back">Go Back</string>
-    <string name="invite_code_label">Invite Code</string>
-    <string name="invite_code_label_colon">Invite Code: </string>
-    <string name="invite_code_prefix">FAM-</string>
-    <string name="invite_code_copied">Invite code copied!</string>
-
-    <!-- Goal Detail Fragment -->
+    <!-- Goals -->
+    <string name="add_to_goal_title">Add Funds to Goal</string>
+    <string name="label_add_image">Add Image</string>
+    <string name="label_current_amount">Current: %s</string>
+    <string name="percentage_format">%d%%</string>
+    <string name="zero_percent">0%</string>
+    <string name="add_goal_title">New Goal</string>
+    <string name="goal_progress_amount_format">%1$s / %2$s</string>
+    <string name="target_date_label_format">Target: %s</string>
     <string name="goal_details_title">Goal Details</string>
-    <string name="label_monthly_target">Monthly Target</string>
-    <string name="label_progress_history">Progress History</string>
-    <string name="btn_add_funds">Add Funds</string>
-    <string name="goal_progress_complete_format">%1$d%% Complete</string>
-
-    <!-- Add Funds Fragment -->
-    <string name="add_to_goal_title">Add to Goal</string>
-    <string name="label_current_amount">Current: %1$s / %2$s</string>
-    <string name="label_amount_to_add">Amount</string>
-    <string name="label_how_to_save">How will you save?</string>
-    <string name="opt_from_salary">From Salary</string>
+    <string name="goal_progress_complete_format">%d%% complete</string>
+    <string name="label_amount_to_add">Amount to Add</string>
+    <string name="label_how_to_save">How would you like to save this?</string>
+    <string name="opt_from_salary">Deduct from Salary</string>
     <string name="opt_challenge">Savings Challenge</string>
-    <string name="opt_other_source">Other source</string>
-    <string name="hint_note_example">e.g. Save on coffee</string>
-    <string name="btn_save_funds">Save</string>
+    <string name="opt_other_source">Other Source</string>
+    <string name="hint_note_example">e.g. Extra from side gig</string>
+    <string name="goal_title">Goals</string>
+    <string name="btn_add_goal">Add Goal</string>
+    <string name="label_goal_name">Goal Name</string>
+    <string name="hint_goal_name">e.g. New Car</string>
+    <string name="label_target_amount">Target Amount (₱)</string>
+    <string name="label_target_date">Target Date</string>
+    <string name="hint_date">YYYY-MM-DD</string>
+    <string name="label_notes_optional">Notes (Optional)</string>
+    <string name="hint_notes">Extra details...</string>
+    <string name="btn_save_goal">Save Goal</string>
 
-    <!-- Salary Mode Fragment -->
-    <string name="salary_mode_title">Salary Mode</string>
-    <string name="label_next_sweldo">Next salary in</string>
-    <string name="label_days_format">%1$d days</string>
-    <string name="label_date_format">(%1$s)</string>
-    <string name="label_sweldo_amount">Salary Amount</string>
-    <string name="label_budget_breakdown">Daily Budget Breakdown</string>
-    <string name="label_budget_per_day_format">%1$s / day</string>
-    <string name="label_progress_range_format">Progress (%1$s - %2$s)</string>
-    <string name="label_days_passed_format">%1$d days passed</string>
-    <string name="btn_edit">Edit</string>
-    <string name="menu_salary">Salary Mode</string>
-    <string name="menu_salary_sub">Manage your salary budget</string>
-    <string name="label_days">days</string>
-    <string name="payday_format">%1$dth and %2$dth of the month</string>
-    <string name="salary_info_format">Salary Mode: %1$d days to payday</string>
-
-    <!-- Salary Edit Bottom Sheet -->
-    <string name="title_edit_salary">Edit Salary Amount</string>
-    <string name="desc_edit_salary">Enter your new salary amount</string>
-    <string name="btn_save_salary">Save Salary</string>
-    <string name="title_edit_payday">Edit Payday Schedule</string>
-    <string name="desc_edit_payday">Enter your monthly payday dates</string>
-    <string name="btn_save_schedule">Save Schedule</string>
-    <string name="hint_day1">Day 1</string>
-    <string name="hint_day2">Day 2</string>
-
-    <!-- Add Category Activity -->
+    <!-- Add Options -->
+    <string name="add_options_title">What to add?</string>
     <string name="label_category_name">Category Name</string>
-    <string name="hint_category_name">e.g., Entertainment</string>
+    <string name="hint_category_name">e.g. Shopping</string>
     <string name="label_choose_icon">Choose Icon</string>
     <string name="btn_save_category">Save Category</string>
+    <string name="add_options_expense">Expense</string>
+    <string name="add_options_expense_desc">Log a new expense</string>
+    <string name="add_options_debt">Debt</string>
+    <string name="add_options_debt_desc">Track money you owe</string>
+    <string name="add_options_goal">Goal</string>
+    <string name="add_options_goal_desc">Save for something new</string>
+    <string name="add_options_invite">Invite</string>
+    <string name="add_options_invite_desc">Add family members</string>
+    <string name="add_options_category">Category</string>
+    <string name="add_options_category_desc">Create new category</string>
 
-    <!-- AI Chat -->
-    <string name="chat_sender_me">You</string>
-    <string name="chat_sender_ai">Carti AI</string>
-    <string name="btn_cancel">Cancel</string>
-    <string name="timer_format">%1$ds</string>
-    <string name="msg_canceled">Action Canceled</string>
+    <!-- Debt -->
+    <string name="opt_no">No</string>
+    <string name="opt_yes">Yes</string>
+    <string name="add_debt_title">New Debt</string>
+    <string name="label_who_borrowed">Who borrowed?</string>
+    <string name="hint_borrower_name">Name</string>
+    <string name="label_amount_peso">Amount (₱)</string>
+    <string name="hint_amount">0.00</string>
+    <string name="label_reason_note">Reason / Note</string>
+    <string name="hint_debt_reason">e.g. Lunch</string>
+    <string name="label_due_date">Due Date</string>
+    <string name="label_is_recurring">Is this recurring?</string>
+    <string name="btn_save_debt">Save Debt</string>
+    <string name="status_paid">Paid</string>
+    <string name="status_not_paid">Pending</string>
+    <string name="overall_debt_percentage_format">Overall: %d%%</string>
+    <string name="debt_tracker_title">Debt Tracker</string>
+    <string name="btn_add_debt">Add Debt</string>
+    <string name="notes_label">Notes</string>
+    <string name="payment_history">Payment History</string>
+    <string name="no_payment_yet">No payments recorded yet.</string>
+    <string name="mark_as_paid">Mark as Paid</string>
 
-    <!-- Login / Register -->
-    <string name="login_title">Welcome Back</string>
-    <string name="login_subtitle">Sign in to manage your family budget</string>
-    <string name="register_title">Join Carti</string>
-    <string name="register_subtitle">Start tracking together with your family</string>
+    <!-- Expenses -->
+    <string name="add_expense_title">New Expense</string>
+    <string name="label_what_bought">What did you buy?</string>
+    <string name="hint_select_category">Select Category</string>
+    <string name="label_payment_source">Payment Source</string>
+    <string name="hint_select_source">Select Source</string>
+    <string name="btn_save_expense">Save Expense</string>
+
+    <!-- Salary Mode -->
+    <string name="salary_mode_title">Salary Mode</string>
+    <string name="label_next_sweldo">Next Sweldo</string>
+    <string name="label_days">Days</string>
+    <string name="label_sweldo_amount">Sweldo Amount</string>
+    <string name="label_budget_breakdown">Budget Breakdown</string>
+    <string name="btn_edit">Edit</string>
+    <string name="title_edit_payday">Edit Payday Schedule</string>
+    <string name="desc_edit_payday">Set your monthly payday dates.</string>
+    <string name="hint_day1">First Payday (Day)</string>
+    <string name="hint_day2">Second Payday (Day)</string>
+    <string name="btn_save_schedule">Save Schedule</string>
+    <string name="title_edit_salary">Update Salary</string>
+    <string name="desc_edit_salary">Enter your monthly salary amount.</string>
+    <string name="btn_save_salary">Save Salary</string>
+    <string name="payday_format">Paydays: %1$d &amp; %2$d</string>
+    <string name="salary_info_format">%d days left to payday</string>
+
+    <!-- Family -->
+    <string name="invite_family_title">Invite Family</string>
+    <string name="step_1">Step 1: Copy Code</string>
+    <string name="step_2">Step 2: Share it</string>
+    <string name="step_3">Step 3: Join</string>
+    <string name="validity_format">Valid until: %s</string>
+    <string name="err_invalid_family_id">Invalid Family ID</string>
+    <string name="msg_join_success">Joined family successfully!</string>
+    <string name="err_already_in_family">You are already in a family</string>
+    <string name="err_invalid_invite_code">Invalid invite code</string>
+    <string name="err_error_prefix">Error: %s</string>
+    <string name="btn_joining">Joining...</string>
+    <string name="btn_join_family">Join Family</string>
+    <string name="family_members_title">Family Members</string>
+
+    <!-- Onboarding -->
+    <string name="err_parents_only">Only parents can create a family group.</string>
+    <string name="btn_creating">Creating...</string>
+    <string name="btn_create">Create Family</string>
+    <string name="invite_code_label">Invite Code</string>
+    <string name="invite_code_copied">Invite code copied to clipboard</string>
+    <string name="onboarding_family_created_title">Family Created!</string>
+    <string name="onboarding_family_created_desc">Your family group has been created successfully. Share the code with your family members.</string>
+    <string name="btn_go_to_home">Go to Home</string>
+    <string name="debug_live_is_employed">Live: Is Employed = %b</string>
+    <string name="debug_fallback_is_employed">Fallback: Is Employed = %b</string>
+    <string name="msg_checking_status">Checking status...</string>
+    <string name="btn_start">Get Started</string>
+    <string name="onboarding_welcome_title">Welcome to Carti</string>
+    <string name="onboarding_welcome_desc">Your personal companion for family financial management. Track together, save together.</string>
+    <string name="onboarding_join_status_desc">Please wait while we set up your family account. You will be redirected once everything is ready.</string>
+    <string name="btn_view_status">View Status</string>
+    <string name="invite_code_prefix">CODE: </string>
+
+    <!-- Profile & Settings -->
+    <string name="profile_title">Profile</string>
+    <string name="about_app_title">About Carti</string>
+    <string name="app_description">Carti is your personal financial companion designed to help families track expenses, manage debts, and achieve savings goals together.</string>
+    <string name="label_terms">Terms of Service</string>
+    <string name="label_privacy">Privacy Policy</string>
+    <string name="label_developer">Developer</string>
+    <string name="developer_name">Upreyvan</string>
+    <string name="copyright">© 2024 Carti App. All rights reserved.</string>
+    <string name="app_version_format">Version %s</string>
+    <string name="help_title">Help &amp; Support</string>
+    <string name="support_email_subject">Carti Support Request</string>
+    <string name="bug_report_subject">Carti Bug Report</string>
+    <string name="support_email">support@carti.app</string>
+    <string name="menu_family">Family Members</string>
+    <string name="menu_family_sub">Manage your family group</string>
+    <string name="menu_family_sub_format">%d members</string>
+    <string name="menu_invite">Invite Family</string>
+    <string name="menu_invite_sub">Add new members to your group</string>
+    <string name="menu_chat">Family Chat</string>
+    <string name="menu_chat_sub">Talk with your family</string>
+    <string name="menu_goals">Financial Goals</string>
+    <string name="menu_goals_sub">Track your savings</string>
+    <string name="menu_debt">Debt Tracker</string>
+    <string name="menu_debt_sub">Manage what you owe</string>
+    <string name="menu_salary">Salary Mode</string>
+    <string name="menu_salary_sub">Optimize for payday</string>
+    <string name="menu_security">Security</string>
+    <string name="menu_security_sub">Password and privacy</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_settings_sub">App preferences</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_help_sub">FAQs and support</string>
+    <string name="menu_about">About</string>
+    <string name="menu_about_sub">App information</string>
+
+    <string name="security_title">Security</string>
+    <string name="section_login">Login &amp; Account</string>
+    <string name="label_password">Password</string>
+    <string name="btn_reset_password">Reset Password</string>
+    <string name="section_security">Security</string>
+    <string name="label_sign_out_all">Sign out from all devices</string>
+    <string name="desc_sign_out_all">This will log you out from all other active sessions except this one.</string>
+    <string name="btn_sign_out_all">Sign Out All</string>
+    <string name="desc_delete_account">Permanently delete your account and all associated data. This action cannot be undone.</string>
+    <string name="btn_delete_account">Delete Account</string>
+    <string name="msg_password_short">Password must be at least 8 characters</string>
+    <string name="msg_password_updated">Password updated successfully</string>
+    <string name="dialog_update_password_title">Update Password</string>
+    <string name="desc_password">Enter your current and new password below.</string>
+    <string name="hint_current_password">Current Password</string>
+    <string name="hint_new_password">New Password</string>
+    <string name="btn_update">Update</string>
+    <string name="msg_reset_link_sent">Reset link sent to your email</string>
+    <string name="msg_sign_out_all_success">Signed out from all devices</string>
+    <string name="btn_confirm_delete">Delete Account</string>
+    <string name="msg_delete_account_confirm">Are you sure you want to delete your account? This action cannot be undone.</string>
+    <string name="section_delete_account">Delete Account</string>
+    <string name="msg_account_deleted">Account deleted successfully</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="section_general">General</string>
+    <string name="label_notifications">Notifications</string>
+    <string name="status_on">On</string>
+    <string name="status_off">Off</string>
+    <string name="label_currency">Currency</string>
+    <string name="status_currency_php">PHP (₱)</string>
+    <string name="label_language">Language</string>
+    <string name="status_language_english">English</string>
+
+    <!-- Notifications -->
+    <string name="notification_settings_title">Notifications</string>
+    <string name="section_budget_alerts">Budget Alerts</string>
+    <string name="label_daily_budget_alert">Daily Budget</string>
+    <string name="desc_daily_budget_alert">Notify me when daily limit is reached</string>
+    <string name="section_salary_reminders">Salary Reminders</string>
+    <string name="label_salary_reminder">Salary Log</string>
+    <string name="desc_salary_reminder">Remind me to log my salary</string>
+    <string name="section_other">Other</string>
+    <string name="label_goal_milestone">Goal Milestones</string>
+    <string name="desc_goal_milestone">Notify me when I reach a milestone</string>
+    <string name="label_debt_reminders">Debt Reminders</string>
+    <string name="desc_debt_reminders">Remind me of upcoming payments</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="btn_clear_all">Clear All</string>
+
+    <!-- Added Resources -->
+    <string name="btn_save_funds">Save Funds</string>
+    <string name="ai_assistant_title">Carti AI</string>
+    <string name="ai_greeting">Hello! I\'m Carti, your financial assistant. How can I help you today?</string>
+    <string name="ai_disclaimer">Carti AI may provide inaccurate information. Always verify important financial details.</string>
     <string name="hint_username">Username</string>
     <string name="hint_email">Email Address</string>
     <string name="hint_password">Password</string>
-    <string name="btn_login">Login</string>
-    <string name="btn_logging_in">Logging in...</string>
-    <string name="btn_register">Create Account</string>
-    <string name="btn_registering">Registering...</string>
-    <string name="prompt_no_account">Don\'t have an account? <font color="#008955">Register</font></string>
-    <string name="prompt_has_account">Already have an account? <font color="#008955">Login</font></string>
-    <string name="btn_logout">Logout</string>
-    <string name="err_required">This field is required</string>
-    <string name="err_already_in_family">You are already in a family!</string>
-    <string name="err_invalid_family_id">Please enter a valid Family ID</string>
-    <string name="err_invalid_invite_code">Invalid invite code. Please check and try again.</string>
-    <string name="err_parents_only">Only parents (Father/Mother) can create a family group.</string>
-    <string name="err_error_prefix">Error: %1$s</string>
-    <string name="err_invalid_email">Please enter a valid email</string>
-    <string name="err_password_short">Password must be at least 8 characters</string>
-    <string name="err_password_weak">Use uppercase, lowercase, and numbers</string>
-    <string name="err_username_long">Username must not exceed 10 characters</string>
-    <string name="user">User</string>
-    <string name="err_unauthorized">Unauthorized: Please login first</string>
-    <string name="err_login_failed">Login failed: %1$s</string>
-    <string name="err_register_failed">Registration failed: %1$s</string>
-    <string name="err_server_response">Server error: %1$s</string>
-    <string name="msg_registered_login_failed">Registered, but login failed: %1$s</string>
-    <string name="debug_is_employed">Debug: isEmployed = %1$b</string>
-    <string name="debug_live_is_employed">Live Debug: isEmployed = %1$b</string>
-    <string name="debug_fallback_is_employed">Fallback Debug: isEmployed = %1$b</string>
-    <string name="msg_checking_status">Checking Status...</string>
-    <string name="msg_invite_code_copied">Invite code copied!</string>
-    <string name="msg_reset_link_sent">Password reset link sent to your email.</string>
+    <string name="total_debt_label">Total Debt</string>
+    <string name="debt_summary_subtitle">Summary of money owed</string>
+    <string name="overall_debt_description">Manage your family borrowings and lendings.</string>
+    <string name="tab_i_owe">I Owe</string>
+    <string name="tab_owes_me">Owes Me</string>
+    <string name="expenses_title">Expenses</string>
+    <string name="label_total_spent">Total Spent</string>
+    <string name="percentage_decrease_format">vs last period: %s</string>
+    <string name="family_chat_title">Family Chat</string>
+    <string name="total_savings_label">Total Savings</string>
+    <string name="savings_summary_subtitle">Your family savings progress</string>
+    <string name="overall_progress_description">Keep going! You are closer to your goals.</string>
+    <string name="tab_active_goals">Active Goals</string>
+    <string name="tab_completed_goals">Completed</string>
+    <string name="overall_percentage_target_format">%d%% of target</string>
 
-    <!-- Missing Mock Strings -->
-    <string name="mock_user_name">Juan Dela Cruz</string>
-    <string name="mock_user_email">juan@example.com</string>
-    <string name="daily_budget">Daily Budget</string>
-    <string name="mock_total_spent">₱0.00</string>
-    <string name="default_greeting">Hello!</string>
-    <string name="mock_family_id">FAM-1234-5678</string>
-    <string name="mock_days_left">5 days left</string>
-    <string name="mock_salary_date">Dec 30, 2024</string>
-    <string name="mock_salary_amount">₱20,000</string>
-    <string name="mock_budget_per_day">₱500 / day</string>
-    <string name="mock_progress_range">Dec 15 - Dec 30</string>
-    <string name="mock_days_passed">10 days passed</string>
-    <string name="mock_progress_percent">50%</string>
+    <!-- Goal Details -->
+    <string name="label_monthly_target">Monthly Target</string>
+    <string name="label_progress_history">Progress History</string>
+    <string name="btn_add_funds">Add Funds</string>
+
+    <!-- Help & FAQ -->
+    <string name="section_faq">Frequently Asked Questions</string>
+    <string name="faq_q1">How do I add a family member?</string>
+    <string name="faq_a1">Go to Profile > Invite Family and share the unique code with them.</string>
+    <string name="faq_q2">What is Salary Mode?</string>
+    <string name="faq_a2">Salary Mode helps you manage expenses between paydays by calculating your remaining daily budget.</string>
+    <string name="faq_q3">Is my data safe?</string>
+    <string name="faq_a3">Yes, we use secure cloud storage to keep your family\'s financial data protected.</string>
+    <string name="section_contact">Contact Us</string>
+    <string name="label_email_support">Email Support</string>
+    <string name="label_report_bug">Report a Bug</string>
+
+    <!-- Home -->
+    <string name="default_greeting">Welcome back,</string>
+    <string name="user">User</string>
+
+    <!-- Invite Family -->
+    <string name="invite_headline">Invite your Family</string>
+    <string name="invite_subtext">Manage your finances together by adding family members to your group.</string>
+    <string name="label_family_id">Family ID</string>
+    <string name="btn_copy">Copy</string>
+    <string name="label_how_to_join">How to join?</string>
+    <string name="btn_share_family_id">Share Family ID</string>
+
+    <!-- Join Family -->
+    <string name="join_headline">Join a Family</string>
+    <string name="join_subtext">Enter the Family ID provided by your family head to start tracking together.</string>
+    <string name="hint_family_id">Enter Family ID</string>
+    <string name="label_you_are">You are joining as:</string>
+    <string name="join_info_headline">Important Information</string>
+    <string name="join_info_subtext">By joining a family, you agree to share your expense data with other family members for collective tracking.</string>
+
+    <!-- Notifications -->
+    <string name="empty_notifications">You have no notifications yet.</string>
+
+    <!-- Onboarding Create -->
+    <string name="onboarding_create_title">Setup your Family</string>
+    <string name="label_family_name">Family Name</string>
+    <string name="hint_family_name">e.g. The Santos Family</string>
+    <string name="label_family_head">(Family Head)</string>
+
+    <!-- Onboarding Options -->
+    <string name="onboarding_family_opt_title">Welcome to Carti</string>
+    <string name="onboarding_family_opt_desc">Track your family finances together. Choose how you want to start.</string>
+    <string name="opt_create_title">Create Family</string>
+    <string name="opt_create_desc">Start a new group and invite your family members.</string>
+    <string name="opt_join_title">Join Family</string>
+    <string name="opt_join_desc">Enter a Family ID to join an existing family group.</string>
+    <string name="btn_skip">Skip for now</string>
+
+    <!-- Onboarding Status -->
+    <string name="onboarding_join_status_title">Joining Family...</string>
 </resources>

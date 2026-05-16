@@ -10,6 +10,7 @@ import android.app.ProgressDialog;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
+import com.upreyvan.carti.data.repository.GoalRepository;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.ActivityAddGoalBinding;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
 
     private ProgressDialog progressDialog;
+    private GoalRepository goalRepository;
 
     @Override
     protected ActivityAddGoalBinding inflateBinding(LayoutInflater inflater) {
@@ -32,6 +34,7 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        goalRepository = new GoalRepository(this);
         setupDynamicPadding();
         setupToolbar();
         setupDefaults();
@@ -79,8 +82,9 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
                 @Override
                 public void onSuccess(Map<String, Object> result) {
                     String id = String.valueOf(result.get("$id"));
-                    com.upreyvan.carti.data.local.GoalManager.getInstance().addGoal(
-                            new com.upreyvan.carti.model.Goal(id, name, 0, targetAmount, "Target Date", R.drawable.test,
+                    String familyId = new com.upreyvan.carti.data.local.PreferenceManager(AddGoalActivity.this).getFamilyId();
+                    goalRepository.saveLocally(
+                            new com.upreyvan.carti.model.Goal(id, familyId, name, 0, targetAmount, "Target Date", R.drawable.test,
                                     androidx.core.content.ContextCompat.getColor(AddGoalActivity.this, R.color.goal_card_1))
                     );
 

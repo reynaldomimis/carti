@@ -13,26 +13,23 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.local.ExpenseManager;
-import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.databinding.FragmentHomeBinding;
-import com.upreyvan.carti.ui.expenses.AllTransactionsFragment;
-import com.upreyvan.carti.ui.notifications.NotificationsFragment;
-import com.upreyvan.carti.model.QuickLogItem;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.data.local.CategoryManager;
-import com.upreyvan.carti.data.local.DebtManager;
-import com.upreyvan.carti.data.local.GoalManager;
+import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.model.Debt;
-import com.upreyvan.carti.model.Goal;
+import com.upreyvan.carti.data.repository.DebtRepository;
+import com.upreyvan.carti.data.repository.GoalRepository;
+import com.upreyvan.carti.data.repository.MemberRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.databinding.FragmentHomeBinding;
+import com.upreyvan.carti.model.Category;
+import com.upreyvan.carti.model.QuickLogItem;
+import com.upreyvan.carti.ui.expenses.AllTransactionsFragment;
+import com.upreyvan.carti.ui.notifications.NotificationsFragment;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
-import androidx.core.graphics.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +51,14 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private Realtime realtime;
     private RealtimeSubscription userSubscription;
     private RealtimeSubscription familySubscription;
+    private RealtimeSubscription transactionSubscription;
+    private RealtimeSubscription goalSubscription;
+    private RealtimeSubscription debtSubscription;
+    private RealtimeSubscription memberSubscription;
+    private TransactionRepository transactionRepository;
+    private GoalRepository goalRepository;
+    private DebtRepository debtRepository;
+    private MemberRepository memberRepository;
 
     @Override
     protected FragmentHomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -63,6 +68,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        transactionRepository = new TransactionRepository(requireContext());
+        goalRepository = new GoalRepository(requireContext());
+        debtRepository = new DebtRepository(requireContext());
+        memberRepository = new MemberRepository(requireContext());
+        
         setupDynamicPadding();
         setupHeaders();
         setupQuickLog();
@@ -70,20 +80,24 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupNotifications();
         initRealtime();
         
-        loadTransactions();
+        observeTransactions();
         setupDailyBudgetCard();
         fetchFamilyData();
-        
-        // Listener for local changes
-        ExpenseManager.getInstance().setOnExpenseChangeListener(() -> {
-            if (isAdded()) {
-                requireActivity().runOnUiThread(() -> {
-                    loadTransactions();
-                    setupDailyBudgetCard();
-                    setupHeaders(); // Refresh family net from local pref
-                });
+    }
+
+    private void observeTransactions() {
+        transactionRepository.getRecentTransactions(5).observe(getViewLifecycleOwner(), transactions -> {
+            if (transactionAdapter != null) {
+                transactionAdapter.setLoading(false);
+                transactionAdapter.submitList(transactions);
             }
         });
+
+        transactionRepository.getTodayTotalSpent().observe(getViewLifecycleOwner(), spent -> {
+            updateBudgetCard(spent != null ? spent : 0.0);
+        });
+
+        transactionRepository.syncTransactionsIfNeeded();
     }
 
     private void initRealtime() {
@@ -97,6 +111,41 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         String userChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_USERS + ".documents";
         userSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
             checkNotifications(apiHelper, pref);
+            return null;
+        });
+
+        // Listen for new transactions
+        String transactionChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_TRANSACTIONS + ".documents";
+        transactionSubscription = realtime.subscribe(new String[]{transactionChannel}, event -> {
+            if (transactionRepository != null) {
+                transactionRepository.refreshTransactions();
+            }
+            return null;
+        });
+
+        // Listen for goal changes
+        String goalChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_GOALS + ".documents";
+        goalSubscription = realtime.subscribe(new String[]{goalChannel}, event -> {
+            if (goalRepository != null) {
+                goalRepository.refreshGoals();
+            }
+            return null;
+        });
+
+        // Listen for debt changes
+        String debtChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_DEBTS + ".documents";
+        debtSubscription = realtime.subscribe(new String[]{debtChannel}, event -> {
+            if (debtRepository != null) {
+                debtRepository.refreshDebts();
+            }
+            return null;
+        });
+
+        // Listen for member changes
+        memberSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
+            if (memberRepository != null) {
+                memberRepository.refreshMembers();
+            }
             return null;
         });
 
@@ -190,11 +239,15 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         SalaryManager salaryManager = SalaryManager.getInstance(requireContext());
         double dailyBudget = salaryManager.getDailyBudget();
         int daysLeft = salaryManager.getDaysUntilNextPayday();
-        double todaySpent = ExpenseManager.getInstance().getTodayTotalSpent();
-        double remaining = dailyBudget - todaySpent;
         
         getBinding().cardBudget.tvAmount.setText(String.format(Locale.getDefault(), "₱%,.0f", dailyBudget));
         getBinding().cardBudget.tvSalaryInfo.setText(getString(R.string.salary_info_format, daysLeft));
+    }
+
+    private void updateBudgetCard(double todaySpent) {
+        SalaryManager salaryManager = SalaryManager.getInstance(requireContext());
+        double dailyBudget = salaryManager.getDailyBudget();
+        double remaining = dailyBudget - todaySpent;
         
         int progress = (dailyBudget > 0) ? (int) ((todaySpent / dailyBudget) * 100) : 0;
         getBinding().cardBudget.progressDaily.setProgress(Math.min(progress, 100));
@@ -203,23 +256,18 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void loadTransactions() {
-        if (transactionAdapter != null) {
-            transactionAdapter.setLoading(true);
-            getBinding().rvTransactions.postDelayed(() -> {
-                if (isAdded()) {
-                    List<Transaction> transactions = ExpenseManager.getInstance().getRecentTransactions(5);
-                    transactionAdapter.setLoading(false);
-                    transactionAdapter.submitList(transactions);
-                }
-            }, 1000);
-        }
+        // Deprecated: now using observeTransactions()
     }
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
         if (userSubscription != null) userSubscription.close();
         if (familySubscription != null) familySubscription.close();
+        if (transactionSubscription != null) transactionSubscription.close();
+        if (goalSubscription != null) goalSubscription.close();
+        if (debtSubscription != null) debtSubscription.close();
+        if (memberSubscription != null) memberSubscription.close();
+        super.onDestroyView();
     }
 
     @Override
@@ -277,57 +325,44 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void setupQuickLog() {
-        // Show shimmer items initially
-        List<QuickLogItem> shimmerItems = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
-            shimmerItems.add(new QuickLogItem(true));
+        List<Category> categories = CategoryManager.getInstance(requireContext()).getCategories();
+        List<QuickLogItem> items = new ArrayList<>();
+        
+        int limit = isExpanded ? categories.size() : 7;
+        for (int i = 0; i < Math.min(categories.size(), limit); i++) {
+            Category cat = categories.get(i);
+            items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor()));
         }
-        quickLogAdapter = new QuickLogAdapter(shimmerItems);
+
+        String othersLabel = getString(R.string.label_others);
+        String seeLessLabel = getString(R.string.see_less);
+
+        if (categories.size() > 7 && !isExpanded) {
+            items.add(new QuickLogItem(othersLabel, android.R.drawable.ic_menu_more, R.color.log_others, R.color.icon_others));
+        } else if (isExpanded) {
+            items.add(new QuickLogItem(seeLessLabel, android.R.drawable.ic_menu_close_clear_cancel, R.color.log_others, R.color.icon_others));
+        }
+
+        quickLogAdapter = new QuickLogAdapter(items);
+        quickLogAdapter.setOnItemClickListener(item -> {
+            if (item.getTitle().equals(othersLabel)) {
+                isExpanded = true;
+                setupQuickLog();
+            } else if (item.getTitle().equals(seeLessLabel)) {
+                isExpanded = false;
+                setupQuickLog();
+            } else {
+                showQuickLogDialog(item);
+            }
+        });
+
+        quickLogAdapter.setOnItemLongClickListener(item -> {
+            if (!item.getTitle().equals(othersLabel) && !item.getTitle().equals(seeLessLabel)) {
+                showDeleteCategoryDialog(item);
+            }
+        });
+
         getBinding().rvQuickLog.setAdapter(quickLogAdapter);
-
-        // Delay loading real categories to show "maangas" shimmer
-        getBinding().rvQuickLog.postDelayed(() -> {
-            if (!isAdded()) return;
-            
-            List<Category> categories = CategoryManager.getInstance(requireContext()).getCategories();
-            List<QuickLogItem> items = new ArrayList<>();
-            
-            int limit = isExpanded ? categories.size() : 7;
-            for (int i = 0; i < Math.min(categories.size(), limit); i++) {
-                Category cat = categories.get(i);
-                items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor()));
-            }
-
-            String othersLabel = getString(R.string.label_others);
-            String seeLessLabel = getString(R.string.see_less);
-
-            if (categories.size() > 7 && !isExpanded) {
-                items.add(new QuickLogItem(othersLabel, android.R.drawable.ic_menu_more, R.color.log_others, R.color.icon_others));
-            } else if (isExpanded) {
-                items.add(new QuickLogItem(seeLessLabel, android.R.drawable.ic_menu_close_clear_cancel, R.color.log_others, R.color.icon_others));
-            }
-
-            quickLogAdapter = new QuickLogAdapter(items);
-            quickLogAdapter.setOnItemClickListener(item -> {
-                if (item.getTitle().equals(othersLabel)) {
-                    isExpanded = true;
-                    setupQuickLog();
-                } else if (item.getTitle().equals(seeLessLabel)) {
-                    isExpanded = false;
-                    setupQuickLog();
-                } else {
-                    showQuickLogDialog(item);
-                }
-            });
-
-            quickLogAdapter.setOnItemLongClickListener(item -> {
-                if (!item.getTitle().equals(othersLabel) && !item.getTitle().equals(seeLessLabel)) {
-                    showDeleteCategoryDialog(item);
-                }
-            });
-
-            getBinding().rvQuickLog.setAdapter(quickLogAdapter);
-        }, 800);
     }
 
     private void showDeleteCategoryDialog(QuickLogItem item) {

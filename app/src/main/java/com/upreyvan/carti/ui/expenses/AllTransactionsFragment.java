@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentAllTransactionsBinding;
@@ -21,6 +22,7 @@ import java.util.List;
 public class AllTransactionsFragment extends BaseFragment<FragmentAllTransactionsBinding> {
 
     private TransactionAdapter adapter;
+    private TransactionRepository transactionRepository;
 
     @Override
     protected FragmentAllTransactionsBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -30,20 +32,23 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        transactionRepository = new TransactionRepository(requireContext());
         setupToolbar();
         setupRecyclerView();
-        loadTransactions();
-        
-        com.upreyvan.carti.data.local.ExpenseManager.getInstance().setOnExpenseChangeListener(() -> {
-            if (isAdded()) {
-                requireActivity().runOnUiThread(this::loadTransactions);
+        observeTransactions();
+    }
+
+    private void observeTransactions() {
+        transactionRepository.getAllTransactions().observe(getViewLifecycleOwner(), transactions -> {
+            if (transactions != null) {
+                adapter.submitList(transactions);
             }
         });
+        transactionRepository.syncTransactionsIfNeeded();
     }
 
     private void loadTransactions() {
-        List<Transaction> transactions = com.upreyvan.carti.data.local.ExpenseManager.getInstance().getTransactions();
-        adapter.submitList(transactions);
+        // Deprecated
     }
 
     private void setupToolbar() {
@@ -92,9 +97,8 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
                                     public void onSuccess(java.util.Map<String, Object> result) {
                                         requireActivity().runOnUiThread(() -> {
                                             pref.saveFamilySummary(finalBalance, finalIncome, finalExpense);
-                                            com.upreyvan.carti.data.local.ExpenseManager.getInstance().getTransactions().remove(item);
+                                            transactionRepository.deleteLocally(item.getId());
                                             com.upreyvan.carti.util.Utils.showToast(requireContext(), "Deleted and balance updated");
-                                            loadTransactions();
                                         });
                                     }
 

@@ -15,7 +15,7 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.local.ExpenseManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.ui.common.LegendAdapter;
 import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.base.BaseFragment;
@@ -34,6 +34,7 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     private LegendAdapter legendAdapter;
     private TransactionAdapter transactionAdapter;
     private Calendar currentCalendar = Calendar.getInstance();
+    private TransactionRepository transactionRepository;
 
     @Override
     protected FragmentExpensesBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -43,19 +44,84 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        transactionRepository = new TransactionRepository(requireContext());
+        
         setupDynamicPadding();
         setupMonthPicker();
         setupChart();
         setupLegend();
         setupTransactions();
         updateMonthDisplay();
-        loadData();
+        observeTransactions();
+    }
 
-        ExpenseManager.getInstance().setOnExpenseChangeListener(() -> {
-            if (isAdded()) {
-                requireActivity().runOnUiThread(this::loadData);
+    private void observeTransactions() {
+        updateDataForCurrentMonth();
+        transactionRepository.syncTransactionsIfNeeded();
+    }
+
+    private void updateDataForCurrentMonth() {
+        Calendar start = (Calendar) currentCalendar.clone();
+        start.set(Calendar.DAY_OF_MONTH, 1);
+        start.set(Calendar.HOUR_OF_DAY, 0);
+        start.set(Calendar.MINUTE, 0);
+        start.set(Calendar.SECOND, 0);
+
+        Calendar end = (Calendar) currentCalendar.clone();
+        end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH));
+        end.set(Calendar.HOUR_OF_DAY, 23);
+        end.set(Calendar.MINUTE, 59);
+        end.set(Calendar.SECOND, 59);
+
+        transactionRepository.getTransactionsInRange(start.getTimeInMillis(), end.getTimeInMillis())
+                .observe(getViewLifecycleOwner(), transactions -> {
+                    if (transactions != null) {
+                        processTransactions(transactions);
+                        transactionAdapter.submitList(transactions);
+                    }
+                });
+    }
+
+    private void processTransactions(List<Transaction> transactions) {
+        if (transactions == null || transactions.isEmpty()) {
+            getBinding().pieChart.clear();
+            legendAdapter.submitList(new ArrayList<>());
+            return;
+        }
+
+        // Simple category grouping for real data
+        java.util.Map<String, Double> categoryTotals = new java.util.HashMap<>();
+        for (Transaction t : transactions) {
+            if ("EXPENSE".equals(t.getType())) {
+                categoryTotals.put(t.getTitle(), categoryTotals.getOrDefault(t.getTitle(), 0.0) + t.getAmountDouble());
             }
-        });
+        }
+
+        List<PieEntry> entries = new ArrayList<>();
+        List<Integer> colors = new ArrayList<>();
+        List<ExpenseCategory> legendCategories = new ArrayList<>();
+        
+        double total = 0;
+        for (double val : categoryTotals.values()) total += val;
+
+        for (java.util.Map.Entry<String, Double> entry : categoryTotals.entrySet()) {
+            float percentage = total > 0 ? (float) (entry.getValue() / total * 100) : 0;
+            entries.add(new PieEntry(entry.getValue().floatValue(), entry.getKey()));
+            
+            // For now use a default color or map from category
+            int color = ContextCompat.getColor(requireContext(), R.color.carti_primary_blue);
+            colors.add(color);
+            legendCategories.add(new ExpenseCategory(entry.getKey(), entry.getValue(), percentage, color));
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setColors(colors);
+        dataSet.setDrawValues(false);
+        dataSet.setSliceSpace(2f);
+
+        getBinding().pieChart.setData(new PieData(dataSet));
+        getBinding().pieChart.invalidate();
+        legendAdapter.submitList(legendCategories);
     }
 
     private void setupDynamicPadding() {
@@ -68,24 +134,20 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     }
 
     private void loadData() {
-        populateMockData();
-        List<Transaction> transactions = ExpenseManager.getInstance().getRecentTransactions(5);
-        if (transactionAdapter != null) {
-            transactionAdapter.submitList(transactions);
-        }
+        // Deprecated
     }
 
     private void setupMonthPicker() {
         getBinding().btnPrevMonth.setOnClickListener(v -> {
             currentCalendar.add(Calendar.MONTH, -1);
             updateMonthDisplay();
-            populateMockData();
+            updateDataForCurrentMonth();
         });
 
         getBinding().btnNextMonth.setOnClickListener(v -> {
             currentCalendar.add(Calendar.MONTH, 1);
             updateMonthDisplay();
-            populateMockData();
+            updateDataForCurrentMonth();
         });
     }
 
@@ -135,39 +197,4 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         }
     }
 
-    private void populateMockData() {
-        List<ExpenseCategory> categories = new ArrayList<>();
-        categories.add(new ExpenseCategory(getString(R.string.label_food), 2250, 36f, ContextCompat.getColor(requireContext(), R.color.icon_food)));
-        categories.add(new ExpenseCategory(getString(R.string.label_fare), 1200, 19f, ContextCompat.getColor(requireContext(), R.color.icon_fare)));
-        categories.add(new ExpenseCategory(getString(R.string.label_store), 950, 15f, ContextCompat.getColor(requireContext(), R.color.icon_store)));
-        categories.add(new ExpenseCategory(getString(R.string.label_load), 800, 13f, ContextCompat.getColor(requireContext(), R.color.icon_load)));
-        categories.add(new ExpenseCategory(getString(R.string.label_others), 1050, 17f, ContextCompat.getColor(requireContext(), R.color.icon_others)));
-
-        legendAdapter.submitList(categories);
-
-        // Chart Data
-        List<PieEntry> entries = new ArrayList<>();
-        List<Integer> colors = new ArrayList<>();
-        for (ExpenseCategory cat : categories) {
-            entries.add(new PieEntry((float) cat.getAmount(), cat.getName()));
-            colors.add(cat.getColor());
-        }
-
-        PieDataSet dataSet = new PieDataSet(entries, "");
-        dataSet.setColors(colors);
-        dataSet.setDrawValues(false);
-        dataSet.setSliceSpace(2f);
-
-        getBinding().pieChart.setData(new PieData(dataSet));
-        getBinding().pieChart.invalidate();
-
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.add(new Transaction("1", getString(R.string.label_food), "Ngayon • 9:35 AM", "₱120", android.R.drawable.ic_menu_gallery, ContextCompat.getColor(requireContext(), R.color.log_food)));
-        transactions.add(new Transaction("2", "Pamasahe", "Ngayon • 8:20 AM", "₱15", android.R.drawable.ic_dialog_map, ContextCompat.getColor(requireContext(), R.color.log_fare)));
-        transactionAdapter.submitList(transactions);
-
-        String comparisonText = getString(R.string.vs_last_month) + " " +
-                getString(R.string.percentage_decrease_format, "1,250", "16.7");
-        getBinding().tvComparison.setText(comparisonText);
-    }
 }

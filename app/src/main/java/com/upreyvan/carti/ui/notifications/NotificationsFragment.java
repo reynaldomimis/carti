@@ -29,7 +29,6 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
         super.onViewCreated(view, savedInstanceState);
         setupToolbar();
         setupRecyclerView();
-        loadDummyData();
     }
 
     private void setupToolbar() {
@@ -53,14 +52,9 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
         getBinding().rvNotifications.setAdapter(adapter);
     }
 
-    private void loadDummyData() {
+    private void loadNotifications() {
+        // Real notifications would come from a repository
         List<Notification> list = new ArrayList<>();
-        long now = System.currentTimeMillis();
-        list.add(new Notification("Maria (Spouse)", "wants to join your family group.", now, Notification.Type.JOIN_REQUEST));
-        list.add(new Notification(getString(R.string.mock_notif_title_1), getString(R.string.mock_notif_desc_1), now - 3600000)); // 1 hour ago
-        list.add(new Notification(getString(R.string.mock_notif_title_2), getString(R.string.mock_notif_desc_2), now - 86400000)); // 1 day ago
-        list.add(new Notification(getString(R.string.mock_notif_title_3), getString(R.string.mock_notif_desc_3), now - 172800000)); // 2 days ago
-        
         adapter.setNotifications(list);
         checkEmptyState();
     }

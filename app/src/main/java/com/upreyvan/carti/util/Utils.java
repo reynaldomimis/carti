@@ -84,6 +84,45 @@ public class Utils {
         }
     }
 
+    public static String formatTimestamp(String isoDate) {
+        if (isoDate == null || isoDate.isEmpty()) return "";
+        try {
+            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
+            parser.setTimeZone(TimeZone.getTimeZone("UTC"));
+            Date date = parser.parse(isoDate);
+            if (date == null) return "";
+
+            SimpleDateFormat formatter = new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault());
+            return formatter.format(date);
+        } catch (Exception e) {
+            try {
+                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
+                Date date = parser.parse(isoDate);
+                return new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault()).format(date);
+            } catch (Exception e2) {
+                return "";
+            }
+        }
+    }
+
+    public static long getMillisFromIso(String isoDate) {
+        if (isoDate == null || isoDate.isEmpty()) return 0;
+        try {
+            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
+            parser.setTimeZone(TimeZone.getTimeZone("UTC"));
+            Date date = parser.parse(isoDate);
+            return date != null ? date.getTime() : 0;
+        } catch (Exception e) {
+            try {
+                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
+                Date date = parser.parse(isoDate);
+                return date != null ? date.getTime() : 0;
+            } catch (Exception e2) {
+                return 0;
+            }
+        }
+    }
+
     public static String getGreeting() {
         Calendar c = Calendar.getInstance();
         int timeOfDay = c.get(Calendar.HOUR_OF_DAY);

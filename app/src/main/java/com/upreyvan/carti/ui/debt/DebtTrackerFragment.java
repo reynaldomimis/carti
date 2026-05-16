@@ -16,9 +16,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.repository.DebtRepository;
 import com.upreyvan.carti.ui.debt.DebtAdapter;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.local.DebtManager;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
 import com.upreyvan.carti.model.Debt;
@@ -37,6 +37,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     private DebtAdapter adapter;
     private List<Debt> allDebts = new ArrayList<>();
     private ApiHelper apiHelper;
+    private DebtRepository debtRepository;
 
     @Override
     protected FragmentDebtTrackerBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -47,16 +48,25 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         apiHelper = new ApiHelper(requireContext());
+        debtRepository = new DebtRepository(requireContext());
+        
         setupToolbar();
         setupTabs();
         setupRecyclerView();
-        loadDebts();
+        observeDebts();
+    }
 
-        DebtManager.getInstance().setOnDebtChangeListener(() -> {
-            if (isAdded()) {
-                requireActivity().runOnUiThread(this::loadDebts);
+    private void observeDebts() {
+        adapter.setLoading(true);
+        debtRepository.getAllDebts().observe(getViewLifecycleOwner(), debts -> {
+            if (debts != null) {
+                adapter.setLoading(false);
+                allDebts = debts;
+                filterDebts(getBinding().tabLayout.getSelectedTabPosition());
+                updateOverallDebt(allDebts);
             }
         });
+        debtRepository.syncDebtsIfNeeded();
     }
 
     private void updateOverallDebt(List<Debt> debts) {
@@ -83,61 +93,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         }
     }
 
-    private void loadDebts() {
-        // Load local data first
-        allDebts = DebtManager.getInstance().getDebts();
-        if (!allDebts.isEmpty()) {
-            adapter.setLoading(false);
-            filterDebts(getBinding().tabLayout.getSelectedTabPosition());
-            updateOverallDebt(allDebts);
-        } else {
-            adapter.setLoading(true);
-        }
 
-        // Fetch fresh data from Cloud
-        apiHelper.getDebts(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                if (!isAdded()) return;
-
-                List<Debt> cloudDebts = new ArrayList<>();
-                for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                    cloudDebts.add(mapToDebt(doc.getData(), doc.getId()));
-                }
-
-                // Update Local Cache
-                DebtManager.getInstance().setDebts(cloudDebts);
-
-                requireActivity().runOnUiThread(() -> {
-                    allDebts = cloudDebts;
-                    filterDebts(getBinding().tabLayout.getSelectedTabPosition());
-                    updateOverallDebt(allDebts);
-                });
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (isAdded()) {
-                    requireActivity().runOnUiThread(() -> {
-                        adapter.setLoading(false);
-                        showError(error);
-                    });
-                }
-            }
-        });
-    }
-
-    private Debt mapToDebt(Map<String, Object> data, String id) {
-        String name = String.valueOf(data.get("personName"));
-        double amount = 0;
-        Object amt = data.get("amount");
-        if (amt instanceof Number) amount = ((Number) amt).doubleValue();
-
-        boolean isPaid = Boolean.TRUE.equals(data.get("isPaid"));
-        String date = "Upcoming";
-
-        return new Debt(id, name, "", date, amount, isPaid, R.drawable.ic_person, "");
-    }
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.debt_tracker_title);

@@ -72,13 +72,16 @@ public class ApiHelper {
     ───────────────────────────────────────────────────────────── */
 
     public void getTransactions(String startDate, String endDate, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        getTransactionsSince(startDate, callback);
+    }
+
+    public void getTransactionsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
 
         List<String> queries = new ArrayList<>();
-        queries.add(Query.Companion.equal("familyId", familyId)); // Security
-        queries.add(Query.Companion.greaterThanEqual("$createdAt", startDate));
-        queries.add(Query.Companion.lessThanEqual("$createdAt", endDate));
+        queries.add(Query.Companion.equal("familyId", familyId));
+        queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp)); // Ito ang filter
         queries.add(Query.Companion.orderDesc("$createdAt"));
         queries.add(Query.Companion.limit(100));
 
@@ -95,16 +98,28 @@ public class ApiHelper {
     }
 
     public void getGoals(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        getGoalsSince(pref.getLastGoalSyncTime(), callback);
+    }
+
+    public void getGoalsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
+        queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
+        queries.add(Query.Companion.orderDesc("$createdAt"));
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_GOALS, queries, callback);
     }
 
     public void getDebts(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        getDebtsSince(pref.getLastDebtSyncTime(), callback);
+    }
+
+    public void getDebtsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
+        queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
+        queries.add(Query.Companion.orderDesc("$createdAt"));
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_DEBTS, queries, callback);
     }
 

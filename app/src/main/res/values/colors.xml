@@ -5,6 +5,8 @@
     <color name="gray">#6B7280</color>
     <color name="purple">#8B5CF6</color>
     <color name="carti_primary_green">#008955</color>
+    <color name="carti_primary_blue">#2196F3</color>
+    <color name="carti_light_gray">#F5F5F5</color>
     <color name="gradient_start">#F9D423</color>
     <color name="gradient_end">#BAF33C</color>
     <color name="text_primary">#1D1D1D</color>
