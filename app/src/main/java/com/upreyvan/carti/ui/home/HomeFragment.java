@@ -30,6 +30,7 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.model.Debt;
 import com.upreyvan.carti.model.Goal;
+import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
 import androidx.core.graphics.ColorUtils;
 
@@ -37,6 +38,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import io.appwrite.models.RealtimeSubscription;
+import io.appwrite.services.Realtime;
 
 /**
  * Senior Developer Refactored: HomeFragment.
@@ -47,6 +51,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private QuickLogAdapter quickLogAdapter;
     private TransactionAdapter transactionAdapter;
     private boolean isExpanded = false;
+    private Realtime realtime;
+    private RealtimeSubscription userSubscription;
+    private RealtimeSubscription familySubscription;
 
     @Override
     protected FragmentHomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -61,10 +68,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupQuickLog();
         setupRecentTransactions();
         setupNotifications();
-        updateNotificationBadge(true);
+        initRealtime();
         
         loadTransactions();
         setupDailyBudgetCard();
+        fetchFamilyData();
         
         // Listener for local changes
         ExpenseManager.getInstance().setOnExpenseChangeListener(() -> {
@@ -72,9 +80,110 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 requireActivity().runOnUiThread(() -> {
                     loadTransactions();
                     setupDailyBudgetCard();
+                    setupHeaders(); // Refresh family net from local pref
                 });
             }
         });
+    }
+
+    private void initRealtime() {
+        PreferenceManager pref = new PreferenceManager(requireContext());
+        ApiHelper apiHelper = new ApiHelper(requireContext());
+        realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
+        
+        String familyId = pref.getFamilyId();
+        
+        // Listen for user changes (for notification badge/join requests)
+        String userChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_USERS + ".documents";
+        userSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
+            checkNotifications(apiHelper, pref);
+            return null;
+        });
+
+        // Listen for family document changes (for net balance)
+        if (familyId != null && !familyId.isEmpty()) {
+            String familyChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_FAMILIES + ".documents." + familyId;
+            familySubscription = realtime.subscribe(new String[]{familyChannel}, event -> {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> data = (Map<String, Object>) event.getPayload();
+                if (data != null) {
+                    double balance = Utils.getDouble(data.get("balance"));
+                    double income = Utils.getDouble(data.get("totalIncome"));
+                    double expense = Utils.getDouble(data.get("totalExpense"));
+                    
+                    pref.saveFamilySummary(balance, income, expense);
+                    if (isAdded()) {
+                        requireActivity().runOnUiThread(this::setupHeaders);
+                    }
+                }
+                return null;
+            });
+        }
+    }
+
+    private void fetchFamilyData() {
+        ApiHelper apiHelper = new ApiHelper(requireContext());
+        PreferenceManager pref = new PreferenceManager(requireContext());
+
+        // Fetch Family Summary for Net Income
+        apiHelper.getFamilySummary(new AppwriteManager.AppwriteCallback<io.appwrite.models.Document<Map<String, Object>>>() {
+            @Override
+            public void onSuccess(io.appwrite.models.Document<Map<String, Object>> result) {
+                if (!isAdded()) return;
+                Map<String, Object> data = result.getData();
+                double balance = Utils.getDouble(data.get("balance"));
+                double income = Utils.getDouble(data.get("totalIncome"));
+                double expense = Utils.getDouble(data.get("totalExpense"));
+                
+                pref.saveFamilySummary(balance, income, expense);
+                requireActivity().runOnUiThread(() -> setupHeaders());
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                // Silently fail or use local data
+            }
+        });
+
+        // Check for notifications/join requests if admin
+        checkNotifications(apiHelper, pref);
+    }
+
+    private void checkNotifications(ApiHelper apiHelper, PreferenceManager pref) {
+        boolean isAdmin = false;
+        String role = pref.getUserRole();
+        for (String r : com.upreyvan.carti.util.Constants.Roles.PARENTS) {
+            if (r.equalsIgnoreCase(role)) {
+                isAdmin = true;
+                break;
+            }
+        }
+
+        if (isAdmin) {
+            apiHelper.getMembers(new AppwriteManager.AppwriteCallback<io.appwrite.models.DocumentList<Map<String, Object>>>() {
+                @Override
+                public void onSuccess(io.appwrite.models.DocumentList<Map<String, Object>> result) {
+                    if (!isAdded()) return;
+                    boolean hasPending = false;
+                    for (io.appwrite.models.Document<Map<String, Object>> doc : result.getDocuments()) {
+                        Object status = doc.getData().get("status");
+                        if ("pending".equals(status)) {
+                            hasPending = true;
+                            break;
+                        }
+                    }
+                    final boolean finalHasPending = hasPending;
+                    requireActivity().runOnUiThread(() -> updateNotificationBadge(finalHasPending));
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    requireActivity().runOnUiThread(() -> updateNotificationBadge(false));
+                }
+            });
+        } else {
+            updateNotificationBadge(false);
+        }
     }
 
     private void setupDailyBudgetCard() {
@@ -94,10 +203,23 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void loadTransactions() {
-        List<Transaction> transactions = ExpenseManager.getInstance().getRecentTransactions(5);
         if (transactionAdapter != null) {
-            transactionAdapter.submitList(transactions);
+            transactionAdapter.setLoading(true);
+            getBinding().rvTransactions.postDelayed(() -> {
+                if (isAdded()) {
+                    List<Transaction> transactions = ExpenseManager.getInstance().getRecentTransactions(5);
+                    transactionAdapter.setLoading(false);
+                    transactionAdapter.submitList(transactions);
+                }
+            }, 1000);
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (userSubscription != null) userSubscription.close();
+        if (familySubscription != null) familySubscription.close();
     }
 
     @Override
@@ -108,9 +230,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private void updateNotificationBadge(boolean hasNotifications) {
         if (hasNotifications) {
+            getBinding().notifBadge.setVisibility(View.VISIBLE);
             getBinding().notifBadge.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.carti_primary_green));
         } else {
-            getBinding().notifBadge.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.gray));
+            getBinding().notifBadge.setVisibility(View.GONE);
         }
     }
 
@@ -134,6 +257,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().tvGreetingMain.setText(greeting + ",");
         getBinding().tvUsernameMain.setText(name + " 👋");
 
+        double income = pref.getTotalIncome();
+        double expense = pref.getTotalExpense();
+        double net = income - expense;
+        getBinding().tvGreetingSub.setText(getString(R.string.family_label, String.format(Locale.getDefault(), "₱%,.0f", net)));
+
         getBinding().headerQuickLog.tvSectionTitle.setText(R.string.quick_log_title);
         getBinding().headerQuickLog.tvSectionSubTitle.setVisibility(View.VISIBLE);
         getBinding().headerQuickLog.tvSectionSubTitle.setText(R.string.quick_log_subtitle);
@@ -149,44 +277,57 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void setupQuickLog() {
-        List<Category> categories = CategoryManager.getInstance(requireContext()).getCategories();
-        List<QuickLogItem> items = new ArrayList<>();
-        
-        int limit = isExpanded ? categories.size() : 7;
-        for (int i = 0; i < Math.min(categories.size(), limit); i++) {
-            Category cat = categories.get(i);
-            items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor()));
+        // Show shimmer items initially
+        List<QuickLogItem> shimmerItems = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            shimmerItems.add(new QuickLogItem(true));
         }
-
-        String othersLabel = getString(R.string.label_others);
-        String seeLessLabel = getString(R.string.see_less);
-
-        if (categories.size() > 7 && !isExpanded) {
-            items.add(new QuickLogItem(othersLabel, android.R.drawable.ic_menu_more, R.color.log_others, R.color.icon_others));
-        } else if (isExpanded) {
-            items.add(new QuickLogItem(seeLessLabel, android.R.drawable.ic_menu_close_clear_cancel, R.color.log_others, R.color.icon_others));
-        }
-
-        quickLogAdapter = new QuickLogAdapter(items);
-        quickLogAdapter.setOnItemClickListener(item -> {
-            if (item.getTitle().equals(othersLabel)) {
-                isExpanded = true;
-                setupQuickLog();
-            } else if (item.getTitle().equals(seeLessLabel)) {
-                isExpanded = false;
-                setupQuickLog();
-            } else {
-                showQuickLogDialog(item);
-            }
-        });
-
-        quickLogAdapter.setOnItemLongClickListener(item -> {
-            if (!item.getTitle().equals(othersLabel) && !item.getTitle().equals(seeLessLabel)) {
-                showDeleteCategoryDialog(item);
-            }
-        });
-
+        quickLogAdapter = new QuickLogAdapter(shimmerItems);
         getBinding().rvQuickLog.setAdapter(quickLogAdapter);
+
+        // Delay loading real categories to show "maangas" shimmer
+        getBinding().rvQuickLog.postDelayed(() -> {
+            if (!isAdded()) return;
+            
+            List<Category> categories = CategoryManager.getInstance(requireContext()).getCategories();
+            List<QuickLogItem> items = new ArrayList<>();
+            
+            int limit = isExpanded ? categories.size() : 7;
+            for (int i = 0; i < Math.min(categories.size(), limit); i++) {
+                Category cat = categories.get(i);
+                items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor()));
+            }
+
+            String othersLabel = getString(R.string.label_others);
+            String seeLessLabel = getString(R.string.see_less);
+
+            if (categories.size() > 7 && !isExpanded) {
+                items.add(new QuickLogItem(othersLabel, android.R.drawable.ic_menu_more, R.color.log_others, R.color.icon_others));
+            } else if (isExpanded) {
+                items.add(new QuickLogItem(seeLessLabel, android.R.drawable.ic_menu_close_clear_cancel, R.color.log_others, R.color.icon_others));
+            }
+
+            quickLogAdapter = new QuickLogAdapter(items);
+            quickLogAdapter.setOnItemClickListener(item -> {
+                if (item.getTitle().equals(othersLabel)) {
+                    isExpanded = true;
+                    setupQuickLog();
+                } else if (item.getTitle().equals(seeLessLabel)) {
+                    isExpanded = false;
+                    setupQuickLog();
+                } else {
+                    showQuickLogDialog(item);
+                }
+            });
+
+            quickLogAdapter.setOnItemLongClickListener(item -> {
+                if (!item.getTitle().equals(othersLabel) && !item.getTitle().equals(seeLessLabel)) {
+                    showDeleteCategoryDialog(item);
+                }
+            });
+
+            getBinding().rvQuickLog.setAdapter(quickLogAdapter);
+        }, 800);
     }
 
     private void showDeleteCategoryDialog(QuickLogItem item) {

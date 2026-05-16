@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.util.Constants;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -13,8 +14,6 @@ import java.util.Calendar;
 import java.util.List;
 
 public class ExpenseManager {
-    private static final String PREF_NAME = "expense_prefs";
-    private static final String KEY_TRANSACTIONS = "transactions_list";
     private static ExpenseManager instance;
     private final List<Transaction> transactions;
     private final SharedPreferences prefs;
@@ -26,7 +25,7 @@ public class ExpenseManager {
     }
 
     private ExpenseManager(Context context) {
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs = context.getSharedPreferences(Constants.Keys.PREF_EXPENSE, Context.MODE_PRIVATE);
         gson = new Gson();
         transactions = loadTransactions();
     }
@@ -46,14 +45,14 @@ public class ExpenseManager {
     }
 
     private List<Transaction> loadTransactions() {
-        String json = prefs.getString(KEY_TRANSACTIONS, null);
+        String json = prefs.getString(Constants.Keys.KEY_TRANSACTIONS, null);
         if (json == null) return new ArrayList<>();
         Type type = new TypeToken<ArrayList<Transaction>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
     private void saveTransactions() {
-        prefs.edit().putString(KEY_TRANSACTIONS, gson.toJson(transactions)).apply();
+        prefs.edit().putString(Constants.Keys.KEY_TRANSACTIONS, gson.toJson(transactions)).apply();
     }
 
     public void setOnExpenseChangeListener(OnExpenseChangeListener listener) {

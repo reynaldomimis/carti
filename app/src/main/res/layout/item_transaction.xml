@@ -5,62 +5,76 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="@dimen/spacing_medium">
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cvIconBg"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:cardBackgroundColor="@color/log_food"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
-
-            <ImageView
-                android:id="@+id/ivIcon"
-                android:layout_width="@dimen/icon_size_small"
-                android:layout_height="@dimen/icon_size_small"
-                android:layout_gravity="center"
-                android:contentDescription="@null"
-                android:src="@android:drawable/ic_menu_gallery" />
-        </com.google.android.material.card.MaterialCardView>
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:id="@+id/layoutContent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_medium"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:padding="@dimen/spacing_medium">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cvIconBg"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:cardBackgroundColor="@color/log_food"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/ivIcon"
+                    android:layout_width="@dimen/icon_size_small"
+                    android:layout_height="@dimen/icon_size_small"
+                    android:layout_gravity="center"
+                    android:contentDescription="@null"
+                    android:src="@android:drawable/ic_menu_gallery" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_medium"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_size_body"
+                    android:fontFamily="@font/plus_jakarta_sans_bold" />
+
+                <TextView
+                    android:id="@+id/tvTimestamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_size_small"
+                    android:fontFamily="@font/plus_jakarta_sans_medium" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/tvTitle"
+                android:id="@+id/tvAmount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
                 android:textSize="@dimen/text_size_body"
                 android:fontFamily="@font/plus_jakarta_sans_bold" />
 
-            <TextView
-                android:id="@+id/tvTimestamp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_size_small"
-                android:fontFamily="@font/plus_jakarta_sans_medium" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvAmount"
-            android:layout_width="wrap_content"
+        <include
+            android:id="@+id/shimmerView"
+            layout="@layout/item_transaction_shimmer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
-            android:textSize="@dimen/text_size_body"
-            android:fontFamily="@font/plus_jakarta_sans_bold" />
+            android:visibility="gone" />
 
-    </LinearLayout>
+    </FrameLayout>
 
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/divider"

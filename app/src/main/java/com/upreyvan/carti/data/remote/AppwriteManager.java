@@ -260,7 +260,7 @@ public class AppwriteManager {
 
     public void deleteAccount(AppwriteCallback<Object> callback) {
         // As suggested, delete account is implemented via a Cloud Function (gateway)
-        callGateway("deleteAccount", new HashMap<>(), new AppwriteCallback<Execution>() {
+        callGateway("delete_account", new HashMap<>(), new AppwriteCallback<Execution>() {
             @Override
             public void onSuccess(Execution result) {
                 postSuccess(callback, result);

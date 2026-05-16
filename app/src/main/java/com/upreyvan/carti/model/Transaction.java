@@ -13,6 +13,10 @@ public class Transaction {
     private final long timestampMillis;
     private final String type;
 
+    public Transaction() {
+        this("", "", "", "", 0, 0, 0, 0, "EXPENSE");
+    }
+
     public Transaction(String id, String title, String timestamp, String amount, int iconRes, int iconBgColor) {
         this(id, title, timestamp, amount, iconRes, iconBgColor, 0, System.currentTimeMillis(), "EXPENSE");
     }

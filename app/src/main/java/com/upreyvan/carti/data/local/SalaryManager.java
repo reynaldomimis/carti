@@ -3,20 +3,16 @@ package com.upreyvan.carti.data.local;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.upreyvan.carti.util.Constants;
+
 import java.util.Calendar;
 
 public class SalaryManager {
-    private static final String PREF_NAME = "salary_prefs";
-    private static final String KEY_SALARY_AMOUNT = "salary_amount";
-    private static final String KEY_FIRST_PAYDAY = "first_payday";
-    private static final String KEY_SECOND_PAYDAY = "second_payday";
-    private static final String KEY_IS_MONTHLY = "is_monthly";
-
     private static SalaryManager instance;
     private final SharedPreferences prefs;
 
     private SalaryManager(Context context) {
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs = context.getSharedPreferences(Constants.Keys.PREF_SALARY, Context.MODE_PRIVATE);
     }
 
     public static synchronized SalaryManager getInstance(Context context) {
@@ -27,35 +23,35 @@ public class SalaryManager {
     }
 
     public void setSalaryAmount(float amount) {
-        prefs.edit().putFloat(KEY_SALARY_AMOUNT, amount).apply();
+        prefs.edit().putFloat(Constants.Keys.KEY_SALARY_AMOUNT, amount).apply();
     }
 
     public float getSalaryAmount() {
-        return prefs.getFloat(KEY_SALARY_AMOUNT, 0f);
+        return prefs.getFloat(Constants.Keys.KEY_SALARY_AMOUNT, 0f);
     }
 
     public void setFirstPayday(int day) {
-        prefs.edit().putInt(KEY_FIRST_PAYDAY, day).apply();
+        prefs.edit().putInt(Constants.Keys.KEY_FIRST_PAYDAY, day).apply();
     }
 
     public int getFirstPayday() {
-        return prefs.getInt(KEY_FIRST_PAYDAY, 15); // Default 15th
+        return prefs.getInt(Constants.Keys.KEY_FIRST_PAYDAY, 15); // Default 15th
     }
 
     public void setSecondPayday(int day) {
-        prefs.edit().putInt(KEY_SECOND_PAYDAY, day).apply();
+        prefs.edit().putInt(Constants.Keys.KEY_SECOND_PAYDAY, day).apply();
     }
 
     public int getSecondPayday() {
-        return prefs.getInt(KEY_SECOND_PAYDAY, 30); // Default 30th
+        return prefs.getInt(Constants.Keys.KEY_SECOND_PAYDAY, 30); // Default 30th
     }
 
     public void setIsMonthly(boolean isMonthly) {
-        prefs.edit().putBoolean(KEY_IS_MONTHLY, isMonthly).apply();
+        prefs.edit().putBoolean(Constants.Keys.KEY_IS_MONTHLY, isMonthly).apply();
     }
 
     public boolean isMonthly() {
-        return prefs.getBoolean(KEY_IS_MONTHLY, false);
+        return prefs.getBoolean(Constants.Keys.KEY_IS_MONTHLY, false);
     }
 
     public Calendar getNextPayday() {

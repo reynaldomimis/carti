@@ -53,8 +53,7 @@ public class ApiHelper {
                             callback.onSuccess(new HashMap<>());
                         }
                     } else {
-                        String message = response != null && response.get("m") != null ? String.valueOf(response.get("m")) : "Unknown server error";
-                        callback.onError(new Exception(message));
+                        callback.onError(new Exception(Constants.ErrorCodes.GENERIC_ERROR));
                     }
                 } catch (Exception e) {
                     callback.onError(new Exception("Failed to parse server response: " + e.getMessage()));

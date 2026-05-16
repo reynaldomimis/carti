@@ -11,12 +11,23 @@ public class ChatMessage {
     private final int imageResId;
     private final IntentType intent;
     private boolean isCanceled = false;
+    private boolean isShimmer = false;
     
     // Appwrite Fields
     private String id;
     private String senderId;
     private String familyId;
     private long timestamp;
+
+    public ChatMessage(boolean isShimmer, boolean isMe) {
+        this.senderName = "";
+        this.message = "";
+        this.time = "";
+        this.isMe = isMe;
+        this.imageResId = 0;
+        this.intent = IntentType.UNKNOWN;
+        this.isShimmer = isShimmer;
+    }
 
     public ChatMessage(String senderName, String message, String time, boolean isMe, int imageResId) {
         this.senderName = senderName;
@@ -80,6 +91,10 @@ public class ChatMessage {
 
     public boolean isCanceled() {
         return isCanceled;
+    }
+
+    public boolean isShimmer() {
+        return isShimmer;
     }
 
     public void setCanceled(boolean canceled) {

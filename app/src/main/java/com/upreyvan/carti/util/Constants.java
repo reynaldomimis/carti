@@ -45,6 +45,43 @@ public class Constants {
         public static final String STATUS = "s";
         public static final String DATA = "data";
         public static final String MESSAGE = "m";
+        
+        // Preference Names
+        public static final String PREF_NAME = "carti_prefs";
+        public static final String PREF_EXPENSE = "expense_prefs";
+        public static final String PREF_GOAL = "goal_prefs";
+        public static final String PREF_SALARY = "salary_prefs";
+        public static final String PREF_CATEGORY = "carti_categories";
+        public static final String PREF_DEBT = "debt_prefs";
+
+        // Main Preference Keys
+        public static final String KEY_ONBOARDING_FINISHED = "onboarding_finished";
+        public static final String KEY_USER_NAME = "user_name";
+        public static final String KEY_USER_ID_PREF = "user_id";
+        public static final String KEY_USER_EMAIL = "user_email";
+        public static final String KEY_USER_ROLE = "user_role";
+        public static final String KEY_FAMILY_ID = "family_id";
+        public static final String KEY_INVITE_CODE = "invite_code";
+        public static final String KEY_IS_EMPLOYED = "is_employed";
+        public static final String KEY_BALANCE = "balance";
+        public static final String KEY_TOTAL_INCOME = "total_income";
+        public static final String KEY_TOTAL_EXPENSE = "total_expense";
+        public static final String KEY_CHAT_AUTO_DELETE_DAYS = "chat_auto_delete_days";
+
+        // Manager Keys
+        public static final String KEY_TRANSACTIONS = "transactions_list";
+        public static final String KEY_GOALS = "goals_list";
+        public static final String KEY_DEBTS = "debts_list";
+        public static final String KEY_CATEGORIES = "categories_list";
+        public static final String KEY_SALARY_AMOUNT = "salary_amount";
+        public static final String KEY_FIRST_PAYDAY = "first_payday";
+        public static final String KEY_SECOND_PAYDAY = "second_payday";
+        public static final String KEY_IS_MONTHLY = "is_monthly";
+
+        // Intent/Bundle Keys
+        public static final String KEY_GOAL_ID = "goal_id";
+        public static final String KEY_DEBT_ID = "debt_id";
+        public static final String KEY_TRANSACTION_ID = "transaction_id";
     }
 
     public static final class ErrorCodes {
@@ -56,5 +93,7 @@ public class Constants {
         public static final String SERVER_ERROR = "SERVER_ERROR";
         public static final String NO_FAMILY = "NO_FAMILY";
         public static final String PARSE_ERROR = "PARSE_ERROR";
+        public static final String NETWORK_ERROR = "NETWORK_ERROR";
+        public static final String GENERIC_ERROR = "An unexpected error occurred. Please try again.";
     }
 }

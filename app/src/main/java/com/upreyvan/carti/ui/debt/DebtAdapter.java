@@ -15,6 +15,7 @@ public class DebtAdapter extends RecyclerView.Adapter<DebtAdapter.DebtViewHolder
 
     private List<Debt> debts = new ArrayList<>();
     private OnDebtClickListener listener;
+    private boolean isLoading = false;
 
     public interface OnDebtClickListener {
         void onDebtClick(Debt debt);
@@ -24,9 +25,20 @@ public class DebtAdapter extends RecyclerView.Adapter<DebtAdapter.DebtViewHolder
         this.listener = listener;
     }
 
+    public void setLoading(boolean loading) {
+        this.isLoading = loading;
+        notifyDataSetChanged();
+    }
+
     public void setDebts(List<Debt> debts) {
         this.debts = debts;
+        this.isLoading = false;
         notifyDataSetChanged();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return isLoading ? 1 : 0;
     }
 
     @NonNull
@@ -38,12 +50,16 @@ public class DebtAdapter extends RecyclerView.Adapter<DebtAdapter.DebtViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull DebtViewHolder holder, int position) {
-        holder.bind(debts.get(position));
+        if (isLoading) {
+            holder.showShimmer();
+        } else {
+            holder.bind(debts.get(position));
+        }
     }
 
     @Override
     public int getItemCount() {
-        return debts.size();
+        return isLoading ? 5 : debts.size();
     }
 
     class DebtViewHolder extends RecyclerView.ViewHolder {
@@ -55,6 +71,8 @@ public class DebtAdapter extends RecyclerView.Adapter<DebtAdapter.DebtViewHolder
         }
 
         public void bind(Debt debt) {
+            binding.shimmerView.getRoot().setVisibility(View.GONE);
+            binding.layoutContent.setVisibility(View.VISIBLE);
             binding.tvPersonName.setText(debt.getPersonName());
             binding.tvDescription.setText(debt.getDescription());
             binding.tvDate.setText(debt.getDate());
@@ -74,6 +92,11 @@ public class DebtAdapter extends RecyclerView.Adapter<DebtAdapter.DebtViewHolder
                     listener.onDebtClick(debt);
                 }
             });
+        }
+
+        public void showShimmer() {
+            binding.shimmerView.getRoot().setVisibility(View.VISIBLE);
+            binding.layoutContent.setVisibility(View.INVISIBLE);
         }
     }
 }

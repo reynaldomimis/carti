@@ -7,20 +7,19 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.model.Category;
+import com.upreyvan.carti.util.Constants;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryManager {
-    private static final String PREF_NAME = "carti_categories";
-    private static final String KEY_CATEGORIES = "categories_list";
     private static CategoryManager instance;
     private final SharedPreferences prefs;
     private final Gson gson;
 
     private CategoryManager(Context context) {
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs = context.getSharedPreferences(Constants.Keys.PREF_CATEGORY, Context.MODE_PRIVATE);
         gson = new Gson();
     }
 
@@ -32,7 +31,7 @@ public class CategoryManager {
     }
 
     public List<Category> getCategories() {
-        String json = prefs.getString(KEY_CATEGORIES, null);
+        String json = prefs.getString(Constants.Keys.KEY_CATEGORIES, null);
         if (json == null) {
             return getDefaultCategories();
         }
@@ -52,7 +51,7 @@ public class CategoryManager {
 
     private void saveCategories(List<Category> categories) {
         String json = gson.toJson(categories);
-        prefs.edit().putString(KEY_CATEGORIES, json).apply();
+        prefs.edit().putString(Constants.Keys.KEY_CATEGORIES, json).apply();
     }
 
     private List<Category> getDefaultCategories() {

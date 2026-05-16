@@ -9,6 +9,10 @@ public class Goal {
     private int imageRes;
     private int backgroundColor;
 
+    public Goal() {
+        this("", "", 0.0, 0.0, "", 0, 0);
+    }
+
     public Goal(String id, String title, double currentAmount, double targetAmount, String targetDate, int imageRes, int backgroundColor) {
         this.id = id;
         this.title = title;

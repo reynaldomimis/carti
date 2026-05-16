@@ -33,8 +33,6 @@ android {
         buildConfigField("String", "APPWRITE_ENDPOINT_FUNCTION", "\"${secrets.getProperty("APPWRITE_ENDPOINT_FUNCTION", "")}\"")
         buildConfigField("String", "APPWRITE_GATEWAY_FUNCTION_ID", "\"${secrets.getProperty("APPWRITE_GATEWAY_FUNCTION_ID", "")}\"")
         buildConfigField("String", "APPWRITE_DATABASE_ID", "\"${secrets.getProperty("APPWRITE_DATABASE_ID", "")}\"")
-
-        // Collection IDs (Table IDs) from secrets.properties
         buildConfigField("String", "APPWRITE_COL_USERS", "\"${secrets.getProperty("APPWRITE_COL_USERS", "")}\"")
         buildConfigField("String", "APPWRITE_COL_TRANSACTIONS", "\"${secrets.getProperty("APPWRITE_COL_TRANSACTIONS", "")}\"")
         buildConfigField("String", "APPWRITE_COL_GOALS", "\"${secrets.getProperty("APPWRITE_COL_GOALS", "")}\"")
@@ -72,6 +70,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.ucrop)
     implementation(libs.appwrite)
+    implementation(libs.shimmer)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

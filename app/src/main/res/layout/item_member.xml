@@ -12,53 +12,69 @@
     app:strokeColor="@color/card_border"
     app:strokeWidth="1dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:layout_height="wrap_content">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/ivMemberAvatar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-            tools:src="@android:drawable/ic_menu_gallery" />
-
-        <TextView
-            android:id="@+id/tvMemberName"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutContent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="8dp"
-            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/chipRole"
-            app:layout_constraintStart_toEndOf="@+id/ivMemberAvatar"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Juan (Ikaw)" />
+            android:padding="12dp">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipRole"
-            style="@style/Widget.Material3.Chip.Assist"
-            android:layout_width="wrap_content"
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivMemberAvatar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:scaleType="centerCrop"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                tools:src="@android:drawable/ic_menu_gallery" />
+
+            <TextView
+                android:id="@+id/tvMemberName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="8dp"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/chipRole"
+                app:layout_constraintStart_toEndOf="@+id/ivMemberAvatar"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Juan (Ikaw)" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipRole"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:textColor="@color/carti_primary_green"
+                app:chipBackgroundColor="@color/tonal_button_bg"
+                app:chipCornerRadius="12dp"
+                app:chipStrokeWidth="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:chipBackgroundColor="@color/log_fare"
+                tools:text="Member"
+                tools:textColor="@color/icon_fare" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <include
+            android:id="@+id/shimmerView"
+            layout="@layout/item_member_shimmer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clickable="false"
-            android:textColor="@color/carti_primary_green"
-            app:chipBackgroundColor="@color/tonal_button_bg"
-            app:chipCornerRadius="12dp"
-            app:chipStrokeWidth="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:chipBackgroundColor="@color/log_fare"
-            tools:text="Member"
-            tools:textColor="@color/icon_fare" />
+            android:visibility="gone" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </FrameLayout>
+
 </com.google.android.material.card.MaterialCardView>

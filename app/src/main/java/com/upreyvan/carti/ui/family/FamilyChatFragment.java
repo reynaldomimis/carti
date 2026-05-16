@@ -105,6 +105,13 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     }
 
     private void loadChatHistory() {
+        // Show shimmer effect
+        List<ChatMessage> shimmers = new ArrayList<>();
+        shimmers.add(new ChatMessage(true, false));
+        shimmers.add(new ChatMessage(true, true));
+        shimmers.add(new ChatMessage(true, false));
+        chatAdapter.submitList(shimmers);
+
         AppwriteManager.getInstance(requireContext())
             .listDocuments(
                 Constants.Appwrite.DATABASE_ID,
@@ -204,10 +211,6 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         });
 
         getBinding().btnSettings.setOnClickListener(v -> showAutoDeleteDialog());
-
-        getBinding().btnInfo.setOnClickListener(v -> {
-            // Chat info logic
-        });
     }
 
     private void showAutoDeleteDialog() {

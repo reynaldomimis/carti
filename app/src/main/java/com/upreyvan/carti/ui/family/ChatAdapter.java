@@ -23,6 +23,8 @@ public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHo
 
     private static final int VIEW_TYPE_ME = 1;
     private static final int VIEW_TYPE_OTHER = 2;
+    private static final int VIEW_TYPE_SHIMMER_ME = 3;
+    private static final int VIEW_TYPE_SHIMMER_OTHER = 4;
     private static final int TIMER_DURATION = 5000;
 
     private OnCancelListener cancelListener;
@@ -52,25 +54,41 @@ public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHo
 
     @Override
     public int getItemViewType(int position) {
-        return getItem(position).isMe() ? VIEW_TYPE_ME : VIEW_TYPE_OTHER;
+        ChatMessage message = getItem(position);
+        if (message.isShimmer()) {
+            return message.isMe() ? VIEW_TYPE_SHIMMER_ME : VIEW_TYPE_SHIMMER_OTHER;
+        }
+        return message.isMe() ? VIEW_TYPE_ME : VIEW_TYPE_OTHER;
     }
 
     @NonNull
     @Override
     public ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == VIEW_TYPE_ME) {
-            ItemChatRightBinding binding = ItemChatRightBinding.inflate(inflater, parent, false);
-            return new ChatViewHolder(binding);
-        } else {
-            ItemChatLeftBinding binding = ItemChatLeftBinding.inflate(inflater, parent, false);
-            return new ChatViewHolder(binding);
+        switch (viewType) {
+            case VIEW_TYPE_ME:
+                return new ChatViewHolder(ItemChatRightBinding.inflate(inflater, parent, false));
+            case VIEW_TYPE_SHIMMER_ME:
+                return new ChatViewHolder(com.upreyvan.carti.databinding.ItemChatShimmerRightBinding.inflate(inflater, parent, false));
+            case VIEW_TYPE_SHIMMER_OTHER:
+                return new ChatViewHolder(com.upreyvan.carti.databinding.ItemChatShimmerLeftBinding.inflate(inflater, parent, false));
+            default:
+                return new ChatViewHolder(ItemChatLeftBinding.inflate(inflater, parent, false));
         }
     }
 
     @Override
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
         ChatMessage message = getItem(position);
+        if (message.isShimmer()) {
+            if (holder.binding instanceof com.upreyvan.carti.databinding.ItemChatShimmerRightBinding) {
+                ((com.upreyvan.carti.databinding.ItemChatShimmerRightBinding) holder.binding).shimmerLayout.startShimmer();
+            } else if (holder.binding instanceof com.upreyvan.carti.databinding.ItemChatShimmerLeftBinding) {
+                ((com.upreyvan.carti.databinding.ItemChatShimmerLeftBinding) holder.binding).shimmerLayout.startShimmer();
+            }
+            return;
+        }
+
         if (holder.binding instanceof ItemChatRightBinding) {
             ItemChatRightBinding b = (ItemChatRightBinding) holder.binding;
             b.tvSenderName.setText(message.getSenderName());

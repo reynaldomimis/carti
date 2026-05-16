@@ -1,14 +1,12 @@
 <resources>
     <string name="app_name">Carti</string>
-    <string name="welcome_message">Good morning, Juan! 👋</string>
-    <string name="default_greeting">Good morning,</string>
-    <string name="family_label">Family Wallet | ₱14,500 net </string>
-    <string name="daily_budget">Daily Budget</string>
-    <string name="current_date">Today | Sun, May 10 | 12:05pm</string>
-    <string name="amount_remaining">₱150 left</string>
-    <string name="budget_amount">₱350</string>
-    <string name="total_budget">/ ₱500</string>
-    <string name="spent_remaining_days">Salary Mode: 6 days to payday | 0% spent </string>
+    <string name="welcome_message">Good morning, %s! 👋</string>
+    <string name="family_label">Family Wallet | %s net </string>
+    <string name="current_date">Today | %s</string>
+    <string name="amount_remaining">%s left</string>
+    <string name="budget_amount">%s</string>
+    <string name="total_budget">/ %s</string>
+    <string name="spent_remaining_days">Salary Mode: %1$d days to payday | %2$d%% spent </string>
     <string name="quick_log_title">Quick Expense Log</string>
     <string name="quick_log_subtitle">Just select, 1 tap!</string>
     <string name="customize">Customize</string>
@@ -43,6 +41,14 @@
     <string name="mock_amount_15">₱15</string>
     <string name="mock_amount_85">₱85</string>
     <string name="mock_store">Store</string>
+    <string name="mock_salary_date_format">Payday: %s</string>
+    <string name="mock_validity_date">Dec 31, 2024</string>
+    <string name="mock_notif_title_1">Daily Budget Tip</string>
+    <string name="mock_notif_desc_1">You saved ₱50 today! Keep it up.</string>
+    <string name="mock_notif_title_2">Goal Milestone</string>
+    <string name="mock_notif_desc_2">You reached 50% of your "New Laptop" goal!</string>
+    <string name="mock_notif_title_3">Family Update</string>
+    <string name="mock_notif_desc_3">Maria added a new expense: Groceries.</string>
     <string name="budget_summary">₱350</string>
 
     <!-- Goal Fragment -->
@@ -54,42 +60,16 @@
     <string name="overall_progress_description">Keep saving for your goals!</string>
     <string name="overall_progress_subtitle_format">%1$d%% of your total target</string>
     <string name="target_date_label_format">Target: %1$s</string>
-    <string name="goal_progress_amount_format">₱%1$s / ₱%2$s</string>
+    <string name="goal_progress_amount_format">%1$s / %2$s</string>
     <string name="percentage_format">%1$d%%</string>
     <string name="zero_percent">0%</string>
 
-    <!-- Mock Goals Data -->
-    <string name="mock_goal_bicycle">Buy a Bicycle</string>
-    <string name="mock_goal_emergency">Emergency Fund</string>
-    <string name="mock_goal_phone">New Cellphone</string>
-    <string name="mock_goal_gift">Gift for Mom</string>
-    <string name="mock_goal_travel">Travel Fund (Boracay)</string>
-    <string name="mock_goal_laptop">Laptop Upgrade</string>
-    <string name="mock_goal_concert">Savings for Concert</string>
-    <string name="mock_goal_gym">Gym Membership</string>
-    <string name="mock_goal_investment">Investment Starter</string>
-    <string name="mock_goal_shoes">Buy New Shoes</string>
-
-    <string name="mock_date_june_30">Jun 30, 2024</string>
-    <string name="mock_date_dec_31">Dec 31, 2024</string>
-    <string name="mock_date_aug_15">Aug 15, 2024</string>
-    <string name="mock_date_may_12">May 12, 2024</string>
-    <string name="mock_date_oct_20">Oct 20, 2024</string>
-    <string name="mock_date_nov_15">Nov 15, 2024</string>
-    <string name="mock_date_july_05">Jul 05, 2024</string>
-    <string name="mock_date_june_01">Jun 01, 2024</string>
-    <string name="mock_date_sept_30">Sep 30, 2024</string>
-    <string name="mock_date_aug_22">Aug 22, 2024</string>
-
     <!-- Family Members Fragment -->
+
     <string name="family_members_title">Family Members</string>
     <string name="btn_invite">Invite</string>
     <string name="role_admin">Admin</string>
     <string name="role_member">Member</string>
-    <string name="mock_name_juan">Juan (You)</string>
-    <string name="mock_name_maria">Maria (Spouse)</string>
-    <string name="mock_name_miguel">Miguel (Child)</string>
-    <string name="mock_name_ana">Ana (Child)</string>
 
     <!-- Debt Tracker Fragment -->
     <string name="debt_tracker_title">Debt Tracker</string>
@@ -108,41 +88,14 @@
     <string name="notes_label">Notes</string>
     <string name="currency_php">₱</string>
 
-    <!-- Mock Debt Data -->
-    <string name="mock_debt_person_1">Ate Liza</string>
-    <string name="mock_debt_desc_1">Groceries debt</string>
-    <string name="mock_debt_date_1">May 25, 2024</string>
-    <string name="mock_debt_amount_1">500</string>
-
-    <string name="mock_debt_person_2">Aling Nena\'s Store</string>
-    <string name="mock_debt_desc_2">Retail store debt</string>
-    <string name="mock_debt_date_2">May 20, 2024</string>
-    <string name="mock_debt_amount_2">120</string>
-
-    <string name="mock_debt_person_3">Kuya Mario</string>
-    <string name="mock_debt_desc_3">Cash loan</string>
-    <string name="mock_debt_date_3">May 18, 2024</string>
-    <string name="mock_debt_amount_3">300</string>
-
     <!-- Notifications -->
+
     <string name="notifications_title">Notifications</string>
     <string name="btn_clear_all">Clear All</string>
     <string name="empty_notifications">No notifications yet</string>
 
-    <!-- Mock Notifications -->
-    <string name="mock_notif_title_1">Debt Reminder</string>
-    <string name="mock_notif_desc_1">Don\'t forget to pay Ate Liza for the groceries.</string>
-    <string name="mock_notif_time_1">2 hours ago</string>
-
-    <string name="mock_notif_title_2">Savings Goal Reached!</string>
-    <string name="mock_notif_desc_2">Congratulations! You\'ve reached 50% of your Emergency Fund goal.</string>
-    <string name="mock_notif_time_2">5 hours ago</string>
-
-    <string name="mock_notif_title_3">Weekly Budget Update</string>
-    <string name="mock_notif_desc_3">You have ₱1,200 remaining for this week. Keep it up!</string>
-    <string name="mock_notif_time_3">Yesterday</string>
-
     <!-- Add Goal Fragment -->
+
     <string name="add_goal_title">New Goal</string>
     <string name="label_add_image">Add an image</string>
     <string name="label_goal_name">Goal Name</string>
@@ -162,23 +115,19 @@
     <!-- Expenses Fragment -->
     <string name="expenses_title">Expenses</string>
     <string name="label_total_spent">Total Spent</string>
-    <string name="vs_last_month">vs April:</string>
-    <string name="percentage_decrease_format">-₱%1$s ( ▼ %2$s%% )</string>
-    <string name="mock_total_spent">₱6,250</string>
-    <string name="mock_savings_diff">1,250</string>
-    <string name="mock_percent_diff">16.7</string>
-    <string name="mock_month_year">May 2024</string>
+    <string name="vs_last_month">vs %s:</string>
+    <string name="percentage_decrease_format">-%1$s ( ▼ %2$s%% )</string>
 
     <!-- Profile Fragment -->
     <string name="profile_title">Profile</string>
-    <string name="mock_user_name">Juan Dela Cruz</string>
-    <string name="mock_user_email">juan.delacruz@email.com</string>
+    <string name="mock_name_juan">Juan (Ikaw)</string>
 
     <string name="menu_family">Family Members</string>
+    <string name="menu_family_sub">Manage members</string>
     <string name="menu_family_sub_format">%1$d members</string>
-    <string name="menu_family_sub">4 members</string>
 
     <string name="menu_invite">Invite Family</string>
+
     <string name="menu_invite_sub">Invite a new member</string>
 
     <string name="menu_chat">Family Chat Room</string>
@@ -210,6 +159,22 @@
 
     <string name="menu_help">Help &amp; Support</string>
     <string name="menu_help_sub">FAQs, Contact us</string>
+    <string name="help_title">Help &amp; Support</string>
+    <string name="section_faq">Frequently Asked Questions</string>
+    <string name="faq_q1">How do I invite family members?</string>
+    <string name="faq_a1">Go to Profile > Invite Family. Copy your Family ID and share it with your family members.</string>
+    <string name="faq_q2">What is Salary Mode?</string>
+    <string name="faq_a2">Salary Mode helps you budget your money between paydays. It calculates how much you can spend per day.</string>
+    <string name="faq_q3">How do I delete my account?</string>
+    <string name="faq_a3">Go to Profile > Login &amp; Security. You will find the option to delete your account at the bottom.</string>
+    <string name="section_contact">Contact Support</string>
+    <string name="label_email_support">Email Support</string>
+    <string name="support_email">support@carti.app</string>
+    <string name="faq_q4">Is my data safe?</string>
+    <string name="faq_a4">Yes, Carti uses Appwrite\'s secure infrastructure to ensure your family\'s financial data is encrypted and protected.</string>
+    <string name="support_email_subject">Support Request - Carti App</string>
+    <string name="bug_report_subject">Bug Report - Carti App</string>
+    <string name="label_report_bug">Report a Bug</string>
 
     <string name="menu_about">About App</string>
     <string name="menu_about_sub">Version, Developer</string>
@@ -283,10 +248,8 @@
     <string name="invite_headline">Build your money team!</string>
     <string name="invite_subtext">Invite your family members to track and manage expenses together.</string>
     <string name="label_family_id">Your Family ID</string>
-    <string name="mock_family_id">FAM - 7X9K - 2M8L</string>
     <string name="btn_copy">Copy</string>
     <string name="validity_format">Valid until %1$s</string>
-    <string name="mock_validity_date">May 30, 2024</string>
     <string name="label_how_to_join">How to join?</string>
     <string name="step_1">Share this Family ID</string>
     <string name="step_2">Your family joins using this ID</string>
@@ -314,16 +277,6 @@
     <!-- Family Chat Fragment -->
     <string name="family_chat_title">Family Chat</string>
     <string name="hint_type_message">Type a message...</string>
-    <string name="mock_msg_juan_1">Good morning family! ☀️</string>
-    <string name="mock_msg_maria_1">Good morning! 😊</string>
-    <string name="mock_msg_miguel_1">There\'s a budget update today.</string>
-    <string name="mock_msg_ana_1">Okay! I\'ll check later.</string>
-    <string name="mock_msg_juan_2">Let\'s keep saving together! 💪</string>
-    <string name="mock_time_930">9:30 AM</string>
-    <string name="mock_time_931">9:31 AM</string>
-    <string name="mock_time_932">9:32 AM</string>
-    <string name="mock_time_933">9:33 AM</string>
-    <string name="mock_time_935">9:35 AM</string>
 
     <!-- AI Assistant Fragment -->
     <string name="ai_assistant_title">Carti AI Assistant</string>
@@ -449,23 +402,13 @@
     <string name="label_date_format">(%1$s)</string>
     <string name="label_sweldo_amount">Salary Amount</string>
     <string name="label_budget_breakdown">Daily Budget Breakdown</string>
-    <string name="label_budget_per_day_format">₱%1$s / day</string>
+    <string name="label_budget_per_day_format">%1$s / day</string>
     <string name="label_progress_range_format">Progress (%1$s - %2$s)</string>
     <string name="label_days_passed_format">%1$d days passed</string>
     <string name="btn_edit">Edit</string>
     <string name="menu_salary">Salary Mode</string>
     <string name="menu_salary_sub">Manage your salary budget</string>
-
-    <!-- Mock Salary Data -->
-    <string name="mock_days_left">8</string>
-    <string name="mock_salary_date">(May 30, 2024)</string>
-    <string name="mock_salary_amount">₱15,000</string>
-    <string name="mock_budget_per_day">₱500 / day</string>
-    <string name="mock_progress_range">Progress (May 15 - May 30)</string>
-    <string name="mock_days_passed">12 days passed</string>
-    <string name="mock_progress_percent">60%</string>
     <string name="label_days">days</string>
-    <string name="mock_salary_date_format">(%1$s)</string>
     <string name="payday_format">%1$dth and %2$dth of the month</string>
     <string name="salary_info_format">Salary Mode: %1$d days to payday</string>
 
@@ -529,4 +472,19 @@
     <string name="msg_checking_status">Checking Status...</string>
     <string name="msg_invite_code_copied">Invite code copied!</string>
     <string name="msg_reset_link_sent">Password reset link sent to your email.</string>
+
+    <!-- Missing Mock Strings -->
+    <string name="mock_user_name">Juan Dela Cruz</string>
+    <string name="mock_user_email">juan@example.com</string>
+    <string name="daily_budget">Daily Budget</string>
+    <string name="mock_total_spent">₱0.00</string>
+    <string name="default_greeting">Hello!</string>
+    <string name="mock_family_id">FAM-1234-5678</string>
+    <string name="mock_days_left">5 days left</string>
+    <string name="mock_salary_date">Dec 30, 2024</string>
+    <string name="mock_salary_amount">₱20,000</string>
+    <string name="mock_budget_per_day">₱500 / day</string>
+    <string name="mock_progress_range">Dec 15 - Dec 30</string>
+    <string name="mock_days_passed">10 days passed</string>
+    <string name="mock_progress_percent">50%</string>
 </resources>

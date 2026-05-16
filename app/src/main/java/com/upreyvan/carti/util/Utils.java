@@ -166,4 +166,17 @@ public class Utils {
             android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show();
         }
     }
+
+    public static double getDouble(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        } else if (value instanceof String) {
+            try {
+                return Double.parseDouble((String) value);
+            } catch (NumberFormatException e) {
+                return 0.0;
+            }
+        }
+        return 0.0;
+    }
 }

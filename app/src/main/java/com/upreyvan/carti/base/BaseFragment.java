@@ -15,6 +15,8 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewbinding.ViewBinding;
 
+import com.upreyvan.carti.util.Constants;
+
 public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
 
     private VB binding;
@@ -49,6 +51,24 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
 
     protected VB getBinding() {
         return binding;
+    }
+
+    protected void showError(Throwable t) {
+        String message = Constants.ErrorCodes.GENERIC_ERROR;
+        if (t != null && t.getMessage() != null) {
+            String msg = t.getMessage();
+            // Map known error keys to user-friendly messages if needed, 
+            // but for now, we just ensure we don't leak raw stack traces.
+            if (msg.contains("UNAUTHORIZED") || msg.contains("401")) {
+                message = "Session expired. Please login again.";
+            } else if (msg.contains("NETWORK") || msg.contains("Unable to resolve host")) {
+                message = "No internet connection.";
+            }
+        }
+        
+        if (getContext() != null) {
+            com.google.android.material.snackbar.Snackbar.make(binding.getRoot(), message, com.google.android.material.snackbar.Snackbar.LENGTH_LONG).show();
+        }
     }
 
     @Override

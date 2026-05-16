@@ -59,8 +59,12 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     private void loadGoals() {
         // Load from local first for instant UI
         allGoals = GoalManager.getInstance().getGoals();
-        filterGoals(getBinding().tabLayout.getSelectedTabPosition());
-        updateOverallProgress(allGoals);
+        if (allGoals.isEmpty()) {
+            adapter.setLoading(true);
+        } else {
+            filterGoals(getBinding().tabLayout.getSelectedTabPosition());
+            updateOverallProgress(allGoals);
+        }
 
         // Then fetch from Cloud (SDK Direct Read)
         new ApiHelper(requireContext()).getGoals(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
@@ -76,6 +80,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                 // Update Local Manager and UI
                 GoalManager.getInstance().setGoals(cloudGoals);
                 requireActivity().runOnUiThread(() -> {
+                    adapter.setLoading(false);
                     allGoals = cloudGoals;
                     filterGoals(getBinding().tabLayout.getSelectedTabPosition());
                     updateOverallProgress(allGoals);
@@ -85,9 +90,10 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
             @Override
             public void onError(Throwable error) {
                 if (isAdded()) {
-                    requireActivity().runOnUiThread(() -> 
-                        Toast.makeText(requireContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show()
-                    );
+                    requireActivity().runOnUiThread(() -> {
+                        adapter.setLoading(false);
+                        showError(error);
+                    });
                 }
             }
         });

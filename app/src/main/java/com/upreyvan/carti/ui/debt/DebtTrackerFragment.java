@@ -86,8 +86,13 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     private void loadDebts() {
         // Load local data first
         allDebts = DebtManager.getInstance().getDebts();
-        filterDebts(getBinding().tabLayout.getSelectedTabPosition());
-        updateOverallDebt(allDebts);
+        if (!allDebts.isEmpty()) {
+            adapter.setLoading(false);
+            filterDebts(getBinding().tabLayout.getSelectedTabPosition());
+            updateOverallDebt(allDebts);
+        } else {
+            adapter.setLoading(true);
+        }
 
         // Fetch fresh data from Cloud
         apiHelper.getDebts(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
@@ -113,9 +118,10 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
             @Override
             public void onError(Throwable error) {
                 if (isAdded()) {
-                    requireActivity().runOnUiThread(() ->
-                        Toast.makeText(requireContext(), "Error fetching debts: " + error.getMessage(), Toast.LENGTH_SHORT).show()
-                    );
+                    requireActivity().runOnUiThread(() -> {
+                        adapter.setLoading(false);
+                        showError(error);
+                    });
                 }
             }
         });

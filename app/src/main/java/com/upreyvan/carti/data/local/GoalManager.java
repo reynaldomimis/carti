@@ -6,14 +6,13 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.model.Goal;
+import com.upreyvan.carti.util.Constants;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GoalManager {
-    private static final String PREF_NAME = "goal_prefs";
-    private static final String KEY_GOALS = "goals_list";
     private static GoalManager instance;
     private final List<Goal> goals;
     private final SharedPreferences prefs;
@@ -25,7 +24,7 @@ public class GoalManager {
     }
 
     private GoalManager(Context context) {
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs = context.getSharedPreferences(Constants.Keys.PREF_GOAL, Context.MODE_PRIVATE);
         gson = new Gson();
         goals = loadGoals();
     }
@@ -45,14 +44,14 @@ public class GoalManager {
     }
 
     private List<Goal> loadGoals() {
-        String json = prefs.getString(KEY_GOALS, null);
+        String json = prefs.getString(Constants.Keys.KEY_GOALS, null);
         if (json == null) return new ArrayList<>();
         Type type = new TypeToken<ArrayList<Goal>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
     private void saveGoals() {
-        prefs.edit().putString(KEY_GOALS, gson.toJson(goals)).apply();
+        prefs.edit().putString(Constants.Keys.KEY_GOALS, gson.toJson(goals)).apply();
     }
 
     public void setOnGoalChangeListener(OnGoalChangeListener listener) {

@@ -1,6 +1,7 @@
 package com.upreyvan.carti.ui.home;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -13,12 +14,18 @@ import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemTransactionBinding;
 import com.upreyvan.carti.model.Transaction;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransactionBinding> {
+
+    private boolean isLoading = false;
 
     public TransactionAdapter() {
         super(new DiffUtil.ItemCallback<Transaction>() {
             @Override
             public boolean areItemsTheSame(@NonNull Transaction oldItem, @NonNull Transaction newItem) {
+                if (oldItem.getTitle() == null || newItem.getTitle() == null) return false;
                 return oldItem.getTitle().equals(newItem.getTitle());
             }
 
@@ -29,6 +36,17 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
         });
     }
 
+    public void setLoading(boolean loading) {
+        this.isLoading = loading;
+        if (loading) {
+            List<Transaction> placeholders = new ArrayList<>();
+            for (int i = 0; i < 5; i++) {
+                placeholders.add(new Transaction());
+            }
+            submitList(placeholders);
+        }
+    }
+
     @Override
     protected ItemTransactionBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) {
         return ItemTransactionBinding.inflate(inflater, parent, false);
@@ -36,6 +54,15 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
 
     @Override
     protected void bind(ItemTransactionBinding binding, Transaction item) {
+        if (isLoading) {
+            binding.shimmerView.getRoot().setVisibility(View.VISIBLE);
+            binding.layoutContent.setVisibility(View.INVISIBLE);
+            return;
+        }
+
+        binding.shimmerView.getRoot().setVisibility(View.GONE);
+        binding.layoutContent.setVisibility(View.VISIBLE);
+
         binding.tvTitle.setText(item.getTitle());
         binding.tvTimestamp.setText(com.upreyvan.carti.util.Utils.getTimeAgo(item.getTimestampMillis()));
         binding.tvAmount.setText(item.getAmount());

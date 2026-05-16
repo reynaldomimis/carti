@@ -11,6 +11,7 @@ mpandroidchart = "v3.1.0"
 gson = "2.10.1"
 ucrop = "2.2.11"
 appwrite = "24.0.0"
+shimmer = "0.5.0"
 
 [libraries]
 appwrite = { group = "io.appwrite", name = "sdk-for-android", version.ref = "appwrite" }
@@ -24,6 +25,7 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpandroidchart" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 ucrop = { group = "com.github.yalantis", name = "ucrop", version.ref = "ucrop" }
+shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -70,4 +70,5 @@
     <color name="switch_track_off">#E0E0E0</color>
     <color name="switch_thumb_off">#9E9E9E</color>
     <color name="ripple_color">#20000000</color>
+    <color name="shimmer_color">#E0E0E0</color>
 </resources>

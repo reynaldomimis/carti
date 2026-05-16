@@ -125,7 +125,8 @@ public class SalaryModeFragment extends BaseFragment<FragmentSalaryModeBinding> 
         getBinding().tvTargetDate.setText(getString(R.string.mock_salary_date_format, sdf.format(nextPayday.getTime())));
 
         // Details
-        getBinding().tvSalaryAmount.setText(String.format(Locale.getDefault(), "₱%,.2f", manager.getSalaryAmount()));
+        float salaryAmount = manager.getSalaryAmount();
+        getBinding().tvSalaryAmount.setText(String.format(Locale.getDefault(), "₱%,.2f", salaryAmount));
         
         if (manager.isMonthly()) {
             int day = manager.getFirstPayday();
@@ -135,19 +136,24 @@ public class SalaryModeFragment extends BaseFragment<FragmentSalaryModeBinding> 
             getBinding().tvPaydaySchedule.setText(getString(R.string.payday_format, manager.getFirstPayday(), manager.getSecondPayday()));
         }
 
-        
         double dailyBudget = manager.getDailyBudget();
         getBinding().tvDailyBudget.setText(String.format(Locale.getDefault(), "₱%,.2f / day", dailyBudget));
 
-        // Progress Calculation
+        // Progress Calculation (Spent vs Salary)
+        double totalExpense = 0;
+        try {
+            String spentText = getBinding().tvTotalExpenses.getText().toString();
+            totalExpense = Double.parseDouble(spentText.replaceAll("[^0-9.]", ""));
+        } catch (Exception ignored) {}
+
+        int spentProgress = (salaryAmount > 0) ? (int) ((totalExpense / (float) salaryAmount) * 100) : 0;
+        getBinding().progressSalary.setProgress(Math.min(spentProgress, 100));
+        
+        // Update labels (Days passed)
         int totalDays = manager.getTotalDaysInCycle();
         int daysPassed = totalDays - daysLeft;
         if (daysPassed < 0) daysPassed = 0;
-        
-        int progress = (totalDays > 0) ? (int) ((daysPassed / (float) totalDays) * 100) : 0;
-        getBinding().progressSalary.setProgress(Math.min(progress, 100));
-        
-        // Update labels
+
         getBinding().tvProgressRange.setText(String.format(Locale.getDefault(), "%s - %s", 
             sdf.format(manager.getLastPayday().getTime()), 
             sdf.format(manager.getNextPayday().getTime())));

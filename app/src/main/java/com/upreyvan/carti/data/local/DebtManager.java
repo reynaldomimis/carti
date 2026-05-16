@@ -6,14 +6,13 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.model.Debt;
+import com.upreyvan.carti.util.Constants;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DebtManager {
-    private static final String PREF_NAME = "debt_prefs";
-    private static final String KEY_DEBTS = "debts_list";
     private static DebtManager instance;
     private final List<Debt> debts;
     private final SharedPreferences prefs;
@@ -25,7 +24,7 @@ public class DebtManager {
     }
 
     private DebtManager(Context context) {
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs = context.getSharedPreferences(Constants.Keys.PREF_DEBT, Context.MODE_PRIVATE);
         gson = new Gson();
         debts = loadDebts();
     }
@@ -45,14 +44,14 @@ public class DebtManager {
     }
 
     private List<Debt> loadDebts() {
-        String json = prefs.getString(KEY_DEBTS, null);
+        String json = prefs.getString(Constants.Keys.KEY_DEBTS, null);
         if (json == null) return new ArrayList<>();
         Type type = new TypeToken<ArrayList<Debt>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
     private void saveDebts() {
-        prefs.edit().putString(KEY_DEBTS, gson.toJson(debts)).apply();
+        prefs.edit().putString(Constants.Keys.KEY_DEBTS, gson.toJson(debts)).apply();
     }
 
     public void setOnDebtChangeListener(OnDebtChangeListener listener) {
