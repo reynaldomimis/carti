@@ -5,7 +5,8 @@
     style="@style/CartiCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="6dp">
+    android:layout_marginVertical="@dimen/spacing_xxs"
+    android:layout_marginHorizontal="@dimen/spacing_medium">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -35,10 +36,10 @@
 
         <TextView
             android:id="@+id/tvSource"
+            style="@style/CartiTextTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_medium"
-            style="@style/CartiHeader"
             android:textSize="@dimen/text_size_body"
             app:layout_constraintEnd_toStartOf="@id/tvAmount"
             app:layout_constraintStart_toEndOf="@id/viewIconBg"
@@ -47,9 +48,9 @@
 
         <TextView
             android:id="@+id/tvDate"
+            style="@style/CartiTextDescription"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            style="@style/CartiSubHeader"
             android:textSize="@dimen/text_size_small"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@id/tvSource"
@@ -59,9 +60,9 @@
 
         <TextView
             android:id="@+id/tvAmount"
+            style="@style/CartiHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/CartiHeader"
             android:textColor="@color/green_primary"
             android:textSize="@dimen/text_size_header_small"
             app:layout_constraintBottom_toBottomOf="parent"

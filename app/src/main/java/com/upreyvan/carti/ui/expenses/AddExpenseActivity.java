@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 
 import androidx.core.graphics.ColorUtils;
 
@@ -118,7 +117,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
                 @Override
                 public void onError(Throwable error) {
                     showLoading(false);
-                    showToast("Failed to save: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                    showToast(getString(R.string.err_failed_save, error.getMessage()), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                 }
             });
         });
@@ -154,7 +153,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
                 id,
                 familyId,
                 category,
-                "", // description
+                "", 
                 time,
                 amountVal,
                 iconRes,

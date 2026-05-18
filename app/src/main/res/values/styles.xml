@@ -43,11 +43,30 @@
         <item name="android:textSize">@dimen/text_size_body</item>
     </style>
 
+    <style name="CartiTextTitle">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/text_size_header_small</item>
+    </style>
+
+    <style name="CartiTextDescription">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_medium</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">@dimen/text_size_body_small</item>
+    </style>
+
+    <style name="CartiTextAmount">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/text_size_h1</item>
+    </style>
+
     <style name="CartiCard" parent="com.google.android.material.card.MaterialCardView">
         <item name="cardElevation">0dp</item>
         <item name="cardCornerRadius">@dimen/card_corner_radius</item>
-        <item name="strokeColor">@color/card_border</item>
+        <item name="strokeColor">@color/border_subtle</item>
         <item name="strokeWidth">@dimen/stroke_width_thin</item>
+        <item name="cardBackgroundColor">@color/white</item>
     </style>
 
     <style name="CartiCard.Elevated">
@@ -63,6 +82,11 @@
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:textColorHint">@color/text_tertiary</item>
         <item name="android:textSize">@dimen/text_size_body_large</item>
+    </style>
+
+    <style name="CartiProgressBar" parent="Widget.Material3.LinearProgressIndicator">
+        <item name="trackThickness">@dimen/spacing_small</item>
+        <item name="trackCornerRadius">@dimen/radius_medium</item>
     </style>
 
 </resources>

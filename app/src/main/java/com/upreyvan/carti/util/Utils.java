@@ -19,9 +19,9 @@ import java.util.regex.Pattern;
 public class Utils {
 
     private static final Pattern SENSITIVE_PATTERN = Pattern.compile(
-            "\\b(?:\\d[ -]*?){13,19}\\b|" + // Credit/Debit cards
-            "\\b\\d{10,12}\\b|" +          // General bank account numbers (approx)
-            "password|secret|pin\\s\\d{4,6}", // Simple keywords
+            "\\b(?:\\d[ -]*?){13,19}\\b|" + 
+            "\\b\\d{10,12}\\b|" +          
+            "password|secret|pin\\s\\d{4,6}", 
             Pattern.CASE_INSENSITIVE
     );
 
@@ -35,7 +35,6 @@ public class Utils {
 
     public static String getTimeAgo(long time) {
         if (time < 1000000000000L) {
-            // if timestamp given in seconds, convert to millis
             time *= 1000;
         }
 
@@ -65,7 +64,6 @@ public class Utils {
     public static String formatIsoDateToTime(String isoDate) {
         if (isoDate == null || isoDate.isEmpty()) return "";
         try {
-            // Appwrite uses ISO 8601: 2023-05-14T09:45:33.619+00:00 or 2023-05-14T09:45:33Z
             SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
             parser.setTimeZone(TimeZone.getTimeZone("UTC"));
             Date date = parser.parse(isoDate);
@@ -74,7 +72,6 @@ public class Utils {
             SimpleDateFormat formatter = new SimpleDateFormat("hh:mm a", Locale.getDefault());
             return formatter.format(date);
         } catch (Exception e) {
-            // Fallback for different ISO variations
             try {
                 SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
                 Date date = parser.parse(isoDate);

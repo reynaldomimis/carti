@@ -14,10 +14,6 @@ import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentAllTransactionsBinding;
-import com.upreyvan.carti.model.Transaction;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AllTransactionsFragment extends BaseFragment<FragmentAllTransactionsBinding> {
 
@@ -45,10 +41,6 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
             }
         });
         transactionRepository.syncTransactionsIfNeeded();
-    }
-
-    private void loadTransactions() {
-        // Deprecated
     }
 
     private void setupToolbar() {
@@ -112,7 +104,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
                             @Override
                             public void onError(Throwable error) {
                                 requireActivity().runOnUiThread(() -> {
-                                    showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                                    showToast(getString(R.string.err_generic, error.getMessage()), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                                 });
                             }
                         });

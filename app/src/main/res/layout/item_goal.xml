@@ -2,112 +2,87 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/CartiCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="@dimen/spacing_medium"
-    android:layout_marginVertical="@dimen/spacing_small"
-    app:cardBackgroundColor="@color/white"
-    app:cardCornerRadius="@dimen/pill_corner_radius"
-    app:cardElevation="0dp"
-    app:strokeColor="@color/card_border"
-    app:strokeWidth="1dp">
+    android:layout_marginVertical="@dimen/spacing_xxs">
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_medium">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/layoutContent"
-            android:layout_width="match_parent"
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivGoalIcon"
+            android:layout_width="@dimen/radius_circle"
+            android:layout_height="@dimen/radius_circle"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
+            tools:src="@android:drawable/ic_menu_gallery" />
+
+        <TextView
+            android:id="@+id/tvGoalTitle"
+            style="@style/CartiTextTitle"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_medium">
+            android:layout_marginStart="@dimen/spacing_medium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivGoalIcon"
+            app:layout_constraintTop_toTopOf="@id/ivGoalIcon"
+            tools:text="Car Savings" />
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/iv_goal_icon"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:scaleType="centerCrop"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large"
-                tools:src="@android:drawable/ic_menu_gallery" />
-
-            <TextView
-                android:id="@+id/tv_goal_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_medium"
-                android:ellipsize="end"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:maxLines="1"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/iv_goal_icon"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="Bili ng Bisikleta" />
-
-            <TextView
-                android:id="@+id/tv_goal_progress_amount"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:textColor="@color/text_amount"
-                android:textSize="20sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/tv_goal_title"
-                app:layout_constraintTop_toBottomOf="@id/tv_goal_title"
-                tools:text="₱3,000 / ₱5,000" />
-
-            <ProgressBar
-                android:id="@+id/progress_indicator"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="0dp"
-                android:layout_height="10dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="8dp"
-                android:progressDrawable="@drawable/daily_progress_bar"
-                app:layout_constraintEnd_toStartOf="@id/tv_percentage"
-                app:layout_constraintStart_toStartOf="@id/tv_goal_title"
-                app:layout_constraintTop_toBottomOf="@id/tv_goal_progress_amount"
-                tools:progress="60" />
-
-            <TextView
-                android:id="@+id/tv_percentage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:textColor="@color/text_percentage"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="@id/progress_indicator"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/progress_indicator"
-                tools:text="60%" />
-
-            <TextView
-                android:id="@+id/tv_target_date"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/tv_goal_title"
-                app:layout_constraintTop_toBottomOf="@id/progress_indicator"
-                tools:text="Target: Jun 30, 2024" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <include
-            android:id="@+id/shimmerView"
-            layout="@layout/item_goal_shimmer"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvProgressAmount"
+            style="@style/CartiHeader"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:visibility="gone" />
-    </FrameLayout>
+            android:layout_marginTop="@dimen/spacing_xxs"
+            android:textSize="@dimen/text_size_h1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tvGoalTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvGoalTitle"
+            tools:text="₱3,000 / ₱5,000" />
 
+        <ProgressBar
+            android:id="@+id/pbGoal"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/icon_size_xxs"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:progress="60"
+            android:progressDrawable="@drawable/daily_progress_bar"
+            app:layout_constraintEnd_toStartOf="@+id/tvPercent"
+            app:layout_constraintStart_toStartOf="@id/tvGoalTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvProgressAmount" />
+
+        <TextView
+            android:id="@+id/tvPercent"
+            style="@style/CartiHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_size_small"
+            app:layout_constraintBottom_toBottomOf="@id/pbGoal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/pbGoal"
+            tools:text="60%" />
+
+        <TextView
+            android:id="@+id/tvTargetDate"
+            style="@style/CartiTextDescription"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:textSize="@dimen/text_size_caption"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tvGoalTitle"
+            app:layout_constraintTop_toBottomOf="@id/pbGoal"
+            tools:text="Target: Oct 2024" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

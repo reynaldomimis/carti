@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/total_debt_label"
                 android:textColor="@color/white"
-                android:textSize="14sp" />
+                android:textSize="@dimen/text_size_body" />
 
             <TextView
                 android:id="@+id/tv_subtitle"
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/debt_summary_subtitle"
                 android:textColor="@color/white_80"
-                android:textSize="12sp" />
+                android:textSize="@dimen/text_size_small" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -53,37 +53,37 @@
 
                 <TextView
                     android:id="@+id/tv_total_amount"
+                    style="@style/CartiHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/plus_jakarta_sans_bold"
                     android:textColor="@color/white"
-                    android:textSize="28sp"
+                    android:textSize="@dimen/text_size_display"
                     tools:text="₱2,450.00" />
 
                 <TextView
                     android:id="@+id/tv_overall_percentage"
+                    style="@style/CartiHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:background="@drawable/bg_pill_white"
-                    android:fontFamily="@font/plus_jakarta_sans_bold"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="@dimen/radius_medium"
+                    android:paddingVertical="@dimen/spacing_xxs"
                     android:textColor="@color/green_budget_status"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/text_size_small"
                     tools:text="15% paid" />
             </RelativeLayout>
 
             <TextView
                 android:id="@+id/tv_progress_description"
+                style="@style/CartiSubHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_medium"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
                 android:text="@string/overall_debt_description"
                 android:textColor="@color/white"
-                android:textSize="12sp" />
+                android:textSize="@dimen/text_size_small" />
 
         </LinearLayout>
 
@@ -96,7 +96,7 @@
         android:layout_marginHorizontal="@dimen/spacing_medium"
         android:layout_marginTop="@dimen/spacing_medium"
         app:cardBackgroundColor="@color/surface_variant"
-        app:cardCornerRadius="24dp"
+        app:cardCornerRadius="@dimen/radius_xl"
         app:cardElevation="0dp"
         app:layout_constraintTop_toBottomOf="@id/card_overall_debt"
         app:strokeWidth="0dp">
@@ -104,19 +104,19 @@
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="@dimen/spacing_xxl"
             android:background="@android:color/transparent"
             app:tabIndicatorAnimationMode="linear"
             app:tabIndicator="@drawable/bg_pill_white"
             app:tabIndicatorColor="@color/white"
             app:tabIndicatorGravity="center"
-            app:tabIndicatorHeight="40dp"
+            app:tabIndicatorHeight="@dimen/icon_size_xl"
             app:tabIndicatorFullWidth="true"
             app:tabMode="fixed"
             app:tabRippleColor="@null"
             app:tabSelectedTextColor="@color/carti_primary_green"
             app:tabTextColor="@color/text_primary"
-            app:tabTextAppearance="@style/TextAppearance.Material3.TitleSmall">
+            app:tabTextAppearance="@style/CartiHeader">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -138,7 +138,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/spacing_small"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="@dimen/spacing_medium"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tabContainer"
         tools:listitem="@layout/item_debt" />

@@ -22,7 +22,8 @@
                 android:layout_height="@dimen/icon_size_xl"
                 app:cardBackgroundColor="@color/log_food"
                 app:cardCornerRadius="@dimen/pill_corner_radius"
-                app:cardElevation="0dp">
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
 
                 <ImageView
                     android:id="@+id/ivIcon"
@@ -42,28 +43,23 @@
 
                 <TextView
                     android:id="@+id/tvTitle"
+                    style="@style/CartiTextTitle"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
-                    android:textSize="@dimen/text_size_body"
-                    android:fontFamily="@font/plus_jakarta_sans_bold" />
+                    android:layout_height="wrap_content" />
 
                 <TextView
                     android:id="@+id/tvTimestamp"
+                    style="@style/CartiTextDescription"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="@dimen/text_size_small"
-                    android:fontFamily="@font/plus_jakarta_sans_medium" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/tvAmount"
+                style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_size_body"
-                android:fontFamily="@font/plus_jakarta_sans_bold" />
+                android:textSize="@dimen/text_size_body" />
 
         </LinearLayout>
 

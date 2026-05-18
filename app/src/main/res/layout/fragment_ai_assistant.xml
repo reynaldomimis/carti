@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.microsoft.com/tools"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/aiAssistantRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,8 +11,8 @@
         android:id="@+id/layoutHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp"
+        android:paddingHorizontal="@dimen/spacing_medium"
+        android:paddingVertical="@dimen/radius_medium"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
@@ -21,7 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/ai_assistant_title"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_size_header"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -33,7 +33,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingVertical="8dp"
+        android:paddingVertical="@dimen/spacing_small"
         android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/layoutBottom"
@@ -45,7 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingBottom="24dp"
+        android:paddingBottom="@dimen/spacing_large"
         app:layout_constraintBottom_toTopOf="@id/layoutBottom"
         app:layout_constraintTop_toBottomOf="@id/layoutHeader">
 
@@ -53,8 +53,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="32dp">
+            android:paddingHorizontal="@dimen/spacing_large"
+            android:paddingTop="@dimen/spacing_xl">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -62,10 +62,10 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="@dimen/icon_size_xl"
+                    android:layout_height="@dimen/icon_size_xl"
                     app:cardBackgroundColor="@color/tonal_button_bg"
-                    app:cardCornerRadius="20dp"
+                    app:cardCornerRadius="@dimen/pill_corner_radius"
                     app:cardElevation="0dp">
 
                     <ImageView
@@ -80,21 +80,21 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="@dimen/radius_medium"
                     app:cardBackgroundColor="@color/tonal_button_bg"
-                    app:cardCornerRadius="16dp"
+                    app:cardCornerRadius="@dimen/radius_large"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp">
 
                     <TextView
+                        style="@style/CartiTextDescription"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:paddingHorizontal="16dp"
-                        android:paddingVertical="12dp"
+                        android:paddingHorizontal="@dimen/spacing_medium"
+                        android:paddingVertical="@dimen/radius_medium"
                         android:text="@string/ai_greeting"
                         android:textColor="@color/carti_primary_green"
-                        android:textSize="15sp" />
+                        android:textSize="@dimen/text_size_body_large" />
 
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
@@ -103,10 +103,10 @@
                 android:id="@+id/rvSuggestions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="@dimen/spacing_xl"
                 android:clipToPadding="false"
                 android:orientation="horizontal"
-                android:paddingHorizontal="20dp"
+                android:paddingHorizontal="@dimen/pill_corner_radius"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -121,9 +121,9 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:orientation="vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="16dp"
+        android:paddingHorizontal="@dimen/spacing_medium"
+        android:paddingTop="@dimen/radius_medium"
+        android:paddingBottom="@dimen/spacing_medium"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <include
@@ -134,14 +134,14 @@
 
         <TextView
             android:id="@+id/tvDisclaimer"
+            style="@style/CartiSubHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:fontFamily="@font/plus_jakarta_sans_medium"
+            android:layout_marginTop="@dimen/spacing_small"
             android:gravity="center"
             android:text="@string/ai_disclaimer"
             android:textColor="@color/text_tertiary"
-            android:textSize="11sp" />
+            android:textSize="@dimen/text_size_caption" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

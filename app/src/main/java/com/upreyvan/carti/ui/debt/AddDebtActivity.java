@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 import android.app.ProgressDialog;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -124,7 +123,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
                 @Override
                 public void onError(Throwable error) {
                     showLoading(false);
-                    showToast("Error saving debt: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                    showToast(getString(R.string.err_generic, error.getMessage()), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                 }
             });
         });

@@ -7,68 +7,115 @@
     android:background="@color/white">
 
     <include
-        android:id="@+id/layout_toolbar"
+        android:id="@+id/layoutToolbar"
         layout="@layout/layout_custom_toolbar" />
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/scroll_view"
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnSave"
-        app:layout_constraintTop_toBottomOf="@id/layout_toolbar">
+        app:layout_constraintBottom_toTopOf="@id/btnSave"
+        app:layout_constraintTop_toBottomOf="@id/layoutToolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="24dp"
-            android:paddingBottom="120dp">
+            android:paddingHorizontal="@dimen/spacing_large"
+            android:paddingTop="@dimen/spacing_large"
+            android:paddingBottom="@dimen/scroll_bottom_padding">
+
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_goal_name"
+                android:textSize="@dimen/text_size_body" />
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_add_image"
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
-                android:layout_height="160dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small">
+
+                <EditText
+                    android:id="@+id/etGoalName"
+                    style="@style/CartiEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_height_standard"
+                    android:hint="@string/hint_goal_name"
+                    android:inputType="textCapSentences"
+                    android:importantForAutofill="no" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/label_target_amount"
+                android:textSize="@dimen/text_size_body" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/CartiCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small">
+
+                <EditText
+                    android:id="@+id/etTargetAmount"
+                    style="@style/CartiEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_height_standard"
+                    android:fontFamily="@font/plus_jakarta_sans_bold"
+                    android:hint="@string/hint_amount"
+                    android:inputType="numberDecimal"
+                    android:textSize="@dimen/text_size_header"
+                    android:importantForAutofill="no" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/label_target_date"
+                android:textSize="@dimen/text_size_body" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnPickDate"
+                style="@style/CartiCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
                 android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="@color/surface_variant"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                android:focusable="true">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp">
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:contentDescription="@null"
-                            android:padding="12dp"
-                            android:src="@drawable/ic_image"
-                            app:tint="@color/text_tertiary" />
-
-                    </com.google.android.material.card.MaterialCardView>
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_height_standard"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/spacing_medium">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/tvSelectedDate"
+                        style="@style/CartiSubHeader"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:text="@string/label_add_image"
-                        android:textColor="@color/text_tertiary"
-                        android:textSize="14sp" />
+                        android:layout_weight="1"
+                        android:text="@string/placeholder_date"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body_large" />
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_medium"
+                        android:layout_height="@dimen/icon_size_medium"
+                        android:src="@drawable/ic_calendar"
+                        android:contentDescription="@null"
+                        app:tint="@color/text_secondary" />
 
                 </LinearLayout>
 
@@ -78,145 +125,37 @@
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/label_goal_name"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/et_goal_name"
-                style="@style/CartiSubHeader"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@android:color/transparent"
-                android:hint="@string/hint_goal_name"
-                android:importantForAutofill="no"
-                android:inputType="text"
-                android:textColorHint="@color/text_tertiary"
-                android:textSize="16sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="8dp"
-                android:background="@color/border_light" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:text="@string/label_target_amount"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/et_target_amount"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:hint="@string/hint_amount"
-                android:importantForAutofill="no"
-                android:inputType="numberDecimal"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_tertiary"
-                android:textSize="18sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="8dp"
-                android:background="@color/border_light" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:text="@string/label_target_date"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/btn_pick_date"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true">
-
-                <TextView
-                    android:id="@+id/tv_selected_date"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
-                    android:hint="@string/hint_date"
-                    android:textColor="@color/text_primary"
-                    android:textColorHint="@color/text_tertiary"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/iv_calendar"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageView
-                    android:id="@+id/iv_calendar"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_calendar"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="@color/text_tertiary" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="8dp"
-                android:background="@color/border_light" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
+                android:layout_marginTop="@dimen/spacing_large"
                 android:text="@string/label_notes_optional"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
+                android:textSize="@dimen/text_size_body" />
 
-            <EditText
-                android:id="@+id/et_notes"
+            <com.google.android.material.card.MaterialCardView
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
-                android:gravity="top"
-                android:hint="@string/hint_notes"
-                android:importantForAutofill="no"
-                android:inputType="textMultiLine"
-                android:minHeight="80dp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_tertiary"
-                android:textSize="16sp" />
+                android:layout_marginTop="@dimen/spacing_small">
+
+                <EditText
+                    android:id="@+id/etNotes"
+                    style="@style/CartiEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_height_standard"
+                    android:hint="@string/hint_notes"
+                    android:inputType="textCapSentences"
+                    android:importantForAutofill="no" />
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSave"
         style="@style/CartiButton.Primary"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="24dp"
+        android:layout_height="@dimen/button_height_standard"
+        android:layout_marginHorizontal="@dimen/spacing_large"
+        android:layout_marginBottom="@dimen/spacing_large"
         android:text="@string/btn_save_goal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

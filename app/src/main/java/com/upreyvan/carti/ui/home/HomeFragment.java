@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,16 +20,14 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.repository.DebtRepository;
 import com.upreyvan.carti.data.repository.GoalRepository;
-import com.upreyvan.carti.data.repository.IncomeRepository;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.data.repository.IncomeRepository;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
 import com.upreyvan.carti.databinding.ItemQuickLogBinding;
-import com.upreyvan.carti.databinding.ItemTransactionBinding;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.QuickLogItem;
-import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.ui.expenses.AllTransactionsFragment;
 import com.upreyvan.carti.ui.notifications.NotificationsFragment;
 import com.upreyvan.carti.util.Constants;
@@ -44,10 +41,6 @@ import java.util.Map;
 import io.appwrite.models.RealtimeSubscription;
 import io.appwrite.services.Realtime;
 
-/**
- * Senior Developer Refactored: HomeFragment.
- * It manages recent transactions and daily budget overview.
- */
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private GenericAdapter<QuickLogItem, ItemQuickLogBinding> quickLogAdapter;
@@ -108,14 +101,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         
         String familyId = pref.getFamilyId();
         
-        // Listen for user changes (for notification badge/join requests)
         String userChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_USERS + ".documents";
         userSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
             checkNotifications(apiHelper, pref);
             return null;
         });
 
-        // Listen for new transactions
         String transactionChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_TRANSACTIONS + ".documents";
         transactionSubscription = realtime.subscribe(new String[]{transactionChannel}, event -> {
             if (transactionRepository != null) {
@@ -124,7 +115,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             return null;
         });
 
-        // Listen for goal changes
         String goalChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_GOALS + ".documents";
         goalSubscription = realtime.subscribe(new String[]{goalChannel}, event -> {
             if (goalRepository != null) {
@@ -133,7 +123,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             return null;
         });
 
-        // Listen for debt changes
         String debtChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_DEBTS + ".documents";
         debtSubscription = realtime.subscribe(new String[]{debtChannel}, event -> {
             if (debtRepository != null) {
@@ -142,7 +131,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             return null;
         });
 
-        // Listen for member changes
         memberSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
             if (memberRepository != null) {
                 memberRepository.refreshMembers();
@@ -150,7 +138,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             return null;
         });
 
-        // Listen for family document changes (for net balance)
         if (familyId != null && !familyId.isEmpty()) {
             String familyChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_FAMILIES + ".documents." + familyId;
             familySubscription = realtime.subscribe(new String[]{familyChannel}, event -> {
@@ -175,7 +162,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         ApiHelper apiHelper = new ApiHelper(requireContext());
         PreferenceManager pref = new PreferenceManager(requireContext());
 
-        // Fetch Family Summary for Net Income
         apiHelper.getFamilySummary(new AppwriteManager.AppwriteCallback<io.appwrite.models.Document<Map<String, Object>>>() {
             @Override
             public void onSuccess(io.appwrite.models.Document<Map<String, Object>> result) {
@@ -191,11 +177,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
             @Override
             public void onError(Throwable error) {
-                // Silently fail or use local data
             }
         });
 
-        // Check for notifications/join requests if admin
         checkNotifications(apiHelper, pref);
     }
 
@@ -381,9 +365,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private void showDeleteCategoryDialog(QuickLogItem item) {
         com.upreyvan.carti.util.DialogHelper.showConfirmation(
                 requireContext(),
-                "Delete Category",
-                "Are you sure you want to delete \"" + item.getTitle() + "\"?",
-                "Delete",
+                getString(R.string.add_options_category),
+                getString(R.string.btn_delete_account) + " \"" + item.getTitle() + "\"?",
+                getString(R.string.btn_delete_account),
                 () -> deleteCategory(item.getTitle())
         );
     }
@@ -409,7 +393,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private void showQuickLogDialog(QuickLogItem item) {
         QuickLogDialog dialog = QuickLogDialog.newInstance(item);
         dialog.setListener((loggedItem, amount) -> {
-            showToast("Logged ₱" + String.format("%.2f", amount) + " for " + loggedItem.getTitle(), 
+            showToast(getString(R.string.msg_logged_success, String.format("%.2f", amount), loggedItem.getTitle()), 
                     com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
         });
         dialog.show(getChildFragmentManager(), "QUICK_LOG_DIALOG");

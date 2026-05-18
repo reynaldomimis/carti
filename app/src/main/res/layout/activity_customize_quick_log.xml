@@ -27,6 +27,7 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:paddingHorizontal="@dimen/spacing_medium"
+        android:paddingBottom="@dimen/scroll_bottom_padding"
         app:layout_constraintBottom_toTopOf="@id/btnSaveOrder"
         app:layout_constraintTop_toBottomOf="@id/tvInstruction"
         tools:listitem="@layout/item_customize_category" />

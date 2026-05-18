@@ -420,6 +420,8 @@
     <string name="hint_search_icons">Search icons...</string>
     <string name="label_upload_device">Upload from Device</string>
     <string name="msg_deleted_balance_updated">Deleted and balance updated</string>
+    <string name="label_title">Title</string>
+    <string name="label_action">Action</string>
 
     <string name="err_failed_save">Failed to save: %s</string>
     <string name="err_generic">Error: %s</string>

@@ -23,6 +23,7 @@
     <color name="text_on_dark">#E0E0E0</color>
     <color name="green_budget_status">#2E7D32</color>
     <color name="border_light">#E0E0E0</color>
+    <color name="border_subtle">#F0F0F0</color>
     <color name="progress_bg">#20000000</color>
     <color name="progress_start">#FFEB3B</color>
     <color name="progress_center">#8BC34A</color>

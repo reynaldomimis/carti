@@ -22,12 +22,12 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="@dimen/spacing_large">
 
             <ImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginTop="24dp"
+                android:layout_width="@dimen/bottom_nav_padding"
+                android:layout_height="@dimen/bottom_nav_padding"
+                android:layout_marginTop="@dimen/spacing_large"
                 android:src="@drawable/ai_holder"
                 android:contentDescription="@string/app_name" />
 
@@ -38,50 +38,41 @@
                 style="@style/CartiHeader"
                 android:text="@string/app_name"
                 android:textColor="@color/carti_primary_green"
-                android:textSize="24sp" />
+                android:textSize="@dimen/text_size_h1" />
 
             <TextView
                 android:id="@+id/tvVersion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/spacing_xs"
                 style="@style/CartiSubHeader"
                 android:textColor="@color/text_tertiary"
-                android:textSize="14sp"
+                android:textSize="@dimen/text_size_body"
                 tools:text="v 1.0.0" />
 
             <com.google.android.material.card.MaterialCardView
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_border"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="@dimen/spacing_xl">
 
                 <TextView
+                    style="@style/CartiSubHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:gravity="center"
-                    android:lineSpacingExtra="4dp"
-                    android:padding="16dp"
+                    android:lineSpacingExtra="@dimen/spacing_xs"
+                    android:padding="@dimen/spacing_medium"
                     android:text="@string/app_description"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_size_body_large" />
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardTerms"
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_border"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="@dimen/radius_medium">
 
                 <RelativeLayout
                     android:id="@+id/btnTerms"
@@ -90,24 +81,23 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:paddingVertical="16dp"
-                    android:paddingHorizontal="16dp">
+                    android:paddingVertical="@dimen/spacing_medium"
+                    android:paddingHorizontal="@dimen/spacing_medium">
 
                     <TextView
+                        style="@style/CartiHeader"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:layout_alignParentStart="true"
                         android:layout_toStartOf="@id/ivTermsArrow"
-                        android:fontFamily="@font/plus_jakarta_sans_bold"
                         android:text="@string/label_terms"
-                        android:textColor="@color/text_primary"
-                        android:textSize="15sp" />
+                        android:textSize="@dimen/text_size_body_large" />
 
                     <ImageView
                         android:id="@+id/ivTermsArrow"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="@dimen/icon_size_small"
+                        android:layout_height="@dimen/icon_size_small"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:src="@drawable/ic_chevron_right"
@@ -118,14 +108,10 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardCredits"
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_border"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="@dimen/radius_medium">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -139,24 +125,23 @@
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true"
                         android:focusable="true"
-                        android:paddingVertical="16dp"
-                        android:paddingHorizontal="16dp">
+                        android:paddingVertical="@dimen/spacing_medium"
+                        android:paddingHorizontal="@dimen/spacing_medium">
 
                         <TextView
+                            style="@style/CartiHeader"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"
                             android:layout_alignParentStart="true"
                             android:layout_toStartOf="@id/ivCreditsArrow"
-                            android:fontFamily="@font/plus_jakarta_sans_bold"
                             android:text="@string/label_credits"
-                            android:textColor="@color/text_primary"
-                            android:textSize="15sp" />
+                            android:textSize="@dimen/text_size_body_large" />
 
                         <ImageView
                             android:id="@+id/ivCreditsArrow"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="@dimen/icon_size_small"
+                            android:layout_height="@dimen/icon_size_small"
                             android:layout_alignParentEnd="true"
                             android:layout_centerVertical="true"
                             android:src="@drawable/ic_chevron_right"
@@ -166,64 +151,28 @@
 
                     <TextView
                         android:id="@+id/tvCreditsContent"
+                        style="@style/CartiSubHeader"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:lineSpacingExtra="4dp"
-                        android:paddingBottom="20dp"
-                        android:paddingHorizontal="16dp"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="14sp"
+                        android:lineSpacingExtra="@dimen/spacing_xs"
+                        android:paddingBottom="@dimen/icon_size_small"
+                        android:paddingHorizontal="@dimen/spacing_medium"
+                        android:textSize="@dimen/text_size_body"
                         android:visibility="gone"
                         tools:text="Credits paragraph here..."
                         tools:visibility="visible" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_border"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:text="@string/label_developer"
-                        android:textColor="@color/text_tertiary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:fontFamily="@font/plus_jakarta_sans_bold"
-                        android:text="@string/developer_name"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
             <TextView
+                style="@style/CartiSubHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="24dp"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:layout_marginBottom="@dimen/spacing_large"
                 android:text="@string/copyright"
                 android:textColor="@color/text_tertiary"
-                android:textSize="12sp" />
+                android:textSize="@dimen/text_size_small" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
