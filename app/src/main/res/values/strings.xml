@@ -187,6 +187,15 @@
     <string name="btn_joining">Joining...</string>
     <string name="btn_join_family">Join Family</string>
     <string name="family_members_title">Family Members</string>
+    <string name="label_invite">Invite</string>
+    <string name="label_our_family">Our Family</string>
+    <string name="label_monthly_budget">Monthly Budget</string>
+    <string name="label_member_contributions">Member Contributions</string>
+    <string name="label_used">%d%% used</string>
+    <string name="label_this_month">This Month ></string>
+    <string name="label_shared_budget">Shared Budget</string>
+    <string name="label_per_month">/ month</string>
+    <string name="label_used_percentage">%d%%</string>
 
     <!-- Onboarding -->
     <string name="err_parents_only">Only parents can create a family group.</string>

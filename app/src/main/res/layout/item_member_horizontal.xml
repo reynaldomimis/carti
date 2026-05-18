@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/spacing_small"
+    android:paddingVertical="@dimen/spacing_medium">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cvAvatar"
+        android:layout_width="@dimen/spacing_xxl"
+        android:layout_height="@dimen/spacing_xxl"
+        app:cardCornerRadius="@dimen/radius_full"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/carti_primary_green"
+        app:strokeWidth="2dp">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="2dp"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+            tools:src="@android:drawable/ic_menu_gallery" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tvName"
+        style="@style/CartiTextTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:textSize="@dimen/text_size_small"
+        tools:text="You" />
+
+    <TextView
+        android:id="@+id/tvRole"
+        style="@style/CartiTextDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size_xxs"
+        tools:text="Admin" />
+
+</LinearLayout>

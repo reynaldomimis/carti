@@ -13,9 +13,11 @@
     <dimen name="radius_large">16dp</dimen>
     <dimen name="radius_xl">24dp</dimen>
     <dimen name="radius_circle">100dp</dimen>
+    <dimen name="radius_full">999dp</dimen>
     <dimen name="card_corner_radius">16dp</dimen>
     <dimen name="pill_corner_radius">20dp</dimen>
 
+    <dimen name="text_size_xxs">10sp</dimen>
     <dimen name="text_size_caption">11sp</dimen>
     <dimen name="text_size_small">12sp</dimen>
     <dimen name="text_size_body_small">13sp</dimen>

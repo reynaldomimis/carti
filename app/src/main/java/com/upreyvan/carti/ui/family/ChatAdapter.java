@@ -86,11 +86,10 @@ public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHo
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
         ChatMessage message = getItem(position);
         if (message.isShimmer()) {
-            if (holder.binding instanceof com.upreyvan.carti.databinding.ItemChatShimmerRightBinding) {
-                ((com.upreyvan.carti.databinding.ItemChatShimmerRightBinding) holder.binding).shimmerLayout.startShimmer();
-            } else if (holder.binding instanceof com.upreyvan.carti.databinding.ItemChatShimmerLeftBinding) {
-                ((com.upreyvan.carti.databinding.ItemChatShimmerLeftBinding) holder.binding).shimmerLayout.startShimmer();
-            }
+            try {
+                java.lang.reflect.Method startShimmer = holder.binding.getRoot().getClass().getMethod("startShimmer");
+                startShimmer.invoke(holder.binding.getRoot());
+            } catch (Exception ignored) {}
             return;
         }
 

@@ -1,5 +1,6 @@
 package com.upreyvan.carti.ui.family;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,50 +16,141 @@ import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.databinding.FragmentMembersBinding;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.databinding.ItemMemberBinding;
+import com.upreyvan.carti.databinding.ItemMemberHorizontalBinding;
+import com.upreyvan.carti.databinding.ItemMemberContributionBinding;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.data.remote.AppwriteManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import io.appwrite.models.User;
+import java.util.Map;
 
 public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
+
+    private GenericAdapter<Member, ItemMemberHorizontalBinding> horizontalAdapter;
+    private GenericAdapter<Member, ItemMemberContributionBinding> contributionAdapter;
+    private MemberRepository repository;
+    private PreferenceManager pref;
+    private String currentUserId;
 
     @Override
     protected FragmentMembersBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
         return FragmentMembersBinding.inflate(inflater, container, false);
     }
 
-    private GenericAdapter<Member, ItemMemberBinding> adapter;
-    private boolean isLoading = true;
-    private MemberRepository repository;
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         repository = new MemberRepository(requireContext());
+        pref = PreferenceManager.getInstance(requireContext());
         
         setupToolbar(getBinding().toolbar, R.string.family_members_title);
-        setupRecyclerView();
+        setupRecyclerViews();
+        setupBudgetCard();
         
+        fetchCurrentUser();
         observeMembers();
         
         repository.syncMembersIfNeeded();
     }
 
+    private void fetchCurrentUser() {
+        AppwriteManager.getInstance(requireContext()).getUser(new AppwriteManager.AppwriteCallback<User<Map<String, Object>>>() {
+            @Override
+            public void onSuccess(User<Map<String, Object>> result) {
+                currentUserId = result.getId();
+                if (horizontalAdapter != null) horizontalAdapter.notifyDataSetChanged();
+                if (contributionAdapter != null) contributionAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                currentUserId = pref.getUserId();
+            }
+        });
+    }
+
+    private void setupBudgetCard() {
+        double income = pref.getTotalIncome();
+        double expense = pref.getTotalExpense();
+        
+        getBinding().tvBudgetAmount.setText(Utils.formatCurrency(income));
+        
+        int progress = 0;
+        if (income > 0) {
+            progress = (int) ((expense / income) * 100);
+        }
+        
+        getBinding().progressBudget.setProgress(Math.min(progress, 100));
+        getBinding().tvUsedPercentage.setText(getString(R.string.label_used_percentage, progress));
+        getBinding().tvProgressSubtitle.setText(getString(R.string.label_used, progress));
+    }
+
     private void observeMembers() {
         repository.getMembers().observe(getViewLifecycleOwner(), members -> {
             if (members != null) {
-                isLoading = members.isEmpty();
-                if (isLoading) {
-                    List<Member> placeholders = new ArrayList<>();
-                    for (int i = 0; i < 3; i++) placeholders.add(new Member("", "", "", "", "", 0, 0));
-                    adapter.submitList(placeholders);
-                } else {
-                    adapter.submitList(members);
-                }
+                getBinding().tvMemberCount.setText(getString(R.string.menu_family_sub_format, members.size()));
+                List<Member> horizontalList = new ArrayList<>(members);
+                horizontalList.add(new Member("invite", "", getString(R.string.label_invite), "", "", android.R.drawable.ic_menu_add, 0));
+                horizontalAdapter.submitList(horizontalList);
+                contributionAdapter.submitList(members);
             }
         });
+    }
+
+    private void setupRecyclerViews() {
+        // Horizontal Adapter
+        horizontalAdapter = new GenericAdapter<>(
+                Member.DIFF_CALLBACK,
+                (inflater, parent) -> ItemMemberHorizontalBinding.inflate(inflater, parent, false),
+                (binding, member) -> {
+                    boolean isMe = member.getId().equals(currentUserId);
+                    boolean isInvite = member.getId().equals("invite");
+
+                    if (isInvite) {
+                        binding.tvName.setText(member.getTitle());
+                        binding.tvRole.setVisibility(View.GONE);
+                        binding.ivAvatar.setImageResource(member.getAvatarRes());
+                        binding.cvAvatar.setStrokeColor(getResources().getColor(R.color.gray, null));
+                        binding.getRoot().setOnClickListener(v -> {
+                            startActivity(new Intent(requireContext(), InviteFamilyActivity.class));
+                        });
+                    } else {
+                        binding.tvName.setText(isMe ? getString(R.string.placeholder_juan_you) : member.getTitle());
+                        binding.tvRole.setVisibility(View.VISIBLE);
+                        binding.tvRole.setText(member.getDescription());
+                        binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
+                        binding.cvAvatar.setStrokeColor(getResources().getColor(isMe ? R.color.carti_primary_green : R.color.border_light, null));
+                    }
+                }
+        );
+        getBinding().rvMembersHorizontal.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        getBinding().rvMembersHorizontal.setAdapter(horizontalAdapter);
+
+        contributionAdapter = new GenericAdapter<>(
+                Member.DIFF_CALLBACK,
+                (inflater, parent) -> ItemMemberContributionBinding.inflate(inflater, parent, false),
+                (binding, member) -> {
+                    boolean isMe = member.getId().equals(currentUserId);
+                    binding.tvName.setText(isMe ? getString(R.string.placeholder_juan_you) : member.getTitle());
+                    binding.tvAmount.setText(Utils.formatCurrency(member.getAmount()));
+                    binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
+                    
+                    double totalIncome = pref.getTotalIncome();
+                    int progress = 0;
+                    if (totalIncome > 0) {
+                        progress = (int) ((member.getAmount() / totalIncome) * 100);
+                    }
+                    binding.progressContribution.setProgress(progress);
+                    binding.tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", progress));
+                }
+        );
+        getBinding().rvContributions.setLayoutManager(new LinearLayoutManager(requireContext()));
+        getBinding().rvContributions.setAdapter(contributionAdapter);
     }
 
     @Override
@@ -67,29 +159,5 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
         if (repository != null) {
             repository.onDestroy();
         }
-    }
-
-    private void setupRecyclerView() {
-        adapter = new GenericAdapter<>(
-                Member.DIFF_CALLBACK,
-                (inflater, parent) -> ItemMemberBinding.inflate(inflater, parent, false),
-                (binding, member) -> {
-                    View shimmer = binding.getRoot().findViewById(R.id.shimmerView);
-                    if (isLoading) {
-                        if (shimmer != null) shimmer.setVisibility(View.VISIBLE);
-                        binding.layoutContent.setVisibility(View.INVISIBLE);
-                    } else {
-                        if (shimmer != null) shimmer.setVisibility(View.GONE);
-                        binding.layoutContent.setVisibility(View.VISIBLE);
-                        binding.tvTitle.setText(member.getTitle());
-                        binding.chipRole.setText(member.getDescription());
-                        binding.ivAvatar.setImageResource(member.getAvatarRes());
-                        String statusText = member.getStatus() + " • " + Utils.formatCurrency(member.getAmount());
-                        binding.tvDescription.setText(statusText);
-                    }
-                }
-        );
-        getBinding().rvMembers.setLayoutManager(new LinearLayoutManager(requireContext()));
-        getBinding().rvMembers.setAdapter(adapter);
     }
 }

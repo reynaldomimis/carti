@@ -102,7 +102,7 @@ public class MemberRepository {
                             String.valueOf(data.get("username")),
                             String.valueOf(data.get("role")),
                             status,
-                            R.drawable.ic_person,
+                            R.drawable.ai_holder,
                             salary
                         ));
                     }
