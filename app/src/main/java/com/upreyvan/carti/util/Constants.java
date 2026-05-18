@@ -92,15 +92,18 @@ public class Constants {
     }
 
     public static final class ErrorCodes {
-        public static final String UNAUTHORIZED = "UNAUTHORIZED";
-        public static final String NOT_FOUND = "NOT_FOUND";
-        public static final String ALREADY_IN_FAMILY = "ALREADY_IN_FAMILY";
-        public static final String INVALID_INPUT = "INVALID_INPUT";
-        public static final String RATE_LIMIT = "TOO_MANY_REQUESTS";
-        public static final String SERVER_ERROR = "SERVER_ERROR";
-        public static final String NO_FAMILY = "NO_FAMILY";
-        public static final String PARSE_ERROR = "PARSE_ERROR";
-        public static final String NETWORK_ERROR = "NETWORK_ERROR";
+        public static final String UNAUTHORIZED = "Unauthorized access. Please login again.";
+        public static final String NOT_FOUND = "The requested resource was not found.";
+        public static final String ALREADY_IN_FAMILY = "You are already a member of a family group.";
+        public static final String INVALID_INPUT = "Please check your input and try again.";
+        public static final String RATE_LIMIT = "Too many requests. Please wait a moment.";
+        public static final String SERVER_ERROR = "Server is currently unavailable. Please try later.";
+        public static final String NO_FAMILY = "You are not part of any family group yet.";
+        public static final String PARSE_ERROR = "Data synchronization failed.";
+        public static final String NETWORK_ERROR = "Please check your internet connection.";
         public static final String GENERIC_ERROR = "An unexpected error occurred. Please try again.";
+        public static final String SESSION_EXPIRED = "Your session has expired. Please log in again.";
+        public static final String PROHIBITED_ACTION = "You do not have permission to perform this action.";
+        public static final String PASSWORD_RECENTLY_USED = "This password was recently used. Please choose a different one for your security.";
     }
 }

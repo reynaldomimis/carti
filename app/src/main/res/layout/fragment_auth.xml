@@ -162,14 +162,29 @@
 
                 <TextView
                     android:id="@+id/tvSwitchPrompt"
+                    style="@style/CartiSubHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_large"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:padding="@dimen/spacing_small"
-                    android:textColor="@color/text_secondary"
                     android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
                     tools:text="@string/prompt_no_account" />
+
+                <TextView
+                    android:id="@+id/tvForgotPassword"
+                    style="@style/CartiSubHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:padding="@dimen/spacing_small"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:text="@string/prompt_forgot_password" />
 
             </LinearLayout>
 

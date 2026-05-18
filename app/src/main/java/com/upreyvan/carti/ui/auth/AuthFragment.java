@@ -94,6 +94,41 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             isLoginMode = !isLoginMode;
             updateModeUI();
         });
+
+        getBinding().tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
+    }
+
+    private void showForgotPasswordDialog() {
+        String email = getBinding().etEmail.getText().toString().trim();
+        if (Validator.isEmpty(email) || !Validator.isValidEmail(email)) {
+            getBinding().tilEmail.setError(getString(R.string.err_invalid_email));
+            return;
+        }
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Reset Password")
+                .setMessage("Send password reset link to " + email + "?")
+                .setPositiveButton("Send", (dialog, which) -> {
+                    setLoading(true);
+                    AppwriteManager.getInstance(requireContext()).createPasswordRecovery(
+                            email,
+                            new AppwriteManager.AppwriteCallback<>() {
+                                @Override
+                                public void onSuccess(Object result) {
+                                    setLoading(false);
+                                    showToast(R.string.msg_reset_link_sent, com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+                                }
+
+                                @Override
+                                public void onError(Throwable error) {
+                                    setLoading(false);
+                                    showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                                }
+                            }
+                    );
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void updateModeUI() {
@@ -104,6 +139,7 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             getBinding().tilRole.setVisibility(View.GONE);
             getBinding().cbIsEmployee.setVisibility(View.GONE);
             getBinding().btnSubmit.setText(R.string.btn_login);
+            getBinding().tvForgotPassword.setVisibility(View.VISIBLE);
             getBinding().tvSwitchPrompt.setText(Html.fromHtml(getString(R.string.prompt_no_account), Html.FROM_HTML_MODE_LEGACY));
         } else {
             getBinding().tvTitle.setText(R.string.register_title);
@@ -112,6 +148,7 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             getBinding().tilRole.setVisibility(View.VISIBLE);
             getBinding().cbIsEmployee.setVisibility(View.VISIBLE);
             getBinding().btnSubmit.setText(R.string.btn_register);
+            getBinding().tvForgotPassword.setVisibility(View.GONE);
             getBinding().tvSwitchPrompt.setText(Html.fromHtml(getString(R.string.prompt_has_account), Html.FROM_HTML_MODE_LEGACY));
         }
         getBinding().tilUsername.setError(null);

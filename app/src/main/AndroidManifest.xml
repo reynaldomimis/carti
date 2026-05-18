@@ -14,6 +14,7 @@
         android:roundIcon="@drawable/ai_holder"
         android:supportsRtl="true"
         android:theme="@style/Theme.Carti">
+
         <activity
             android:name=".ui.auth.SplashActivity"
             android:exported="true"
@@ -26,13 +27,17 @@
 
         <activity
             android:name=".ui.auth.LoginActivity"
-            android:exported="true">
-            <!-- App Links: Para sa HTTPS URL (Dito papasok yung email link) -->
+            android:exported="true"
+            android:launchMode="singleTop">
+
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="mintyai.vercel.app" android:pathPrefix="/reset-password" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="mintyai.vercel.app" />
+                <data android:path="/reset-password" />
             </intent-filter>
 
             <intent-filter>
@@ -41,6 +46,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="carti" android:host="reset-password" />
             </intent-filter>
+
         </activity>
 
         <activity
@@ -85,6 +91,11 @@
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.home.CustomizeQuickLogActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Carti"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity
+            android:name=".ui.auth.ResetPasswordActivity"
             android:exported="false"
             android:theme="@style/Theme.Carti"
             android:windowSoftInputMode="stateHidden|adjustResize" />

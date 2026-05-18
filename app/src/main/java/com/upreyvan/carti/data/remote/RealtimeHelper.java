@@ -3,9 +3,11 @@ package com.upreyvan.carti.data.remote;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.ToastHelper;
 
 import java.util.Map;
 
@@ -13,27 +15,27 @@ import io.appwrite.models.RealtimeResponseEvent;
 import io.appwrite.models.RealtimeSubscription;
 import io.appwrite.services.Realtime;
 
-/**
- * A generic helper class to manage Appwrite Realtime subscriptions.
- * It provides a unified way to subscribe to collections or documents and handle events on the main thread.
- */
 public class RealtimeHelper {
 
     private final Realtime realtime;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Gson gson = new Gson();
+    private final Context context;
 
     public RealtimeHelper(Context context) {
+        this.context = context.getApplicationContext();
         realtime = new Realtime(AppwriteManager.getInstance(context).getClient());
     }
 
     public interface RealtimeEventCallback {
         void onEvent(RealtimeResponseEvent<?> event);
+        default void onError(Throwable error) {
+            Log.e("RealtimeHelper", "Event Error: " + (error != null ? error.getMessage() : "Unknown"));
+        }
     }
 
     /**
      * Subscribes to all events in a collection.
-     * Channel format: databases.[DATABASE_ID].collections.[COLLECTION_ID].documents
      */
     public RealtimeSubscription subscribeToCollection(String collectionId, RealtimeEventCallback callback) {
         String channel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + collectionId + ".documents";
@@ -42,7 +44,6 @@ public class RealtimeHelper {
 
     /**
      * Subscribes to events for a specific document.
-     * Channel format: databases.[DATABASE_ID].collections.[COLLECTION_ID].documents.[DOCUMENT_ID]
      */
     public RealtimeSubscription subscribeToDocument(String collectionId, String documentId, RealtimeEventCallback callback) {
         String channel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + collectionId + ".documents." + documentId;
@@ -53,13 +54,20 @@ public class RealtimeHelper {
      * Generic subscription for multiple channels.
      */
     public RealtimeSubscription subscribe(String[] channels, RealtimeEventCallback callback) {
-        return realtime.subscribe(channels, event -> {
-            mainHandler.post(() -> callback.onEvent(event));
+        try {
+            return realtime.subscribe(channels, event -> {
+                mainHandler.post(() -> callback.onEvent(event));
+                return null;
+            });
+        } catch (Exception e) {
+            Log.e("RealtimeHelper", "Subscription error", e);
+            mainHandler.post(() -> {
+                callback.onError(e);
+                ToastHelper.show(context, Constants.ErrorCodes.NETWORK_ERROR, ToastHelper.Status.ERROR);
+            });
             return null;
-        });
+        }
     }
-
-    // --- Helper Methods to simplify event handling ---
 
     public static boolean isCreateEvent(RealtimeResponseEvent<?> event) {
         for (Object e : event.getEvents()) {
@@ -98,7 +106,7 @@ public class RealtimeHelper {
             String json = gson.toJson(event.getPayload());
             return gson.fromJson(json, clazz);
         } catch (Exception e) {
-            android.util.Log.e("RealtimeHelper", "Error parsing realtime payload", e);
+            Log.e("RealtimeHelper", "Error parsing realtime payload", e);
             return null;
         }
     }

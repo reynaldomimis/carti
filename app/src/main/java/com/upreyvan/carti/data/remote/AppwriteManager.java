@@ -22,7 +22,9 @@ import io.appwrite.models.User;
 import io.appwrite.services.Account;
 import io.appwrite.services.Databases;
 import io.appwrite.services.Functions;
+
 import java.util.List;
+
 import kotlin.Unit;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlinx.coroutines.BuildersKt;
@@ -30,9 +32,13 @@ import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.CoroutineScopeKt;
 import kotlinx.coroutines.Dispatchers;
 
+import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.ToastHelper;
 
 public class AppwriteManager {
+
+    public static final String RECOVERY_URL = "https://mintyai.vercel.app/reset-password";
+
     private static AppwriteManager instance;
     private final Client client;
     private final Account account;
@@ -44,6 +50,7 @@ public class AppwriteManager {
 
     public interface AppwriteCallback<T> {
         void onSuccess(T result);
+
         void onError(Throwable error);
     }
 
@@ -100,14 +107,46 @@ public class AppwriteManager {
     }
 
     private void postError(AppwriteCallback<?> callback, Throwable error) {
-        android.util.Log.e("AppwriteManager", "Operation Error: " + error.getMessage(), error);
-        mainHandler.post(() -> callback.onError(error));
+        String message = error.getMessage();
+        String userFriendlyMessage = Constants.ErrorCodes.GENERIC_ERROR;
+
+        if (error instanceof io.appwrite.exceptions.AppwriteException) {
+            io.appwrite.exceptions.AppwriteException ae = (io.appwrite.exceptions.AppwriteException) error;
+            int code = ae.getCode();
+            switch (code) {
+                case 401:
+                    userFriendlyMessage = Constants.ErrorCodes.UNAUTHORIZED;
+                    break;
+                case 404:
+                    userFriendlyMessage = Constants.ErrorCodes.NOT_FOUND;
+                    break;
+                case 429:
+                    userFriendlyMessage = Constants.ErrorCodes.RATE_LIMIT;
+                    break;
+                case 500:
+                case 502:
+                case 503:
+                    userFriendlyMessage = Constants.ErrorCodes.SERVER_ERROR;
+                    break;
+                default:
+                    if (message != null && (message.contains("Network") || message.contains("hostname"))) {
+                        userFriendlyMessage = Constants.ErrorCodes.NETWORK_ERROR;
+                    }
+                    break;
+            }
+        } else if (error instanceof java.net.UnknownHostException || error instanceof java.net.ConnectException) {
+            userFriendlyMessage = Constants.ErrorCodes.NETWORK_ERROR;
+        }
+
+        android.util.Log.e("AppwriteManager", "Operation Error: " + message, error);
+
+        final String finalMsg = userFriendlyMessage;
+        mainHandler.post(() -> callback.onError(new Exception(finalMsg)));
     }
 
     public void login(String email, String password, AppwriteCallback<Session> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                // Step 1: Pre-emptively attempt to delete any existing session to avoid "prohibited" error
                 try {
                     BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
                         try {
@@ -116,9 +155,9 @@ public class AppwriteManager {
                             return null;
                         }
                     });
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
 
-                // Step 2: Proceed with actual login
                 Session result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
                     try {
                         return account.createEmailPasswordSession(email, password, continuation2);
@@ -211,7 +250,11 @@ public class AppwriteManager {
             try {
                 Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
                     try {
-                        return account.createRecovery(email, url, (kotlin.coroutines.Continuation<Object>) continuation2);
+                        return account.createRecovery(
+                                email,
+                                url != null ? url : RECOVERY_URL,
+                                (kotlin.coroutines.Continuation<Object>) continuation2
+                        );
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -224,12 +267,21 @@ public class AppwriteManager {
         });
     }
 
+    public void createPasswordRecovery(String email, AppwriteCallback<Object> callback) {
+        createPasswordRecovery(email, RECOVERY_URL, callback);
+    }
+
     public void updatePasswordRecovery(String userId, String secret, String password, AppwriteCallback<Object> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
                 Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
                     try {
-                        return account.updateRecovery(userId, secret, password, (kotlin.coroutines.Continuation<Object>) continuation2);
+                        return account.updateRecovery(
+                                userId,
+                                secret,
+                                password,
+                                (kotlin.coroutines.Continuation<Object>) continuation2
+                        );
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -261,7 +313,6 @@ public class AppwriteManager {
     }
 
     public void deleteAccount(AppwriteCallback<Object> callback) {
-        // As suggested, delete account is implemented via a Cloud Function (gateway)
         callGateway("delete_account", new HashMap<>(), new AppwriteCallback<Execution>() {
             @Override
             public void onSuccess(Execution result) {
@@ -372,6 +423,10 @@ public class AppwriteManager {
         });
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // CLOUD FUNCTIONS (GATEWAY)
+    // ─────────────────────────────────────────────────────────────────────────
+
     public void callGateway(String action, Map<String, Object> params, AppwriteCallback<Execution> callback) {
         getUser(new AppwriteCallback<>() {
             @Override
@@ -408,7 +463,8 @@ public class AppwriteManager {
                     if (host != null && host.contains(".")) {
                         functionId = host.split("\\.")[0];
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         }
 

@@ -108,10 +108,8 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
         }
 
         getBinding().btnResetPassword.setEnabled(false);
-        // Gagamit tayo ng https URL (mintyai.vercel.app) para tanggapin ng Appwrite at i-intercept ng app
-        String recoveryUrl = "https://mintyai.vercel.app/reset-password";
         
-        appwriteManager.createPasswordRecovery(email, recoveryUrl, new AppwriteManager.AppwriteCallback<Object>() {
+        appwriteManager.createPasswordRecovery(email, new AppwriteManager.AppwriteCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 if (!isAdded()) return;

@@ -15,11 +15,7 @@ import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
 import io.appwrite.models.Execution;
 
-/**
- * Senior Developer Refactored: Optimized for Production.
- * - SDK for READS: Saves costs/bandwidth by fetching directly from DB.
- * - Functions for WRITES: Maintains security by processing logic on the server.
- */
+
 public class ApiHelper {
     private final AppwriteManager appwriteManager;
     private final PreferenceManager pref;
@@ -36,9 +32,6 @@ public class ApiHelper {
         return context;
     }
 
-    /**
-     * Unified method to call any action on the gateway function (WRITES).
-     */
     private void callAction(String action, Map<String, Object> params, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         appwriteManager.callGateway(action, params, new AppwriteManager.AppwriteCallback<Execution>() {
             @Override
@@ -47,11 +40,11 @@ public class ApiHelper {
                     Type type = new TypeToken<Map<String, Object>>() {}.getType();
                     Map<String, Object> response = gson.fromJson(result.getResponseBody(), type);
                     
-                    if (response != null && Boolean.TRUE.equals(response.get("s"))) {
-                        Object data = response.get("data");
+                    if (response != null && Boolean.TRUE.equals(response.get(Constants.Keys.STATUS))) {
+                        Object data = response.get(Constants.Keys.DATA);
                         if (data instanceof Map) {
                             callback.onSuccess((Map<String, Object>) data);
-                        } else if (data instanceof java.util.List) {
+                        } else if (data instanceof List) {
                             Map<String, Object> wrapper = new HashMap<>();
                             wrapper.put("list", data);
                             callback.onSuccess(wrapper);
@@ -59,10 +52,13 @@ public class ApiHelper {
                             callback.onSuccess(new HashMap<>());
                         }
                     } else {
-                        callback.onError(new Exception(Constants.ErrorCodes.GENERIC_ERROR));
+                        String errorMsg = (response != null && response.containsKey(Constants.Keys.MESSAGE)) 
+                            ? String.valueOf(response.get(Constants.Keys.MESSAGE)) 
+                            : Constants.ErrorCodes.GENERIC_ERROR;
+                        callback.onError(new Exception(errorMsg));
                     }
                 } catch (Exception e) {
-                    callback.onError(new Exception("Failed to parse server response: " + e.getMessage()));
+                    callback.onError(new Exception(Constants.ErrorCodes.PARSE_ERROR));
                 }
             }
 
@@ -72,10 +68,6 @@ public class ApiHelper {
             }
         });
     }
-
-    /* ─────────────────────────────────────────────────────────────
-       SDK READ OPERATIONS (COST OPTIMIZED)
-    ───────────────────────────────────────────────────────────── */
 
     public void getTransactions(String startDate, String endDate, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         getTransactionsSince(startDate, callback);
@@ -87,7 +79,7 @@ public class ApiHelper {
 
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
-        queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp)); // Ito ang filter
+        queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
         queries.add(Query.Companion.orderDesc("$createdAt"));
         queries.add(Query.Companion.limit(100));
 
@@ -141,10 +133,6 @@ public class ApiHelper {
         String familyId = pref.getFamilyId();
         appwriteManager.getDocument(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_FAMILIES, familyId, callback);
     }
-
-    /* ─────────────────────────────────────────────────────────────
-       FUNCTION WRITE OPERATIONS (SECURE GATEWAY)
-    ───────────────────────────────────────────────────────────── */
 
     public void register(String email, String password, String username, boolean isEmployed, String role, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
@@ -247,10 +235,6 @@ public class ApiHelper {
         appwriteManager.deleteDocument(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, transactionId, callback);
     }
 
-    /**
-     * MANUAL UPDATE: Since the Cloud Function no longer calculates totals,
-     * the Java app must calculate and push the new values.
-     */
     public void updateFamilyTotals(double balance, double income, double expense, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("balance", balance);
@@ -259,10 +243,6 @@ public class ApiHelper {
         callAction(Constants.Actions.UPDATE_FAMILY_TOTALS, params, callback);
     }
 
-    /**
-     * SECURE CHAT: Sending messages directly via SDK.
-     * Permissions are restricted to the family team.
-     */
     public void sendMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         String userId = pref.getUserId();
@@ -275,7 +255,6 @@ public class ApiHelper {
         data.put("familyId", familyId);
         data.put("timestamp", System.currentTimeMillis());
 
-        // temporary change to Role.users() to fix the permission error
         List<String> permissions = new ArrayList<>();
         permissions.add(io.appwrite.Permission.Companion.read(io.appwrite.Role.Companion.users("")));
 
