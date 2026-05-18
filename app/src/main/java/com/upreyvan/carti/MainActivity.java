@@ -82,12 +82,12 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         initTab(getBinding().tabHome, R.drawable.ic_home, getString(R.string.nav_home), 1);
         initTab(getBinding().tabExpenses, R.drawable.ic_chart, getString(R.string.nav_expenses), 2);
         initTab(getBinding().tabAdd, R.drawable.ic_add, getString(R.string.nav_add), 7);
-        getBinding().tabAdd.navIcon.getLayoutParams().width = Utils.dpToPx(this, 32);
-        getBinding().tabAdd.navIcon.getLayoutParams().height = Utils.dpToPx(this, 32);
+        getBinding().tabAdd.navIcon.getLayoutParams().width = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
+        getBinding().tabAdd.navIcon.getLayoutParams().height = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
         getBinding().tabAdd.navLabel.setTypeface(null, android.graphics.Typeface.BOLD);
         initTab(getBinding().tabAi, R.drawable.ai_holder, getString(R.string.menu_ai), 6);
-        getBinding().tabAi.navIcon.getLayoutParams().width = Utils.dpToPx(this, 32);
-        getBinding().tabAi.navIcon.getLayoutParams().height = Utils.dpToPx(this, 32);
+        getBinding().tabAi.navIcon.getLayoutParams().width = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
+        getBinding().tabAi.navIcon.getLayoutParams().height = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
         getBinding().tabAi.navIcon.setScaleType(ImageView.ScaleType.FIT_XY);
         getBinding().tabAi.navIcon.setImageTintList(null);
 
@@ -142,7 +142,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                 .start();
 
         label.animate()
-                .translationY(Utils.dpToPx(this, 5))
+                .translationY(getResources().getDimensionPixelSize(R.dimen.spacing_xs))
                 .setDuration(450)
                 .start();
     }

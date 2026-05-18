@@ -18,10 +18,10 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cvIconBg"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="@dimen/icon_size_xl"
+                android:layout_height="@dimen/icon_size_xl"
                 app:cardBackgroundColor="@color/log_food"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="@dimen/pill_corner_radius"
                 app:cardElevation="0dp">
 
                 <ImageView
@@ -80,7 +80,8 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="72dp"
+        android:layout_marginStart="@dimen/avatar_size_medium"
+        android:layout_marginEnd="@dimen/spacing_medium"
         app:dividerColor="@color/surface_variant" />
 
 </LinearLayout>

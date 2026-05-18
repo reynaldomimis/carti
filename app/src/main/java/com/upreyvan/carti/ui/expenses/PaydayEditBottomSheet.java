@@ -59,25 +59,25 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
             manager.setIsMonthly(isMonthly);
 
             if (Validator.isEmpty(getBinding().etPayday1)) {
-                showToast("Please enter the payday", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                showToast(getString(R.string.msg_enter_payday), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
             try {
                 int p1 = Integer.parseInt(getBinding().etPayday1.getText().toString().trim());
                 if (p1 < 1 || p1 > 31) {
-                    showToast("Day must be between 1 and 31", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                    showToast(getString(R.string.msg_day_range), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                     return;
                 }
 
                 if (!isMonthly) {
                     if (Validator.isEmpty(getBinding().etPayday2)) {
-                        showToast("Please enter the second payday", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                        showToast(getString(R.string.msg_enter_payday_second), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                         return;
                     }
                     int p2 = Integer.parseInt(getBinding().etPayday2.getText().toString().trim());
                     if (p2 < 1 || p2 > 31) {
-                        showToast("Day must be between 1 and 31", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                        showToast(getString(R.string.msg_day_range), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                         return;
                     }
                     manager.setFirstPayday(p1);
@@ -86,7 +86,7 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
                     manager.setFirstPayday(p1);
                 }
             } catch (NumberFormatException e) {
-                showToast("Invalid day format", com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                showToast(getString(R.string.msg_invalid_day_format), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                 return;
             }
 

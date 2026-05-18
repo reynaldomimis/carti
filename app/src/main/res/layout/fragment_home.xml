@@ -12,8 +12,8 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:paddingHorizontal="@dimen/spacing_medium"
-        android:paddingTop="4dp"
-        android:paddingBottom="8dp"
+        android:paddingTop="@dimen/spacing_xs"
+        android:paddingBottom="@dimen/spacing_small"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -22,7 +22,7 @@
             android:id="@+id/llGreeting"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
+            android:layout_marginEnd="@dimen/spacing_medium"
             android:orientation="vertical"
             app:layout_constraintEnd_toStartOf="@id/btn_notif_container"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/default_greeting"
-                android:textSize="16sp" />
+                android:textSize="@dimen/text_size_header_small" />
 
             <TextView
                 android:id="@+id/tv_username_main"
@@ -45,12 +45,12 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="@string/user"
-                android:textSize="26sp" />
+                android:textSize="@dimen/text_size_h2" />
 
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="70dp"
-                android:layout_height="2dp"
-                android:layout_marginTop="8dp"
+                android:layout_height="@dimen/divider_thickness"
+                android:layout_marginTop="@dimen/spacing_small"
                 android:layout_marginBottom="6dp"
                 app:dividerColor="@color/surface_variant" />
 
@@ -58,11 +58,11 @@
                 android:id="@+id/tv_greeting_sub"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="@dimen/spacing_xxs"
                 android:fontFamily="@font/plus_jakarta_sans_medium"
                 android:text="@string/family_label"
                 android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:textSize="@dimen/text_size_body" />
         </LinearLayout>
 
         <FrameLayout
@@ -74,8 +74,8 @@
 
             <ImageButton
                 android:id="@+id/btn_notif"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="@dimen/icon_size_xl"
+                android:layout_height="@dimen/icon_size_xl"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/notifications"
                 android:src="@drawable/ic_bell"
@@ -83,8 +83,8 @@
 
             <View
                 android:id="@+id/notif_badge"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
+                android:layout_width="@dimen/icon_size_xxs"
+                android:layout_height="@dimen/icon_size_xxs"
                 android:layout_gravity="top|end"
                 android:layout_marginTop="6dp"
                 android:layout_marginEnd="6dp"
@@ -120,7 +120,7 @@
                 android:id="@+id/rvQuickLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/spacing_xs"
                 android:nestedScrollingEnabled="false"
                 android:scrollbars="none"
                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
@@ -132,13 +132,10 @@
                 layout="@layout/layout_section_header" />
 
             <com.google.android.material.card.MaterialCardView
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="@dimen/card_corner_radius"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/surface_variant"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="@dimen/spacing_small">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvTransactions"

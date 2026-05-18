@@ -5,16 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet"
-    android:padding="24dp">
+    android:padding="@dimen/spacing_large">
 
     <TextView
         android:id="@+id/tvTitle"
+        style="@style/CartiHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:text="Select Icon"
-        android:textColor="@color/text_primary"
-        android:textSize="18sp"
+        android:text="@string/label_select_icon"
+        android:textSize="@dimen/text_size_header"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -34,12 +33,12 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSearch"
+            style="@style/CartiEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_medium"
-            android:hint="Search icons..."
+            android:hint="@string/hint_search_icons"
             android:inputType="text"
-            android:textSize="14sp" />
+            android:textSize="@dimen/text_size_body" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -55,10 +54,10 @@
         android:id="@+id/btnUploadCustom"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="@dimen/button_height_standard"
+        android:layout_marginTop="@dimen/spacing_medium"
         android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:text="Upload from Device"
+        android:text="@string/label_upload_device"
         android:textAllCaps="false"
         android:textColor="@color/carti_primary_green"
         app:layout_constraintTop_toBottomOf="@id/rvIcons" />

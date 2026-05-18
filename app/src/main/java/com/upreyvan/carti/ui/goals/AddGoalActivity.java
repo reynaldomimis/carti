@@ -57,7 +57,7 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
                 1f,
                 0
         );
-        getBinding().scrollView.setPadding(0, 0, 0, Utils.dpToPx(this, 120));
+        getBinding().scrollView.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding));
     }
 
     private void setupToolbar() {
@@ -69,7 +69,7 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
     private void setupListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
             if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) {
-                showToast("Please fill in all fields", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                showToast(getString(R.string.msg_fill_all_fields), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
@@ -88,7 +88,7 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
                     );
 
                     showLoading(false);
-                    showToast("Goal Saved Successfully!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+                    showToast(getString(R.string.msg_goal_saved_success), com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
                     
                     Intent intent = new Intent(AddGoalActivity.this, com.upreyvan.carti.MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -125,7 +125,7 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
     private void showLoading(boolean loading) {
         getBinding().btnSave.setEnabled(!loading);
         if (loading) {
-            progressDialog = ProgressDialog.show(this, "", "Saving goal...", true);
+            progressDialog = ProgressDialog.show(this, "", getString(R.string.msg_saving_goal), true);
         } else if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }

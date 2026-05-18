@@ -68,7 +68,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
                 1f,
                 0
         );
-        getBinding().scrollView.setPadding(0, 0, 0, Utils.dpToPx(this, 120));
+        getBinding().scrollView.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding));
     }
 
     private void setupToolbar() {
@@ -80,7 +80,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     private void setupClickListeners() {
         getBinding().btnDueDate.setOnClickListener(v -> {
             MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                    .setTitleText("Select Due Date")
+                    .setTitleText(R.string.label_due_date)
                     .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
                     .build();
 
@@ -96,7 +96,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
         getBinding().btnSave.setOnClickListener(v -> {
             if (Validator.isEmpty(getBinding().etBorrowerName) || Validator.isEmpty(getBinding().etAmount)) {
-                showToast("Please fill name and amount", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                showToast(getString(R.string.msg_fill_name_amount), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
@@ -113,7 +113,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
                     );
 
                     showLoading(false);
-                    showToast("Debt Saved!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+                    showToast(getString(R.string.msg_debt_saved), com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
                     
                     Intent intent = new Intent(AddDebtActivity.this, com.upreyvan.carti.MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -133,7 +133,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     private void showLoading(boolean loading) {
         getBinding().btnSave.setEnabled(!loading);
         if (loading) {
-            progressDialog = ProgressDialog.show(this, "", "Saving debt...", true);
+            progressDialog = ProgressDialog.show(this, "", getString(R.string.msg_saving_debt), true);
         } else if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }

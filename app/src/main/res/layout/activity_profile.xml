@@ -24,28 +24,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="48dp">
+            android:paddingBottom="@dimen/spacing_xxl">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/spacing_large"
-                android:layout_marginVertical="4dp"
+                android:layout_marginVertical="@dimen/spacing_xs"
                 app:cardBackgroundColor="@color/surface_variant"
-                app:cardCornerRadius="24dp"
+                app:cardCornerRadius="@dimen/radius_xl"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="20dp">
+                    android:padding="@dimen/spacing_medium">
 
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardAvatar"
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        app:cardCornerRadius="32dp"
+                        android:layout_width="@dimen/avatar_size_medium"
+                        android:layout_height="@dimen/avatar_size_medium"
+                        app:cardCornerRadius="@dimen/text_size_display"
                         app:cardElevation="0dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent">
@@ -63,24 +63,24 @@
                         android:id="@+id/tvUserName"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginEnd="12dp"
+                        android:layout_marginStart="@dimen/spacing_medium"
+                        android:layout_marginEnd="@dimen/radius_medium"
                         style="@style/CartiHeader"
                         android:text="User Name"
-                        android:textSize="18sp"
+                        android:textSize="@dimen/text_size_header"
                         app:layout_constraintEnd_toStartOf="@+id/btnLogout"
                         app:layout_constraintStart_toEndOf="@id/cardAvatar"
                         app:layout_constraintTop_toTopOf="@id/cardAvatar" />
 
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/btnLogout"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="@dimen/icon_size_xl"
+                        android:layout_height="@dimen/icon_size_xl"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground"
                         app:cardBackgroundColor="@color/mint_green_alpha"
-                        app:cardCornerRadius="20dp"
+                        app:cardCornerRadius="@dimen/pill_corner_radius"
                         app:cardElevation="0dp"
                         app:cardPreventCornerOverlap="false"
                         app:layout_constraintBottom_toBottomOf="@id/cardAvatar"
@@ -91,7 +91,7 @@
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:padding="10dp"
+                            android:padding="@dimen/icon_size_xxs"
                             android:src="@android:drawable/ic_lock_power_off"
                             app:tint="@color/carti_primary_green" />
 
@@ -101,9 +101,9 @@
                         android:id="@+id/cardRole"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="@dimen/spacing_xs"
                         app:cardBackgroundColor="@color/tonal_button_bg"
-                        app:cardCornerRadius="8dp"
+                        app:cardCornerRadius="@dimen/radius_small"
                         app:cardElevation="0dp"
                         app:layout_constraintStart_toStartOf="@id/tvUserName"
                         app:layout_constraintTop_toBottomOf="@id/tvUserName"
@@ -113,11 +113,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
+                            android:paddingHorizontal="@dimen/spacing_small"
+                            android:paddingVertical="@dimen/spacing_xxs"
                             android:text="@string/role_admin"
                             android:textColor="@color/carti_primary_green"
-                            android:textSize="11sp" />
+                            android:textSize="@dimen/text_size_caption" />
 
                     </com.google.android.material.card.MaterialCardView>
 
@@ -125,10 +125,10 @@
                         android:id="@+id/tvUserEmail"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         style="@style/CartiSubHeader"
                         android:text="user@email.com"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/text_size_body_small"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="@id/tvUserName"
                         app:layout_constraintTop_toBottomOf="@id/cardRole" />
@@ -138,15 +138,11 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/spacing_large"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="@dimen/card_corner_radius"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/surface_variant"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="@dimen/spacing_medium">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvProfileMenu"
@@ -165,6 +161,6 @@
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:elevation="10dp" />
+        android:elevation="@dimen/icon_size_xxs" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

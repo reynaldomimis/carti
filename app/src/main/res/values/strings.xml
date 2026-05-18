@@ -398,7 +398,49 @@
     <string name="placeholder_zero">0</string>
     <string name="placeholder_date_simple">Date</string>
 
+    <string name="currency_symbol">₱</string>
+    <string name="msg_saving_debt">Saving debt...</string>
+    <string name="msg_saving_goal">Saving goal...</string>
+    <string name="msg_saving_expense">Saving expense...</string>
+    <string name="msg_fill_name_amount">Please fill name and amount</string>
+    <string name="msg_debt_saved">Debt Saved!</string>
+    <string name="msg_goal_saved_success">Goal Saved Successfully!</string>
+    <string name="msg_expense_saved">Expense Saved!</string>
+    <string name="msg_fill_all_fields">Please fill in all fields</string>
+    <string name="title_add_category">Add Category</string>
+    <string name="title_customize_quick_log">Customize Quick Log</string>
+    <string name="title_set_new_password">Set New Password</string>
+    <string name="label_enable_monthly">Enable Monthly (Every end of month)</string>
+    <string name="msg_debt_details">Debt Details</string>
+    <string name="msg_drag_drop_quick_log">Drag and drop items to reorder your quick log.</string>
+    <string name="btn_save_order">Save Order</string>
+    <string name="hint_income_source_business">Source (e.g. Business, Bonus)</string>
+    <string name="hint_income_source_salary">Source (e.g. Salary, Freelance)</string>
+    <string name="label_select_icon">Select Icon</string>
+    <string name="hint_search_icons">Search icons...</string>
+    <string name="label_upload_device">Upload from Device</string>
+    <string name="msg_deleted_balance_updated">Deleted and balance updated</string>
+
+    <string name="err_failed_save">Failed to save: %s</string>
+    <string name="err_generic">Error: %s</string>
+    <string name="msg_enter_amount">Please enter an amount</string>
+    <string name="msg_invalid_amount">Invalid amount</string>
+    <string name="msg_logged_success">Logged %1$s for %2$s</string>
+    <string name="msg_enter_payday">Please enter the payday</string>
+    <string name="msg_enter_payday_second">Please enter the second payday</string>
+    <string name="msg_day_range">Day must be between 1 and 31</string>
+    <string name="msg_enter_source">Please enter a source</string>
+    <string name="msg_invalid_day_format">Invalid day format</string>
+    <string name="err_login_failed">Login failed: %s</string>
+    <string name="err_registration_failed">Registration failed: %s</string>
+    <string name="err_fetch_user_failed">Failed to fetch user data: %s</string>
+
     <!-- Transaction Formats -->
     <string name="format_expense">− %s</string>
     <string name="format_income">+ %s</string>
+    <string name="format_currency">₱%,.2f</string>
+    <string name="format_currency_no_decimal">₱%,.0f</string>
+    <string name="format_currency_with_unit">%s / day</string>
+    <string name="format_greeting">%s,</string>
+    <string name="format_username">%s 👋</string>
 </resources>

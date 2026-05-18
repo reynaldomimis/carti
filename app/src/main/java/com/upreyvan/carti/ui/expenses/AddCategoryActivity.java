@@ -65,7 +65,7 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
 
 
     private void setupToolbar() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText("Add Category");
+        getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.title_add_category);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
     }
@@ -127,6 +127,6 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
                 1f,
                 0
         );
-        getBinding().scrollView.setPadding(0, 0, 0, Utils.dpToPx(this, 120));
+        getBinding().scrollView.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding));
     }
 }

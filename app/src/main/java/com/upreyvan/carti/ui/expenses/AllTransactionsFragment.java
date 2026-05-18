@@ -98,7 +98,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
                                         requireActivity().runOnUiThread(() -> {
                                             pref.saveFamilySummary(finalBalance, finalIncome, finalExpense);
                                             transactionRepository.deleteLocally(item.getId());
-                                            showToast("Deleted and balance updated", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+                                            showToast(getString(R.string.msg_deleted_balance_updated), com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
                                         });
                                     }
 

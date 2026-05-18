@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
+import com.upreyvan.carti.R;
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.remote.AppwriteManager;
@@ -52,10 +53,10 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
 
     private void showNewPasswordDialog(String userId, String secret) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Set New Password");
+        builder.setTitle(R.string.title_set_new_password);
 
         final EditText input = new EditText(this);
-        input.setHint("Enter new password");
+        input.setHint(R.string.hint_new_password);
         input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
         
         LinearLayout container = new LinearLayout(this);

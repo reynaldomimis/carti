@@ -13,7 +13,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="24dp">
+            android:padding="@dimen/spacing_large">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -27,8 +27,8 @@
 
                 <ImageView
                     android:id="@+id/ivLogo"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
+                    android:layout_width="@dimen/bottom_nav_height"
+                    android:layout_height="@dimen/bottom_nav_height"
                     android:contentDescription="@string/app_name"
                     android:src="@drawable/ai_holder" />
 
@@ -37,9 +37,9 @@
                     style="@style/CartiHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="@dimen/spacing_large"
                     android:text="@string/login_title"
-                    android:textSize="24sp"
+                    android:textSize="@dimen/text_size_h1"
                     android:gravity="center" />
 
                 <TextView
@@ -47,9 +47,9 @@
                     style="@style/CartiSubHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/spacing_small"
                     android:text="@string/login_subtitle"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/text_size_body"
                     android:gravity="center" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -57,7 +57,7 @@
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
+                    android:layout_marginTop="@dimen/spacing_xl"
                     android:hint="@string/hint_username"
                     android:visibility="gone"
                     app:boxStrokeColor="@color/green_primary"
@@ -79,7 +79,7 @@
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="@dimen/spacing_medium"
                     android:hint="@string/hint_email"
                     app:boxStrokeColor="@color/green_primary"
                     app:hintTextColor="@color/green_primary"
@@ -100,7 +100,7 @@
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="@dimen/spacing_medium"
                     android:hint="@string/hint_password"
                     app:boxStrokeColor="@color/green_primary"
                     app:endIconMode="password_toggle"
@@ -123,7 +123,7 @@
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="@dimen/spacing_medium"
                     android:hint="@string/hint_select_role"
                     android:visibility="gone"
                     app:boxStrokeColor="@color/green_primary"
@@ -143,7 +143,7 @@
                     android:id="@+id/cbIsEmployee"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/spacing_small"
                     android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:text="@string/label_employee_head"
                     android:textColor="@color/text_secondary"
@@ -153,18 +153,18 @@
                     android:id="@+id/btnSubmit"
                     style="@style/CartiButton.Primary"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="32dp"
+                    android:layout_height="@dimen/button_height_standard"
+                    android:layout_marginTop="@dimen/spacing_xl"
                     android:text="@string/btn_login"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/text_size_header_small" />
 
                 <TextView
                     android:id="@+id/tvSwitchPrompt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="@dimen/spacing_large"
                     android:fontFamily="@font/plus_jakarta_sans_medium"
-                    android:padding="8dp"
+                    android:padding="@dimen/spacing_small"
                     android:text="@string/prompt_no_account"
                     android:textColor="@color/text_secondary"
                     android:gravity="center" />

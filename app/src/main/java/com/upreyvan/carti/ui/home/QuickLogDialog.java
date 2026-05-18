@@ -72,7 +72,7 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
 
         getBinding().btnLog.setOnClickListener(v -> {
             if (Validator.isEmpty(getBinding().etAmount)) {
-                showToast("Please enter an amount", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                showToast(getString(R.string.msg_enter_amount), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
@@ -106,7 +106,7 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
 
                     @Override
                     public void onError(Throwable error) {
-                        showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                        showToast(getString(R.string.err_generic, error.getMessage()), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                     }
                 });
 
@@ -115,7 +115,7 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
                 }
                 dismiss();
             } catch (NumberFormatException e) {
-                showToast("Invalid amount", com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                showToast(getString(R.string.msg_invalid_amount), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
             }
         });
     }

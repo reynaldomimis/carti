@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="@dimen/spacing_large">
 
             <!-- Login Section -->
             <TextView
@@ -29,37 +29,37 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/section_login"
-                android:textSize="18sp" />
+                android:textSize="@dimen/text_size_header" />
 
             <TextView
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/spacing_medium"
                 android:text="@string/label_password"
-                android:textSize="14sp" />
+                android:textSize="@dimen/text_size_body" />
 
             <TextView
                 style="@style/CartiSubHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/spacing_small"
                 android:text="@string/desc_password"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp" />
+                android:textSize="@dimen/text_size_body"
+                android:lineSpacingExtra="@dimen/spacing_xs" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnResetPassword"
                 style="@style/CartiButton.Tonal"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="16dp"
+                android:layout_height="@dimen/button_height_small"
+                android:layout_marginTop="@dimen/spacing_medium"
                 android:text="@string/btn_reset_password" />
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="24dp"
+                android:layout_height="@dimen/divider_thickness"
+                android:layout_marginVertical="@dimen/spacing_large"
                 android:background="@color/border_light" />
 
             <!-- Security Section -->
@@ -68,39 +68,39 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/section_security"
-                android:textSize="18sp" />
+                android:textSize="@dimen/text_size_header" />
 
             <TextView
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/spacing_medium"
                 android:text="@string/label_sign_out_all"
-                android:textSize="14sp" />
+                android:textSize="@dimen/text_size_body" />
 
             <TextView
                 style="@style/CartiSubHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/spacing_small"
                 android:text="@string/desc_sign_out_all"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp" />
+                android:textSize="@dimen/text_size_body"
+                android:lineSpacingExtra="@dimen/spacing_xs" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSignOutAll"
                 style="@style/CartiButton.Tonal"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="16dp"
+                android:layout_height="@dimen/button_height_small"
+                android:layout_marginTop="@dimen/spacing_medium"
                 android:text="@string/btn_sign_out_all"
                 android:textColor="@color/text_primary"
                 app:backgroundTint="@color/surface_variant" />
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="24dp"
+                android:layout_height="@dimen/divider_thickness"
+                android:layout_marginVertical="@dimen/spacing_large"
                 android:background="@color/border_light" />
 
             <!-- Delete Section -->
@@ -109,26 +109,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/section_delete_account"
-                android:textSize="18sp" />
+                android:textSize="@dimen/text_size_header" />
 
             <TextView
                 style="@style/CartiSubHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/spacing_medium"
                 android:text="@string/desc_delete_account"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp" />
+                android:textSize="@dimen/text_size_body"
+                android:lineSpacingExtra="@dimen/spacing_xs" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDeleteAccount"
-                style="@style/CartiButton.Tonal"
+                style="@style/CartiButton.Danger.Tonal"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="16dp"
-                android:text="@string/btn_delete_account"
-                android:textColor="@color/status_red"
-                app:backgroundTint="@color/status_red_tonal" />
+                android:layout_height="@dimen/button_height_small"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:text="@string/btn_delete_account" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

@@ -245,7 +245,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             double dailyBudget = salaryManager.getDailyBudget(amount);
             int daysLeft = salaryManager.getDaysUntilNextPayday();
 
-            getBinding().cardBudget.tvAmount.setText(String.format(Locale.getDefault(), "₱%,.0f", dailyBudget));
+            getBinding().cardBudget.tvAmount.setText(getString(R.string.format_currency_no_decimal, dailyBudget));
             getBinding().cardBudget.tvSalaryInfo.setText(getString(R.string.income_info_format, daysLeft));
 
             transactionRepository.getTodayTotalSpent().observe(getViewLifecycleOwner(), todaySpent -> {
@@ -261,11 +261,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         int progress = (dailyBudget > 0) ? (int) ((todaySpent / dailyBudget) * 100) : 0;
         getBinding().cardBudget.progressDaily.setProgress(Math.min(progress, 100));
         
-        getBinding().cardBudget.tvStatus.setText(String.format(Locale.getDefault(), "₱%,.0f left", Math.max(0, remaining)));
-    }
-
-    private void loadTransactions() {
-        // Deprecated: now using observeTransactions()
+        getBinding().cardBudget.tvStatus.setText(getString(R.string.amount_remaining, String.format(Locale.getDefault(), "₱%,.0f", Math.max(0, remaining))));
     }
 
     @Override
@@ -303,8 +299,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         PreferenceManager pref = new PreferenceManager(requireContext());
         String name = pref.getUserName();
         String greeting = Utils.getGreeting();
-        getBinding().tvGreetingMain.setText(greeting + ",");
-        getBinding().tvUsernameMain.setText(name + " 👋");
+        getBinding().tvGreetingMain.setText(getString(R.string.format_greeting, greeting));
+        getBinding().tvUsernameMain.setText(getString(R.string.format_username, name));
 
         double income = pref.getTotalIncome();
         double expense = pref.getTotalExpense();

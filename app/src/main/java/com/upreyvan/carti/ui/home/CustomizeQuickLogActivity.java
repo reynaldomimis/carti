@@ -45,7 +45,7 @@ public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQui
     }
 
     private void setupToolbar() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText("Customize Quick Log");
+        getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.title_customize_quick_log);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
     }

@@ -9,12 +9,12 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="@dimen/spacing_medium">
 
         <View
             android:id="@+id/vIcon"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="@dimen/radius_circle"
+            android:layout_height="@dimen/radius_circle"
             android:background="@drawable/bg_shimmer_rounded_large"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -22,9 +22,9 @@
 
         <View
             android:id="@+id/vTitle"
-            android:layout_width="120dp"
-            android:layout_height="14dp"
-            android:layout_marginStart="16dp"
+            android:layout_width="@dimen/scroll_bottom_padding"
+            android:layout_height="@dimen/text_size_body"
+            android:layout_marginStart="@dimen/spacing_medium"
             android:background="@drawable/bg_shimmer_rounded"
             app:layout_constraintStart_toEndOf="@id/vIcon"
             app:layout_constraintTop_toTopOf="@id/vIcon" />
@@ -32,8 +32,8 @@
         <View
             android:id="@+id/vProgressAmount"
             android:layout_width="140dp"
-            android:layout_height="18dp"
-            android:layout_marginTop="8dp"
+            android:layout_height="@dimen/text_size_header"
+            android:layout_marginTop="@dimen/spacing_small"
             android:background="@drawable/bg_shimmer_rounded"
             app:layout_constraintStart_toStartOf="@id/vTitle"
             app:layout_constraintTop_toBottomOf="@id/vTitle" />
@@ -41,9 +41,9 @@
         <View
             android:id="@+id/vProgressBar"
             android:layout_width="0dp"
-            android:layout_height="10dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
+            android:layout_height="@dimen/icon_size_xxs"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:layout_marginEnd="@dimen/spacing_small"
             android:background="@drawable/bg_shimmer_rounded"
             android:alpha="0.4"
             app:layout_constraintEnd_toStartOf="@+id/vPercent"
@@ -53,7 +53,7 @@
         <View
             android:id="@+id/vPercent"
             android:layout_width="30dp"
-            android:layout_height="10dp"
+            android:layout_height="@dimen/icon_size_xxs"
             android:background="@drawable/bg_shimmer_rounded"
             android:alpha="0.6"
             app:layout_constraintBottom_toBottomOf="@id/vProgressBar"
@@ -62,9 +62,9 @@
 
         <View
             android:id="@+id/vDate"
-            android:layout_width="100dp"
-            android:layout_height="10dp"
-            android:layout_marginTop="12dp"
+            android:layout_width="@dimen/radius_circle"
+            android:layout_height="@dimen/icon_size_xxs"
+            android:layout_marginTop="@dimen/radius_medium"
             android:background="@drawable/bg_shimmer_rounded"
             android:alpha="0.3"
             app:layout_constraintStart_toStartOf="@id/vTitle"

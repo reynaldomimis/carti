@@ -6,71 +6,62 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_dialog_ios"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="@dimen/spacing_large">
 
     <View
-        android:layout_width="40dp"
-        android:layout_height="4dp"
+        android:layout_width="@dimen/handle_width"
+        android:layout_height="@dimen/handle_height"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="@dimen/spacing_large"
         android:background="@drawable/bg_handle_dialog" />
 
     <TextView
         android:id="@+id/tv_category_name"
+        style="@style/CartiHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
         android:text="@string/label_category_name"
-        android:textColor="@color/text_primary"
-        android:textSize="18sp" />
+        android:textSize="@dimen/text_size_header" />
 
     <TextView
+        style="@style/CartiSubHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:fontFamily="@font/plus_jakarta_sans_medium"
+        android:layout_marginTop="@dimen/spacing_xs"
         android:text="@string/prompt_enter_amount"
-        android:textColor="@color/text_tertiary"
-        android:textSize="14sp" />
+        android:textSize="@dimen/text_size_body" />
 
     <com.google.android.material.card.MaterialCardView
+        style="@style/CartiCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/card_border"
-        app:strokeWidth="1dp">
+        android:layout_marginTop="@dimen/spacing_large">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="@dimen/button_height_standard"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="16dp">
+            android:paddingHorizontal="@dimen/spacing_medium">
 
             <TextView
+                style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:text="₱"
-                android:textColor="@color/text_primary"
-                android:textSize="18sp" />
+                android:text="@string/currency_symbol"
+                android:textSize="@dimen/text_size_header" />
 
             <EditText
                 android:id="@+id/et_amount"
+                style="@style/CartiEditText"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@android:color/transparent"
                 android:fontFamily="@font/plus_jakarta_sans_bold"
                 android:hint="@string/hint_amount"
                 android:importantForAutofill="no"
                 android:inputType="numberDecimal"
-                android:paddingStart="8dp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_tertiary"
-                android:textSize="18sp"
+                android:paddingStart="@dimen/spacing_small"
+                android:textSize="@dimen/text_size_header"
                 tools:ignore="RtlSymmetry" />
 
         </LinearLayout>
@@ -79,15 +70,10 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_log"
+        style="@style/CartiButton.Primary"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="24dp"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:text="@string/btn_log_expense"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
-        app:cornerRadius="12dp" />
+        android:layout_height="@dimen/button_height_standard"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="@string/btn_log_expense" />
 
 </LinearLayout>

@@ -143,8 +143,8 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         int daysLeft = manager.getDaysUntilNextPayday();
         double dailyBudget = manager.getDailyBudget(totalBudget);
 
-        getBinding().tvSalaryAmount.setText(String.format(Locale.getDefault(), "₱%,.2f", totalBudget));
-        getBinding().tvDailyBudget.setText(String.format(Locale.getDefault(), "₱%,.2f / day", dailyBudget));
+        getBinding().tvSalaryAmount.setText(com.upreyvan.carti.util.Utils.formatCurrency(totalBudget));
+        getBinding().tvDailyBudget.setText(getString(R.string.format_currency_with_unit, com.upreyvan.carti.util.Utils.formatCurrency(dailyBudget)));
     }
     
 

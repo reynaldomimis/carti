@@ -85,7 +85,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
                 1f,
                 0
         );
-        getBinding().scrollView.setPadding(0, 0, 0, Utils.dpToPx(this, 120));
+        getBinding().scrollView.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding));
     }
 
     private void setupToolbar() {
@@ -97,7 +97,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
     private void setupClickListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
             if (Validator.isEmpty(getBinding().etAmount) || Validator.isEmpty(getBinding().etCategory) || Validator.isEmpty(getBinding().etSource)) {
-                showToast("Please fill all fields", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                showToast(getString(R.string.msg_fill_all_fields), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
@@ -127,7 +127,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
     private void showLoading(boolean loading) {
         getBinding().btnSave.setEnabled(!loading);
         if (loading) {
-            progressDialog = ProgressDialog.show(this, "", "Saving expense...", true);
+            progressDialog = ProgressDialog.show(this, "", getString(R.string.msg_saving_expense), true);
         } else if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
@@ -166,7 +166,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
         transactionRepository.saveLocally(transaction);
 
         showLoading(false);
-        showToast("Expense Saved!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+        showToast(getString(R.string.msg_expense_saved), com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
         
         Intent intent = new Intent(this, com.upreyvan.carti.MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
