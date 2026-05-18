@@ -39,6 +39,7 @@
 
     <!-- All Transactions Fragment -->
     <string name="all_transactions_title">All Expenses</string>
+    <string name="bills_title">Bills</string>
 
     <!-- AI Assistant -->
     <string name="msg_canceled">Operation canceled</string>
@@ -115,6 +116,19 @@
     <string name="add_options_invite_desc">Add family members</string>
     <string name="add_options_category">Category</string>
     <string name="add_options_category_desc">Create new category</string>
+    <string name="add_options_bills">Bills</string>
+    <string name="add_options_bills_desc">Manage your monthly bills</string>
+
+    <string name="placeholder_month_year">May 2025</string>
+    <string name="select_month">Select Month</string>
+    <string name="bill_card_border_color">#F0F0F0</string>
+    <string name="due_bills_header">Due Bills</string>
+    <string name="recurring_bills_title">Recurring Bills</string>
+    <string name="recurring_bills_desc">Automate your recurring bill payments.</string>
+    <string name="status_unpaid">Unpaid</string>
+    <string name="status_paid_label">Paid</string>
+    <string name="placeholder_bill_date">May 20, 2025</string>
+    <string name="placeholder_bill_amount">P1,200</string>
 
     <!-- Debt -->
     <string name="opt_no">No</string>
@@ -447,6 +461,12 @@
     <string name="placeholder_user_email">user@email.com</string>
     <string name="placeholder_version">v 1.0.0</string>
 
+    <string name="title_add_bill">Add New Bill</string>
+    <string name="label_bill_name">Bill Name</string>
+    <string name="hint_bill_name">e.g. Electricity Bill</string>
+    <string name="btn_save_bill">Save Bill</string>
+    <string name="msg_bill_saved">Bill saved successfully</string>
+
     <string name="currency_symbol">₱</string>
     <string name="msg_saving_debt">Saving debt...</string>
     <string name="msg_saving_goal">Saving goal...</string>
@@ -485,6 +505,14 @@
     <string name="err_login_failed">Login failed: %s</string>
     <string name="err_registration_failed">Registration failed: %s</string>
     <string name="err_fetch_user_failed">Failed to fetch user data: %s</string>
+
+    <string name="day_sun">SUN</string>
+    <string name="day_mon">MON</string>
+    <string name="day_tue">TUE</string>
+    <string name="day_wed">WED</string>
+    <string name="day_thu">THU</string>
+    <string name="day_fri">FRI</string>
+    <string name="day_sat">SAT</string>
 
     <!-- Transaction Formats -->
     <string name="format_expense">− %s</string>

@@ -99,6 +99,15 @@
             android:exported="false"
             android:theme="@style/Theme.Carti"
             android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity
+            android:name=".ui.bills.BillsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Carti" />
+        <activity
+            android:name=".ui.bills.AddBillActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Carti"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
     </application>
 
 </manifest>

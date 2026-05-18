@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <include
+        android:id="@+id/layout_toolbar"
+        layout="@layout/layout_custom_toolbar" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnSave"
+        app:layout_constraintTop_toBottomOf="@id/layout_toolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_large"
+            android:paddingTop="@dimen/spacing_large"
+            android:paddingBottom="@dimen/scroll_bottom_padding">
+
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_bill_name"
+                android:textSize="@dimen/text_size_body" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/CartiCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small">
+
+                <EditText
+                    android:id="@+id/et_bill_name"
+                    style="@style/CartiEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_height_standard"
+                    android:hint="@string/hint_bill_name"
+                    android:inputType="text"
+                    android:importantForAutofill="no" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/label_amount_peso"
+                android:textSize="@dimen/text_size_body" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/CartiCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small">
+
+                <EditText
+                    android:id="@+id/et_amount"
+                    style="@style/CartiEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_height_standard"
+                    android:hint="@string/hint_amount"
+                    android:inputType="numberDecimal"
+                    android:importantForAutofill="no" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSave"
+        style="@style/CartiButton.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_height_standard"
+        android:layout_marginHorizontal="@dimen/spacing_large"
+        android:layout_marginBottom="@dimen/spacing_large"
+        android:text="@string/btn_save_bill"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

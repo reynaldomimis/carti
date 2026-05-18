@@ -33,6 +33,7 @@
     <color name="mint_green_alpha">#1A00C853</color>
     <color name="tonal_button_bg">#E8F5E9</color>
     <color name="card_border">#F0F0F0</color>
+    <color name="calendar_header_text">#1D1D1D</color>
     <color name="text_amount">#1D1D1D</color>
     <color name="text_percentage">#757575</color>
 

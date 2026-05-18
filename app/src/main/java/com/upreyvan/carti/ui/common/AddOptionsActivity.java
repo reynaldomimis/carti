@@ -71,6 +71,7 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
         options.add(new AddOption(R.drawable.ic_calendar, R.color.icon_debt, R.color.log_debt, R.string.add_options_debt, R.string.add_options_debt_desc, null));
         options.add(new AddOption(R.drawable.ic_add, R.color.mint_green, R.color.tonal_button_bg, R.string.add_options_goal, R.string.add_options_goal_desc, null));
         options.add(new AddOption(R.drawable.ic_person, R.color.icon_fare, R.color.log_fare, R.string.add_options_invite, R.string.add_options_invite_desc, null));
+        options.add(new AddOption(R.drawable.ic_calendar, R.color.carti_primary_blue, R.color.log_water, R.string.add_options_bills, R.string.add_options_bills_desc, null));
         options.add(new AddOption(R.drawable.ic_add, R.color.icon_others, R.color.log_others, R.string.add_options_category, R.string.add_options_category_desc, null));
 
         AddOptionsAdapter adapter = new AddOptionsAdapter(options, item -> {
@@ -85,11 +86,12 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
                 intent = new Intent(this, InviteFamilyActivity.class);
             } else if (item.getTitleResId() == R.string.add_options_category) {
                 intent = new Intent(this, AddCategoryActivity.class);
+            } else if (item.getTitleResId() == R.string.add_options_bills) {
+                intent = new Intent(this, com.upreyvan.carti.ui.bills.BillsActivity.class);
             }
 
             if (intent != null) {
                 startActivity(intent);
-                // Removed finish() to allow back navigation to this menu
             }
         });
         

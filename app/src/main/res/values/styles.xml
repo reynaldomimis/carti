@@ -89,4 +89,15 @@
         <item name="trackCornerRadius">@dimen/radius_medium</item>
     </style>
 
+    <style name="CalendarDayHeader">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingVertical">@dimen/spacing_small</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:textSize">@dimen/text_size_xxs</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
+    </style>
+
 </resources>
