@@ -104,7 +104,8 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
         getBinding().btnCreate.setText(isLoading ? getString(R.string.btn_creating) : getString(R.string.btn_create));
     }
 
-    private void navigateTo(androidx.fragment.app.Fragment fragment) {
+    @Override
+    protected void navigateTo(androidx.fragment.app.Fragment fragment) {
         if (getActivity() != null) {
             getActivity().getSupportFragmentManager().beginTransaction()
                     .setCustomAnimations(

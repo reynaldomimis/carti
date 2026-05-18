@@ -31,6 +31,13 @@ public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onItemClick(item);
         });
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onItemLongClick(item);
+                return true;
+            }
+            return false;
+        });
     }
 
     protected abstract void bind(VB binding, T item);
@@ -39,10 +46,19 @@ public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter
         void onItemClick(T item);
     }
 
+    public interface OnItemLongClickListener<T> {
+        void onItemLongClick(T item);
+    }
+
     private OnItemClickListener<T> listener;
+    private OnItemLongClickListener<T> longClickListener;
 
     public void setOnItemClickListener(OnItemClickListener<T> listener) {
         this.listener = listener;
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener<T> listener) {
+        this.longClickListener = listener;
     }
 
     public static class BaseViewHolder<VB extends ViewBinding> extends RecyclerView.ViewHolder {

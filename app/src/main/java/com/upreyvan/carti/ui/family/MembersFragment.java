@@ -16,10 +16,15 @@ import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.databinding.FragmentMembersBinding;
+import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.databinding.ItemMemberBinding;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.Utils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import io.appwrite.models.RealtimeSubscription;
@@ -32,7 +37,8 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
         return FragmentMembersBinding.inflate(inflater, container, false);
     }
 
-    private MemberAdapter adapter;
+    private GenericAdapter<Member, ItemMemberBinding> adapter;
+    private boolean isLoading = true;
     private Realtime realtime;
     private RealtimeSubscription subscription;
     private PreferenceManager pref;
@@ -44,32 +50,32 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
         pref = new PreferenceManager(requireContext());
         repository = new MemberRepository(requireContext());
         
-        setupToolbar();
+        setupToolbar(getBinding().toolbar, R.string.family_members_title);
         setupRecyclerView();
         
         observeMembers();
         initRealtime();
         
-        // Load from DB first, then sync if needed (fetch only if local is empty)
         repository.syncMembersIfNeeded();
     }
 
     private void observeMembers() {
-        adapter.setLoading(true);
-        repository.getMembers().observe(getViewLifecycleOwner(), new Observer<List<Member>>() {
-            @Override
-            public void onChanged(List<Member> members) {
-                if (members != null) {
+        repository.getMembers().observe(getViewLifecycleOwner(), members -> {
+            if (members != null) {
+                isLoading = members.isEmpty();
+                if (isLoading) {
+                    List<Member> placeholders = new ArrayList<>();
+                    for (int i = 0; i < 3; i++) placeholders.add(new Member("", "", "", "", "", 0, 0));
+                    adapter.submitList(placeholders);
+                } else {
                     adapter.submitList(members);
-                    if (!members.isEmpty()) {
-                        adapter.setLoading(false);
-                    }
                 }
             }
         });
     }
 
     private void initRealtime() {
+        // ... (existing realtime code)
         realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
         String familyId = pref.getFamilyId();
         
@@ -132,15 +138,26 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
         }
     }
 
-    private void setupToolbar() {
-        getBinding().toolbar.tvToolbarTitle.setText(R.string.family_members_title);
-        getBinding().toolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
-        });
-    }
-
     private void setupRecyclerView() {
-        adapter = new MemberAdapter();
+        adapter = new GenericAdapter<>(
+                Member.DIFF_CALLBACK,
+                ItemMemberBinding::inflate,
+                (binding, member) -> {
+                    View shimmer = binding.getRoot().findViewById(R.id.shimmerView);
+                    if (isLoading) {
+                        if (shimmer != null) shimmer.setVisibility(View.VISIBLE);
+                        binding.layoutContent.setVisibility(View.INVISIBLE);
+                    } else {
+                        if (shimmer != null) shimmer.setVisibility(View.GONE);
+                        binding.layoutContent.setVisibility(View.VISIBLE);
+                        binding.tvMemberName.setText(member.getName());
+                        binding.chipRole.setText(member.getRole());
+                        binding.ivMemberAvatar.setImageResource(member.getAvatarRes());
+                        String statusText = member.getStatus() + " • " + Utils.formatCurrency(member.getSalary());
+                        binding.tvMemberStatus.setText(statusText);
+                    }
+                }
+        );
         getBinding().rvMembers.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvMembers.setAdapter(adapter);
     }

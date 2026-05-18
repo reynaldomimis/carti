@@ -49,6 +49,35 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
         });
     }
 
+    protected void navigateTo(Fragment fragment) {
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(com.upreyvan.carti.R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
+    protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding toolbarBinding, String title) {
+        toolbarBinding.tvToolbarTitle.setText(title);
+        toolbarBinding.btnBack.setOnClickListener(v -> {
+            if (getActivity() != null) getActivity().onBackPressed();
+        });
+    }
+
+    protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding toolbarBinding, int titleRes) {
+        setupToolbar(toolbarBinding, getString(titleRes));
+    }
+
+    protected void setupDynamicPadding(View header, View scrollable, float ratio) {
+        com.upreyvan.carti.util.Utils.applySystemBarInsets(
+                header,
+                scrollable,
+                ratio,
+                getResources().getDimensionPixelSize(com.upreyvan.carti.R.dimen.bottom_nav_medium)
+        );
+    }
+
     protected VB getBinding() {
         return binding;
     }

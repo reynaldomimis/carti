@@ -37,4 +37,34 @@ public class Member {
 
     public void setFamilyId(String familyId) { this.familyId = familyId; }
     public void setSalary(double salary) { this.salary = salary; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Member member = (Member) o;
+        return Double.compare(member.salary, salary) == 0 &&
+                id.equals(member.id) &&
+                java.util.Objects.equals(name, member.name) &&
+                java.util.Objects.equals(role, member.role) &&
+                java.util.Objects.equals(status, member.status);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, name, role, status, salary);
+    }
+
+    public static final androidx.recyclerview.widget.DiffUtil.ItemCallback<Member> DIFF_CALLBACK = 
+        new androidx.recyclerview.widget.DiffUtil.ItemCallback<Member>() {
+            @Override
+            public boolean areItemsTheSame(@androidx.annotation.NonNull Member oldItem, @androidx.annotation.NonNull Member newItem) {
+                return oldItem.id.equals(newItem.id);
+            }
+
+            @Override
+            public boolean areContentsTheSame(@androidx.annotation.NonNull Member oldItem, @androidx.annotation.NonNull Member newItem) {
+                return oldItem.equals(newItem);
+            }
+        };
 }

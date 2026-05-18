@@ -16,10 +16,14 @@ import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.data.repository.IncomeRepository;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.databinding.ItemIncomeBinding;
+import com.upreyvan.carti.model.Income;
 import com.upreyvan.carti.util.Utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import io.appwrite.models.RealtimeSubscription;
@@ -27,7 +31,7 @@ import io.appwrite.services.Realtime;
 
 public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> {
 
-    private IncomeAdapter incomeAdapter;
+    private GenericAdapter<Income, ItemIncomeBinding> incomeAdapter;
     private IncomeRepository incomeRepository;
     private RealtimeSubscription realtimeSubscription;
 
@@ -40,8 +44,8 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         incomeRepository = new IncomeRepository(requireContext());
-        setupDynamicPadding();
-        setupToolbar();
+        setupDynamicPadding(getBinding().layoutToolbar.getRoot(), null, 0.3f);
+        setupHeader();
         setupRecyclerView();
         observeIncomes();
         updateUI();
@@ -91,8 +95,24 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     }
 
     private void setupRecyclerView() {
-        incomeAdapter = new IncomeAdapter();
-        incomeAdapter.setOnIncomeLongClickListener(income -> {
+        incomeAdapter = new GenericAdapter<>(
+                Income.DIFF_CALLBACK,
+                ItemIncomeBinding::inflate,
+                (binding, income) -> {
+                    binding.tvSource.setText(income.getSource());
+                    binding.tvAmount.setText(String.format(Locale.getDefault(), "+₱%,.2f", income.getAmount()));
+                    binding.tvDate.setText(Utils.formatTimestamp(income.getCreatedAt()));
+                    
+                    if (income.getSource().toLowerCase().contains("salary")) {
+                        binding.ivIcon.setImageResource(R.drawable.ic_calendar);
+                        binding.viewIconBg.setBackgroundTintList(androidx.core.content.ContextCompat.getColorStateList(requireContext(), R.color.log_food));
+                    } else {
+                        binding.ivIcon.setImageResource(R.drawable.ic_chart);
+                        binding.viewIconBg.setBackgroundTintList(androidx.core.content.ContextCompat.getColorStateList(requireContext(), R.color.log_fare));
+                    }
+                }
+        );
+        incomeAdapter.setOnItemLongClickListener(income -> {
             IncomeEditBottomSheet bottomSheet = IncomeEditBottomSheet.newInstance(income);
             bottomSheet.setListener(this::updateUI);
             bottomSheet.show(getChildFragmentManager(), "IncomeEditBottomSheet");
@@ -107,7 +127,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
             getBinding().tvIncomeHistoryLabel.setVisibility(hasIncomes ? View.VISIBLE : View.GONE);
             getBinding().rvIncomeHistory.setVisibility(hasIncomes ? View.VISIBLE : View.GONE);
 
-            incomeAdapter.setIncomes(incomes);
+            incomeAdapter.submitList(incomes);
         });
 
         incomeRepository.getTotalIncome().observe(getViewLifecycleOwner(), totalIncome -> {
@@ -127,13 +147,9 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     }
     
 
-    private void setupToolbar() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.income_mode_title);
+    private void setupHeader() {
+        setupToolbar(getBinding().layoutToolbar, R.string.income_mode_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
-        });
-
         getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnAction.setText(R.string.label_add);
         getBinding().layoutToolbar.btnAction.setOnClickListener(v -> showAddIncomeBottomSheet());
@@ -205,12 +221,4 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         bottomSheet.show(getChildFragmentManager(), "IncomeAddBottomSheet");
     }
 
-    private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutToolbar.getRoot(),
-                null,
-                0.3f,
-                getResources().getDimensionPixelSize(R.dimen.bottom_nav_height)
-        );
-    }
 }

@@ -17,7 +17,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.repository.DebtRepository;
-import com.upreyvan.carti.ui.debt.DebtAdapter;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
@@ -32,12 +31,23 @@ import android.widget.Toast;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import androidx.core.content.ContextCompat;
+import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.databinding.ItemDebtBinding;
+import com.upreyvan.carti.model.Debt;
+import com.upreyvan.carti.util.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding> {
 
-    private DebtAdapter adapter;
+    private GenericAdapter<Debt, ItemDebtBinding> adapter;
     private List<Debt> allDebts = new ArrayList<>();
     private ApiHelper apiHelper;
     private DebtRepository debtRepository;
+    private boolean isLoading = true;
 
     @Override
     protected FragmentDebtTrackerBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -57,13 +67,18 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     }
 
     private void observeDebts() {
-        adapter.setLoading(true);
         debtRepository.getAllDebts().observe(getViewLifecycleOwner(), debts -> {
             if (debts != null) {
-                adapter.setLoading(false);
+                isLoading = debts.isEmpty();
                 allDebts = debts;
-                filterDebts(getBinding().tabLayout.getSelectedTabPosition());
-                updateOverallDebt(allDebts);
+                if (isLoading) {
+                    List<Debt> placeholders = new ArrayList<>();
+                    for (int i = 0; i < 3; i++) placeholders.add(new Debt());
+                    adapter.submitList(placeholders);
+                } else {
+                    filterDebts(getBinding().tabLayout.getSelectedTabPosition());
+                    updateOverallDebt(allDebts);
+                }
             }
         });
         debtRepository.syncDebtsIfNeeded();
@@ -96,21 +111,11 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
 
 
     private void setupToolbar() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.debt_tracker_title);
-        getBinding().layoutToolbar.btnBack.setVisibility(View.VISIBLE);
-        if (getBinding().layoutToolbar.backButtonContainer != null) {
-            getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        }
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
-            }
-        });
+        setupToolbar(getBinding().layoutToolbar, R.string.debt_tracker_title);
         getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnAction.setText(R.string.btn_add_debt);
         getBinding().layoutToolbar.btnAction.setOnClickListener(v -> {
-            android.content.Intent intent = new android.content.Intent(requireContext(), AddDebtActivity.class);
-            startActivity(intent);
+            startActivity(new android.content.Intent(requireContext(), AddDebtActivity.class));
         });
     }
 
@@ -132,11 +137,34 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     }
 
     private void setupRecyclerView() {
-        adapter = new DebtAdapter();
+        adapter = new GenericAdapter<>(
+                Debt.DIFF_CALLBACK,
+                ItemDebtBinding::inflate,
+                (binding, debt) -> {
+                    View shimmer = binding.getRoot().findViewById(R.id.shimmerView);
+                    if (isLoading) {
+                        if (shimmer != null) shimmer.setVisibility(View.VISIBLE);
+                        binding.layoutContent.setVisibility(View.INVISIBLE);
+                    } else {
+                        if (shimmer != null) shimmer.setVisibility(View.GONE);
+                        binding.layoutContent.setVisibility(View.VISIBLE);
+                        
+                        binding.tvPersonName.setText(debt.getPersonName());
+                        binding.tvDescription.setText(debt.getDescription());
+                        binding.tvAmount.setText(Utils.formatCurrency(debt.getAmount()));
+                        binding.tvDate.setText(debt.getDate());
+                        binding.ivAvatar.setImageResource(debt.getAvatarResId());
+                        
+                        binding.tvStatus.setText(debt.isPaid() ? R.string.status_paid : R.string.status_not_paid);
+                        binding.tvStatus.setTextColor(ContextCompat.getColor(requireContext(), 
+                                debt.isPaid() ? R.color.status_green : R.color.status_red));
+                    }
+                }
+        );
         getBinding().rvDebts.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvDebts.setAdapter(adapter);
 
-        adapter.setOnDebtClickListener(this::showDebtDetail);
+        adapter.setOnItemClickListener(this::showDebtDetail);
     }
 
     private void filterDebts(int tabIndex) {
@@ -150,7 +178,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
                 if (d.isPaid()) filtered.add(d);
             }
         }
-        adapter.setDebts(filtered);
+        adapter.submitList(filtered);
     }
 
     private void showDebtDetail(Debt debt) {

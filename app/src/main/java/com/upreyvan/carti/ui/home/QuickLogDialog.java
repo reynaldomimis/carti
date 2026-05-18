@@ -5,18 +5,20 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.DialogQuickLogAmountBinding;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.model.Transaction;
@@ -26,13 +28,9 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
 
-import android.view.WindowManager;
-
-public class QuickLogDialog extends BottomSheetDialogFragment {
-
+public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmountBinding> {
 
     private static final String ARG_ITEM = "arg_item";
-    private DialogQuickLogAmountBinding binding;
     private OnLogListener listener;
     private TransactionRepository transactionRepository;
 
@@ -52,6 +50,11 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
         this.listener = listener;
     }
 
+    @Override
+    protected DialogQuickLogAmountBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        return DialogQuickLogAmountBinding.inflate(inflater, container, false);
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -59,7 +62,7 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
         
         if (dialog.getWindow() != null) {
             dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-            dialog.getWindow().setNavigationBarColor(requireContext().getColor(R.color.white));
+            dialog.getWindow().setNavigationBarColor(ContextCompat.getColor(requireContext(), R.color.white));
 
             View decorView = dialog.getWindow().getDecorView();
             int flags = decorView.getSystemUiVisibility();
@@ -69,13 +72,6 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
 
         dialog.getWindow().setDimAmount(0.4f);
         return dialog;
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = DialogQuickLogAmountBinding.inflate(inflater, container, false);
-        return binding.getRoot();
     }
 
     @Override
@@ -89,11 +85,11 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
             return;
         }
 
-        binding.tvCategoryName.setText(item.getTitle());
-        binding.btnLog.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.carti_primary_green));
+        getBinding().tvCategoryName.setText(item.getTitle());
+        getBinding().btnLog.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.carti_primary_green));
 
-        binding.btnLog.setOnClickListener(v -> {
-            String amountStr = binding.etAmount.getText().toString().trim();
+        getBinding().btnLog.setOnClickListener(v -> {
+            String amountStr = getBinding().etAmount.getText().toString().trim();
             if (amountStr.isEmpty()) {
                 Toast.makeText(requireContext(), "Please enter an amount", Toast.LENGTH_SHORT).show();
                 return;
@@ -106,7 +102,6 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
                 int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
                 int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
                 
-                // Save to cloud
                 new ApiHelper(requireContext()).addTransaction(amount, "EXPENSE", item.getTitle(), "Quick Log", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                     @Override
                     public void onSuccess(Map<String, Object> result) {
@@ -124,14 +119,11 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
                                 System.currentTimeMillis(),
                                 "EXPENSE"
                         );
-                        // Save locally first for instant feedback
                         transactionRepository.saveLocally(transaction);
                     }
 
                     @Override
-                    public void onError(Throwable error) {
-                        // Optional: Handle cloud save error
-                    }
+                    public void onError(Throwable error) {}
                 });
 
                 if (listener != null) {
@@ -147,11 +139,5 @@ public class QuickLogDialog extends BottomSheetDialogFragment {
     @Override
     public int getTheme() {
         return R.style.CustomBottomSheetDialogTheme;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
     }
 }

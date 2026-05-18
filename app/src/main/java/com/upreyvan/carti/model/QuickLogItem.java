@@ -30,4 +30,33 @@ public class QuickLogItem implements Serializable {
     public int getIconColor() {
         return iconColor;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        QuickLogItem that = (QuickLogItem) o;
+        return iconRes == that.iconRes &&
+                bgColor == that.bgColor &&
+                iconColor == that.iconColor &&
+                java.util.Objects.equals(label, that.label);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(label, iconRes, bgColor, iconColor);
+    }
+
+    public static final androidx.recyclerview.widget.DiffUtil.ItemCallback<QuickLogItem> DIFF_CALLBACK =
+            new androidx.recyclerview.widget.DiffUtil.ItemCallback<QuickLogItem>() {
+                @Override
+                public boolean areItemsTheSame(@androidx.annotation.NonNull QuickLogItem oldItem, @androidx.annotation.NonNull QuickLogItem newItem) {
+                    return oldItem.label.equals(newItem.label);
+                }
+
+                @Override
+                public boolean areContentsTheSame(@androidx.annotation.NonNull QuickLogItem oldItem, @androidx.annotation.NonNull QuickLogItem newItem) {
+                    return oldItem.equals(newItem);
+                }
+            };
 }

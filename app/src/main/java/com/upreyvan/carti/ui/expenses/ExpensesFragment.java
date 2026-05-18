@@ -15,15 +15,15 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.ui.common.LegendAdapter;
-import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.FragmentExpensesBinding;
+import com.upreyvan.carti.databinding.ItemLegendExpenseBinding;
 import com.upreyvan.carti.model.ExpenseCategory;
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.util.Utils;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.Locale;
 
 public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
 
-    private LegendAdapter legendAdapter;
+    private GenericAdapter<ExpenseCategory, ItemLegendExpenseBinding> legendAdapter;
     private TransactionAdapter transactionAdapter;
     private Calendar currentCalendar = Calendar.getInstance();
     private TransactionRepository transactionRepository;
@@ -46,7 +46,7 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = new TransactionRepository(requireContext());
         
-        setupDynamicPadding();
+        setupDynamicPadding(getBinding().layoutHeader, getBinding().scrollView, 0.3f);
         setupMonthPicker();
         setupChart();
         setupLegend();
@@ -124,14 +124,6 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         legendAdapter.submitList(legendCategories);
     }
 
-    private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutHeader,
-                getBinding().scrollView,
-                0.3f,
-                getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium)
-        );
-    }
 
     private void loadData() {
         // Deprecated
@@ -173,7 +165,18 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     }
 
     private void setupLegend() {
-        legendAdapter = new LegendAdapter();
+        legendAdapter = new GenericAdapter<>(
+                ExpenseCategory.DIFF_CALLBACK,
+                ItemLegendExpenseBinding::inflate,
+                (binding, item) -> {
+                    binding.viewColor.setBackgroundTintList(android.content.res.ColorStateList.valueOf(item.getColor()));
+                    binding.tvCategory.setText(item.getName());
+                    
+                    String amountFormatted = Utils.formatCurrency(item.getAmount());
+                    String text = String.format(Locale.getDefault(), "%s (%.0f%%)", amountFormatted, item.getPercentage());
+                    binding.tvAmountPercent.setText(text);
+                }
+        );
         getBinding().rvLegend.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvLegend.setAdapter(legendAdapter);
     }
@@ -186,15 +189,6 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         transactionAdapter = new TransactionAdapter();
         getBinding().rvTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvTransactions.setAdapter(transactionAdapter);
-    }
-
-    private void navigateTo(androidx.fragment.app.Fragment fragment) {
-        if (getActivity() != null) {
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .addToBackStack(null)
-                    .commit();
-        }
     }
 
 }

@@ -206,6 +206,10 @@ public class Utils {
         }
     }
 
+    public static String formatCurrency(double amount) {
+        return String.format(Locale.getDefault(), "₱%,.2f", amount);
+    }
+
     public static double getDouble(Object value) {
         if (value instanceof Number) {
             return ((Number) value).doubleValue();

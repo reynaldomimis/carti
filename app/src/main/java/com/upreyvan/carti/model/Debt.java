@@ -58,4 +58,34 @@ public class Debt {
     public boolean isPaid() { return isPaid; }
     public int getAvatarResId() { return avatarResId; }
     public String getNotes() { return notes; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Debt debt = (Debt) o;
+        return Double.compare(debt.amount, amount) == 0 &&
+                isPaid == debt.isPaid &&
+                id.equals(debt.id) &&
+                java.util.Objects.equals(personName, debt.personName) &&
+                java.util.Objects.equals(description, debt.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, personName, description, amount, isPaid);
+    }
+
+    public static final androidx.recyclerview.widget.DiffUtil.ItemCallback<Debt> DIFF_CALLBACK =
+            new androidx.recyclerview.widget.DiffUtil.ItemCallback<Debt>() {
+                @Override
+                public boolean areItemsTheSame(@androidx.annotation.NonNull Debt oldItem, @androidx.annotation.NonNull Debt newItem) {
+                    return oldItem.id.equals(newItem.id);
+                }
+
+                @Override
+                public boolean areContentsTheSame(@androidx.annotation.NonNull Debt oldItem, @androidx.annotation.NonNull Debt newItem) {
+                    return oldItem.equals(newItem);
+                }
+            };
 }

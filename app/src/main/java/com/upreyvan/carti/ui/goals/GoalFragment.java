@@ -14,27 +14,23 @@ import com.google.android.material.tabs.TabLayout;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.data.repository.GoalRepository;
 import com.upreyvan.carti.databinding.FragmentGoalBinding;
+import com.upreyvan.carti.databinding.ItemGoalBinding;
 import com.upreyvan.carti.model.Goal;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.util.Utils;
-import io.appwrite.models.Document;
-import io.appwrite.models.DocumentList;
-import java.util.Map;
-import android.widget.Toast;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
 
-    private GoalAdapter adapter;
+    private GenericAdapter<Goal, ItemGoalBinding> adapter;
     private List<Goal> allGoals = new ArrayList<>();
     private GoalRepository goalRepository;
+    private boolean isLoading = true;
 
     @Override
     protected FragmentGoalBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -46,7 +42,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         super.onViewCreated(view, savedInstanceState);
         goalRepository = new GoalRepository(requireContext());
         
-        setupDynamicPadding();
+        setupDynamicPadding(getBinding().layoutToolbar.getRoot(), getBinding().rvGoals, 0.3f);
         setupHeader();
         setupTabs();
         setupRecyclerView();
@@ -54,41 +50,31 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     }
 
     private void observeGoals() {
-        adapter.setLoading(true);
         goalRepository.getAllGoals().observe(getViewLifecycleOwner(), goals -> {
             if (goals != null) {
-                adapter.setLoading(false);
+                isLoading = goals.isEmpty();
                 allGoals = goals;
-                filterGoals(getBinding().tabLayout.getSelectedTabPosition());
-                updateOverallProgress(allGoals);
+                if (isLoading) {
+                    List<Goal> placeholders = new ArrayList<>();
+                    for (int i = 0; i < 3; i++) placeholders.add(new Goal());
+                    adapter.submitList(placeholders);
+                } else {
+                    filterGoals(getBinding().tabLayout.getSelectedTabPosition());
+                    updateOverallProgress(allGoals);
+                }
             }
         });
         goalRepository.syncGoalsIfNeeded();
     }
 
-
-
     private void setupHeader() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.goal_title);
+        setupToolbar(getBinding().layoutToolbar, R.string.goal_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
-        });
         getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnAction.setText(R.string.btn_add_goal);
         getBinding().layoutToolbar.btnAction.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), AddGoalActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(requireContext(), AddGoalActivity.class));
         });
-    }
-
-    private void navigateTo(androidx.fragment.app.Fragment fragment) {
-        if (getActivity() != null) {
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .addToBackStack(null)
-                    .commit();
-        }
     }
 
     private void setupTabs() {
@@ -99,12 +85,10 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
+            public void onTabUnselected(TabLayout.Tab tab) {}
 
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
     }
 
@@ -122,13 +106,6 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         adapter.submitList(filteredList);
     }
 
-    private void setupRecyclerView() {
-        adapter = new GoalAdapter();
-        adapter.setOnGoalClickListener(goal -> navigateTo(GoalDetailFragment.newInstance(goal)));
-        getBinding().rvGoals.setLayoutManager(new LinearLayoutManager(requireContext()));
-        getBinding().rvGoals.setAdapter(adapter);
-    }
-
     private void updateOverallProgress(List<Goal> goals) {
         double totalCurrent = 0;
         double totalTarget = 0;
@@ -138,8 +115,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
             totalTarget += goal.getTargetAmount();
         }
 
-        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "PH"));
-        getBinding().tvTotalAmount.setText(currencyFormat.format(totalCurrent));
+        getBinding().tvTotalAmount.setText(Utils.formatCurrency(totalCurrent));
 
         if (totalTarget > 0) {
             int progress = (int) ((totalCurrent / totalTarget) * 100);
@@ -149,12 +125,37 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         }
     }
 
-    private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutToolbar.getRoot(),
-                getBinding().rvGoals,
-                0.3f,
-                getResources().getDimensionPixelSize(R.dimen.bottom_nav_height)
+    private void setupRecyclerView() {
+        adapter = new GenericAdapter<>(
+                Goal.DIFF_CALLBACK,
+                ItemGoalBinding::inflate,
+                (binding, goal) -> {
+                    View shimmer = binding.getRoot().findViewById(R.id.shimmerView);
+                    if (isLoading) {
+                        if (shimmer != null) shimmer.setVisibility(View.VISIBLE);
+                        binding.layoutContent.setVisibility(View.INVISIBLE);
+                    } else {
+                        if (shimmer != null) shimmer.setVisibility(View.GONE);
+                        binding.layoutContent.setVisibility(View.VISIBLE);
+                        
+                        binding.tvGoalTitle.setText(goal.getTitle());
+                        binding.ivGoalIcon.setImageResource(goal.getImageRes());
+                        binding.ivGoalIcon.setBackgroundColor(goal.getBackgroundColor());
+                        
+                        String progressText = String.format(Locale.getDefault(), 
+                                getString(R.string.goal_progress_amount_format),
+                                Utils.formatCurrency(goal.getCurrentAmount()),
+                                Utils.formatCurrency(goal.getTargetAmount()));
+                        
+                        binding.tvGoalProgressAmount.setText(progressText);
+                        binding.progressIndicator.setProgress(goal.getProgress());
+                        binding.tvPercentage.setText(getString(R.string.percentage_format, goal.getProgress()));
+                        binding.tvTargetDate.setText(getString(R.string.target_date_label_format, goal.getTargetDate()));
+                    }
+                }
         );
+        adapter.setOnItemClickListener(goal -> navigateTo(GoalDetailFragment.newInstance(goal)));
+        getBinding().rvGoals.setLayoutManager(new LinearLayoutManager(requireContext()));
+        getBinding().rvGoals.setAdapter(adapter);
     }
 }

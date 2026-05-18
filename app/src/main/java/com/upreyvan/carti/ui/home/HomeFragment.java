@@ -24,9 +24,13 @@ import com.upreyvan.carti.data.repository.GoalRepository;
 import com.upreyvan.carti.data.repository.IncomeRepository;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
+import com.upreyvan.carti.databinding.ItemQuickLogBinding;
+import com.upreyvan.carti.databinding.ItemTransactionBinding;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.QuickLogItem;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.ui.expenses.AllTransactionsFragment;
 import com.upreyvan.carti.ui.notifications.NotificationsFragment;
 import com.upreyvan.carti.util.Constants;
@@ -46,7 +50,7 @@ import io.appwrite.services.Realtime;
  */
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
-    private QuickLogAdapter quickLogAdapter;
+    private GenericAdapter<QuickLogItem, ItemQuickLogBinding> quickLogAdapter;
     private TransactionAdapter transactionAdapter;
     private boolean isExpanded = false;
     private Realtime realtime;
@@ -74,7 +78,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         debtRepository = new DebtRepository(requireContext());
         memberRepository = new MemberRepository(requireContext());
         
-        setupDynamicPadding();
+        setupDynamicPadding(getBinding().layoutHeader, getBinding().home, 0.3f);
         setupHeaders();
         setupQuickLog();
         setupRecentTransactions();
@@ -295,15 +299,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().btnNotif.setOnClickListener(v -> navigateTo(new NotificationsFragment()));
     }
 
-    private void navigateTo(androidx.fragment.app.Fragment fragment) {
-        if (getActivity() != null) {
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .addToBackStack(null)
-                    .commit();
-        }
-    }
-
     private void setupHeaders() {
         PreferenceManager pref = new PreferenceManager(requireContext());
         String name = pref.getUserName();
@@ -349,7 +344,20 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             items.add(new QuickLogItem(seeLessLabel, android.R.drawable.ic_menu_close_clear_cancel, R.color.log_others, R.color.icon_others));
         }
 
-        quickLogAdapter = new QuickLogAdapter(items);
+        quickLogAdapter = new GenericAdapter<>(
+                QuickLogItem.DIFF_CALLBACK,
+                ItemQuickLogBinding::inflate,
+                (binding, item) -> {
+                    binding.tvLabel.setText(item.getTitle());
+                    binding.ivIcon.setImageResource(item.getIconRes());
+
+                    int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
+                    int bgColor = androidx.core.graphics.ColorUtils.setAlphaComponent(iconColor, 25);
+                    binding.cvIconBg.setCardBackgroundColor(bgColor);
+                    binding.ivIcon.setColorFilter(iconColor);
+                }
+        );
+        
         quickLogAdapter.setOnItemClickListener(item -> {
             if (item.getTitle().equals(othersLabel)) {
                 isExpanded = true;
@@ -368,6 +376,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             }
         });
 
+        quickLogAdapter.submitList(items);
         getBinding().rvQuickLog.setAdapter(quickLogAdapter);
     }
 
@@ -416,7 +425,4 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().rvTransactions.setAdapter(transactionAdapter);
     }
 
-    private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(getBinding().layoutHeader, getBinding().home, 0.3f, getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium));
-    }
 }

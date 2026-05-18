@@ -16,6 +16,8 @@ import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentHelpBinding;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
+import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.databinding.ItemFaqBinding;
 import com.upreyvan.carti.model.FaqItem;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +32,11 @@ public class HelpFragment extends BaseFragment<FragmentHelpBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setupToolbar();
+        setupToolbar(getBinding().layoutToolbar, R.string.help_title);
         setupFaqList();
         setupListeners();
     }
 
-    private void setupToolbar() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.help_title);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
-    }
 
     private void setupFaqList() {
         List<FaqItem> faqItems = new ArrayList<>();
@@ -51,7 +49,15 @@ public class HelpFragment extends BaseFragment<FragmentHelpBinding> {
         faqItems.add(new FaqItem(getString(R.string.faq_q7), getString(R.string.faq_a7)));
         faqItems.add(new FaqItem(getString(R.string.faq_q8), getString(R.string.faq_a8)));
 
-        FaqAdapter adapter = new FaqAdapter(faqItems);
+        GenericAdapter<FaqItem, ItemFaqBinding> adapter = new GenericAdapter<>(
+                FaqItem.DIFF_CALLBACK,
+                ItemFaqBinding::inflate,
+                (binding, item) -> {
+                    binding.tvQuestion.setText(item.getQuestion());
+                    binding.tvAnswer.setText(item.getAnswer());
+                }
+        );
+        adapter.submitList(faqItems);
         getBinding().rvFaq.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvFaq.setAdapter(adapter);
     }

@@ -55,13 +55,4 @@ public class SettingsFragment extends BaseFragment<FragmentSettingsBinding> {
         getBinding().itemLanguage.tvStatus.setText(R.string.status_language_english);
         getBinding().itemLanguage.divider.setVisibility(View.GONE);
     }
-
-    private void navigateTo(androidx.fragment.app.Fragment fragment) {
-        if (getActivity() != null) {
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .addToBackStack(null)
-                    .commit();
-        }
-    }
 }

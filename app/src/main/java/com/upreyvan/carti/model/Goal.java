@@ -63,4 +63,34 @@ public class Goal {
         if (targetAmount == 0) return 0;
         return (int) ((currentAmount / targetAmount) * 100);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Goal goal = (Goal) o;
+        return Double.compare(goal.currentAmount, currentAmount) == 0 &&
+                Double.compare(goal.targetAmount, targetAmount) == 0 &&
+                id.equals(goal.id) &&
+                java.util.Objects.equals(title, goal.title) &&
+                java.util.Objects.equals(targetDate, goal.targetDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, title, currentAmount, targetAmount, targetDate);
+    }
+
+    public static final androidx.recyclerview.widget.DiffUtil.ItemCallback<Goal> DIFF_CALLBACK =
+            new androidx.recyclerview.widget.DiffUtil.ItemCallback<Goal>() {
+                @Override
+                public boolean areItemsTheSame(@androidx.annotation.NonNull Goal oldItem, @androidx.annotation.NonNull Goal newItem) {
+                    return oldItem.id.equals(newItem.id);
+                }
+
+                @Override
+                public boolean areContentsTheSame(@androidx.annotation.NonNull Goal oldItem, @androidx.annotation.NonNull Goal newItem) {
+                    return oldItem.equals(newItem);
+                }
+            };
 }
