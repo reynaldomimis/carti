@@ -22,14 +22,16 @@ import com.upreyvan.carti.model.Income;
 
 import java.util.Map;
 
-public class IncomeEditBottomSheet extends BottomSheetDialogFragment {
+import com.upreyvan.carti.base.BaseBottomSheetFragment;
+import com.upreyvan.carti.util.Validator;
+
+public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditIncomeBinding> {
 
     public enum Mode {
         ADD_INCOME,
         EDIT_INCOME
     }
 
-    private DialogEditIncomeBinding binding;
     private OnIncomeUpdatedListener listener;
     private MemberRepository memberRepository;
     private IncomeRepository incomeRepository;
@@ -57,26 +59,9 @@ public class IncomeEditBottomSheet extends BottomSheetDialogFragment {
         this.listener = listener;
     }
 
-    @NonNull
     @Override
-    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setNavigationBarColor(requireContext().getColor(R.color.white));
-            View decorView = dialog.getWindow().getDecorView();
-            int flags = decorView.getSystemUiVisibility();
-            flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-            decorView.setSystemUiVisibility(flags);
-        }
-        dialog.getWindow().setDimAmount(0.4f);
-        return dialog;
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = DialogEditIncomeBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+    protected DialogEditIncomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        return DialogEditIncomeBinding.inflate(inflater, container, false);
     }
 
     @Override
@@ -85,63 +70,57 @@ public class IncomeEditBottomSheet extends BottomSheetDialogFragment {
         
         memberRepository = new MemberRepository(requireContext());
         incomeRepository = new IncomeRepository(requireContext());
-        SalaryManager manager = SalaryManager.getInstance(requireContext());
 
         setupUI();
 
-        binding.btnSave.setOnClickListener(v -> handleSave());
+        getBinding().btnSave.setOnClickListener(v -> handleSave());
     }
 
     private void setupUI() {
-        binding.btnSave.setBackgroundColor(requireContext().getColor(R.color.carti_primary_green));
-        
         switch (mode) {
             case ADD_INCOME:
-                binding.tvDialogTitle.setText(R.string.title_add_income);
-                binding.cardSource.setVisibility(View.VISIBLE);
-                binding.etIncomeSource.setHint(R.string.hint_income_source);
-                binding.etSalaryAmount.setText("");
-                binding.btnSave.setText(R.string.label_add_income);
+                getBinding().tvDialogTitle.setText(R.string.title_add_income);
+                getBinding().cardSource.setVisibility(View.VISIBLE);
+                getBinding().etIncomeSource.setHint(R.string.hint_income_source);
+                getBinding().etSalaryAmount.setText("");
+                getBinding().btnSave.setText(R.string.label_add_income);
                 break;
 
             case EDIT_INCOME:
-                binding.tvDialogTitle.setText(R.string.title_edit_income_extra);
-                binding.cardSource.setVisibility(View.VISIBLE);
+                getBinding().tvDialogTitle.setText(R.string.title_edit_income_extra);
+                getBinding().cardSource.setVisibility(View.VISIBLE);
                 if (incomeToEdit != null) {
-                    binding.etIncomeSource.setText(incomeToEdit.getSource());
-                    binding.etSalaryAmount.setText(String.valueOf(incomeToEdit.getAmount()));
+                    getBinding().etIncomeSource.setText(incomeToEdit.getSource());
+                    getBinding().etSalaryAmount.setText(String.valueOf(incomeToEdit.getAmount()));
                 }
-                binding.btnSave.setText(R.string.label_update);
+                getBinding().btnSave.setText(R.string.label_update);
                 break;
         }
     }
 
     private void handleSave() {
-        String amountStr = binding.etSalaryAmount.getText().toString().trim();
-        String source = binding.etIncomeSource.getText().toString().trim();
-
-        if (amountStr.isEmpty()) {
-            Toast.makeText(requireContext(), "Please enter an amount", Toast.LENGTH_SHORT).show();
+        if (Validator.isEmpty(getBinding().etSalaryAmount)) {
+            showToast("Please enter an amount", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
             return;
         }
 
-        if (source.isEmpty()) {
-            Toast.makeText(requireContext(), "Please enter a source", Toast.LENGTH_SHORT).show();
+        if (Validator.isEmpty(getBinding().etIncomeSource)) {
+            showToast("Please enter a source", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
             return;
         }
 
         try {
-            double amount = Double.parseDouble(amountStr);
+            double amount = Double.parseDouble(getBinding().etSalaryAmount.getText().toString().trim());
             setLoading(true);
 
             if (mode == Mode.ADD_INCOME) {
-                addExtraIncome(source, amount);
+                addExtraIncome(getBinding().etIncomeSource.getText().toString().trim(), amount);
             } else if (mode == Mode.EDIT_INCOME) {
-                updateExtraIncome(source, amount);
+                updateExtraIncome(getBinding().etIncomeSource.getText().toString().trim(), amount);
             }
 
         } catch (NumberFormatException e) {
-            Toast.makeText(requireContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
+            showToast("Invalid amount", com.upreyvan.carti.util.ToastHelper.Status.ERROR);
         }
     }
 
@@ -178,7 +157,7 @@ public class IncomeEditBottomSheet extends BottomSheetDialogFragment {
         if (!isAdded()) return;
         requireActivity().runOnUiThread(() -> {
             if (listener != null) listener.onIncomeUpdated();
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+            showToast(message, com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
             dismiss();
         });
     }
@@ -187,23 +166,16 @@ public class IncomeEditBottomSheet extends BottomSheetDialogFragment {
         if (!isAdded()) return;
         requireActivity().runOnUiThread(() -> {
             setLoading(false);
-            Toast.makeText(requireContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
         });
     }
 
     private void setLoading(boolean loading) {
-        binding.btnSave.setEnabled(!loading);
-        binding.btnSave.setText(loading ? R.string.label_saving : (mode == Mode.ADD_INCOME ? R.string.label_add_income : R.string.label_save));
+        getBinding().btnSave.setEnabled(!loading);
+        getBinding().btnSave.setText(loading ? R.string.label_saving : (mode == Mode.ADD_INCOME ? R.string.label_add_income : R.string.label_save));
     }
 
-    @Override
-    public int getTheme() {
-        return R.style.CustomBottomSheetDialogTheme;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    private void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
+        com.upreyvan.carti.util.ToastHelper.show(requireContext(), message, status);
     }
 }

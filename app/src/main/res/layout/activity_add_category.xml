@@ -96,18 +96,12 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSave"
+        style="@style/CartiButton.Primary"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginHorizontal="24dp"
         android:layout_marginBottom="24dp"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:gravity="center"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
         android:text="@string/btn_save_category"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        app:cornerRadius="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

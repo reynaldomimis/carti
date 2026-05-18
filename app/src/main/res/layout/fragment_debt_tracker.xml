@@ -30,18 +30,18 @@
 
             <TextView
                 android:id="@+id/tv_total_debt_label"
+                style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
                 android:text="@string/total_debt_label"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/tv_subtitle"
+                style="@style/CartiSubHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
                 android:text="@string/debt_summary_subtitle"
                 android:textColor="@color/white_80"
                 android:textSize="12sp" />

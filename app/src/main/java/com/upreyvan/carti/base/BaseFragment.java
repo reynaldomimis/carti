@@ -82,12 +82,18 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
         return binding;
     }
 
+    protected void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
+        com.upreyvan.carti.util.ToastHelper.show(getContext(), message, status);
+    }
+
+    protected void showToast(int resId, com.upreyvan.carti.util.ToastHelper.Status status) {
+        com.upreyvan.carti.util.ToastHelper.show(getContext(), resId, status);
+    }
+
     protected void showError(Throwable t) {
         String message = Constants.ErrorCodes.GENERIC_ERROR;
         if (t != null && t.getMessage() != null) {
             String msg = t.getMessage();
-            // Map known error keys to user-friendly messages if needed, 
-            // but for now, we just ensure we don't leak raw stack traces.
             if (msg.contains("UNAUTHORIZED") || msg.contains("401")) {
                 message = "Session expired. Please login again.";
             } else if (msg.contains("NETWORK") || msg.contains("Unable to resolve host")) {
@@ -95,9 +101,7 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
             }
         }
         
-        if (getContext() != null) {
-            com.google.android.material.snackbar.Snackbar.make(binding.getRoot(), message, com.google.android.material.snackbar.Snackbar.LENGTH_LONG).show();
-        }
+        showToast(message, com.upreyvan.carti.util.ToastHelper.Status.ERROR);
     }
 
     @Override

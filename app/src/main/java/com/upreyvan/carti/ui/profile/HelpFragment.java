@@ -51,7 +51,7 @@ public class HelpFragment extends BaseFragment<FragmentHelpBinding> {
 
         GenericAdapter<FaqItem, ItemFaqBinding> adapter = new GenericAdapter<>(
                 FaqItem.DIFF_CALLBACK,
-                ItemFaqBinding::inflate,
+                (inflater, parent) -> ItemFaqBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
                     binding.tvQuestion.setText(item.getQuestion());
                     binding.tvAnswer.setText(item.getAnswer());

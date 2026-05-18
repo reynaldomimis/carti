@@ -40,10 +40,9 @@
 
     <TextView
         android:id="@+id/tv_toolbar_title"
+        style="@style/CartiHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:textColor="@color/text_primary"
         android:textSize="18sp"
         app:layout_constraintHorizontal_bias="0.45"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -54,20 +53,15 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_action"
-        style="@style/Widget.Material3.Button.TonalButton"
+        style="@style/CartiButton.Tonal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
         android:minHeight="45dp"
         android:paddingHorizontal="12dp"
-        android:textAllCaps="false"
-        android:textColor="@color/mint_green"
         android:textSize="12sp"
         android:visibility="gone"
-        app:backgroundTint="@color/tonal_button_bg"
         app:iconPadding="4dp"
         app:iconSize="16dp"
-        app:iconTint="@color/mint_green"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

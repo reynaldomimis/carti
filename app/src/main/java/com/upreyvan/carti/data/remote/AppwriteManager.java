@@ -30,6 +30,8 @@ import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.CoroutineScopeKt;
 import kotlinx.coroutines.Dispatchers;
 
+import com.upreyvan.carti.util.ToastHelper;
+
 public class AppwriteManager {
     private static AppwriteManager instance;
     private final Client client;
@@ -49,9 +51,9 @@ public class AppwriteManager {
         String endpoint = BuildConfig.APPWRITE_ENDPOINT;
         String projectId = BuildConfig.APPWRITE_PROJECT_ID;
 
-        if (projectId == null || projectId.trim().isEmpty()) {
+        if (com.upreyvan.carti.util.Validator.isEmpty(projectId)) {
             android.util.Log.e("AppwriteManager", "CRITICAL ERROR: APPWRITE_PROJECT_ID is missing from BuildConfig!");
-            mainHandler.post(() -> android.widget.Toast.makeText(context, "Error: Project ID is missing!", android.widget.Toast.LENGTH_LONG).show());
+            mainHandler.post(() -> ToastHelper.show(context, "Error: Project ID is missing!", ToastHelper.Status.ERROR));
         }
 
         android.util.Log.d("AppwriteManager", "Initializing with Project: " + projectId + " | Endpoint: " + endpoint);

@@ -28,6 +28,8 @@ import java.util.Map;
  * Senior Developer Refactored: AuthFragment handles Login and Registration.
  * It ensures the local User Session matches the Gateway's User Context.
  */
+import com.upreyvan.carti.util.Validator;
+
 public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
 
     private boolean isLoginMode = true;
@@ -42,6 +44,25 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         super.onViewCreated(view, savedInstanceState);
         setupUI();
         setupRoleDropdown();
+        setupErrorClearing();
+    }
+
+    private void setupErrorClearing() {
+        android.text.TextWatcher clearErrorWatcher = new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(android.text.Editable s) {
+                getBinding().tilUsername.setError(null);
+                getBinding().tilEmail.setError(null);
+                getBinding().tilPassword.setError(null);
+                getBinding().tilRole.setError(null);
+            }
+        };
+
+        getBinding().etUsername.addTextChangedListener(clearErrorWatcher);
+        getBinding().etEmail.addTextChangedListener(clearErrorWatcher);
+        getBinding().etPassword.addTextChangedListener(clearErrorWatcher);
+        getBinding().actvRole.addTextChangedListener(clearErrorWatcher);
     }
 
     private void setupRoleDropdown() {
@@ -105,28 +126,29 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         String password = getBinding().etPassword.getText().toString().trim();
 
         if (!isLoginMode) {
-            String username = getBinding().etUsername.getText().toString().trim();
-            if (username.isEmpty()) {
+            if (Validator.isEmpty(getBinding().etUsername)) {
                 getBinding().tilUsername.setError(getString(R.string.err_required));
                 isValid = false;
             }
-            String role = getBinding().actvRole.getText().toString();
-            if (role.isEmpty()) {
+            if (Validator.isEmpty(getBinding().actvRole)) {
                 getBinding().tilRole.setError(getString(R.string.err_required));
                 isValid = false;
             }
         }
 
-        if (email.isEmpty()) {
+        if (Validator.isEmpty(email)) {
             getBinding().tilEmail.setError(getString(R.string.err_required));
             isValid = false;
-        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        } else if (!Validator.isValidEmail(email)) {
             getBinding().tilEmail.setError(getString(R.string.err_invalid_email));
             isValid = false;
         }
 
-        if (password.isEmpty()) {
+        if (Validator.isEmpty(password)) {
             getBinding().tilPassword.setError(getString(R.string.err_required));
+            isValid = false;
+        } else if (!Validator.isValidPassword(password)) {
+            getBinding().tilPassword.setError(getString(R.string.msg_password_short));
             isValid = false;
         }
 
@@ -142,14 +164,13 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         AppwriteManager.getInstance(requireContext()).login(email, password, new AppwriteManager.AppwriteCallback<io.appwrite.models.Session>() {
             @Override
             public void onSuccess(io.appwrite.models.Session result) {
-                // STEP 2: Fetch full User Context from Gateway immediately after session creation
                 fetchUserContextAndNavigate();
             }
 
             @Override
             public void onError(Throwable error) {
                 setLoading(false);
-                Toast.makeText(requireContext(), "Login failed: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                showToast("Login failed: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
             }
         });
     }
@@ -166,7 +187,6 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         new ApiHelper(requireContext()).register(email, password, username, isEmployed, role, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
-                // Registration successful on gateway, now create session
                 AppwriteManager.getInstance(requireContext()).login(email, password, new AppwriteManager.AppwriteCallback<io.appwrite.models.Session>() {
                     @Override
                     public void onSuccess(io.appwrite.models.Session session) {
@@ -176,7 +196,7 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
                     @Override
                     public void onError(Throwable error) {
                         setLoading(false);
-                        Toast.makeText(requireContext(), "Registered but login failed: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                        showToast("Registered but login failed: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                     }
                 });
             }
@@ -184,7 +204,7 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             @Override
             public void onError(Throwable error) {
                 setLoading(false);
-                Toast.makeText(requireContext(), "Registration failed: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                showToast("Registration failed: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
             }
         });
     }
@@ -218,7 +238,7 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             @Override
             public void onError(Throwable error) {
                 setLoading(false);
-                Toast.makeText(requireContext(), "Failed to fetch user data: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                showToast("Failed to fetch user data: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
             }
         });
     }

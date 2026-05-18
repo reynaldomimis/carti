@@ -16,11 +16,10 @@
 
         <TextView
             android:id="@+id/tvHeaderTitle"
+            style="@style/CartiHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
             android:text="@string/expenses_title"
-            android:textColor="@color/text_primary"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -136,7 +135,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="@font/plus_jakarta_sans_bold"
-                        android:text="₱0.00"
+                        android:text="@string/default_amount"
                         android:textColor="@color/text_primary"
                         android:textSize="28sp" />
 

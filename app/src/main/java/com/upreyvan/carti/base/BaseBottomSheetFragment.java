@@ -11,9 +11,17 @@ import androidx.viewbinding.ViewBinding;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import com.upreyvan.carti.R;
+
 public abstract class BaseBottomSheetFragment<VB extends ViewBinding> extends BottomSheetDialogFragment {
 
     private VB binding;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(STYLE_NORMAL, R.style.CustomBottomSheetDialogTheme);
+    }
 
     protected abstract VB inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container);
 

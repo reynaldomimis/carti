@@ -21,6 +21,8 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
 
+import com.upreyvan.carti.util.Validator;
+
 public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
 
     private ProgressDialog progressDialog;
@@ -42,9 +44,8 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
     }
 
     private void setupDefaults() {
-        // Default Date
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MONTH, 1); // Default to next month for goal
+        calendar.add(Calendar.MONTH, 1);
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         getBinding().tvSelectedDate.setText(sdf.format(calendar.getTime()));
     }
@@ -67,15 +68,13 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
 
     private void setupListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
-            String name = getBinding().etGoalName.getText().toString();
-            String amountStr = getBinding().etTargetAmount.getText().toString();
-
-            if (name.isEmpty() || amountStr.isEmpty()) {
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) {
+                showToast("Please fill in all fields", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
-            double targetAmount = Double.parseDouble(amountStr);
+            String name = getBinding().etGoalName.getText().toString();
+            double targetAmount = Double.parseDouble(getBinding().etTargetAmount.getText().toString());
             showLoading(true);
 
             new ApiHelper(this).addGoal(name, targetAmount, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
@@ -84,14 +83,13 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
                     String id = String.valueOf(result.get("$id"));
                     String familyId = new com.upreyvan.carti.data.local.PreferenceManager(AddGoalActivity.this).getFamilyId();
                     goalRepository.saveLocally(
-                            new com.upreyvan.carti.model.Goal(id, familyId, name, 0, targetAmount, "Target Date", R.drawable.test,
+                            new com.upreyvan.carti.model.Goal(id, familyId, name, "", 0, targetAmount, "Target Date", R.drawable.test,
                                     androidx.core.content.ContextCompat.getColor(AddGoalActivity.this, R.color.goal_card_1))
                     );
 
                     showLoading(false);
-                    Toast.makeText(AddGoalActivity.this, "Goal Saved Successfully!", Toast.LENGTH_SHORT).show();
+                    showToast("Goal Saved Successfully!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
                     
-                    // Return to MainActivity and show Home tab
                     Intent intent = new Intent(AddGoalActivity.this, com.upreyvan.carti.MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     intent.putExtra("show_home", true);
@@ -102,7 +100,7 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
                 @Override
                 public void onError(Throwable error) {
                     showLoading(false);
-                    Toast.makeText(AddGoalActivity.this, "Error saving goal: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    showToast("Error saving goal: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                 }
             });
         });

@@ -61,7 +61,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/plus_jakarta_sans_bold"
-                        android:text="0"
+                        android:text="@string/placeholder_zero"
                         android:textColor="@color/text_primary"
                         android:textSize="32sp"
                         app:layout_constraintStart_toStartOf="parent"
@@ -86,7 +86,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:text="Date"
+                        android:text="@string/placeholder_date_simple"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp"
                         app:layout_constraintStart_toStartOf="parent"
@@ -146,7 +146,7 @@
                             android:layout_alignParentStart="true"
                             android:layout_marginTop="4dp"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
-                            android:text="₱0.00"
+                            android:text="@string/default_amount"
                             android:textColor="@color/text_primary"
                             android:textSize="20sp" />
                     </RelativeLayout>
@@ -177,7 +177,7 @@
                             android:layout_below="@id/labelHati"
                             android:layout_marginTop="4dp"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
-                            android:text="₱0.00 / day"
+                            android:text="@string/default_daily_amount"
                             android:textColor="@color/text_primary"
                             android:textSize="18sp" />
                     </RelativeLayout>
@@ -189,13 +189,12 @@
             <!-- Income History Section -->
             <TextView
                 android:id="@+id/tvIncomeHistoryLabel"
+                style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:text="Income History"
-                android:textColor="@color/text_primary"
+                android:text="@string/label_income_history"
                 android:textSize="16sp"
                 android:visibility="gone"
                 tools:visibility="visible" />

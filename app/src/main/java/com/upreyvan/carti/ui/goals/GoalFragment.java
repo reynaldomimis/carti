@@ -128,7 +128,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     private void setupRecyclerView() {
         adapter = new GenericAdapter<>(
                 Goal.DIFF_CALLBACK,
-                ItemGoalBinding::inflate,
+                (inflater, parent) -> ItemGoalBinding.inflate(inflater, parent, false),
                 (binding, goal) -> {
                     View shimmer = binding.getRoot().findViewById(R.id.shimmerView);
                     if (isLoading) {
@@ -154,7 +154,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                     }
                 }
         );
-        adapter.setOnItemClickListener(goal -> navigateTo(GoalDetailFragment.newInstance(goal)));
+        adapter.setOnItemClickListener(goal -> navigateTo(GoalDetailFragment.newInstance(goal.getId())));
         getBinding().rvGoals.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvGoals.setAdapter(adapter);
     }

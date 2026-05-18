@@ -1,45 +1,34 @@
 package com.upreyvan.carti.ui.debt;
 
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.repository.DebtRepository;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.repository.DebtRepository;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
-import com.upreyvan.carti.model.Debt;
-import com.upreyvan.carti.data.remote.AppwriteManager;
-import io.appwrite.models.Document;
-import io.appwrite.models.DocumentList;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import android.widget.Toast;
-import java.text.NumberFormat;
-import java.util.Locale;
-
-import androidx.core.content.ContextCompat;
-import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ItemDebtBinding;
 import com.upreyvan.carti.model.Debt;
 import com.upreyvan.carti.util.Utils;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding> {
 
@@ -108,8 +97,6 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         }
     }
 
-
-
     private void setupToolbar() {
         setupToolbar(getBinding().layoutToolbar, R.string.debt_tracker_title);
         getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
@@ -127,19 +114,16 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
+            public void onTabUnselected(TabLayout.Tab tab) {}
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
     }
 
     private void setupRecyclerView() {
         adapter = new GenericAdapter<>(
                 Debt.DIFF_CALLBACK,
-                ItemDebtBinding::inflate,
+                (inflater, parent) -> ItemDebtBinding.inflate(inflater, parent, false),
                 (binding, debt) -> {
                     View shimmer = binding.getRoot().findViewById(R.id.shimmerView);
                     if (isLoading) {
@@ -149,10 +133,10 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
                         if (shimmer != null) shimmer.setVisibility(View.GONE);
                         binding.layoutContent.setVisibility(View.VISIBLE);
                         
-                        binding.tvPersonName.setText(debt.getPersonName());
+                        binding.tvPersonName.setText(debt.getTitle());
                         binding.tvDescription.setText(debt.getDescription());
                         binding.tvAmount.setText(Utils.formatCurrency(debt.getAmount()));
-                        binding.tvDate.setText(debt.getDate());
+                        binding.tvDate.setText(debt.getTimestamp());
                         binding.ivAvatar.setImageResource(debt.getAvatarResId());
                         
                         binding.tvStatus.setText(debt.isPaid() ? R.string.status_paid : R.string.status_not_paid);
@@ -169,11 +153,11 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
 
     private void filterDebts(int tabIndex) {
         List<Debt> filtered = new ArrayList<>();
-        if (tabIndex == 0) { // All or Owed to me
+        if (tabIndex == 0) {
             for (Debt d : allDebts) {
                 if (!d.isPaid()) filtered.add(d);
             }
-        } else { // History / Paid
+        } else {
             for (Debt d : allDebts) {
                 if (d.isPaid()) filtered.add(d);
             }
@@ -186,23 +170,23 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         DialogDebtDetailBinding dialogBinding = DialogDebtDetailBinding.inflate(getLayoutInflater());
         dialog.setContentView(dialogBinding.getRoot());
 
-        dialogBinding.tvDetailName.setText(debt.getPersonName());
+        dialogBinding.tvDetailName.setText(debt.getTitle());
         dialogBinding.tvDetailDesc.setText(debt.getDescription());
-        dialogBinding.tvDetailAmount.setText(String.format("₱%.0f", debt.getAmount()));
-        dialogBinding.tvDetailDate.setText(debt.getDate());
+        dialogBinding.tvDetailAmount.setText(Utils.formatCurrency(debt.getAmount()));
+        dialogBinding.tvDetailDate.setText(debt.getTimestamp());
         dialogBinding.tvNotes.setText(debt.getNotes());
         dialogBinding.ivDetailAvatar.setImageResource(debt.getAvatarResId());
 
         if (debt.isPaid()) {
             dialogBinding.btnMarkAsPaid.setEnabled(false);
             dialogBinding.btnMarkAsPaid.setText(R.string.status_paid);
-            dialogBinding.tvPaymentHistory.setText("Paid on " + debt.getDate());
+            dialogBinding.tvPaymentHistory.setText("Paid on " + debt.getTimestamp());
         } else {
             dialogBinding.btnMarkAsPaid.setOnClickListener(v -> {
                 dialogBinding.btnMarkAsPaid.setEnabled(false);
-                apiHelper.markDebtPaid(debt.getId(), new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+                apiHelper.markDebtPaid(debt.getId(), new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                     @Override
-                    public void onSuccess(java.util.Map<String, Object> result) {
+                    public void onSuccess(Map<String, Object> result) {
                         requireActivity().runOnUiThread(() -> {
                             debt.setPaid(true);
                             adapter.notifyDataSetChanged();
@@ -214,7 +198,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
                     public void onError(Throwable error) {
                         requireActivity().runOnUiThread(() -> {
                             dialogBinding.btnMarkAsPaid.setEnabled(true);
-                            com.upreyvan.carti.util.Utils.showToast(requireContext(), "Error: " + error.getMessage());
+                            Utils.showToast(requireContext(), "Error: " + error.getMessage());
                         });
                     }
                 });

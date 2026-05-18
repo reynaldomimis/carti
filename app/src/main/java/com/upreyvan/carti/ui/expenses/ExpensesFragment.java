@@ -167,7 +167,7 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     private void setupLegend() {
         legendAdapter = new GenericAdapter<>(
                 ExpenseCategory.DIFF_CALLBACK,
-                ItemLegendExpenseBinding::inflate,
+                (inflater, parent) -> ItemLegendExpenseBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
                     binding.viewColor.setBackgroundTintList(android.content.res.ColorStateList.valueOf(item.getColor()));
                     binding.tvCategory.setText(item.getName());

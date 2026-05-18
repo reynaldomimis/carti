@@ -21,6 +21,8 @@ import com.upreyvan.carti.util.Utils;
 
 import java.util.Map;
 
+import com.upreyvan.carti.util.Validator;
+
 public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> {
 
     @Override
@@ -52,13 +54,12 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
 
     private void setupListeners() {
         getBinding().btnJoin.setOnClickListener(v -> {
-            String inviteCode = getBinding().etFamilyId.getText().toString().trim();
-
-            if (inviteCode.isEmpty()) {
+            if (Validator.isEmpty(getBinding().etFamilyId)) {
                 getBinding().tilFamilyId.setError(getString(R.string.err_invalid_family_id));
                 return;
             }
 
+            String inviteCode = getBinding().etFamilyId.getText().toString().trim();
             setLoading(true);
             new ApiHelper(requireContext()).joinFamily(inviteCode, new AppwriteManager.AppwriteCallback<>() {
                 @Override
@@ -73,7 +74,7 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
                             pref.setFamilyId(familyId);
                         }
 
-                        Toast.makeText(requireContext(), R.string.msg_join_success, Toast.LENGTH_LONG).show();
+                        showToast(R.string.msg_join_success, com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
                         Intent intent = new Intent(requireActivity(), MainActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
@@ -87,13 +88,13 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
                         setLoading(false);
                         String message = error.getMessage();
                         if ("ALREADY_IN_A_FAMILY".equals(message)) {
-                            Toast.makeText(requireContext(), R.string.err_already_in_family, Toast.LENGTH_LONG).show();
+                            showToast(R.string.err_already_in_family, com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                             startActivity(new Intent(requireActivity(), MainActivity.class));
                             requireActivity().finish();
                         } else if ("INVALID_INVITE_CODE".equals(message)) {
                             getBinding().tilFamilyId.setError(getString(R.string.err_invalid_invite_code));
                         } else {
-                            Toast.makeText(requireContext(), getString(R.string.err_error_prefix, message), Toast.LENGTH_LONG).show();
+                            showToast(getString(R.string.err_error_prefix, message), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                         }
                     }
                 }

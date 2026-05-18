@@ -95,6 +95,7 @@ public class GoalRepository {
                 doc.getId(),
                 familyId,
                 String.valueOf(data.get("name")),
+                "", // description
                 Utils.getDouble(data.get("currentAmount")),
                 Utils.getDouble(data.get("targetAmount")),
                 "", // Date if needed

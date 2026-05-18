@@ -28,6 +28,8 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
 
+import com.upreyvan.carti.util.Validator;
+
 public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmountBinding> {
 
     private static final String ARG_ITEM = "arg_item";
@@ -55,25 +57,6 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
         return DialogQuickLogAmountBinding.inflate(inflater, container, false);
     }
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
-        
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-            dialog.getWindow().setNavigationBarColor(ContextCompat.getColor(requireContext(), R.color.white));
-
-            View decorView = dialog.getWindow().getDecorView();
-            int flags = decorView.getSystemUiVisibility();
-            flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-            decorView.setSystemUiVisibility(flags);
-        }
-
-        dialog.getWindow().setDimAmount(0.4f);
-        return dialog;
-    }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -86,17 +69,15 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
         }
 
         getBinding().tvCategoryName.setText(item.getTitle());
-        getBinding().btnLog.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.carti_primary_green));
 
         getBinding().btnLog.setOnClickListener(v -> {
-            String amountStr = getBinding().etAmount.getText().toString().trim();
-            if (amountStr.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter an amount", Toast.LENGTH_SHORT).show();
+            if (Validator.isEmpty(getBinding().etAmount)) {
+                showToast("Please enter an amount", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
             try {
-                double amount = Double.parseDouble(amountStr);
+                double amount = Double.parseDouble(getBinding().etAmount.getText().toString().trim());
                 String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
                 
                 int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
@@ -111,8 +92,9 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
                                 id,
                                 familyId,
                                 item.getTitle(),
+                                "Quick Log", // description
                                 time,
-                                "₱" + String.format(Locale.getDefault(), "%.2f", amount),
+                                amount,
                                 item.getIconRes(),
                                 bgColor,
                                 iconColor,
@@ -123,7 +105,9 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
                     }
 
                     @Override
-                    public void onError(Throwable error) {}
+                    public void onError(Throwable error) {
+                        showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                    }
                 });
 
                 if (listener != null) {
@@ -131,13 +115,12 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
                 }
                 dismiss();
             } catch (NumberFormatException e) {
-                Toast.makeText(requireContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
+                showToast("Invalid amount", com.upreyvan.carti.util.ToastHelper.Status.ERROR);
             }
         });
     }
 
-    @Override
-    public int getTheme() {
-        return R.style.CustomBottomSheetDialogTheme;
+    private void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
+        com.upreyvan.carti.util.ToastHelper.show(requireContext(), message, status);
     }
 }

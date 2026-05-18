@@ -9,49 +9,31 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
-public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter<T, BaseAdapter.BaseViewHolder<VB>> {
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
-    protected BaseAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback) {
+public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter<T, BaseAdapter.ViewHolder<VB>> {
+
+    private final BiFunction<LayoutInflater, ViewGroup, VB> bindingInflater;
+    private final BiConsumer<VB, T> binder;
+    private OnItemClickListener<T> listener;
+    private OnItemLongClickListener<T> longClickListener;
+
+    protected BaseAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback,
+                        BiFunction<LayoutInflater, ViewGroup, VB> bindingInflater,
+                        BiConsumer<VB, T> binder) {
         super(diffCallback);
+        this.bindingInflater = bindingInflater;
+        this.binder = binder;
     }
-
-    @NonNull
-    @Override
-    public BaseViewHolder<VB> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        VB binding = inflateBinding(LayoutInflater.from(parent.getContext()), parent);
-        return new BaseViewHolder<>(binding);
-    }
-
-    protected abstract VB inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent);
-
-    @Override
-    public void onBindViewHolder(@NonNull BaseViewHolder<VB> holder, int position) {
-        T item = getItem(position);
-        bind(holder.binding, item);
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onItemClick(item);
-        });
-        holder.itemView.setOnLongClickListener(v -> {
-            if (longClickListener != null) {
-                longClickListener.onItemLongClick(item);
-                return true;
-            }
-            return false;
-        });
-    }
-
-    protected abstract void bind(VB binding, T item);
 
     public interface OnItemClickListener<T> {
         void onItemClick(T item);
     }
 
     public interface OnItemLongClickListener<T> {
-        void onItemLongClick(T item);
+        boolean onItemLongClick(T item);
     }
-
-    private OnItemClickListener<T> listener;
-    private OnItemLongClickListener<T> longClickListener;
 
     public void setOnItemClickListener(OnItemClickListener<T> listener) {
         this.listener = listener;
@@ -61,10 +43,29 @@ public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter
         this.longClickListener = listener;
     }
 
-    public static class BaseViewHolder<VB extends ViewBinding> extends RecyclerView.ViewHolder {
-        public final VB binding;
+    @NonNull
+    @Override
+    public ViewHolder<VB> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        VB binding = bindingInflater.apply(LayoutInflater.from(parent.getContext()), parent);
+        return new ViewHolder<>(binding);
+    }
 
-        public BaseViewHolder(VB binding) {
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder<VB> holder, int position) {
+        T item = getItem(position);
+        binder.accept(holder.binding, item);
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onItemClick(item);
+        });
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) return longClickListener.onItemLongClick(item);
+            return false;
+        });
+    }
+
+    public static class ViewHolder<VB extends ViewBinding> extends RecyclerView.ViewHolder {
+        public final VB binding;
+        public ViewHolder(@NonNull VB binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

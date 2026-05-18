@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:text="Category Name"
+        android:text="@string/label_category_name"
         android:textColor="@color/text_primary"
         android:textSize="18sp" />
 
@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:fontFamily="@font/plus_jakarta_sans_medium"
-        android:text="Enter amount to log"
+        android:text="@string/prompt_enter_amount"
         android:textColor="@color/text_tertiary"
         android:textSize="14sp" />
 
@@ -64,7 +64,7 @@
                 android:layout_height="match_parent"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:hint="0.00"
+                android:hint="@string/hint_amount"
                 android:importantForAutofill="no"
                 android:inputType="numberDecimal"
                 android:paddingStart="8dp"
@@ -83,7 +83,7 @@
         android:layout_height="56dp"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:text="Log Expense"
+        android:text="@string/btn_log_expense"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:insetTop="0dp"

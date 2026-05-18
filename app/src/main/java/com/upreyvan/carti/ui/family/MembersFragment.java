@@ -141,7 +141,7 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
     private void setupRecyclerView() {
         adapter = new GenericAdapter<>(
                 Member.DIFF_CALLBACK,
-                ItemMemberBinding::inflate,
+                (inflater, parent) -> ItemMemberBinding.inflate(inflater, parent, false),
                 (binding, member) -> {
                     View shimmer = binding.getRoot().findViewById(R.id.shimmerView);
                     if (isLoading) {
@@ -150,11 +150,11 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                     } else {
                         if (shimmer != null) shimmer.setVisibility(View.GONE);
                         binding.layoutContent.setVisibility(View.VISIBLE);
-                        binding.tvMemberName.setText(member.getName());
-                        binding.chipRole.setText(member.getRole());
-                        binding.ivMemberAvatar.setImageResource(member.getAvatarRes());
-                        String statusText = member.getStatus() + " • " + Utils.formatCurrency(member.getSalary());
-                        binding.tvMemberStatus.setText(statusText);
+                        binding.tvTitle.setText(member.getTitle());
+                        binding.chipRole.setText(member.getDescription());
+                        binding.ivAvatar.setImageResource(member.getAvatarRes());
+                        String statusText = member.getStatus() + " • " + Utils.formatCurrency(member.getAmount());
+                        binding.tvDescription.setText(statusText);
                     }
                 }
         );

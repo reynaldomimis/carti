@@ -121,7 +121,6 @@ public class IncomeRepository {
                             String.valueOf(data.get("$createdAt"))
                         ));
                     }
-                    incomeDao.deleteAll(pref.getFamilyId());
                     incomeDao.insertAll(incomes);
                 });
             }

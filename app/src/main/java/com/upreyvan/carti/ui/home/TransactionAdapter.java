@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
-import androidx.recyclerview.widget.DiffUtil;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseAdapter;
@@ -22,18 +21,11 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
     private boolean isLoading = false;
 
     public TransactionAdapter() {
-        super(new DiffUtil.ItemCallback<Transaction>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull Transaction oldItem, @NonNull Transaction newItem) {
-                if (oldItem.getTitle() == null || newItem.getTitle() == null) return false;
-                return oldItem.getTitle().equals(newItem.getTitle());
-            }
-
-            @Override
-            public boolean areContentsTheSame(@NonNull Transaction oldItem, @NonNull Transaction newItem) {
-                return oldItem.equals(newItem);
-            }
-        });
+        super(Transaction.DIFF_CALLBACK,
+                (inflater, parent) -> ItemTransactionBinding.inflate(inflater, parent, false),
+                (binding, item) -> {
+                    // Logic moved to internal bind for isLoading handling
+                });
     }
 
     public void setLoading(boolean loading) {
@@ -48,12 +40,10 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
     }
 
     @Override
-    protected ItemTransactionBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) {
-        return ItemTransactionBinding.inflate(inflater, parent, false);
-    }
+    public void onBindViewHolder(@NonNull ViewHolder<ItemTransactionBinding> holder, int position) {
+        Transaction item = getItem(position);
+        ItemTransactionBinding binding = holder.binding;
 
-    @Override
-    protected void bind(ItemTransactionBinding binding, Transaction item) {
         if (isLoading) {
             binding.shimmerView.getRoot().setVisibility(View.VISIBLE);
             binding.layoutContent.setVisibility(View.INVISIBLE);
@@ -65,7 +55,16 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
 
         binding.tvTitle.setText(item.getTitle());
         binding.tvTimestamp.setText(com.upreyvan.carti.util.Utils.getTimeAgo(item.getTimestampMillis()));
-        binding.tvAmount.setText(item.getAmount());
+        
+        String formattedAmount = com.upreyvan.carti.util.Utils.formatCurrency(item.getAmount());
+        if ("EXPENSE".equalsIgnoreCase(item.getType())) {
+            binding.tvAmount.setText(binding.getRoot().getContext().getString(R.string.format_expense, formattedAmount));
+            binding.tvAmount.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_red));
+        } else {
+            binding.tvAmount.setText(binding.getRoot().getContext().getString(R.string.format_income, formattedAmount));
+            binding.tvAmount.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.green_primary));
+        }
+
         binding.ivIcon.setImageResource(item.getIconRes());
 
         if (item.getIconColor() != 0) {

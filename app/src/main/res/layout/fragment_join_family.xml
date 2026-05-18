@@ -35,29 +35,26 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
+                style="@style/CartiHeader"
                 android:gravity="center"
                 android:text="@string/join_headline"
-                android:textColor="@color/text_primary"
                 android:textSize="22sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
+                style="@style/CartiSubHeader"
                 android:gravity="center"
                 android:text="@string/join_subtext"
-                android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="40dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
+                style="@style/CartiHeader"
                 android:text="@string/label_family_id"
-                android:textColor="@color/text_primary"
                 android:textSize="14sp" />
 
             <com.google.android.material.textfield.TextInputLayout
@@ -126,15 +123,11 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnJoin"
+                style="@style/CartiButton.Primary"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="24dp"
-                android:backgroundTint="@color/carti_primary_green"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:text="@string/btn_join_family"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                app:cornerRadius="12dp" />
+                android:text="@string/btn_join_family" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

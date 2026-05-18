@@ -12,11 +12,21 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.viewbinding.ViewBinding;
 
+import com.upreyvan.carti.util.ToastHelper;
+
 public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActivity {
 
     private VB binding;
 
     protected abstract VB inflateBinding(LayoutInflater inflater);
+
+    protected void showToast(String message, ToastHelper.Status status) {
+        ToastHelper.show(this, message, status);
+    }
+
+    protected void showToast(int resId, ToastHelper.Status status) {
+        ToastHelper.show(this, resId, status);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

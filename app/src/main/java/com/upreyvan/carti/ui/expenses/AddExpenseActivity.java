@@ -28,6 +28,8 @@ import com.upreyvan.carti.util.Utils;
 
 import java.util.Map;
 
+import com.upreyvan.carti.util.Validator;
+
 public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> {
 
     private ProgressDialog progressDialog;
@@ -49,7 +51,6 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
     }
 
     private void setupDropdowns() {
-        // Dynamic Categories from CategoryManager
         List<Category> categories = CategoryManager.getInstance(this).getCategories();
         String[] categoryNames = new String[categories.size()];
         for (int i = 0; i < categories.size(); i++) {
@@ -63,7 +64,6 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
             getBinding().etCategory.setText(categoryNames[0], false);
         }
 
-        // Payment Sources
         String[] sources = {
                 "Cash",
                 "GCash",
@@ -96,15 +96,14 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
 
     private void setupClickListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
-            String amount = getBinding().etAmount.getText().toString();
-            String category = getBinding().etCategory.getText().toString();
-            String source = getBinding().etSource.getText().toString();
-
-            if (amount.isEmpty() || category.isEmpty() || source.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            if (Validator.isEmpty(getBinding().etAmount) || Validator.isEmpty(getBinding().etCategory) || Validator.isEmpty(getBinding().etSource)) {
+                showToast("Please fill all fields", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
+            String amount = getBinding().etAmount.getText().toString();
+            String category = getBinding().etCategory.getText().toString();
+            String source = getBinding().etSource.getText().toString();
             double amountVal = Double.parseDouble(amount);
             
             showLoading(true);
@@ -119,8 +118,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
                 @Override
                 public void onError(Throwable error) {
                     showLoading(false);
-                    Toast.makeText(AddExpenseActivity.this, "Failed to save to server: " + error.getMessage(), Toast.LENGTH_LONG).show();
-                    // Optionally save locally anyway? User asked to implement API, so let's stick to success flow
+                    showToast("Failed to save: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                 }
             });
         });
@@ -136,11 +134,9 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
     }
 
     private void saveLocalAndFinish(String id, double amountVal, String category, String source) {
-        // Save to ExpenseManager (Local)
         String familyId = new com.upreyvan.carti.data.local.PreferenceManager(this).getFamilyId();
         String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
         
-        // Get Category Icon
         Category selectedCategory = null;
         List<Category> categories = CategoryManager.getInstance(this).getCategories();
         for (Category cat : categories) {
@@ -158,8 +154,9 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
                 id,
                 familyId,
                 category,
+                "", // description
                 time,
-                "₱" + String.format(Locale.getDefault(), "%.2f", amountVal),
+                amountVal,
                 iconRes,
                 bgColor,
                 iconColor,
@@ -169,9 +166,8 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
         transactionRepository.saveLocally(transaction);
 
         showLoading(false);
-        Toast.makeText(this, "Expense Saved!", Toast.LENGTH_SHORT).show();
+        showToast("Expense Saved!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
         
-        // Return to MainActivity and clear the stack
         Intent intent = new Intent(this, com.upreyvan.carti.MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);

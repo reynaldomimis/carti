@@ -3,6 +3,7 @@ package com.upreyvan.carti.util;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -202,7 +203,7 @@ public class Utils {
 
     public static void showToast(Context context, String message) {
         if (context != null && message != null) {
-            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
         }
     }
 

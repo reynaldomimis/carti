@@ -346,7 +346,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
         quickLogAdapter = new GenericAdapter<>(
                 QuickLogItem.DIFF_CALLBACK,
-                ItemQuickLogBinding::inflate,
+                (inflater, parent) -> ItemQuickLogBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
                     binding.tvLabel.setText(item.getTitle());
                     binding.ivIcon.setImageResource(item.getIconRes());
@@ -373,7 +373,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         quickLogAdapter.setOnItemLongClickListener(item -> {
             if (!item.getTitle().equals(othersLabel) && !item.getTitle().equals(seeLessLabel)) {
                 showDeleteCategoryDialog(item);
+                return true;
             }
+            return false;
         });
 
         quickLogAdapter.submitList(items);
@@ -381,14 +383,13 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void showDeleteCategoryDialog(QuickLogItem item) {
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Delete Category")
-                .setMessage("Are you sure you want to delete \"" + item.getTitle() + "\"?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    deleteCategory(item.getTitle());
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        com.upreyvan.carti.util.DialogHelper.showConfirmation(
+                requireContext(),
+                "Delete Category",
+                "Are you sure you want to delete \"" + item.getTitle() + "\"?",
+                "Delete",
+                () -> deleteCategory(item.getTitle())
+        );
     }
 
     private void deleteCategory(String categoryName) {
@@ -404,17 +405,16 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         if (toRemove != null) {
             categories.remove(toRemove);
             manager.updateCategories(categories);
-            setupQuickLog(); // Refresh UI
-            Toast.makeText(requireContext(), categoryName + " deleted", Toast.LENGTH_SHORT).show();
+            setupQuickLog();
+            showToast(categoryName + " deleted", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
         }
     }
 
     private void showQuickLogDialog(QuickLogItem item) {
         QuickLogDialog dialog = QuickLogDialog.newInstance(item);
         dialog.setListener((loggedItem, amount) -> {
-            Toast.makeText(requireContext(), 
-                "Logged ₱" + String.format("%.2f", amount) + " for " + loggedItem.getTitle(), 
-                Toast.LENGTH_SHORT).show();
+            showToast("Logged ₱" + String.format("%.2f", amount) + " for " + loggedItem.getTitle(), 
+                    com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
         });
         dialog.show(getChildFragmentManager(), "QUICK_LOG_DIALOG");
     }

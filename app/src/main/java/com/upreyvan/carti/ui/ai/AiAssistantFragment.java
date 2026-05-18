@@ -112,7 +112,7 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
         getBinding().rvSuggestions.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         getBinding().rvSuggestions.setAdapter(suggestionAdapter);
 
-        suggestionAdapter.setOnSuggestionClickListener(suggestion -> {
+        suggestionAdapter.setOnItemClickListener(suggestion -> {
             getBinding().layoutInput.etInput.setText(suggestion.getText());
             getBinding().layoutInput.etInput.setSelection(suggestion.getText().length());
             getBinding().layoutInput.etInput.requestFocus();
@@ -186,10 +186,6 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
             AiResult result = CartiAiManager.getInstance(requireContext())
                     .processMessage(text);
 
-
-            // =========================
-            // AI MESSAGE (WITH ICON)
-            // =========================
             chatMessages.add(new ChatMessage(
                     getString(R.string.chat_sender_ai),
                     result.getMessage(),

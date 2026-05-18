@@ -21,6 +21,8 @@ import com.upreyvan.carti.util.Utils;
 
 import java.util.Map;
 
+import com.upreyvan.carti.util.Validator;
+
 public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCreateBinding> {
 
     @Override
@@ -43,14 +45,13 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
     }
 
     private void performCreateFamily() {
-        String familyName = getBinding().etFamilyName.getText().toString().trim();
-        
-        if (familyName.isEmpty()) {
+        if (Validator.isEmpty(getBinding().etFamilyName)) {
             getBinding().tilFamilyName.setError(getString(R.string.err_required));
             return;
         }
         getBinding().tilFamilyName.setError(null);
 
+        String familyName = getBinding().etFamilyName.getText().toString().trim();
         setLoading(true);
         
         new ApiHelper(requireContext()).createFamily(familyName, new AppwriteManager.AppwriteCallback<>() {
@@ -86,13 +87,13 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
                     setLoading(false);
                     String message = error.getMessage();
                     if ("ALREADY_IN_A_FAMILY".equals(message)) {
-                        Toast.makeText(requireContext(), R.string.err_already_in_family, Toast.LENGTH_LONG).show();
+                        showToast(R.string.err_already_in_family, com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                         startActivity(new Intent(requireActivity(), MainActivity.class));
                         requireActivity().finish();
                     } else if ("PARENTS_ONLY".equals(message)) {
-                        Toast.makeText(requireContext(), R.string.err_parents_only, Toast.LENGTH_LONG).show();
+                        showToast(R.string.err_parents_only, com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                     } else {
-                        Toast.makeText(requireContext(), getString(R.string.err_error_prefix, message), Toast.LENGTH_LONG).show();
+                        showToast(getString(R.string.err_error_prefix, message), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                     }
                 }
             }

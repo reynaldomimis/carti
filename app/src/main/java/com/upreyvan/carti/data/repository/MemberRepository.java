@@ -42,7 +42,6 @@ public class MemberRepository {
         executor.execute(() -> {
             List<Member> localMembers = memberDao.getAllMembersList(pref.getFamilyId());
             if (localMembers.isEmpty()) {
-                // Fetch only if local is empty to save bandwidth
                 refreshMembers();
             }
         });
@@ -65,8 +64,7 @@ public class MemberRepository {
                                 salary = 0;
                             }
                         }
-                        
-                        // Map isEmployed (boolean) to status string base sa screenshot
+
                         Object isEmployedObj = data.get("isEmployed");
                         boolean isEmployed = false;
                         if (isEmployedObj instanceof Boolean) {
@@ -86,14 +84,12 @@ public class MemberRepository {
                             salary
                         ));
                     }
-                    memberDao.deleteAll(familyId);
                     memberDao.insertAll(members);
                 });
             }
 
             @Override
             public void onError(Throwable error) {
-                // Silently fail, UI will show whatever is in Room
             }
         });
     }

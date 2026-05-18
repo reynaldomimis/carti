@@ -34,23 +34,21 @@
 
                 <TextView
                     android:id="@+id/tvTitle"
+                    style="@style/CartiHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:fontFamily="@font/plus_jakarta_sans_bold"
                     android:text="@string/login_title"
-                    android:textColor="@color/text_primary"
                     android:textSize="24sp"
                     android:gravity="center" />
 
                 <TextView
                     android:id="@+id/tvSubtitle"
+                    style="@style/CartiSubHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:text="@string/login_subtitle"
-                    android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     android:gravity="center" />
 
@@ -65,7 +63,8 @@
                     app:boxStrokeColor="@color/green_primary"
                     app:hintTextColor="@color/green_primary"
                     app:startIconDrawable="@drawable/ic_person"
-                    app:startIconTint="@color/text_tertiary">
+                    app:startIconTint="@color/text_tertiary"
+                    app:errorIconDrawable="@null">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etUsername"
@@ -85,7 +84,8 @@
                     app:boxStrokeColor="@color/green_primary"
                     app:hintTextColor="@color/green_primary"
                     app:startIconDrawable="@drawable/ic_email"
-                    app:startIconTint="@color/text_tertiary">
+                    app:startIconTint="@color/text_tertiary"
+                    app:errorIconDrawable="@null">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etEmail"
@@ -107,7 +107,8 @@
                     app:endIconTint="@color/green_primary"
                     app:hintTextColor="@color/green_primary"
                     app:startIconDrawable="@drawable/ic_lock"
-                    app:startIconTint="@color/text_tertiary">
+                    app:startIconTint="@color/text_tertiary"
+                    app:errorIconDrawable="@null">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etPassword"
@@ -123,7 +124,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:hint="Select Your Role"
+                    android:hint="@string/hint_select_role"
                     android:visibility="gone"
                     app:boxStrokeColor="@color/green_primary"
                     app:hintTextColor="@color/green_primary"
@@ -144,22 +145,18 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:fontFamily="@font/plus_jakarta_sans_medium"
-                    android:text="I am an Employee (Head of Family)"
+                    android:text="@string/label_employee_head"
                     android:textColor="@color/text_secondary"
                     android:visibility="gone" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSubmit"
+                    style="@style/CartiButton.Primary"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:layout_marginTop="32dp"
-                    android:backgroundTint="@color/green_primary"
-                    android:fontFamily="@font/plus_jakarta_sans_bold"
                     android:text="@string/btn_login"
-                    android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    app:cornerRadius="12dp" />
+                    android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/tvSwitchPrompt"

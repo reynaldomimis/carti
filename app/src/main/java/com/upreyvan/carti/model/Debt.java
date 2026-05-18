@@ -1,9 +1,12 @@
 package com.upreyvan.carti.model;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+
+import java.util.Objects;
 
 @Entity(tableName = "debts")
 public class Debt {
@@ -11,9 +14,9 @@ public class Debt {
     @NonNull
     private String id;
     private String familyId;
-    private String personName;
+    private String title;
     private String description;
-    private String date;
+    private String timestamp;
     private double amount;
     private boolean isPaid;
     private int avatarResId;
@@ -23,15 +26,19 @@ public class Debt {
     public Debt() {
         this.id = "";
         this.familyId = "";
-        this.personName = "";
+        this.title = "Title";
+        this.description = "Description";
+        this.timestamp = "";
+        this.amount = 0.00;
+        this.isPaid = false;
     }
 
-    public Debt(@NonNull String id, String familyId, String personName, String description, String date, double amount, boolean isPaid, int avatarResId, String notes) {
+    public Debt(@NonNull String id, String familyId, String title, String description, String timestamp, double amount, boolean isPaid, int avatarResId, String notes) {
         this.id = id;
         this.familyId = familyId;
-        this.personName = personName;
+        this.title = title;
         this.description = description;
-        this.date = date;
+        this.timestamp = timestamp;
         this.amount = amount;
         this.isPaid = isPaid;
         this.avatarResId = avatarResId;
@@ -40,24 +47,26 @@ public class Debt {
 
     @NonNull
     public String getId() { return id; }
-    public String getFamilyId() { return familyId; }
     public void setId(@NonNull String id) { this.id = id; }
+    public String getFamilyId() { return familyId; }
     public void setFamilyId(String familyId) { this.familyId = familyId; }
-    public void setPersonName(String personName) { this.personName = personName; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-    public void setDate(String date) { this.date = date; }
+    public String getTimestamp() { return timestamp; }
+    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+    public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
+    public boolean isPaid() { return isPaid; }
     public void setPaid(boolean paid) { isPaid = paid; }
+    public int getAvatarResId() { return avatarResId; }
     public void setAvatarResId(int avatarResId) { this.avatarResId = avatarResId; }
+    public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
-    public String getPersonName() { return personName; }
-    public String getDescription() { return description; }
-    public String getDate() { return date; }
-    public double getAmount() { return amount; }
-    public boolean isPaid() { return isPaid; }
-    public int getAvatarResId() { return avatarResId; }
-    public String getNotes() { return notes; }
+    public String getPersonName() { return title; }
+    public String getDate() { return timestamp; }
 
     @Override
     public boolean equals(Object o) {
@@ -67,25 +76,24 @@ public class Debt {
         return Double.compare(debt.amount, amount) == 0 &&
                 isPaid == debt.isPaid &&
                 id.equals(debt.id) &&
-                java.util.Objects.equals(personName, debt.personName) &&
-                java.util.Objects.equals(description, debt.description);
+                Objects.equals(title, debt.title) &&
+                Objects.equals(description, debt.description);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(id, personName, description, amount, isPaid);
+        return Objects.hash(id, title, description, amount, isPaid);
     }
 
-    public static final androidx.recyclerview.widget.DiffUtil.ItemCallback<Debt> DIFF_CALLBACK =
-            new androidx.recyclerview.widget.DiffUtil.ItemCallback<Debt>() {
-                @Override
-                public boolean areItemsTheSame(@androidx.annotation.NonNull Debt oldItem, @androidx.annotation.NonNull Debt newItem) {
-                    return oldItem.id.equals(newItem.id);
-                }
+    public static final DiffUtil.ItemCallback<Debt> DIFF_CALLBACK = new DiffUtil.ItemCallback<Debt>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Debt oldItem, @NonNull Debt newItem) {
+            return oldItem.id.equals(newItem.id);
+        }
 
-                @Override
-                public boolean areContentsTheSame(@androidx.annotation.NonNull Debt oldItem, @androidx.annotation.NonNull Debt newItem) {
-                    return oldItem.equals(newItem);
-                }
-            };
+        @Override
+        public boolean areContentsTheSame(@NonNull Debt oldItem, @NonNull Debt newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
 }

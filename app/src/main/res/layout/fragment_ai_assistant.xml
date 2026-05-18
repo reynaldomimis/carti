@@ -17,11 +17,10 @@
 
         <TextView
             android:id="@+id/tvTitle"
+            style="@style/CartiHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
             android:text="@string/ai_assistant_title"
-            android:textColor="@color/text_primary"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -98,7 +98,7 @@ public class DebtRepository {
             Utils.formatTimestamp(doc.getCreatedAt()),
             Utils.getDouble(data.get("amount")),
             Boolean.TRUE.equals(data.get("isPaid")),
-            R.drawable.ic_person, // Default
+            R.drawable.ic_person,
             String.valueOf(data.get("notes"))
         );
     }

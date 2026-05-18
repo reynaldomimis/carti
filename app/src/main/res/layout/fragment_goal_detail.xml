@@ -52,10 +52,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:textColor="@color/text_primary"
+                style="@style/CartiHeader"
                 android:textSize="20sp"
-                tools:text="Bili ng Bisikleta" />
+                tools:text="Buy a Bicycle" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -170,15 +169,11 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAddFunds"
+        style="@style/CartiButton.Primary"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_margin="24dp"
-        android:backgroundTint="@color/carti_primary_green"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
         android:text="@string/btn_add_funds"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        app:cornerRadius="12dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -66,16 +66,17 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         com.upreyvan.carti.data.local.PreferenceManager pref = new com.upreyvan.carti.data.local.PreferenceManager(requireContext());
 
         adapter.setOnItemClickListener(item -> {
-            androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Delete Transaction?")
-                    .setMessage("Are you sure you want to delete this " + item.getTitle() + "?")
-                    .setPositiveButton("Delete", (d, w) -> {
+            com.upreyvan.carti.util.DialogHelper.showConfirmation(
+                    requireContext(),
+                    "Delete Transaction?",
+                    "Are you sure you want to delete this " + item.getTitle() + "?",
+                    "Delete",
+                    () -> {
                         com.upreyvan.carti.data.remote.ApiHelper apiHelper = new com.upreyvan.carti.data.remote.ApiHelper(requireContext());
                         apiHelper.deleteTransaction(item.getId(), new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Object>() {
                             @Override
                             public void onSuccess(Object result) {
-                                // PURE CRUD: Calculate new totals in Java
-                                double amount = item.getAmountDouble();
+                                double amount = item.getAmount();
                                 double currentBalance = pref.getBalance();
                                 double currentIncome = pref.getTotalIncome();
                                 double currentExpense = pref.getTotalExpense();
@@ -91,20 +92,19 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
                                 final double finalIncome = currentIncome;
                                 final double finalExpense = currentExpense;
 
-                                // Update the new totals to Appwrite
                                 apiHelper.updateFamilyTotals(finalBalance, finalIncome, finalExpense, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
                                     @Override
                                     public void onSuccess(java.util.Map<String, Object> result) {
                                         requireActivity().runOnUiThread(() -> {
                                             pref.saveFamilySummary(finalBalance, finalIncome, finalExpense);
                                             transactionRepository.deleteLocally(item.getId());
-                                            com.upreyvan.carti.util.Utils.showToast(requireContext(), "Deleted and balance updated");
+                                            showToast("Deleted and balance updated", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
                                         });
                                     }
 
                                     @Override
                                     public void onError(Throwable error) {
-                                        requireActivity().runOnUiThread(() -> loadTransactions());
+                                        requireActivity().runOnUiThread(() -> observeTransactions());
                                     }
                                 });
                             }
@@ -112,14 +112,12 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
                             @Override
                             public void onError(Throwable error) {
                                 requireActivity().runOnUiThread(() -> {
-                                    com.upreyvan.carti.util.Utils.showToast(requireContext(), "Error: " + error.getMessage());
+                                    showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                                 });
                             }
                         });
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .create();
-            dialog.show();
+                    }
+            );
         });
     }
 

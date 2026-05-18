@@ -22,6 +22,8 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
 
+import com.upreyvan.carti.util.Validator;
+
 public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
     private ProgressDialog progressDialog;
@@ -43,7 +45,6 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     }
 
     private void setupDefaults() {
-        // Repeat Options Dropdown
         String[] options = {
                 getString(R.string.opt_no),
                 getString(R.string.opt_yes),
@@ -53,9 +54,8 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, options);
         getBinding().etRepeat.setAdapter(adapter);
-        getBinding().etRepeat.setText(options[0], false); // Default to No
+        getBinding().etRepeat.setText(options[0], false);
 
-        // Default Date
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         getBinding().tvDueDate.setText(sdf.format(calendar.getTime()));
@@ -95,15 +95,13 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         });
 
         getBinding().btnSave.setOnClickListener(v -> {
-            String name = getBinding().etBorrowerName.getText().toString();
-            String amountStr = getBinding().etAmount.getText().toString();
-
-            if (name.isEmpty() || amountStr.isEmpty()) {
-                Toast.makeText(this, "Please fill name and amount", Toast.LENGTH_SHORT).show();
+            if (Validator.isEmpty(getBinding().etBorrowerName) || Validator.isEmpty(getBinding().etAmount)) {
+                showToast("Please fill name and amount", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
-            double amount = Double.parseDouble(amountStr);
+            String name = getBinding().etBorrowerName.getText().toString();
+            double amount = Double.parseDouble(getBinding().etAmount.getText().toString());
             showLoading(true);
 
             new ApiHelper(this).addDebt(name, amount, "OWE", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
@@ -115,9 +113,8 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
                     );
 
                     showLoading(false);
-                    Toast.makeText(AddDebtActivity.this, "Debt Saved!", Toast.LENGTH_SHORT).show();
+                    showToast("Debt Saved!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
                     
-                    // Return to MainActivity and clear the stack (removes AddOptionsActivity)
                     Intent intent = new Intent(AddDebtActivity.this, com.upreyvan.carti.MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
@@ -127,7 +124,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
                 @Override
                 public void onError(Throwable error) {
                     showLoading(false);
-                    Toast.makeText(AddDebtActivity.this, "Error saving debt: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    showToast("Error saving debt: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                 }
             });
         });

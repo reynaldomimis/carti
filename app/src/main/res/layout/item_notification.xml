@@ -71,7 +71,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:text="Accept"
+                android:text="@string/btn_accept"
                 android:textSize="13sp"
                 app:cornerRadius="8dp" />
 
@@ -81,7 +81,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Deny"
+                android:text="@string/btn_deny"
                 android:textColor="@color/error"
                 android:textSize="13sp"
                 app:cornerRadius="8dp"

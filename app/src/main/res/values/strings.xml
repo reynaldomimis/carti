@@ -20,7 +20,7 @@
     <string name="label_food">Food</string>
     <string name="label_fare">Fare</string>
     <string name="label_load">Load</string>
-    <string name="label_store">Sari-sari Store</string>
+    <string name="label_store">Convenience Store</string>
     <string name="label_electricity">Electricity</string>
     <string name="label_water">Water</string>
     <string name="label_debt">Debt</string>
@@ -63,6 +63,8 @@
     <string name="register_subtitle">Start your financial journey</string>
     <string name="btn_register">Register</string>
     <string name="prompt_has_account">&lt;u&gt;Already have an account? Login&lt;/u&gt;</string>
+    <string name="hint_select_role">Select Your Role</string>
+    <string name="label_employee_head">I am an Employee (Head of Family)</string>
     <string name="err_required">This field is required</string>
     <string name="err_invalid_email">Invalid email address</string>
     <string name="btn_logging_in">Logging in...</string>
@@ -383,4 +385,20 @@
 
     <!-- Onboarding Status -->
     <string name="onboarding_join_status_title">Joining Family...</string>
+
+    <!-- Dialogs -->
+    <string name="prompt_enter_amount">Enter amount to log</string>
+    <string name="btn_log_expense">Log Expense</string>
+    <string name="default_amount">₱0.00</string>
+    <string name="default_daily_amount">₱0.00 / day</string>
+    <string name="btn_accept">Accept</string>
+    <string name="btn_deny">Deny</string>
+    <string name="placeholder_date">Select Date</string>
+    <string name="label_income_history">Income History</string>
+    <string name="placeholder_zero">0</string>
+    <string name="placeholder_date_simple">Date</string>
+
+    <!-- Transaction Formats -->
+    <string name="format_expense">− %s</string>
+    <string name="format_income">+ %s</string>
 </resources>

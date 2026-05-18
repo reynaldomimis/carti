@@ -15,6 +15,8 @@ import com.upreyvan.carti.databinding.FragmentGoalDetailBinding;
 import com.upreyvan.carti.databinding.ItemGoalHistoryBinding;
 import com.upreyvan.carti.model.Goal;
 import com.upreyvan.carti.ui.common.AddFundsFragment;
+import com.upreyvan.carti.data.repository.GoalRepository;
+import com.upreyvan.carti.util.Utils;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -23,12 +25,24 @@ import java.util.Locale;
 
 public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> {
 
+    private String goalId;
     private Goal goal;
+    private GoalRepository goalRepository;
 
-    public static GoalDetailFragment newInstance(Goal goal) {
+    public static GoalDetailFragment newInstance(String goalId) {
         GoalDetailFragment fragment = new GoalDetailFragment();
-        fragment.goal = goal;
+        Bundle args = new Bundle();
+        args.putString("goal_id", goalId);
+        fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            goalId = getArguments().getString("goal_id");
+        }
     }
 
     @Override
@@ -39,10 +53,30 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        goalRepository = new GoalRepository(requireContext());
         setupDynamicPadding();
+        observeGoal();
+        setupHistoryList();
+    }
+
+    private void observeGoal() {
+        goalRepository.getAllGoals().observe(getViewLifecycleOwner(), goals -> {
+            if (goals != null) {
+                for (Goal g : goals) {
+                    if (g.getId().equals(goalId)) {
+                        goal = g;
+                        updateUI();
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    private void updateUI() {
+        if (goal == null) return;
         setupToolbar();
         setupGoalData();
-        setupHistoryList();
         setupListeners();
     }
 
@@ -58,7 +92,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     }
 
     private void setupDynamicPadding() {
-        com.upreyvan.carti.util.Utils.applySystemBarInsets(
+        Utils.applySystemBarInsets(
                 getBinding().layoutToolbar.getRoot(),
                 getBinding().btnAddFunds,
                 0.3f,
@@ -67,11 +101,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     }
 
     private void setupToolbar() {
-        if (goal != null) {
-            getBinding().layoutToolbar.tvToolbarTitle.setText(goal.getTitle());
-        } else {
-            getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.goal_details_title);
-        }
+        getBinding().layoutToolbar.tvToolbarTitle.setText(goal.getTitle());
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().onBackPressed();
@@ -79,8 +109,6 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     }
 
     private void setupGoalData() {
-        if (goal == null) return;
-
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "PH"));
         currencyFormat.setMaximumFractionDigits(0);
 
@@ -99,7 +127,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
         if (goal.getImageRes() != 0) {
             getBinding().ivGoalImage.setImageResource(goal.getImageRes());
             getBinding().ivGoalImage.setColorFilter(null);
-            getBinding().ivGoalImage.setPadding(0, 0, 0, 0); // No padding for hero image look
+            getBinding().ivGoalImage.setPadding(0, 0, 0, 0);
         }
     }
 

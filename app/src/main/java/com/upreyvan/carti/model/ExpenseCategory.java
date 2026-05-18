@@ -1,5 +1,10 @@
 package com.upreyvan.carti.model;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+
+import java.util.Objects;
+
 public class ExpenseCategory {
     private String name;
     private double amount;
@@ -26,24 +31,23 @@ public class ExpenseCategory {
         return Double.compare(that.amount, amount) == 0 &&
                 Float.compare(that.percentage, percentage) == 0 &&
                 color == that.color &&
-                java.util.Objects.equals(name, that.name);
+                Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(name, amount, percentage, color);
+        return Objects.hash(name, amount, percentage, color);
     }
 
-    public static final androidx.recyclerview.widget.DiffUtil.ItemCallback<ExpenseCategory> DIFF_CALLBACK =
-            new androidx.recyclerview.widget.DiffUtil.ItemCallback<ExpenseCategory>() {
-                @Override
-                public boolean areItemsTheSame(@androidx.annotation.NonNull ExpenseCategory oldItem, @androidx.annotation.NonNull ExpenseCategory newItem) {
-                    return oldItem.name.equals(newItem.name);
-                }
+    public static final DiffUtil.ItemCallback<ExpenseCategory> DIFF_CALLBACK = new DiffUtil.ItemCallback<ExpenseCategory>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull ExpenseCategory oldItem, @NonNull ExpenseCategory newItem) {
+            return oldItem.name.equals(newItem.name);
+        }
 
-                @Override
-                public boolean areContentsTheSame(@androidx.annotation.NonNull ExpenseCategory oldItem, @androidx.annotation.NonNull ExpenseCategory newItem) {
-                    return oldItem.equals(newItem);
-                }
-            };
+        @Override
+        public boolean areContentsTheSame(@NonNull ExpenseCategory oldItem, @NonNull ExpenseCategory newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
 }

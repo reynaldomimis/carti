@@ -16,9 +16,11 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.databinding.DialogEditPaydayBinding;
 
-public class PaydayEditBottomSheet extends BottomSheetDialogFragment {
+import com.upreyvan.carti.base.BaseBottomSheetFragment;
+import com.upreyvan.carti.util.Validator;
 
-    private DialogEditPaydayBinding binding;
+public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPaydayBinding> {
+
     private OnPaydayUpdatedListener listener;
 
     public interface OnPaydayUpdatedListener {
@@ -33,26 +35,9 @@ public class PaydayEditBottomSheet extends BottomSheetDialogFragment {
         this.listener = listener;
     }
 
-    @NonNull
     @Override
-    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setNavigationBarColor(requireContext().getColor(R.color.white));
-            View decorView = dialog.getWindow().getDecorView();
-            int flags = decorView.getSystemUiVisibility();
-            flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-            decorView.setSystemUiVisibility(flags);
-        }
-        dialog.getWindow().setDimAmount(0.4f);
-        return dialog;
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = DialogEditPaydayBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+    protected DialogEditPaydayBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        return DialogEditPaydayBinding.inflate(inflater, container, false);
     }
 
     @Override
@@ -60,43 +45,39 @@ public class PaydayEditBottomSheet extends BottomSheetDialogFragment {
         super.onViewCreated(view, savedInstanceState);
         
         SalaryManager manager = SalaryManager.getInstance(requireContext());
-        binding.etPayday1.setText(String.valueOf(manager.getFirstPayday()));
-        binding.etPayday2.setText(String.valueOf(manager.getSecondPayday()));
-        binding.cbMonthly.setChecked(manager.isMonthly());
+        getBinding().etPayday1.setText(String.valueOf(manager.getFirstPayday()));
+        getBinding().etPayday2.setText(String.valueOf(manager.getSecondPayday()));
+        getBinding().cbMonthly.setChecked(manager.isMonthly());
         updateInputStates(manager.isMonthly());
 
-        binding.cbMonthly.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        getBinding().cbMonthly.setOnCheckedChangeListener((buttonView, isChecked) -> {
             updateInputStates(isChecked);
         });
 
-        binding.btnSave.setBackgroundColor(requireContext().getColor(R.color.carti_primary_green));
-
-        binding.btnSave.setOnClickListener(v -> {
-            boolean isMonthly = binding.cbMonthly.isChecked();
+        getBinding().btnSave.setOnClickListener(v -> {
+            boolean isMonthly = getBinding().cbMonthly.isChecked();
             manager.setIsMonthly(isMonthly);
 
-            String p1Str = binding.etPayday1.getText().toString().trim();
-            if (p1Str.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter the payday", Toast.LENGTH_SHORT).show();
+            if (Validator.isEmpty(getBinding().etPayday1)) {
+                showToast("Please enter the payday", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
             try {
-                int p1 = Integer.parseInt(p1Str);
+                int p1 = Integer.parseInt(getBinding().etPayday1.getText().toString().trim());
                 if (p1 < 1 || p1 > 31) {
-                    Toast.makeText(requireContext(), "Day must be between 1 and 31", Toast.LENGTH_SHORT).show();
+                    showToast("Day must be between 1 and 31", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                     return;
                 }
 
                 if (!isMonthly) {
-                    String p2Str = binding.etPayday2.getText().toString().trim();
-                    if (p2Str.isEmpty()) {
-                        Toast.makeText(requireContext(), "Please enter the second payday", Toast.LENGTH_SHORT).show();
+                    if (Validator.isEmpty(getBinding().etPayday2)) {
+                        showToast("Please enter the second payday", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                         return;
                     }
-                    int p2 = Integer.parseInt(p2Str);
+                    int p2 = Integer.parseInt(getBinding().etPayday2.getText().toString().trim());
                     if (p2 < 1 || p2 > 31) {
-                        Toast.makeText(requireContext(), "Day must be between 1 and 31", Toast.LENGTH_SHORT).show();
+                        showToast("Day must be between 1 and 31", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                         return;
                     }
                     manager.setFirstPayday(p1);
@@ -105,7 +86,7 @@ public class PaydayEditBottomSheet extends BottomSheetDialogFragment {
                     manager.setFirstPayday(p1);
                 }
             } catch (NumberFormatException e) {
-                Toast.makeText(requireContext(), "Invalid day format", Toast.LENGTH_SHORT).show();
+                showToast("Invalid day format", com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                 return;
             }
 
@@ -117,30 +98,20 @@ public class PaydayEditBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void updateInputStates(boolean isMonthly) {
-        binding.etPayday1.setEnabled(true);
-        binding.etPayday2.setEnabled(!isMonthly);
+        getBinding().etPayday1.setEnabled(true);
+        getBinding().etPayday2.setEnabled(!isMonthly);
         
-        // Target the MaterialCardView parents
-        View card1 = (View) binding.etPayday1.getParent();
-        View card2 = (View) binding.etPayday2.getParent();
-        
+        View card2 = (View) getBinding().etPayday2.getParent();
         card2.setAlpha(isMonthly ? 0.3f : 1.0f);
         
         if (isMonthly) {
-            binding.etPayday1.setHint("Day");
+            getBinding().etPayday1.setHint("Day");
         } else {
-            binding.etPayday1.setHint("Day 1");
+            getBinding().etPayday1.setHint("Day 1");
         }
     }
 
-    @Override
-    public int getTheme() {
-        return R.style.CustomBottomSheetDialogTheme;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    private void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
+        com.upreyvan.carti.util.ToastHelper.show(requireContext(), message, status);
     }
 }

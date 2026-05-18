@@ -4,12 +4,12 @@
     xmlns:tools="http://schemas.microsoft.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_medium"
+    android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="6dp"
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
-    app:strokeColor="@color/card_border"
+    app:strokeColor="@color/surface_variant"
     app:strokeWidth="1dp">
 
     <FrameLayout
@@ -23,7 +23,7 @@
             android:padding="12dp">
 
             <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivMemberAvatar"
+                android:id="@+id/ivAvatar"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:scaleType="centerCrop"
@@ -34,29 +34,29 @@
                 tools:src="@android:drawable/ic_menu_gallery" />
 
             <TextView
-                android:id="@+id/tvMemberName"
+                android:id="@+id/tvTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="8dp"
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/chipRole"
-                app:layout_constraintStart_toEndOf="@+id/ivMemberAvatar"
+                app:layout_constraintStart_toEndOf="@+id/ivAvatar"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="Juan (Ikaw)" />
+                tools:text="Juan" />
 
             <TextView
-                android:id="@+id/tvMemberStatus"
+                android:id="@+id/tvDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.Material3.BodySmall"
                 android:textColor="@color/text_secondary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/chipRole"
-                app:layout_constraintStart_toStartOf="@+id/tvMemberName"
-                app:layout_constraintTop_toBottomOf="@+id/tvMemberName"
+                app:layout_constraintStart_toStartOf="@+id/tvTitle"
+                app:layout_constraintTop_toBottomOf="@+id/tvTitle"
                 tools:text="Employed • ₱50,000.00" />
 
             <com.google.android.material.chip.Chip
@@ -65,16 +65,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="false"
-                android:textColor="@color/carti_primary_green"
-                app:chipBackgroundColor="@color/tonal_button_bg"
                 app:chipCornerRadius="12dp"
                 app:chipStrokeWidth="0dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:chipBackgroundColor="@color/log_fare"
-                tools:text="Member"
-                tools:textColor="@color/icon_fare" />
+                tools:text="Member" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -84,7 +80,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone" />
-
 
     </FrameLayout>
 

@@ -137,8 +137,9 @@ public class TransactionRepository {
             doc.getId(),
             familyId,
             categoryName,
+            "", // description
             Utils.formatTimestamp(doc.getCreatedAt()),
-            String.format(Locale.US, "₱%,.2f", amount),
+            amount,
             iconRes,
             bgColor,
             iconColor,

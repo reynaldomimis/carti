@@ -97,7 +97,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     private void setupRecyclerView() {
         incomeAdapter = new GenericAdapter<>(
                 Income.DIFF_CALLBACK,
-                ItemIncomeBinding::inflate,
+                (inflater, parent) -> ItemIncomeBinding.inflate(inflater, parent, false),
                 (binding, income) -> {
                     binding.tvSource.setText(income.getSource());
                     binding.tvAmount.setText(String.format(Locale.getDefault(), "+₱%,.2f", income.getAmount()));
@@ -116,6 +116,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
             IncomeEditBottomSheet bottomSheet = IncomeEditBottomSheet.newInstance(income);
             bottomSheet.setListener(this::updateUI);
             bottomSheet.show(getChildFragmentManager(), "IncomeEditBottomSheet");
+            return true;
         });
         getBinding().rvIncomeHistory.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
         getBinding().rvIncomeHistory.setAdapter(incomeAdapter);

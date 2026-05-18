@@ -25,20 +25,18 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
+                style="@style/CartiHeader"
                 android:gravity="center"
                 android:text="@string/onboarding_family_opt_title"
-                android:textColor="@color/text_primary"
                 android:textSize="22sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
+                style="@style/CartiSubHeader"
                 android:gravity="center"
                 android:text="@string/onboarding_family_opt_desc"
-                android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
             <com.google.android.material.card.MaterialCardView
