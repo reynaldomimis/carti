@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.upreyvan.carti.data.remote.RealtimeHelper;
+import com.upreyvan.carti.util.Constants;
+import io.appwrite.models.RealtimeSubscription;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
 
@@ -23,6 +26,8 @@ public class MemberRepository {
     private final MemberDao memberDao;
     private final ApiHelper apiHelper;
     private final PreferenceManager pref;
+    private final RealtimeHelper realtimeHelper;
+    private RealtimeSubscription realtimeSubscription;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public MemberRepository(Context context) {
@@ -30,6 +35,23 @@ public class MemberRepository {
         memberDao = db.memberDao();
         apiHelper = new ApiHelper(context);
         pref = new PreferenceManager(context);
+        realtimeHelper = new RealtimeHelper(context);
+        initRealtime();
+    }
+
+    private void initRealtime() {
+        if (realtimeSubscription != null) return;
+        realtimeSubscription = realtimeHelper.subscribeToCollection(
+                Constants.Appwrite.COL_USERS,
+                event -> refreshMembers()
+        );
+    }
+
+    public void onDestroy() {
+        if (realtimeSubscription != null) {
+            realtimeSubscription.close();
+            realtimeSubscription = null;
+        }
     }
 
     public LiveData<List<Member>> getMembers() {

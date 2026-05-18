@@ -67,6 +67,8 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
 
     private void setupListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
+            if (!checkNetwork()) return;
+
             if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) {
                 showToast(getString(R.string.msg_fill_all_fields), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
@@ -128,5 +130,11 @@ public class AddGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
         } else if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (goalRepository != null) goalRepository.onDestroy();
     }
 }

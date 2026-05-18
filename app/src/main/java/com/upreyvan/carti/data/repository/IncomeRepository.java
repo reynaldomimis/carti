@@ -7,7 +7,10 @@ import com.upreyvan.carti.data.local.db.AppDatabase;
 import com.upreyvan.carti.data.local.db.dao.IncomeDao;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.remote.RealtimeHelper;
+import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.model.Income;
+import io.appwrite.models.RealtimeSubscription;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,8 @@ public class IncomeRepository {
     private final IncomeDao incomeDao;
     private final ApiHelper apiHelper;
     private final PreferenceManager pref;
+    private final RealtimeHelper realtimeHelper;
+    private RealtimeSubscription realtimeSubscription;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public IncomeRepository(Context context) {
@@ -29,6 +34,23 @@ public class IncomeRepository {
         incomeDao = db.incomeDao();
         apiHelper = new ApiHelper(context);
         pref = new PreferenceManager(context);
+        realtimeHelper = new RealtimeHelper(context);
+        initRealtime();
+    }
+
+    private void initRealtime() {
+        if (realtimeSubscription != null) return;
+        realtimeSubscription = realtimeHelper.subscribeToCollection(
+                Constants.Appwrite.COL_INCOMES,
+                event -> refreshIncomes()
+        );
+    }
+
+    public void onDestroy() {
+        if (realtimeSubscription != null) {
+            realtimeSubscription.close();
+            realtimeSubscription = null;
+        }
     }
 
     public LiveData<List<Income>> getUserIncomes() {

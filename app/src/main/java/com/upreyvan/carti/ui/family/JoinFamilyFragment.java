@@ -54,6 +54,8 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
 
     private void setupListeners() {
         getBinding().btnJoin.setOnClickListener(v -> {
+            if (!checkNetwork()) return;
+
             if (Validator.isEmpty(getBinding().etFamilyId)) {
                 getBinding().tilFamilyId.setError(getString(R.string.err_invalid_family_id));
                 return;

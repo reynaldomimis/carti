@@ -207,4 +207,12 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
 
         dialog.show();
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (debtRepository != null) {
+            debtRepository.onDestroy();
+        }
+    }
 }

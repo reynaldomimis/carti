@@ -158,4 +158,12 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         getBinding().rvGoals.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvGoals.setAdapter(adapter);
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (goalRepository != null) {
+            goalRepository.onDestroy();
+        }
+    }
 }

@@ -10,6 +10,8 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.data.remote.RealtimeHelper;
+import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.R;
 
 import java.util.ArrayList;
@@ -21,11 +23,14 @@ import java.util.concurrent.Executors;
 
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
+import io.appwrite.models.RealtimeSubscription;
 
 public class TransactionRepository {
     private final TransactionDao transactionDao;
     private final ApiHelper apiHelper;
     private final PreferenceManager pref;
+    private final RealtimeHelper realtimeHelper;
+    private RealtimeSubscription realtimeSubscription;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public TransactionRepository(Context context) {
@@ -33,6 +38,28 @@ public class TransactionRepository {
         transactionDao = db.transactionDao();
         apiHelper = new ApiHelper(context);
         pref = new PreferenceManager(context);
+        realtimeHelper = new RealtimeHelper(context);
+        initRealtime();
+    }
+
+    private void initRealtime() {
+        if (realtimeSubscription != null) return;
+        
+        realtimeSubscription = realtimeHelper.subscribeToCollection(
+                Constants.Appwrite.COL_TRANSACTIONS,
+                event -> {
+                    // Senior Logic: No matter if it's create, update, or delete, 
+                    // we just refresh the local sync to keep Room updated.
+                    refreshTransactions();
+                }
+        );
+    }
+
+    public void onDestroy() {
+        if (realtimeSubscription != null) {
+            realtimeSubscription.close();
+            realtimeSubscription = null;
+        }
     }
 
     public LiveData<List<Transaction>> getRecentTransactions(int limit) {

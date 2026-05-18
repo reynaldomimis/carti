@@ -113,4 +113,11 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         });
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (transactionRepository != null) {
+            transactionRepository.onDestroy();
+        }
+    }
 }

@@ -92,6 +92,9 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         if (realtimeSubscription != null) {
             realtimeSubscription.close();
         }
+        if (incomeRepository != null) {
+            incomeRepository.onDestroy();
+        }
     }
 
     private void setupRecyclerView() {

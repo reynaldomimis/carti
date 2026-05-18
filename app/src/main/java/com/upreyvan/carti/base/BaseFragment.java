@@ -16,6 +16,8 @@ import androidx.fragment.app.Fragment;
 import androidx.viewbinding.ViewBinding;
 
 import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.DialogHelper;
+import com.upreyvan.carti.util.Utils;
 
 public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
 
@@ -88,6 +90,20 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
 
     protected void showToast(int resId, com.upreyvan.carti.util.ToastHelper.Status status) {
         com.upreyvan.carti.util.ToastHelper.show(getContext(), resId, status);
+    }
+
+    protected boolean checkNetwork() {
+        if (!Utils.isNetworkAvailable(requireContext())) {
+            DialogHelper.showNoInternetDialog(requireContext());
+            return false;
+        }
+        return true;
+    }
+
+    protected void executeWithNetwork(Runnable action) {
+        if (checkNetwork()) {
+            action.run();
+        }
     }
 
     protected void showError(Throwable t) {

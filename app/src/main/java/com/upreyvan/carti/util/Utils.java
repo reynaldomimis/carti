@@ -1,6 +1,8 @@
 package com.upreyvan.carti.util;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -202,6 +204,18 @@ public class Utils {
         if (context != null && message != null) {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public static boolean isNetworkAvailable(Context context) {
+        if (context == null) return false;
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+            if (capabilities != null) {
+                return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+            }
+        }
+        return false;
     }
 
     public static String formatCurrency(double amount) {

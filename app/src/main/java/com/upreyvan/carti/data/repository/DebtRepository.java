@@ -17,6 +17,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.upreyvan.carti.data.remote.RealtimeHelper;
+import com.upreyvan.carti.util.Constants;
+import io.appwrite.models.RealtimeSubscription;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
 
@@ -24,6 +27,8 @@ public class DebtRepository {
     private final DebtDao debtDao;
     private final ApiHelper apiHelper;
     private final PreferenceManager pref;
+    private final RealtimeHelper realtimeHelper;
+    private RealtimeSubscription realtimeSubscription;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public DebtRepository(Context context) {
@@ -31,6 +36,23 @@ public class DebtRepository {
         debtDao = db.debtDao();
         apiHelper = new ApiHelper(context);
         pref = new PreferenceManager(context);
+        realtimeHelper = new RealtimeHelper(context);
+        initRealtime();
+    }
+
+    private void initRealtime() {
+        if (realtimeSubscription != null) return;
+        realtimeSubscription = realtimeHelper.subscribeToCollection(
+                Constants.Appwrite.COL_DEBTS,
+                event -> refreshDebts()
+        );
+    }
+
+    public void onDestroy() {
+        if (realtimeSubscription != null) {
+            realtimeSubscription.close();
+            realtimeSubscription = null;
+        }
     }
 
     public LiveData<List<Debt>> getAllDebts() {

@@ -71,6 +71,8 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
         getBinding().tvCategoryName.setText(item.getTitle());
 
         getBinding().btnLog.setOnClickListener(v -> {
+            if (!checkNetwork()) return;
+
             if (Validator.isEmpty(getBinding().etAmount)) {
                 showToast(getString(R.string.msg_enter_amount), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
@@ -118,6 +120,14 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
                 showToast(getString(R.string.msg_invalid_amount), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
             }
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (transactionRepository != null) {
+            transactionRepository.onDestroy();
+        }
     }
 
     private void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {

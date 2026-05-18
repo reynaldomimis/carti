@@ -95,6 +95,8 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
 
     private void setupClickListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
+            if (!checkNetwork()) return;
+
             if (Validator.isEmpty(getBinding().etAmount) || Validator.isEmpty(getBinding().etCategory) || Validator.isEmpty(getBinding().etSource)) {
                 showToast(getString(R.string.msg_fill_all_fields), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;

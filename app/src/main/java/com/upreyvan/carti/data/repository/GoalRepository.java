@@ -18,12 +18,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import io.appwrite.models.Document;
+import com.upreyvan.carti.data.remote.RealtimeHelper;
+import com.upreyvan.carti.util.Constants;
+import io.appwrite.models.RealtimeSubscription;
 import io.appwrite.models.DocumentList;
 
 public class GoalRepository {
     private final GoalDao goalDao;
     private final ApiHelper apiHelper;
     private final PreferenceManager pref;
+    private final RealtimeHelper realtimeHelper;
+    private RealtimeSubscription realtimeSubscription;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public GoalRepository(Context context) {
@@ -31,6 +36,23 @@ public class GoalRepository {
         goalDao = db.goalDao();
         apiHelper = new ApiHelper(context);
         pref = new PreferenceManager(context);
+        realtimeHelper = new RealtimeHelper(context);
+        initRealtime();
+    }
+
+    private void initRealtime() {
+        if (realtimeSubscription != null) return;
+        realtimeSubscription = realtimeHelper.subscribeToCollection(
+                Constants.Appwrite.COL_GOALS,
+                event -> refreshGoals()
+        );
+    }
+
+    public void onDestroy() {
+        if (realtimeSubscription != null) {
+            realtimeSubscription.close();
+            realtimeSubscription = null;
+        }
     }
 
     public LiveData<List<Goal>> getAllGoals() {

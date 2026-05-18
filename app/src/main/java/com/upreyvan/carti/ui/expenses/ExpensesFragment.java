@@ -89,7 +89,6 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
             return;
         }
 
-        // Simple category grouping for real data
         java.util.Map<String, Double> categoryTotals = new java.util.HashMap<>();
         for (Transaction t : transactions) {
             if ("EXPENSE".equals(t.getType())) {
@@ -108,7 +107,6 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
             float percentage = total > 0 ? (float) (entry.getValue() / total * 100) : 0;
             entries.add(new PieEntry(entry.getValue().floatValue(), entry.getKey()));
             
-            // For now use a default color or map from category
             int color = ContextCompat.getColor(requireContext(), R.color.carti_primary_blue);
             colors.add(color);
             legendCategories.add(new ExpenseCategory(entry.getKey(), entry.getValue(), percentage, color));
@@ -122,11 +120,6 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         getBinding().pieChart.setData(new PieData(dataSet));
         getBinding().pieChart.invalidate();
         legendAdapter.submitList(legendCategories);
-    }
-
-
-    private void loadData() {
-        // Deprecated
     }
 
     private void setupMonthPicker() {
@@ -191,4 +184,11 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         getBinding().rvTransactions.setAdapter(transactionAdapter);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (transactionRepository != null) {
+            transactionRepository.onDestroy();
+        }
+    }
 }

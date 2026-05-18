@@ -18,4 +18,13 @@ public class DialogHelper {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
+    public static void showNoInternetDialog(Context context) {
+        new MaterialAlertDialogBuilder(context)
+                .setTitle("Walang Internet Connection")
+                .setMessage("You cannot add or update transaction. Please check your internet connection and try again.")
+                .setPositiveButton("OK", null)
+                .setIcon(com.upreyvan.carti.R.drawable.ic_chart) // Or any appropriate icon
+                .show();
+    }
 }

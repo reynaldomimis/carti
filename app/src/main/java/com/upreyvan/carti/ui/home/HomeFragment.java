@@ -253,6 +253,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         if (goalSubscription != null) goalSubscription.close();
         if (debtSubscription != null) debtSubscription.close();
         if (memberSubscription != null) memberSubscription.close();
+        
+        if (transactionRepository != null) transactionRepository.onDestroy();
+        if (goalRepository != null) goalRepository.onDestroy();
+        if (debtRepository != null) debtRepository.onDestroy();
+        if (memberRepository != null) memberRepository.onDestroy();
+        
         super.onDestroyView();
     }
 

@@ -99,6 +99,8 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
     }
 
     private void handleSave() {
+        if (!checkNetwork()) return;
+
         if (Validator.isEmpty(getBinding().etSalaryAmount)) {
             showToast("Please enter an amount", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
             return;

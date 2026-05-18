@@ -240,6 +240,8 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         });
 
         getBinding().layoutInput.btnSend.setOnClickListener(v -> {
+            if (!checkNetwork()) return;
+
             String text = getBinding().layoutInput.etInput.getText().toString().trim();
             if (text.isEmpty()) return;
 
@@ -270,7 +272,6 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Clear secure flag when leaving chat
         if (getActivity() != null) {
             getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }

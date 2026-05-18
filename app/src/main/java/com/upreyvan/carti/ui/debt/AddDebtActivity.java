@@ -94,6 +94,8 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         });
 
         getBinding().btnSave.setOnClickListener(v -> {
+            if (!checkNetwork()) return;
+
             if (Validator.isEmpty(getBinding().etBorrowerName) || Validator.isEmpty(getBinding().etAmount)) {
                 showToast(getString(R.string.msg_fill_name_amount), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;

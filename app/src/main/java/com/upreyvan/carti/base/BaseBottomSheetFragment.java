@@ -12,6 +12,8 @@ import androidx.viewbinding.ViewBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.util.DialogHelper;
+import com.upreyvan.carti.util.Utils;
 
 public abstract class BaseBottomSheetFragment<VB extends ViewBinding> extends BottomSheetDialogFragment {
 
@@ -34,6 +36,20 @@ public abstract class BaseBottomSheetFragment<VB extends ViewBinding> extends Bo
 
     protected VB getBinding() {
         return binding;
+    }
+
+    protected boolean checkNetwork() {
+        if (!Utils.isNetworkAvailable(requireContext())) {
+            DialogHelper.showNoInternetDialog(requireContext());
+            return false;
+        }
+        return true;
+    }
+
+    protected void executeWithNetwork(Runnable action) {
+        if (checkNetwork()) {
+            action.run();
+        }
     }
 
     @Override
