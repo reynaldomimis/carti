@@ -38,6 +38,8 @@
     <dimen name="avatar_size_medium">64dp</dimen>
 
     <dimen name="button_height_standard">56dp</dimen>
+    <dimen name="back_button_size">40dp</dimen>
+    <dimen name="action_button_height">36dp</dimen>
     <dimen name="button_height_small">52dp</dimen>
     <dimen name="input_height_standard">52dp</dimen>
     <dimen name="input_height_large">56dp</dimen>

@@ -45,7 +45,7 @@
                 android:fontFamily="@font/plus_jakarta_sans_bold"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
-                tools:text="Settings" />
+                tools:text="@string/menu_settings" />
 
             <TextView
                 android:id="@+id/tvMenuSubTitle"
@@ -54,7 +54,7 @@
                 android:fontFamily="@font/plus_jakarta_sans_medium"
                 android:textColor="@color/text_tertiary"
                 android:textSize="13sp"
-                tools:text="Notifications, Privacy" />
+                tools:text="@string/menu_settings_sub" />
 
         </LinearLayout>
 

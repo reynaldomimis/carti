@@ -40,7 +40,7 @@
             android:layout_marginTop="@dimen/spacing_small"
             android:textAlignment="center"
             android:textSize="@dimen/text_size_caption"
-            tools:text="Food" />
+            tools:text="@string/label_food" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

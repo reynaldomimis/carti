@@ -11,5 +11,5 @@
     android:textSize="12sp"
     android:letterSpacing="0.05"
     android:textAllCaps="true"
-    tools:text="General"
+    tools:text="@string/section_general"
     xmlns:tools="http://schemas.android.com/tools" />

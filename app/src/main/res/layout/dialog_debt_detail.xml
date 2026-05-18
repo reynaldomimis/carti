@@ -37,18 +37,14 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_border"
-                app:strokeWidth="1dp">
+                style="@style/CartiCard">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="@dimen/spacing_large">
 
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="@dimen/avatar_size_medium"
@@ -62,7 +58,7 @@
                             android:id="@+id/ivDetailAvatar"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:padding="12dp"
+                            android:padding="@dimen/radius_medium"
                             android:src="@drawable/ic_person"
                             app:tint="@color/carti_primary_green" />
 
@@ -70,107 +66,86 @@
 
                     <TextView
                         android:id="@+id/tvDetailName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:fontFamily="@font/plus_jakarta_sans_bold"
-                        android:textColor="@color/text_primary"
-                        android:textSize="18sp"
-                        tools:text="Ate Liza" />
-
-                    <TextView
-                        android:id="@+id/tvDetailDesc"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="14sp"
-                        tools:text="Utang para sa groceries" />
-
-                    <TextView
-                        android:id="@+id/tvDetailAmount"
                         style="@style/CartiHeader"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/radius_medium"
+                        tools:text="@string/placeholder_ate_liza" />
+
+                    <TextView
+                        android:id="@+id/tvDetailDesc"
+                        style="@style/CartiSubHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        tools:text="@string/placeholder_debt_desc" />
+
+                    <TextView
+                        android:id="@+id/tvDetailAmount"
+                        style="@style/CartiTextAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_medium"
-                        android:textSize="@dimen/text_size_display"
-                        tools:text="₱500" />
+                        tools:text="@string/placeholder_amount" />
 
                     <TextView
                         android:id="@+id/tvDetailDate"
+                        style="@style/CartiTextDescription"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:textColor="@color/text_tertiary"
-                        android:textSize="14sp"
-                        tools:text="May 25, 2024" />
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        tools:text="@string/placeholder_date_full" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
+                style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
+                android:layout_marginTop="@dimen/spacing_large"
                 android:text="@string/notes_label"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
+                android:textSize="@dimen/text_size_body" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_border"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="@dimen/spacing_small"
+                style="@style/CartiCard">
 
                 <TextView
                     android:id="@+id/tvNotes"
+                    style="@style/CartiSubHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    tools:text="Binili sa SM Supermarket" />
+                    android:padding="@dimen/spacing_medium"
+                    tools:text="@string/placeholder_sm_supermarket" />
 
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:id="@+id/tvPaymentHistoryTitle"
+                style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
+                android:layout_marginTop="@dimen/text_size_h1"
                 android:text="@string/payment_history"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
+                android:textSize="@dimen/text_size_body" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_border"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="@dimen/spacing_small"
+                style="@style/CartiCard">
 
                 <TextView
                     android:id="@+id/tvPaymentHistory"
+                    style="@style/CartiSubHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
-                    android:text="@string/no_payment_yet"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp" />
+                    android:padding="@dimen/spacing_medium"
+                    tools:text="@string/no_payment_yet" />
 
             </com.google.android.material.card.MaterialCardView>
 

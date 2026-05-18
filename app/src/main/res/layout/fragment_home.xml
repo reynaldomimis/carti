@@ -33,8 +33,8 @@
                 style="@style/CartiSubHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/default_greeting"
-                android:textSize="@dimen/text_size_header_small" />
+                android:textSize="@dimen/text_size_header_small"
+                tools:text="@string/default_greeting" />
 
             <TextView
                 android:id="@+id/tv_username_main"
@@ -44,8 +44,8 @@
                 android:layout_marginTop="-2dp"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="@string/user"
-                android:textSize="@dimen/text_size_h2" />
+                android:textSize="@dimen/text_size_h2"
+                tools:text="@string/user" />
 
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="70dp"
@@ -60,9 +60,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xxs"
                 android:fontFamily="@font/plus_jakarta_sans_medium"
-                android:text="@string/family_label"
                 android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_size_body" />
+                android:textSize="@dimen/text_size_body"
+                tools:text="@string/family_label" />
         </LinearLayout>
 
         <FrameLayout

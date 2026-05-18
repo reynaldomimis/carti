@@ -54,7 +54,7 @@
                 android:layout_marginTop="24dp"
                 style="@style/CartiHeader"
                 android:textSize="20sp"
-                tools:text="Buy a Bicycle" />
+                tools:text="@string/placeholder_car_savings" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -68,7 +68,7 @@
                     android:fontFamily="@font/plus_jakarta_sans_bold"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
-                    tools:text="₱3,000 / ₱5,000" />
+                    tools:text="@string/placeholder_goal_progress" />
 
                 <TextView
                     android:id="@+id/tvStatusComplete"
@@ -79,7 +79,7 @@
                     android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:textColor="@color/text_tertiary"
                     android:textSize="12sp"
-                    tools:text="60% Complete" />
+                    tools:text="@string/placeholder_percentage" />
 
             </RelativeLayout>
 
@@ -115,7 +115,7 @@
                     android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    tools:text="Jun 30, 2024" />
+                    tools:text="@string/placeholder_date_full" />
 
             </LinearLayout>
 
@@ -141,7 +141,7 @@
                     android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    tools:text="₱1,000" />
+                    tools:text="@string/placeholder_amount" />
 
             </LinearLayout>
 

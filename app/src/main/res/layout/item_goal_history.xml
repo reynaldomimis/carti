@@ -9,26 +9,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingVertical="12dp">
+        android:paddingVertical="@dimen/radius_medium">
 
         <TextView
             android:id="@+id/tvHistoryDate"
+            style="@style/CartiSubHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:fontFamily="@font/plus_jakarta_sans_medium"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            tools:text="May 22, 2024" />
+            tools:text="@string/placeholder_date_full" />
 
         <TextView
             android:id="@+id/tvHistoryAmount"
+            style="@style/CartiHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp"
-            tools:text="₱120" />
+            android:textSize="@dimen/text_size_body"
+            tools:text="@string/placeholder_amount" />
 
     </LinearLayout>
 

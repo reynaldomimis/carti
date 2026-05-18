@@ -19,7 +19,7 @@
             style="@style/CartiTextTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:text="How to add family member?" />
+            tools:text="@string/faq_q1" />
 
         <TextView
             android:id="@+id/tvAnswer"
@@ -29,7 +29,7 @@
             android:layout_marginTop="@dimen/spacing_xs"
             android:textSize="@dimen/text_size_body_small"
             android:visibility="gone"
-            tools:text="Go to Profile > Invite Family and share the code."
+            tools:text="@string/faq_a1"
             tools:visibility="visible" />
 
     </LinearLayout>

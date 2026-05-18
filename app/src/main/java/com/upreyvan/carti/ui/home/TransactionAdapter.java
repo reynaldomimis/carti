@@ -1,6 +1,5 @@
 package com.upreyvan.carti.ui.home;
 
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -15,6 +14,7 @@ import com.upreyvan.carti.model.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransactionBinding> {
 
@@ -24,7 +24,6 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
         super(Transaction.DIFF_CALLBACK,
                 (inflater, parent) -> ItemTransactionBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
-                    // Logic moved to internal bind for isLoading handling
                 });
     }
 
@@ -32,8 +31,10 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
         this.isLoading = loading;
         if (loading) {
             List<Transaction> placeholders = new ArrayList<>();
-            for (int i = 0; i < 5; i++) {
+            int i = 0;
+            while (i < 5) {
                 placeholders.add(new Transaction());
+                i++;
             }
             submitList(placeholders);
         }
@@ -45,12 +46,12 @@ public class TransactionAdapter extends BaseAdapter<Transaction, ItemTransaction
         ItemTransactionBinding binding = holder.binding;
 
         if (isLoading) {
-            binding.shimmerView.getRoot().setVisibility(View.VISIBLE);
+            binding.shimmerView.shimmerLayout.setVisibility(View.VISIBLE);
             binding.layoutContent.setVisibility(View.INVISIBLE);
             return;
         }
 
-        binding.shimmerView.getRoot().setVisibility(View.GONE);
+        binding.shimmerView.shimmerLayout.setVisibility(View.GONE);
         binding.layoutContent.setVisibility(View.VISIBLE);
 
         binding.tvTitle.setText(item.getTitle());

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/surface">
@@ -38,9 +39,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_large"
-                    android:text="@string/login_title"
                     android:textSize="@dimen/text_size_h1"
-                    android:gravity="center" />
+                    android:gravity="center"
+                    tools:text="@string/login_title" />
 
                 <TextView
                     android:id="@+id/tvSubtitle"
@@ -48,9 +49,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_small"
-                    android:text="@string/login_subtitle"
                     android:textSize="@dimen/text_size_body"
-                    android:gravity="center" />
+                    android:gravity="center"
+                    tools:text="@string/login_subtitle" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilUsername"
@@ -135,7 +136,8 @@
                         android:id="@+id/actvRole"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:inputType="none"
+                        android:hint="@string/hint_select_role" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -155,8 +157,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/button_height_standard"
                     android:layout_marginTop="@dimen/spacing_xl"
-                    android:text="@string/btn_login"
-                    android:textSize="@dimen/text_size_header_small" />
+                    android:textSize="@dimen/text_size_header_small"
+                    tools:text="@string/btn_login" />
 
                 <TextView
                     android:id="@+id/tvSwitchPrompt"
@@ -165,9 +167,9 @@
                     android:layout_marginTop="@dimen/spacing_large"
                     android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:padding="@dimen/spacing_small"
-                    android:text="@string/prompt_no_account"
                     android:textColor="@color/text_secondary"
-                    android:gravity="center" />
+                    android:gravity="center"
+                    tools:text="@string/prompt_no_account" />
 
             </LinearLayout>
 

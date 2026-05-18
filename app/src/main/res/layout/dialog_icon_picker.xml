@@ -22,11 +22,11 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:boxCornerRadiusBottomEnd="12dp"
-        app:boxCornerRadiusBottomStart="12dp"
-        app:boxCornerRadiusTopEnd="12dp"
-        app:boxCornerRadiusTopStart="12dp"
+        android:layout_marginTop="@dimen/spacing_medium"
+        app:boxCornerRadiusBottomEnd="@dimen/radius_medium"
+        app:boxCornerRadiusBottomStart="@dimen/radius_medium"
+        app:boxCornerRadiusTopEnd="@dimen/radius_medium"
+        app:boxCornerRadiusTopStart="@dimen/radius_medium"
         app:hintEnabled="false"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:startIconDrawable="@android:drawable/ic_menu_search">
@@ -46,7 +46,7 @@
         android:id="@+id/rvIcons"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/spacing_medium"
         app:layout_constraintTop_toBottomOf="@id/tilSearch"
         tools:listitem="@layout/item_icon_choice" />
 
@@ -56,9 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/button_height_standard"
         android:layout_marginTop="@dimen/spacing_medium"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
         android:text="@string/label_upload_device"
-        android:textAllCaps="false"
         android:textColor="@color/carti_primary_green"
         app:layout_constraintTop_toBottomOf="@id/rvIcons" />
 

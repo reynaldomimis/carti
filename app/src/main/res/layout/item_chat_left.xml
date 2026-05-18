@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.microsoft.com/tools"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="8dp">
+    android:paddingHorizontal="@dimen/spacing_medium"
+    android:paddingVertical="@dimen/spacing_small">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/ivAvatar"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="@dimen/spacing_xl"
+        android:layout_height="@dimen/spacing_xl"
         android:scaleType="fitXY"
         android:src="@drawable/ai_holder"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,8 +20,8 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="64dp"
+        android:layout_marginStart="@dimen/radius_medium"
+        android:layout_marginEnd="@dimen/avatar_size_medium"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivAvatar"
@@ -29,38 +29,36 @@
 
         <TextView
             android:id="@+id/tvSenderName"
+            style="@style/CartiHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
-            android:textColor="@color/text_primary"
-            android:textSize="12sp"
-            tools:text="Juan (You)" />
+            android:textSize="@dimen/text_size_small"
+            tools:text="@string/placeholder_juan_you" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/spacing_xs"
             app:cardBackgroundColor="@color/surface_variant"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="@dimen/radius_large"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="75dp"
+                android:minWidth="@dimen/divider_width_home"
                 android:orientation="vertical"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="8dp">
+                android:paddingHorizontal="@dimen/radius_medium"
+                android:paddingVertical="@dimen/spacing_small">
 
                 <TextView
                     android:id="@+id/tvMessage"
+                    style="@style/CartiSubHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    tools:text="Magandang umaga pamilya! ☀️" />
+                    tools:text="@string/placeholder_chat_msg" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -99,7 +97,7 @@
                             android:fontFamily="@font/plus_jakarta_sans_bold"
                             android:textColor="@color/status_red"
                             android:textSize="12sp"
-                            tools:text="5s" />
+                            tools:text="@string/placeholder_timer" />
 
                     </LinearLayout>
 
@@ -115,7 +113,7 @@
                         android:fontFamily="@font/plus_jakarta_sans_medium"
                         android:textColor="@color/text_tertiary"
                         android:textSize="10sp"
-                        tools:text="9:30 AM" />
+                        tools:text="@string/placeholder_time_930" />
 
                 </LinearLayout>
 

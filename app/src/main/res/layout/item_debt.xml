@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    style="@style/CartiCard"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_medium"
-    android:layout_marginVertical="6dp">
+    <com.google.android.material.card.MaterialCardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        style="@style/CartiCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginVertical="@dimen/spacing_xs">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -51,7 +52,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/tvAmount"
                 app:layout_constraintStart_toEndOf="@id/avatarContainer"
                 app:layout_constraintTop_toTopOf="@id/avatarContainer"
-                tools:text="Ate Liza" />
+                tools:text="@string/placeholder_ate_liza" />
 
             <TextView
                 android:id="@+id/tvDescription"
@@ -63,7 +64,7 @@
                 app:layout_constraintEnd_toEndOf="@id/tvPersonName"
                 app:layout_constraintStart_toStartOf="@id/tvPersonName"
                 app:layout_constraintTop_toBottomOf="@id/tvPersonName"
-                tools:text="Utang para sa groceries" />
+                tools:text="@string/placeholder_debt_desc" />
 
             <TextView
                 android:id="@+id/tvDate"
@@ -75,7 +76,7 @@
                 android:textSize="@dimen/text_size_small"
                 app:layout_constraintStart_toStartOf="@id/tvPersonName"
                 app:layout_constraintTop_toBottomOf="@id/tvDescription"
-                tools:text="May 25, 2024" />
+                tools:text="@string/placeholder_date_full" />
 
             <TextView
                 android:id="@+id/tvAmount"
@@ -85,18 +86,18 @@
                 android:textSize="@dimen/text_size_header_small"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/avatarContainer"
-                tools:text="₱500" />
+                tools:text="@string/placeholder_amount" />
 
             <TextView
                 android:id="@+id/tvStatus"
+                style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_small"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tvDate"
-                tools:text="Hindi pa bayad"
+                tools:text="@string/placeholder_hindi_pa_bayad"
                 tools:textColor="@color/status_red" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -107,7 +107,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/plus_jakarta_sans_bold"
-                        tools:text="Father"
+                        tools:text="@string/role_father"
                         android:textColor="@color/carti_primary_green"
                         android:textSize="15sp" />
 

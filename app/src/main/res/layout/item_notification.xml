@@ -27,7 +27,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Savings Goal Reached!" />
+            tools:text="@string/placeholder_name" />
 
         <TextView
             android:id="@+id/tvDescription"
@@ -40,7 +40,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTitle"
-            tools:text="Congratulations! You've reached 50% of your Emergency Fund goal." />
+            tools:text="@string/placeholder_description" />
 
         <TextView
             android:id="@+id/tvTime"
@@ -52,7 +52,7 @@
             android:textSize="11sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvDescription"
-            tools:text="2 hours ago" />
+            tools:text="@string/placeholder_time" />
 
         <LinearLayout
             android:id="@+id/layoutActions"

@@ -119,31 +119,18 @@
                 android:clickable="true"
                 android:focusable="true">
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tv_due_date"
+                    style="@style/CartiSubHeader"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/input_height_standard"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="@dimen/spacing_medium">
-
-                    <TextView
-                        android:id="@+id/tv_due_date"
-                        style="@style/CartiSubHeader"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/placeholder_date"
-                        android:textColor="@color/text_primary"
-                        android:textSize="@dimen/text_size_body_large" />
-
-                    <ImageView
-                        android:layout_width="@dimen/icon_size_medium"
-                        android:layout_height="@dimen/icon_size_medium"
-                        android:src="@drawable/ic_calendar"
-                        android:contentDescription="@null"
-                        app:tint="@color/text_secondary" />
-
-                </LinearLayout>
+                    android:paddingHorizontal="@dimen/spacing_medium"
+                    android:text="@string/placeholder_date"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_size_body_large"
+                    app:drawableEndCompat="@drawable/ic_calendar"
+                    app:drawableTint="@color/text_secondary" />
 
             </com.google.android.material.card.MaterialCardView>
 

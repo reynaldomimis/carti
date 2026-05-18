@@ -28,7 +28,7 @@
             android:fontFamily="@font/plus_jakarta_sans_bold"
             android:textColor="@color/text_primary"
             android:textSize="15sp"
-            tools:text="Daily Budget Alert" />
+            tools:text="@string/label_daily_budget_alert" />
 
         <TextView
             android:id="@+id/tvDescription"
@@ -38,7 +38,7 @@
             android:fontFamily="@font/plus_jakarta_sans_medium"
             android:textColor="@color/text_tertiary"
             android:textSize="13sp"
-            tools:text="I-alert kapag malapit na sa limit" />
+            tools:text="@string/desc_daily_budget_alert" />
 
     </LinearLayout>
 

@@ -26,7 +26,7 @@
         <item name="android:textColor">@color/carti_primary_green</item>
     </style>
 
-    <style name="CartiButton.Danger.Tonal">
+    <style name="CartiButton.Danger" parent="CartiButton">
         <item name="backgroundTint">@color/status_red_tonal</item>
         <item name="android:textColor">@color/status_red</item>
     </style>
@@ -61,7 +61,7 @@
         <item name="android:textSize">@dimen/text_size_h1</item>
     </style>
 
-    <style name="CartiCard" parent="com.google.android.material.card.MaterialCardView">
+    <style name="CartiCard" parent="Widget.Material3.CardView.Elevated">
         <item name="cardElevation">0dp</item>
         <item name="cardCornerRadius">@dimen/card_corner_radius</item>
         <item name="strokeColor">@color/border_subtle</item>

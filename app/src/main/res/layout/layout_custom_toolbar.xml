@@ -11,8 +11,8 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/back_button_container"
-        android:layout_width="@dimen/avatar_size_medium"
-        android:layout_height="@dimen/avatar_size_medium"
+        android:layout_width="@dimen/back_button_size"
+        android:layout_height="@dimen/back_button_size"
         android:layout_marginStart="@dimen/spacing_xs"
         android:clickable="true"
         android:focusable="true"
@@ -56,8 +56,8 @@
         android:id="@+id/btn_action"
         style="@style/CartiButton.Tonal"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/divider_thickness"
+        android:layout_height="@dimen/action_button_height"
+        android:minHeight="0dp"
         android:paddingHorizontal="@dimen/spacing_medium"
         android:textSize="@dimen/text_size_small"
         android:visibility="gone"

@@ -44,7 +44,7 @@
             app:layout_constraintEnd_toStartOf="@id/tvAmount"
             app:layout_constraintStart_toEndOf="@id/viewIconBg"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Monthly Salary" />
+            tools:text="@string/placeholder_name" />
 
         <TextView
             android:id="@+id/tvDate"
@@ -56,7 +56,7 @@
             app:layout_constraintEnd_toEndOf="@id/tvSource"
             app:layout_constraintStart_toStartOf="@id/tvSource"
             app:layout_constraintTop_toBottomOf="@id/tvSource"
-            tools:text="Oct 25, 2023" />
+            tools:text="@string/placeholder_date_full" />
 
         <TextView
             android:id="@+id/tvAmount"
@@ -68,7 +68,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="+₱50,000.00" />
+            tools:text="@string/placeholder_amount" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

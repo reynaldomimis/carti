@@ -35,61 +35,48 @@
         android:id="@+id/card_source"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/card_border"
-        app:strokeWidth="1dp">
+        android:layout_marginTop="@dimen/text_size_h1"
+        style="@style/CartiCard">
 
         <EditText
             android:id="@+id/et_income_source"
             style="@style/CartiEditText"
             android:layout_width="match_parent"
             android:layout_height="@dimen/button_height_standard"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
             android:hint="@string/hint_income_source_salary"
             android:importantForAutofill="no"
-            android:inputType="text"
-            android:textSize="@dimen/text_size_header_small" />
+            android:inputType="text" />
 
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/card_border"
-        app:strokeWidth="1dp">
+        android:layout_marginTop="@dimen/radius_medium"
+        style="@style/CartiCard">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="@dimen/button_height_standard"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="16dp">
+            android:paddingHorizontal="@dimen/spacing_medium">
 
             <TextView
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/currency_symbol"
-                android:textSize="@dimen/text_size_header" />
+                android:text="@string/currency_symbol" />
 
             <EditText
                 android:id="@+id/et_salary_amount"
                 style="@style/CartiEditText"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
                 android:hint="@string/hint_amount"
                 android:importantForAutofill="no"
                 android:inputType="numberDecimal"
                 android:paddingStart="@dimen/spacing_small"
-                android:textSize="@dimen/text_size_header"
                 tools:ignore="RtlSymmetry" />
 
         </LinearLayout>

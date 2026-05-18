@@ -8,7 +8,7 @@
     <string name="budget_summary">Budget Summary</string>
     <string name="budget_amount">%s</string>
     <string name="total_budget">/ %s</string>
-    <string name="spent_remaining_days">Salary Mode: %1$d days to payday | %2$d%% spent </string>
+    <string name="spent_remaining_days">Income Mode: %1$d days to payday | %2$d%% spent </string>
     <string name="quick_log_title">Quick Expense Log</string>
     <string name="quick_log_subtitle">Just select, 1 tap!</string>
     <string name="customize">Customize</string>
@@ -247,7 +247,7 @@
     <string name="security_title">Security</string>
     <string name="section_login">Login &amp; Account</string>
     <string name="label_password">Password</string>
-    <string name="btn_reset_password">Reset Password</string>
+    <string name="btn_change_password">Change Password</string>
     <string name="section_security">Security</string>
     <string name="label_sign_out_all">Sign out from all devices</string>
     <string name="desc_sign_out_all">This will log you out from all other active sessions except this one.</string>
@@ -397,6 +397,41 @@
     <string name="label_income_history">Income History</string>
     <string name="placeholder_zero">0</string>
     <string name="placeholder_date_simple">Date</string>
+
+    <!-- Placeholders for tools:text -->
+    <string name="placeholder_name">Name</string>
+    <string name="placeholder_description">Description</string>
+    <string name="placeholder_amount">₱0.00</string>
+    <string name="placeholder_date_full">Month DD, YYYY</string>
+    <string name="placeholder_notes">Notes...</string>
+    <string name="placeholder_percentage">0%</string>
+    <string name="placeholder_target_date">Target: MMM YYYY</string>
+    <string name="placeholder_car_savings">Car Savings</string>
+    <string name="placeholder_goal_progress">₱0 / ₱0</string>
+    <string name="placeholder_ate_liza">Ate Liza</string>
+    <string name="placeholder_debt_desc">Utang para sa groceries</string>
+    <string name="placeholder_sm_supermarket">Binili sa SM Supermarket</string>
+    <string name="placeholder_time">9:00 AM</string>
+    <string name="placeholder_sender">Sender</string>
+    <string name="placeholder_message">Message...</string>
+    <string name="placeholder_juan">Juan</string>
+    <string name="placeholder_employed">Employed • ₱50,000.00</string>
+    <string name="placeholder_member">Member</string>
+    <string name="placeholder_juan_you">Juan (You)</string>
+    <string name="placeholder_maria">Maria (Asawa)</string>
+    <string name="placeholder_chat_msg">Magandang umaga pamilya! ☀️</string>
+    <string name="placeholder_chat_msg_reply">Good morning! 😊</string>
+    <string name="placeholder_timer">5s</string>
+    <string name="placeholder_time_930">9:30 AM</string>
+    <string name="placeholder_time_931">9:31 AM</string>
+    <string name="placeholder_mayo_2024">Mayo 2024</string>
+    <string name="placeholder_comparison">vs April: -₱1,250 ( ▼ 16.7% )</string>
+    <string name="placeholder_total_debt">₱2,450.00</string>
+    <string name="placeholder_debt_paid">15% paid</string>
+    <string name="placeholder_hindi_pa_bayad">Hindi pa bayad</string>
+    <string name="placeholder_user_name">User Name</string>
+    <string name="placeholder_user_email">user@email.com</string>
+    <string name="placeholder_version">v 1.0.0</string>
 
     <string name="currency_symbol">₱</string>
     <string name="msg_saving_debt">Saving debt...</string>

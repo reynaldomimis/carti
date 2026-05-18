@@ -23,7 +23,7 @@
         android:fontFamily="@font/plus_jakarta_sans_medium"
         android:textColor="@color/text_secondary"
         android:textSize="12sp"
-        tools:text="Pagkain" />
+        tools:text="@string/label_food" />
 
     <TextView
         android:id="@+id/tvAmountPercent"
@@ -32,6 +32,6 @@
         android:fontFamily="@font/plus_jakarta_sans_bold"
         android:textColor="@color/text_primary"
         android:textSize="12sp"
-        tools:text="₱2,250 (36%)" />
+        tools:text="@string/placeholder_amount" />
 
 </LinearLayout>

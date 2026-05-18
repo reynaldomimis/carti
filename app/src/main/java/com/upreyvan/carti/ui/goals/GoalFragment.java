@@ -94,7 +94,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
 
     private void filterGoals(int position) {
         List<Goal> filteredList = new ArrayList<>();
-        if (position == 0) { // Active
+        if (position == 0) {
             for (Goal goal : allGoals) {
                 if (!goal.isCompleted()) filteredList.add(goal);
             }

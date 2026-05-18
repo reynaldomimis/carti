@@ -48,7 +48,7 @@
                 style="@style/CartiSubHeader"
                 android:textColor="@color/text_tertiary"
                 android:textSize="@dimen/text_size_body"
-                tools:text="v 1.0.0" />
+                tools:text="@string/placeholder_version" />
 
             <com.google.android.material.card.MaterialCardView
                 style="@style/CartiCard"
@@ -159,7 +159,7 @@
                         android:paddingHorizontal="@dimen/spacing_medium"
                         android:textSize="@dimen/text_size_body"
                         android:visibility="gone"
-                        tools:text="Credits paragraph here..."
+                        tools:text="@string/credits_full_desc"
                         tools:visibility="visible" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

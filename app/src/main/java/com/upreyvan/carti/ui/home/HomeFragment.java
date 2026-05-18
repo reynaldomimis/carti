@@ -46,7 +46,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private GenericAdapter<QuickLogItem, ItemQuickLogBinding> quickLogAdapter;
     private TransactionAdapter transactionAdapter;
     private boolean isExpanded = false;
-    private Realtime realtime;
     private RealtimeSubscription userSubscription;
     private RealtimeSubscription familySubscription;
     private RealtimeSubscription transactionSubscription;
@@ -97,7 +96,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private void initRealtime() {
         PreferenceManager pref = new PreferenceManager(requireContext());
         ApiHelper apiHelper = new ApiHelper(requireContext());
-        realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
+        Realtime realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
         
         String familyId = pref.getFamilyId();
         
@@ -162,7 +161,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         ApiHelper apiHelper = new ApiHelper(requireContext());
         PreferenceManager pref = new PreferenceManager(requireContext());
 
-        apiHelper.getFamilySummary(new AppwriteManager.AppwriteCallback<io.appwrite.models.Document<Map<String, Object>>>() {
+        apiHelper.getFamilySummary(new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(io.appwrite.models.Document<Map<String, Object>> result) {
                 if (!isAdded()) return;
@@ -194,14 +193,14 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         }
 
         if (isAdmin) {
-            apiHelper.getMembers(new AppwriteManager.AppwriteCallback<io.appwrite.models.DocumentList<Map<String, Object>>>() {
+            apiHelper.getMembers(new AppwriteManager.AppwriteCallback<>() {
                 @Override
                 public void onSuccess(io.appwrite.models.DocumentList<Map<String, Object>> result) {
                     if (!isAdded()) return;
                     boolean hasPending = false;
                     for (io.appwrite.models.Document<Map<String, Object>> doc : result.getDocuments()) {
                         Object status = doc.getData().get("status");
-                        if ("pending".equals(status)) {
+                        if (java.util.Objects.equals("pending", status)) {
                             hasPending = true;
                             break;
                         }
@@ -225,16 +224,14 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         SalaryManager salaryManager = SalaryManager.getInstance(requireContext());
         
         incomeRepository.getTotalIncome().observe(getViewLifecycleOwner(), totalIncome -> {
-            double amount = totalIncome != null ? totalIncome : 0.0;
+            double amount = java.util.Objects.requireNonNullElse(totalIncome, 0.0);
             double dailyBudget = salaryManager.getDailyBudget(amount);
             int daysLeft = salaryManager.getDaysUntilNextPayday();
 
             getBinding().cardBudget.tvAmount.setText(getString(R.string.format_currency_no_decimal, dailyBudget));
             getBinding().cardBudget.tvSalaryInfo.setText(getString(R.string.income_info_format, daysLeft));
 
-            transactionRepository.getTodayTotalSpent().observe(getViewLifecycleOwner(), todaySpent -> {
-                updateBudgetCard(dailyBudget, todaySpent != null ? todaySpent : 0.0);
-            });
+            transactionRepository.getTodayTotalSpent().observe(getViewLifecycleOwner(), todaySpent -> updateBudgetCard(dailyBudget, java.util.Objects.requireNonNullElse(todaySpent, 0.0)));
         });
         incomeRepository.refreshIncomes();
     }
@@ -296,9 +293,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().headerQuickLog.tvSectionSubTitle.setText(R.string.quick_log_subtitle);
         
         getBinding().headerQuickLog.btnSectionAction.setText(R.string.customize);
-        getBinding().headerQuickLog.btnSectionAction.setOnClickListener(v -> {
-            startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class));
-        });
+        getBinding().headerQuickLog.btnSectionAction.setOnClickListener(v -> startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class)));
 
         getBinding().headerRecent.tvSectionTitle.setText(R.string.recent_transactions);
         getBinding().headerRecent.btnSectionAction.setText(R.string.see_all);
@@ -310,9 +305,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         List<QuickLogItem> items = new ArrayList<>();
         
         int limit = isExpanded ? categories.size() : 7;
-        for (int i = 0; i < Math.min(categories.size(), limit); i++) {
+        int i = 0;
+        while (i < Math.min(categories.size(), limit)) {
             Category cat = categories.get(i);
             items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor()));
+            i++;
         }
 
         String othersLabel = getString(R.string.label_others);
@@ -339,10 +336,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         );
         
         quickLogAdapter.setOnItemClickListener(item -> {
-            if (item.getTitle().equals(othersLabel)) {
+            if (java.util.Objects.equals(item.getTitle(), othersLabel)) {
                 isExpanded = true;
                 setupQuickLog();
-            } else if (item.getTitle().equals(seeLessLabel)) {
+            } else if (java.util.Objects.equals(item.getTitle(), seeLessLabel)) {
                 isExpanded = false;
                 setupQuickLog();
             } else {
@@ -351,7 +348,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         });
 
         quickLogAdapter.setOnItemLongClickListener(item -> {
-            if (!item.getTitle().equals(othersLabel) && !item.getTitle().equals(seeLessLabel)) {
+            if (!java.util.Objects.equals(item.getTitle(), othersLabel) && !java.util.Objects.equals(item.getTitle(), seeLessLabel)) {
                 showDeleteCategoryDialog(item);
                 return true;
             }
@@ -366,7 +363,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         com.upreyvan.carti.util.DialogHelper.showConfirmation(
                 requireContext(),
                 getString(R.string.add_options_category),
-                getString(R.string.btn_delete_account) + " \"" + item.getTitle() + "\"?",
+                getString(R.string.btn_delete_account) + " \"" + item.getTitle() + "\'?",
                 getString(R.string.btn_delete_account),
                 () -> deleteCategory(item.getTitle())
         );
@@ -392,10 +389,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private void showQuickLogDialog(QuickLogItem item) {
         QuickLogDialog dialog = QuickLogDialog.newInstance(item);
-        dialog.setListener((loggedItem, amount) -> {
-            showToast(getString(R.string.msg_logged_success, String.format("%.2f", amount), loggedItem.getTitle()), 
-                    com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
-        });
+        dialog.setListener((loggedItem, amount) -> showToast(getString(R.string.msg_logged_success, String.format(Locale.getDefault(), "%.2f", amount), loggedItem.getTitle()), 
+                com.upreyvan.carti.util.ToastHelper.Status.SUCCESS));
         dialog.show(getChildFragmentManager(), "QUICK_LOG_DIALOG");
     }
 

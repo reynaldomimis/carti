@@ -34,7 +34,7 @@
                 android:fontFamily="@font/plus_jakarta_sans_bold"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
-                tools:text="Bili ng Bisikleta" />
+                tools:text="@string/placeholder_car_savings" />
 
             <TextView
                 android:id="@+id/tvCurrentProgress"
@@ -44,7 +44,7 @@
                 android:fontFamily="@font/plus_jakarta_sans_medium"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp"
-                tools:text="Current: ₱3,000 / ₱5,000" />
+                tools:text="@string/placeholder_goal_progress" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -70,7 +70,7 @@
                     android:fontFamily="@font/plus_jakarta_sans_bold"
                     android:textColor="@color/text_primary"
                     android:textSize="12sp"
-                    tools:text="60%" />
+                    tools:text="@string/placeholder_percentage" />
             </RelativeLayout>
 
             <!-- Amount Input Section -->
@@ -99,7 +99,7 @@
                     android:layout_height="64dp"
                     android:background="@null"
                     android:fontFamily="@font/plus_jakarta_sans_bold"
-                    android:hint="₱0.00"
+                    android:hint="@string/hint_amount"
                     android:inputType="numberDecimal"
                     android:paddingHorizontal="16dp"
                     android:textColor="@color/text_primary"

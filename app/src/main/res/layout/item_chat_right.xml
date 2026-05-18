@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.microsoft.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="8dp">
+    android:paddingHorizontal="@dimen/spacing_medium"
+    android:paddingVertical="@dimen/spacing_small">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -17,38 +17,37 @@
 
         <TextView
             android:id="@+id/tvSenderName"
+            style="@style/CartiHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
             android:textColor="@color/carti_primary_green"
-            android:textSize="12sp"
-            tools:text="Maria (Asawa)" />
+            android:textSize="@dimen/text_size_small"
+            tools:text="@string/placeholder_maria" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/spacing_xs"
             app:cardBackgroundColor="@color/tonal_button_bg"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="@dimen/radius_large"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="80dp"
+                android:minWidth="@dimen/bottom_nav_height"
                 android:orientation="vertical"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="8dp">
+                android:paddingHorizontal="@dimen/radius_medium"
+                android:paddingVertical="@dimen/spacing_small">
 
                 <TextView
                     android:id="@+id/tvMessage"
+                    style="@style/CartiSubHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    tools:text="Good morning! 😊" />
+                    tools:text="@string/placeholder_chat_msg_reply" />
 
                 <TextView
                     android:id="@+id/tvTime"
@@ -59,7 +58,7 @@
                     android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:textColor="@color/text_tertiary"
                     android:textSize="10sp"
-                    tools:text="9:31 AM" />
+                    tools:text="@string/placeholder_time_931" />
 
             </LinearLayout>
 

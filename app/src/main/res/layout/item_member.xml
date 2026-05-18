@@ -40,7 +40,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/chipRole"
                 app:layout_constraintStart_toEndOf="@+id/ivAvatar"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="Juan" />
+                tools:text="@string/placeholder_juan" />
 
             <TextView
                 android:id="@+id/tvDescription"
@@ -51,7 +51,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/chipRole"
                 app:layout_constraintStart_toStartOf="@+id/tvTitle"
                 app:layout_constraintTop_toBottomOf="@+id/tvTitle"
-                tools:text="Employed • ₱50,000.00" />
+                tools:text="@string/placeholder_employed" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipRole"
@@ -64,7 +64,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="Member" />
+                tools:text="@string/placeholder_member" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

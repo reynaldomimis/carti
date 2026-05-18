@@ -86,7 +86,7 @@
                             app:layout_constraintEnd_toStartOf="@+id/btnNextMonth"
                             app:layout_constraintStart_toEndOf="@id/btnPrevMonth"
                             app:layout_constraintTop_toTopOf="parent"
-                            tools:text="Mayo 2024" />
+                            tools:text="@string/placeholder_mayo_2024" />
 
                         <ImageButton
                             android:id="@+id/btnNextMonth"
@@ -131,7 +131,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="@font/plus_jakarta_sans_bold"
-                        android:text="@string/default_amount"
+                        tools:text="@string/default_amount"
                         android:textColor="@color/text_primary"
                         android:textSize="@dimen/text_size_display" />
 
@@ -144,7 +144,7 @@
                         android:text="@string/percentage_decrease_format"
                         android:textColor="@color/text_secondary"
                         android:textSize="@dimen/text_size_body_small"
-                        tools:text="vs April: -₱1,250 ( ▼ 16.7% )" />
+                        tools:text="@string/placeholder_comparison" />
 
                     <LinearLayout
                         android:layout_width="match_parent"

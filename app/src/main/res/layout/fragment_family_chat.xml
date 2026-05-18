@@ -18,8 +18,8 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/back_button_container"
-            android:layout_width="@dimen/avatar_size_medium"
-            android:layout_height="@dimen/avatar_size_medium"
+            android:layout_width="@dimen/back_button_size"
+            android:layout_height="@dimen/back_button_size"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
@@ -71,8 +71,8 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/settings_button_container"
-                android:layout_width="@dimen/avatar_size_medium"
-                android:layout_height="@dimen/avatar_size_medium"
+                android:layout_width="@dimen/back_button_size"
+                android:layout_height="@dimen/back_button_size"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"

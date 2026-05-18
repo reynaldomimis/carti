@@ -21,7 +21,7 @@
         app:layout_constraintEnd_toStartOf="@+id/tvStatus"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="Notifications" />
+        tools:text="@string/label_notifications" />
 
     <TextView
         android:id="@+id/tvStatus"
@@ -34,7 +34,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/ivChevron"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="On" />
+        tools:text="@string/status_on" />
 
     <ImageView
         android:id="@+id/ivChevron"
