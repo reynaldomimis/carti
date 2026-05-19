@@ -17,6 +17,7 @@ public class Member {
     private String description;
     private String status;
     private int avatarRes;
+    private String avatarUrl;
     private double amount;
 
     public Member(@NonNull String id, String familyId, String title, String description, String status, int avatarRes, double amount) {
@@ -42,6 +43,8 @@ public class Member {
     public void setStatus(String status) { this.status = status; }
     public int getAvatarRes() { return avatarRes; }
     public void setAvatarRes(int avatarRes) { this.avatarRes = avatarRes; }
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
 
@@ -54,12 +57,13 @@ public class Member {
                 id.equals(member.id) &&
                 Objects.equals(title, member.title) &&
                 Objects.equals(description, member.description) &&
-                Objects.equals(status, member.status);
+                Objects.equals(status, member.status) &&
+                Objects.equals(avatarUrl, member.avatarUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, status, amount);
+        return Objects.hash(id, title, description, status, amount, avatarUrl);
     }
 
     public static final DiffUtil.ItemCallback<Member> DIFF_CALLBACK = new DiffUtil.ItemCallback<Member>() {

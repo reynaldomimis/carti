@@ -14,6 +14,7 @@ public class Transaction {
     @NonNull
     private String id;
     private String familyId;
+    private String userId;
     private String title;
     private String description;
     private String timestamp;
@@ -35,9 +36,10 @@ public class Transaction {
         this.type = "EXPENSE";
     }
 
-    public Transaction(@NonNull String id, String familyId, String title, String description, String timestamp, double amount, int iconRes, int iconBgColor, int iconColor, long timestampMillis, String type) {
+    public Transaction(@NonNull String id, String familyId, String userId, String title, String description, String timestamp, double amount, int iconRes, int iconBgColor, int iconColor, long timestampMillis, String type) {
         this.id = id;
         this.familyId = familyId;
+        this.userId = userId;
         this.title = title;
         this.description = description;
         this.timestamp = timestamp;
@@ -54,6 +56,8 @@ public class Transaction {
     public void setId(@NonNull String id) { this.id = id; }
     public String getFamilyId() { return familyId; }
     public void setFamilyId(String familyId) { this.familyId = familyId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
     public String getDescription() { return description; }

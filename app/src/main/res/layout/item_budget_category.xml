@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="@dimen/spacing_medium"
+    android:paddingVertical="@dimen/spacing_small">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cvIcon"
+        android:layout_width="@dimen/icon_size_large"
+        android:layout_height="@dimen/icon_size_large"
+        app:cardBackgroundColor="@color/log_food"
+        app:cardCornerRadius="@dimen/radius_small"
+        app:cardElevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeWidth="0dp">
+
+        <ImageView
+            android:id="@+id/ivIcon"
+            android:layout_width="@dimen/icon_size_small"
+            android:layout_height="@dimen/icon_size_small"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_chart"
+            app:tint="@color/icon_food"
+            android:contentDescription="@null" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tvCategoryName"
+        style="@style/CartiHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_medium"
+        android:textSize="@dimen/text_size_body"
+        app:layout_constraintEnd_toStartOf="@id/tvAmount"
+        app:layout_constraintStart_toEndOf="@id/cvIcon"
+        app:layout_constraintTop_toTopOf="@id/cvIcon"
+        tools:text="Bills &amp; Utilities" />
+
+    <TextView
+        android:id="@+id/tvAmount"
+        style="@style/CartiHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/spacing_medium"
+        android:textSize="@dimen/text_size_body_small"
+        app:layout_constraintBottom_toBottomOf="@id/tvCategoryName"
+        app:layout_constraintEnd_toStartOf="@id/tvPercentage"
+        app:layout_constraintTop_toTopOf="@id/tvCategoryName"
+        tools:text="PHP 8,000" />
+
+    <TextView
+        android:id="@+id/tvPercentage"
+        style="@style/CartiSubHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size_xxs"
+        app:layout_constraintBottom_toBottomOf="@id/tvCategoryName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvCategoryName"
+        tools:text="80%" />
+
+    <ProgressBar
+        android:id="@+id/pbBudget"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:progress="80"
+        android:progressDrawable="@drawable/bg_dash_progress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/tvCategoryName"
+        app:layout_constraintTop_toBottomOf="@id/tvCategoryName" />
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="0dp"
+        android:layout_height="@dimen/divider_thickness"
+        android:layout_marginTop="@dimen/spacing_small"
+        app:dividerColor="@color/border_subtle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/tvCategoryName"
+        app:layout_constraintTop_toBottomOf="@id/pbBudget" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -19,7 +19,7 @@ import com.upreyvan.carti.model.Income;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.model.Transaction;
 
-@Database(entities = {Member.class, Transaction.class, Goal.class, Debt.class, Income.class, Bill.class}, version = 8, exportSchema = false)
+@Database(entities = {Member.class, Transaction.class, Goal.class, Debt.class, Income.class, Bill.class}, version = 10, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase INSTANCE;

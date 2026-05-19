@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="ShapeAppearance.Pigy.Circle" parent="">
-        <item name="cornerFamily">rounded</item>
+    <style name="ShapeAppearance.Carti.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">@dimen/card_corner_radius</item>
+    </style>
+
+    <style name="ShapeAppearance.Pigy.Circle" parent="ShapeAppearance.Material3.Corner.Full">
         <item name="cornerSize">50%</item>
     </style>
 
@@ -10,7 +13,7 @@
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
         <item name="android:minHeight">@dimen/button_height_standard</item>
-        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Medium</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Carti.Medium</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0</item>
         <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
@@ -64,6 +67,7 @@
     <style name="CartiCard" parent="Widget.Material3.CardView.Elevated">
         <item name="cardElevation">0dp</item>
         <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Carti.Medium</item>
         <item name="strokeColor">@color/border_subtle</item>
         <item name="strokeWidth">@dimen/stroke_width_thin</item>
         <item name="cardBackgroundColor">@color/white</item>
@@ -72,6 +76,37 @@
     <style name="CartiCard.Elevated">
         <item name="cardElevation">2dp</item>
         <item name="strokeWidth">0dp</item>
+    </style>
+
+    <!-- Centralized Input Layouts -->
+    <style name="CartiInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="shapeAppearance">@style/ShapeAppearance.Carti.Medium</item>
+        <item name="boxStrokeColor">@color/carti_primary_green</item>
+        <item name="hintTextColor">@color/carti_primary_green</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxBackgroundColor">@color/white</item>
+    </style>
+
+    <style name="CartiInputLayout.Filled" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="shapeAppearance">@style/ShapeAppearance.Carti.Medium</item>
+        <item name="boxBackgroundColor">@color/tonal_button_bg</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
+        <item name="hintTextColor">@color/carti_primary_green</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+    </style>
+
+    <style name="CartiInputLayout.Amount">
+        <item name="prefixText">₱</item>
+        <item name="prefixTextColor">@color/text_primary</item>
+    </style>
+
+    <style name="CartiInputLayout.Dropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="shapeAppearance">@style/ShapeAppearance.Carti.Medium</item>
+        <item name="boxStrokeColor">@color/carti_primary_green</item>
+        <item name="hintTextColor">@color/carti_primary_green</item>
     </style>
 
     <style name="CartiEditText">
@@ -98,6 +133,66 @@
         <item name="android:textColor">@color/text_tertiary</item>
         <item name="android:textSize">@dimen/text_size_xxs</item>
         <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
+    </style>
+
+    <style name="CalendarDayHeader.Dark">
+        <item name="android:textColor">@color/bills_text_secondary</item>
+    </style>
+
+    <style name="CartiHeader.OnDark">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/text_size_header</item>
+    </style>
+
+    <style name="CartiSubHeader.OnDark">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_medium</item>
+        <item name="android:textColor">@color/white_60</item>
+        <item name="android:textSize">@dimen/text_size_body</item>
+    </style>
+
+    <style name="CartiHeader.Dark">
+        <item name="android:textColor">@color/bills_text_primary</item>
+    </style>
+
+    <!-- Dashboard Styles -->
+    <style name="DashLabel">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_medium</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">@dimen/text_size_small</item>
+    </style>
+
+    <style name="DashAmountLarge">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/text_size_h2</item>
+    </style>
+
+    <style name="DashAmountSmall">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/text_size_header_small</item>
+    </style>
+
+    <style name="DashPercentage">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:textSize">@dimen/text_size_xxs</item>
+    </style>
+
+    <style name="DashCard">
+        <item name="cardCornerRadius">@dimen/radius_large</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/border_subtle</item>
+        <item name="cardBackgroundColor">@color/white</item>
+    </style>
+
+    <!-- Custom DatePicker Theme -->
+    <style name="CartiDatePicker" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="colorPrimary">@color/carti_primary_green</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Carti.Medium</item>
     </style>
 
 </resources>

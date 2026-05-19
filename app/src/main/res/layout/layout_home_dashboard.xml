@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="@dimen/spacing_medium">
+
+    <!-- Main Balance Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardTotalBalance"
+        style="@style/DashCard"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dash_card_height">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="@dimen/spacing_medium">
+
+            <TextView
+                android:id="@+id/tvBalanceLabel"
+                style="@style/DashLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_total_balance"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <LinearLayout
+                android:id="@+id/layoutLiveSync"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_white"
+                android:backgroundTint="@color/tonal_button_bg"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/spacing_small"
+                android:paddingVertical="@dimen/spacing_xxs"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_sync"
+                    app:tint="@color/dash_green" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_xxs"
+                    android:fontFamily="@font/plus_jakarta_sans_medium"
+                    android:text="@string/label_live_sync"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_size_xxs" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvTotalBalance"
+                style="@style/DashAmountLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvBalanceLabel"
+                tools:text="PHP 256,890.50" />
+
+            <TextView
+                android:id="@+id/tvBalanceTrend"
+                style="@style/DashPercentage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:drawablePadding="2dp"
+                android:textColor="@color/dash_green"
+                app:drawableStartCompat="@drawable/ic_arrow_up"
+                app:drawableTint="@color/dash_green"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvTotalBalance"
+                tools:text="12.5% vs last month" />
+
+            <!-- Placeholder for Line Chart Background -->
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="80dp"
+                android:alpha="0.3"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_chart"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:tint="@color/dash_green" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:orientation="horizontal">
+
+        <!-- Income Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardIncome"
+            style="@style/DashCard"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dash_stat_card_height"
+            android:layout_marginEnd="@dimen/spacing_xs"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_small">
+
+                <TextView
+                    style="@style/DashLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="@dimen/spacing_xxs"
+                    android:gravity="center_vertical"
+                    android:text="@string/label_income"
+                    app:drawableStartCompat="@drawable/ic_chart"
+                    app:drawableTint="@color/dash_green" />
+
+                <TextView
+                    android:id="@+id/tvIncomeAmount"
+                    style="@style/DashAmountSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    tools:text="PHP 120,000" />
+
+                <TextView
+                    android:id="@+id/tvIncomeTrend"
+                    style="@style/DashPercentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:drawablePadding="2dp"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/dash_green"
+                    app:drawableStartCompat="@drawable/ic_arrow_up"
+                    app:drawableTint="@color/dash_green"
+                    tools:text="8.5%" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Expenses Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardExpenses"
+            style="@style/DashCard"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dash_stat_card_height"
+            android:layout_marginHorizontal="@dimen/spacing_xxs"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_small">
+
+                <TextView
+                    style="@style/DashLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="@dimen/spacing_xxs"
+                    android:gravity="center_vertical"
+                    android:text="@string/label_expenses"
+                    app:drawableStartCompat="@drawable/ic_calendar"
+                    app:drawableTint="@color/dash_red" />
+
+                <TextView
+                    android:id="@+id/tvExpensesAmount"
+                    style="@style/DashAmountSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    tools:text="PHP 68,450" />
+
+                <TextView
+                    android:id="@+id/tvExpensesTrend"
+                    style="@style/DashPercentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:drawablePadding="2dp"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/dash_red"
+                    app:drawableStartCompat="@drawable/ic_arrow_down"
+                    app:drawableTint="@color/dash_red"
+                    tools:text="3.2%" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Remaining Budget Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardRemaining"
+            style="@style/DashCard"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dash_stat_card_height"
+            android:layout_marginStart="@dimen/spacing_xs"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_small">
+
+                <TextView
+                    style="@style/DashLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="@dimen/spacing_xxs"
+                    android:gravity="center_vertical"
+                    android:text="@string/label_budget"
+                    app:drawableStartCompat="@drawable/ic_trophy"
+                    app:drawableTint="@color/dash_orange" />
+
+                <TextView
+                    android:id="@+id/tvRemainingAmount"
+                    style="@style/DashAmountSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    tools:text="PHP 51,550" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ProgressBar
+                        android:id="@+id/pbRemaining"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/dash_progress_height"
+                        android:layout_weight="1"
+                        android:progress="45"
+                        android:progressDrawable="@drawable/bg_dash_progress" />
+
+                    <TextView
+                        android:id="@+id/tvRemainingPercent"
+                        style="@style/DashPercentage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_xs"
+                        android:textColor="@color/text_secondary"
+                        tools:text="45%" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+    <!-- Recurring Bills Section -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardRecurringBills"
+        style="@style/DashCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_medium">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    style="@style/DashLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/recurring_bills_title"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/btnViewAllBills"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/plus_jakarta_sans_semibold"
+                    android:text="@string/see_all"
+                    android:textColor="@color/green_primary"
+                    android:textSize="@dimen/text_size_xxs"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:background="@drawable/bg_recurring_bills"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_small">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size_medium"
+                    android:layout_height="@dimen/icon_size_medium"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="@color/carti_primary_green"
+                    android:contentDescription="@null" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/plus_jakarta_sans_bold"
+                        android:text="@string/placeholder_bill_date"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body_small" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/plus_jakarta_sans_medium"
+                        android:text="@string/recurring_bills_desc"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_xxs" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/plus_jakarta_sans_bold"
+                    android:text="@string/placeholder_bill_amount"
+                    android:textColor="@color/status_red"
+                    android:textSize="@dimen/text_size_body" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

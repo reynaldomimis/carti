@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_dialog_ios"
+    android:background="@drawable/bg_bottom_sheet_white"
     android:orientation="vertical"
     android:padding="@dimen/spacing_large">
 
@@ -13,81 +13,70 @@
         android:layout_height="@dimen/handle_height"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="@dimen/spacing_large"
-        android:background="@drawable/bg_handle_dialog" />
+        android:background="@color/border_subtle" />
 
     <TextView
         android:id="@+id/tv_dialog_title"
         style="@style/CartiHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/title_edit_income"
-        android:textSize="@dimen/text_size_header" />
+        android:text="@string/title_edit_income" />
 
     <TextView
         style="@style/CartiSubHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xs"
-        android:text="@string/desc_edit_income"
-        android:textSize="@dimen/text_size_body" />
+        android:text="@string/desc_edit_income" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_source"
+        style="@style/CartiCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/text_size_h1"
-        style="@style/CartiCard">
-
-        <EditText
-            android:id="@+id/et_income_source"
-            style="@style/CartiEditText"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height_standard"
-            android:hint="@string/hint_income_source_salary"
-            android:importantForAutofill="no"
-            android:inputType="text" />
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/radius_medium"
-        style="@style/CartiCard">
+        android:layout_marginTop="@dimen/spacing_large">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height_standard"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/spacing_medium">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_medium">
 
-            <TextView
-                style="@style/CartiHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/currency_symbol" />
-
-            <EditText
-                android:id="@+id/et_salary_amount"
-                style="@style/CartiEditText"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:hint="@string/hint_amount"
-                android:importantForAutofill="no"
-                android:inputType="numberDecimal"
-                android:paddingStart="@dimen/spacing_small"
-                tools:ignore="RtlSymmetry" />
+                android:layout_height="wrap_content"
+                android:hint="@string/label_title"
+                style="@style/CartiInputLayout">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_income_source"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:hint="@string/label_bill_amount"
+                style="@style/CartiInputLayout.Amount">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_salary_amount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal" />
+            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_save"
         style="@style/CartiButton.Primary"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height_standard"
+        android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_large"
         android:text="@string/btn_save_income" />
 

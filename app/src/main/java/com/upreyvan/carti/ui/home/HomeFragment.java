@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.CategoryManager;
@@ -25,7 +26,9 @@ import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.data.repository.IncomeRepository;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
+import com.upreyvan.carti.databinding.ItemAiSuggestionCardBinding;
 import com.upreyvan.carti.databinding.ItemQuickLogBinding;
+import com.upreyvan.carti.model.AiSuggestion;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.ui.expenses.AllTransactionsFragment;
@@ -33,6 +36,7 @@ import com.upreyvan.carti.ui.notifications.NotificationsFragment;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
 
+import androidx.recyclerview.widget.DiffUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -44,6 +48,7 @@ import io.appwrite.services.Realtime;
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private GenericAdapter<QuickLogItem, ItemQuickLogBinding> quickLogAdapter;
+    private GenericAdapter<AiSuggestion, ItemAiSuggestionCardBinding> aiSuggestionsAdapter;
     private TransactionAdapter transactionAdapter;
     private boolean isExpanded = false;
     private RealtimeSubscription userSubscription;
@@ -78,8 +83,102 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         initRealtime();
         
         observeTransactions();
-        setupDailyBudgetCard();
+        setupDashboard();
+        setupRecurringBills();
+        setupAiInsightCard();
+        setupAiSuggestions();
         fetchFamilyData();
+    }
+
+    private void setupAiSuggestions() {
+        DiffUtil.ItemCallback<AiSuggestion> diffCallback = new DiffUtil.ItemCallback<AiSuggestion>() {
+            @Override
+            public boolean areItemsTheSame(@NonNull AiSuggestion oldItem, @NonNull AiSuggestion newItem) {
+                return oldItem.getTitle().equals(newItem.getTitle());
+            }
+
+            @Override
+            public boolean areContentsTheSame(@NonNull AiSuggestion oldItem, @NonNull AiSuggestion newItem) {
+                return oldItem.getDescription().equals(newItem.getDescription());
+            }
+        };
+
+        aiSuggestionsAdapter = new GenericAdapter<>(
+                diffCallback,
+                (inflater, parent) -> ItemAiSuggestionCardBinding.inflate(inflater, parent, false),
+                (binding, item) -> {
+                    binding.tvTitle.setText(item.getTitle());
+                    binding.tvDescription.setText(item.getDescription());
+                    binding.ivIcon.setImageResource(item.getIconResId());
+                    binding.cvIcon.setCardBackgroundColor(ContextCompat.getColor(requireContext(), item.getThemeColor()));
+                    binding.btnAction.setText(item.getActionText());
+                    binding.btnAction.setTextColor(ContextCompat.getColor(requireContext(), item.getThemeColor()));
+
+                    binding.btnClose.setOnClickListener(v -> {
+                        List<AiSuggestion> currentList = new ArrayList<>(aiSuggestionsAdapter.getCurrentList());
+                        currentList.remove(item);
+                        aiSuggestionsAdapter.submitList(currentList);
+                    });
+
+                    binding.getRoot().setOnClickListener(v -> {
+                        // Handle card click
+                    });
+                }
+        );
+
+        getBinding().layoutAiSuggestions.rvAiSuggestions.setAdapter(aiSuggestionsAdapter);
+        getBinding().layoutAiSuggestions.btnCloseContainer.setOnClickListener(v -> 
+            getBinding().layoutAiSuggestions.getRoot().setVisibility(View.GONE)
+        );
+
+        loadAiSuggestions();
+    }
+
+    private void loadAiSuggestions() {
+        List<AiSuggestion> suggestions = new ArrayList<>();
+        suggestions.add(new AiSuggestion(
+                getString(R.string.suggestion_predictive_alert),
+                getString(R.string.desc_predictive_alert),
+                R.drawable.ic_bell,
+                R.color.status_red,
+                getString(R.string.label_view)
+        ));
+        suggestions.add(new AiSuggestion(
+                getString(R.string.suggestion_savings_tip),
+                getString(R.string.desc_savings_tip),
+                R.drawable.ic_trophy,
+                R.color.status_green,
+                getString(R.string.label_apply)
+        ));
+        suggestions.add(new AiSuggestion(
+                getString(R.string.suggestion_bill_reminder),
+                getString(R.string.desc_bill_reminder),
+                R.drawable.ic_calendar,
+                R.color.carti_primary_blue,
+                getString(R.string.label_pay_now)
+        ));
+        suggestions.add(new AiSuggestion(
+                getString(R.string.suggestion_goal_progress),
+                getString(R.string.desc_goal_progress),
+                R.drawable.ic_chart,
+                R.color.mint_green,
+                getString(R.string.label_view)
+        ));
+        aiSuggestionsAdapter.submitList(suggestions);
+    }
+
+    private void setupAiInsightCard() {
+        getBinding().layoutAiInsight.btnAskAi.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).navigateTo(6);
+            }
+        });
+
+        getBinding().layoutAiInsight.btnViewReport.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).navigateTo(2);
+            }
+        });
     }
 
     private void observeTransactions() {
@@ -149,7 +248,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                     
                     pref.saveFamilySummary(balance, income, expense);
                     if (isAdded()) {
-                        requireActivity().runOnUiThread(this::setupHeaders);
+                        requireActivity().runOnUiThread(() -> {
+                            setupHeaders();
+                            setupDashboard();
+                        });
                     }
                 }
                 return null;
@@ -171,7 +273,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 double expense = Utils.getDouble(data.get("totalExpense"));
                 
                 pref.saveFamilySummary(balance, income, expense);
-                requireActivity().runOnUiThread(() -> setupHeaders());
+                requireActivity().runOnUiThread(() -> {
+                    setupHeaders();
+                    setupDashboard();
+                });
             }
 
             @Override
@@ -219,30 +324,52 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         }
     }
 
-    private void setupDailyBudgetCard() {
+    private void setupDashboard() {
+        PreferenceManager pref = new PreferenceManager(requireContext());
         IncomeRepository incomeRepository = new IncomeRepository(requireContext());
         SalaryManager salaryManager = SalaryManager.getInstance(requireContext());
         
-        incomeRepository.getTotalIncome().observe(getViewLifecycleOwner(), totalIncome -> {
-            double amount = java.util.Objects.requireNonNullElse(totalIncome, 0.0);
-            double dailyBudget = salaryManager.getDailyBudget(amount);
-            int daysLeft = salaryManager.getDaysUntilNextPayday();
-
-            getBinding().cardBudget.tvAmount.setText(getString(R.string.format_currency_no_decimal, dailyBudget));
-            getBinding().cardBudget.tvSalaryInfo.setText(getString(R.string.income_info_format, daysLeft));
-
-            transactionRepository.getTodayTotalSpent().observe(getViewLifecycleOwner(), todaySpent -> updateBudgetCard(dailyBudget, java.util.Objects.requireNonNullElse(todaySpent, 0.0)));
+        double totalBalance = pref.getTotalIncome() - pref.getTotalExpense();
+        double totalIncome = pref.getTotalIncome();
+        double totalExpense = pref.getTotalExpense();
+        
+        // Main Balance
+        getBinding().layoutDashboard.tvTotalBalance.setText(getString(R.string.format_currency, totalBalance));
+        // Hardcoded trend for now as per image or we can calculate if we have history
+        getBinding().layoutDashboard.tvBalanceTrend.setText(getString(R.string.trend_vs_last_month, "12.5%"));
+        
+        // Income
+        getBinding().layoutDashboard.tvIncomeAmount.setText(getString(R.string.format_currency_no_decimal, totalIncome));
+        getBinding().layoutDashboard.tvIncomeTrend.setText("8.5%"); // Placeholder trend
+        
+        // Expenses
+        getBinding().layoutDashboard.tvExpensesAmount.setText(getString(R.string.format_currency_no_decimal, totalExpense));
+        getBinding().layoutDashboard.tvExpensesTrend.setText("3.2%"); // Placeholder trend
+        
+        // Budget/Remaining
+        incomeRepository.getTotalIncome().observe(getViewLifecycleOwner(), baseIncome -> {
+            double income = java.util.Objects.requireNonNullElse(baseIncome, 0.0);
+            double dailyBudget = salaryManager.getDailyBudget(income);
+            
+            transactionRepository.getTodayTotalSpent().observe(getViewLifecycleOwner(), todaySpent -> {
+                double spent = java.util.Objects.requireNonNullElse(todaySpent, 0.0);
+                double remaining = dailyBudget - spent;
+                
+                getBinding().layoutDashboard.tvRemainingAmount.setText(getString(R.string.format_currency_no_decimal, Math.max(0, remaining)));
+                
+                int progress = (dailyBudget > 0) ? (int) ((spent / dailyBudget) * 100) : 0;
+                int remainingPercent = 100 - progress;
+                getBinding().layoutDashboard.pbRemaining.setProgress(Math.max(0, remainingPercent));
+                getBinding().layoutDashboard.tvRemainingPercent.setText(String.format(Locale.getDefault(), "%d%%", Math.max(0, remainingPercent)));
+            });
         });
         incomeRepository.refreshIncomes();
     }
 
-    private void updateBudgetCard(double dailyBudget, double todaySpent) {
-        double remaining = dailyBudget - todaySpent;
-        
-        int progress = (dailyBudget > 0) ? (int) ((todaySpent / dailyBudget) * 100) : 0;
-        getBinding().cardBudget.progressDaily.setProgress(Math.min(progress, 100));
-        
-        getBinding().cardBudget.tvStatus.setText(getString(R.string.amount_remaining, String.format(Locale.getDefault(), "₱%,.0f", Math.max(0, remaining))));
+    private void setupRecurringBills() {
+        getBinding().layoutDashboard.btnViewAllBills.setOnClickListener(v -> 
+            startActivity(new Intent(requireContext(), com.upreyvan.carti.ui.bills.BillsActivity.class))
+        );
     }
 
     @Override
@@ -266,7 +393,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     public void onResume() {
         super.onResume();
         setupQuickLog();
-        setupDailyBudgetCard();
+        setupDashboard();
     }
 
     private void updateNotificationBadge(boolean hasNotifications) {

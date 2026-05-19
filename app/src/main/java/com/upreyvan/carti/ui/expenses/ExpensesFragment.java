@@ -22,6 +22,7 @@ import com.upreyvan.carti.databinding.FragmentExpensesBinding;
 import com.upreyvan.carti.databinding.ItemLegendExpenseBinding;
 import com.upreyvan.carti.model.ExpenseCategory;
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.util.Utils;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
                 });
     }
 
-    private void processTransactions(List<Transaction> transactions) {
+    private void processTransactions(List<TransactionWithUser> transactions) {
         if (transactions == null || transactions.isEmpty()) {
             getBinding().pieChart.clear();
             legendAdapter.submitList(new ArrayList<>());
@@ -90,7 +91,8 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         }
 
         java.util.Map<String, Double> categoryTotals = new java.util.HashMap<>();
-        for (Transaction t : transactions) {
+        for (TransactionWithUser tWithU : transactions) {
+            Transaction t = tWithU.getTransaction();
             if ("EXPENSE".equals(t.getType())) {
                 categoryTotals.put(t.getTitle(), categoryTotals.getOrDefault(t.getTitle(), 0.0) + t.getAmountDouble());
             }

@@ -14,7 +14,6 @@ public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
         super(Bill.DIFF_CALLBACK,
                 (inflater, parent) -> ItemBillBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
-                    // Item binding logic is handled in onBindViewHolder for consistent styling
                 });
     }
 
@@ -27,9 +26,11 @@ public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
         binding.tvBillDate.setText(item.getDate());
         binding.tvBillAmount.setText(item.getAmount());
         binding.tvBillStatus.setText(item.getStatus());
-        binding.ivBillIcon.setImageResource(item.getIconResId());
+        
+        if (item.getIconResId() != 0) {
+            binding.ivBillIcon.setImageResource(item.getIconResId());
+        }
 
-        // Status-based styling following the project's design pattern
         String paidLabel = binding.getRoot().getContext().getString(R.string.status_paid_label);
         if (paidLabel.equalsIgnoreCase(item.getStatus())) {
             binding.tvBillStatus.setBackgroundResource(R.drawable.bg_status_paid);

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.app.ProgressDialog;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
@@ -25,7 +24,6 @@ import com.upreyvan.carti.util.Validator;
 
 public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
-    private ProgressDialog progressDialog;
     private DebtRepository debtRepository;
 
     @Override
@@ -103,7 +101,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
             String name = getBinding().etBorrowerName.getText().toString();
             double amount = Double.parseDouble(getBinding().etAmount.getText().toString());
-            showLoading(true);
+            showLoading(true, getString(R.string.msg_saving_debt));
 
             new ApiHelper(this).addDebt(name, amount, "OWE", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                 @Override
@@ -129,14 +127,5 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
                 }
             });
         });
-    }
-
-    private void showLoading(boolean loading) {
-        getBinding().btnSave.setEnabled(!loading);
-        if (loading) {
-            progressDialog = ProgressDialog.show(this, "", getString(R.string.msg_saving_debt), true);
-        } else if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
-        }
     }
 }

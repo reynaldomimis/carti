@@ -33,6 +33,7 @@
                 style="@style/CartiSubHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary"
                 android:textSize="@dimen/text_size_header_small"
                 tools:text="@string/default_greeting" />
 
@@ -44,6 +45,7 @@
                 android:layout_marginTop="-2dp"
                 android:ellipsize="end"
                 android:maxLines="1"
+                android:textColor="@color/text_primary"
                 android:textSize="@dimen/text_size_h2"
                 tools:text="@string/user" />
 
@@ -52,7 +54,7 @@
                 android:layout_height="@dimen/divider_thickness"
                 android:layout_marginTop="@dimen/spacing_small"
                 android:layout_marginBottom="6dp"
-                app:dividerColor="@color/surface_variant" />
+                app:dividerColor="@color/border_subtle" />
 
             <TextView
                 android:id="@+id/tv_greeting_sub"
@@ -60,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xxs"
                 android:fontFamily="@font/plus_jakarta_sans_medium"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/text_tertiary"
                 android:textSize="@dimen/text_size_body"
                 tools:text="@string/family_label" />
         </LinearLayout>
@@ -98,6 +100,7 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:paddingHorizontal="@dimen/spacing_medium"
+        android:paddingBottom="@dimen/bottom_nav_height"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -109,8 +112,12 @@
             android:orientation="vertical">
 
             <include
-                android:id="@+id/cardBudget"
-                layout="@layout/card_daily_budget" />
+                android:id="@+id/layoutAiInsight"
+                layout="@layout/layout_ai_insight" />
+
+            <include
+                android:id="@+id/layoutDashboard"
+                layout="@layout/layout_home_dashboard" />
 
             <include
                 android:id="@+id/headerQuickLog"
@@ -128,6 +135,10 @@
                 tools:listitem="@layout/item_quick_log" />
 
             <include
+                android:id="@+id/layoutAiSuggestions"
+                layout="@layout/layout_ai_suggestions" />
+
+            <include
                 android:id="@+id/headerRecent"
                 layout="@layout/layout_section_header" />
 
@@ -135,7 +146,10 @@
                 style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small">
+                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="0dp"
+                app:contentPaddingBottom="12dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvTransactions"

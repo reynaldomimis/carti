@@ -72,6 +72,8 @@ dependencies {
     implementation(libs.ucrop)
     implementation(libs.appwrite)
     implementation(libs.shimmer)
+    implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
 
     // Room
     implementation(libs.room.runtime)

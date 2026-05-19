@@ -57,7 +57,8 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
 
         com.upreyvan.carti.data.local.PreferenceManager pref = new com.upreyvan.carti.data.local.PreferenceManager(requireContext());
 
-        adapter.setOnItemClickListener(item -> {
+        adapter.setOnItemClickListener(itemWithUser -> {
+            com.upreyvan.carti.model.Transaction item = itemWithUser.getTransaction();
             com.upreyvan.carti.util.DialogHelper.showConfirmation(
                     requireContext(),
                     "Delete Transaction?",

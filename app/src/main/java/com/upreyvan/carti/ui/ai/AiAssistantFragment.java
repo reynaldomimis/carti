@@ -113,8 +113,8 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
         getBinding().rvSuggestions.setAdapter(suggestionAdapter);
 
         suggestionAdapter.setOnItemClickListener(suggestion -> {
-            getBinding().layoutInput.etInput.setText(suggestion.getText());
-            getBinding().layoutInput.etInput.setSelection(suggestion.getText().length());
+            getBinding().layoutInput.etInput.setText(suggestion.getTitle());
+            getBinding().layoutInput.etInput.setSelection(suggestion.getTitle().length());
             getBinding().layoutInput.etInput.requestFocus();
         });
 

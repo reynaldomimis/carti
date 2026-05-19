@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_dialog_ios"
+    android:background="@drawable/bg_bottom_sheet_white"
     android:orientation="vertical"
     android:padding="@dimen/spacing_large">
 
@@ -12,23 +13,21 @@
         android:layout_height="@dimen/handle_height"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="@dimen/spacing_large"
-        android:background="@drawable/bg_handle_dialog" />
+        android:background="@color/border_subtle" />
 
     <TextView
         android:id="@+id/tv_category_name"
         style="@style/CartiHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/label_category_name"
-        android:textSize="@dimen/text_size_header" />
+        android:text="@string/label_category_name" />
 
     <TextView
         style="@style/CartiSubHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xs"
-        android:text="@string/prompt_enter_amount"
-        android:textSize="@dimen/text_size_body" />
+        android:text="@string/prompt_enter_amount" />
 
     <com.google.android.material.card.MaterialCardView
         style="@style/CartiCard"
@@ -38,37 +37,31 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height_standard"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/spacing_medium">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_medium">
 
-            <TextView
-                style="@style/CartiHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/currency_symbol" />
-
-            <EditText
-                android:id="@+id/et_amount"
-                style="@style/CartiEditText"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:hint="@string/hint_amount"
-                android:importantForAutofill="no"
-                android:inputType="numberDecimal"
-                android:paddingStart="@dimen/spacing_small"
-                tools:ignore="RtlSymmetry" />
+                android:layout_height="wrap_content"
+                android:hint="@string/label_bill_amount"
+                style="@style/CartiInputLayout.Amount">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_amount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal" />
+            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_log"
         style="@style/CartiButton.Primary"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height_standard"
+        android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_large"
         android:text="@string/btn_log_expense" />
 

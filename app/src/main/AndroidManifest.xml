@@ -108,6 +108,11 @@
             android:exported="false"
             android:theme="@style/Theme.Carti"
             android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity
+            android:name=".ui.budget.AddBudgetPlanActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Carti"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
     </application>
 
 </manifest>

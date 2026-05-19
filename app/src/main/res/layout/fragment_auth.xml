@@ -55,14 +55,12 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilUsername"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/CartiInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_xl"
                     android:hint="@string/hint_username"
                     android:visibility="gone"
-                    app:boxStrokeColor="@color/green_primary"
-                    app:hintTextColor="@color/green_primary"
                     app:startIconDrawable="@drawable/ic_person"
                     app:startIconTint="@color/text_tertiary"
                     app:errorIconDrawable="@null">
@@ -77,13 +75,11 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilEmail"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/CartiInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_medium"
                     android:hint="@string/hint_email"
-                    app:boxStrokeColor="@color/green_primary"
-                    app:hintTextColor="@color/green_primary"
                     app:startIconDrawable="@drawable/ic_email"
                     app:startIconTint="@color/text_tertiary"
                     app:errorIconDrawable="@null">
@@ -98,15 +94,13 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilPassword"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/CartiInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_medium"
                     android:hint="@string/hint_password"
-                    app:boxStrokeColor="@color/green_primary"
                     app:endIconMode="password_toggle"
-                    app:endIconTint="@color/green_primary"
-                    app:hintTextColor="@color/green_primary"
+                    app:endIconTint="@color/carti_primary_green"
                     app:startIconDrawable="@drawable/ic_lock"
                     app:startIconTint="@color/text_tertiary"
                     app:errorIconDrawable="@null">
@@ -121,14 +115,12 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilRole"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    style="@style/CartiInputLayout.Dropdown"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_medium"
                     android:hint="@string/hint_select_role"
                     android:visibility="gone"
-                    app:boxStrokeColor="@color/green_primary"
-                    app:hintTextColor="@color/green_primary"
                     app:startIconDrawable="@drawable/ic_person"
                     app:startIconTint="@color/text_tertiary">
 

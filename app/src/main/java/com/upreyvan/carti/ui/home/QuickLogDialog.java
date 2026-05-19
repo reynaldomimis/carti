@@ -89,10 +89,13 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
                     @Override
                     public void onSuccess(Map<String, Object> result) {
                         String id = String.valueOf(result.get("$id"));
-                        String familyId = new com.upreyvan.carti.data.local.PreferenceManager(requireContext()).getFamilyId();
+                        com.upreyvan.carti.data.local.PreferenceManager pref = new com.upreyvan.carti.data.local.PreferenceManager(requireContext());
+                        String familyId = pref.getFamilyId();
+                        String userId = pref.getUserId();
                         Transaction transaction = new Transaction(
                                 id,
                                 familyId,
+                                userId,
                                 item.getTitle(),
                                 "Quick Log", // description
                                 time,

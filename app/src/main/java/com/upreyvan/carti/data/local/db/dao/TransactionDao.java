@@ -8,19 +8,29 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.model.TransactionWithUser;
 
 import java.util.List;
 
 @Dao
 public interface TransactionDao {
-    @Query("SELECT * FROM transactions WHERE familyId = :familyId ORDER BY timestampMillis DESC")
-    LiveData<List<Transaction>> getAllTransactions(String familyId);
+    @Query("SELECT transactions.*, members.title as userName, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl " +
+           "FROM transactions " +
+           "LEFT JOIN members ON transactions.userId = members.id " +
+           "WHERE transactions.familyId = :familyId ORDER BY timestampMillis DESC")
+    LiveData<List<TransactionWithUser>> getAllTransactions(String familyId);
 
-    @Query("SELECT * FROM transactions WHERE familyId = :familyId AND timestampMillis >= :start AND timestampMillis <= :end")
-    LiveData<List<Transaction>> getTransactionsInRange(String familyId, long start, long end);
+    @Query("SELECT transactions.*, members.title as userName, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl " +
+           "FROM transactions " +
+           "LEFT JOIN members ON transactions.userId = members.id " +
+           "WHERE transactions.familyId = :familyId AND timestampMillis >= :start AND timestampMillis <= :end")
+    LiveData<List<TransactionWithUser>> getTransactionsInRange(String familyId, long start, long end);
 
-    @Query("SELECT * FROM transactions WHERE familyId = :familyId ORDER BY timestampMillis DESC LIMIT :limit")
-    LiveData<List<Transaction>> getRecentTransactions(String familyId, int limit);
+    @Query("SELECT transactions.*, members.title as userName, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl " +
+           "FROM transactions " +
+           "LEFT JOIN members ON transactions.userId = members.id " +
+           "WHERE transactions.familyId = :familyId ORDER BY timestampMillis DESC LIMIT :limit")
+    LiveData<List<TransactionWithUser>> getRecentTransactions(String familyId, int limit);
 
     @Query("SELECT * FROM transactions WHERE familyId = :familyId")
     List<Transaction> getAllTransactionsList(String familyId);

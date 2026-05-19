@@ -1,6 +1,7 @@
 package com.upreyvan.carti.ui.ai;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 
 import com.upreyvan.carti.base.BaseAdapter;
@@ -13,20 +14,24 @@ public class AiSuggestionAdapter extends BaseAdapter<AiSuggestion, ItemAiSuggest
         super(new DiffUtil.ItemCallback<AiSuggestion>() {
             @Override
             public boolean areItemsTheSame(@NonNull AiSuggestion oldItem, @NonNull AiSuggestion newItem) {
-                return oldItem.getText().equals(newItem.getText());
+                return oldItem.getTitle().equals(newItem.getTitle());
             }
 
             @Override
             public boolean areContentsTheSame(@NonNull AiSuggestion oldItem, @NonNull AiSuggestion newItem) {
-                return oldItem.getText().equals(newItem.getText());
+                return oldItem.getDescription().equals(newItem.getDescription());
             }
         },
         (inflater, parent) -> ItemAiSuggestionBinding.inflate(inflater, parent, false),
         (binding, item) -> {
-            binding.tvSuggestion.setText(item.getText());
+            binding.tvSuggestionTitle.setText(item.getTitle());
+            binding.tvSuggestion.setText(item.getDescription());
             binding.ivIcon.setImageResource(item.getIconResId());
-            binding.ivIcon.setColorFilter(item.getIconColor());
-            binding.cvIcon.setCardBackgroundColor(item.getBgColor());
+            
+            int color = ContextCompat.getColor(binding.getRoot().getContext(), item.getThemeColor());
+            binding.ivIcon.setColorFilter(color);
+            binding.cvIcon.setCardBackgroundColor(color);
+            binding.cvIcon.setCardForegroundColor(null); // Clear any foreground if needed
         });
     }
 }

@@ -13,8 +13,13 @@
     <color name="text_secondary">#757575</color>
     <color name="surface_variant">#F5F5F5</color>
     <color name="white_80">#CCFFFFFF</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="white_60">#99FFFFFF</color>
+    <color name="white_50">#80FFFFFF</color>
+    <color name="white_40">#66FFFFFF</color>
     <color name="white_30">#4DFFFFFF</color>
     <color name="white_20">#33FFFFFF</color>
+    <color name="white_10">#1AFFFFFF</color>
     <color name="nav_inactive">#9E9E9E</color>
     <color name="green_darker">#063D2E</color>
     <color name="green_primary">#008955</color>
@@ -82,4 +87,23 @@
     <color name="chat_progress_secondary">#AF5F5F</color>
     <color name="chat_progress_tertiary">#6D3A3A</color>
     <color name="chat_progress_track">#F5E0E0</color>
+    <!-- Dark Theme Colors for Bills -->
+    <color name="bills_bg">#121212</color>
+    <color name="bills_card_bg">#1E1E1E</color>
+    <color name="bills_item_bg">#252525</color>
+    <color name="bills_text_primary">#FFFFFF</color>
+    <color name="bills_text_secondary">#9E9E9E</color>
+    <color name="bills_unpaid">#EF5350</color>
+    <color name="bills_paid">#66BB6A</color>
+    <!-- Dashboard Colors -->
+    <color name="dash_bg">#090E11</color>
+    <color name="dash_card_bg">#13191D</color>
+    <color name="dash_green">#00E676</color>
+    <color name="dash_green_alpha">#1A00E676</color>
+    <color name="dash_orange">#FF9800</color>
+    <color name="dash_orange_alpha">#1AFF9800</color>
+    <color name="dash_red">#FF5252</color>
+    <color name="dash_red_alpha">#1AFF5252</color>
+
+    <color name="calendar_day_unselected">#2C2C2E</color>
 </resources>

@@ -23,4 +23,7 @@ public interface BillDao {
 
     @Query("DELETE FROM bills WHERE id = :id")
     void deleteById(String id);
+
+    @Query("UPDATE bills SET status = :status WHERE id = :id")
+    void updateStatus(String id, String status);
 }

@@ -96,7 +96,7 @@ public class MemberRepository {
                         }
                         String status = isEmployed ? "Employed" : "Unemployed";
 
-                        members.add(new Member(
+                        Member member = new Member(
                             doc.getId(),
                             familyId,
                             String.valueOf(data.get("username")),
@@ -104,7 +104,11 @@ public class MemberRepository {
                             status,
                             R.drawable.ai_holder,
                             salary
-                        ));
+                        );
+                        if (data.containsKey("avatarUrl")) {
+                            member.setAvatarUrl(String.valueOf(data.get("avatarUrl")));
+                        }
+                        members.add(member);
                     }
                     memberDao.insertAll(members);
                 });

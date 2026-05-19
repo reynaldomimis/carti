@@ -92,6 +92,18 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
         com.upreyvan.carti.util.ToastHelper.show(getContext(), resId, status);
     }
 
+    protected void showLoading(boolean isLoading) {
+        if (getActivity() instanceof BaseActivity) {
+            ((BaseActivity<?>) getActivity()).showLoading(isLoading);
+        }
+    }
+
+    protected void showLoading(boolean isLoading, String message) {
+        if (getActivity() instanceof BaseActivity) {
+            ((BaseActivity<?>) getActivity()).showLoading(isLoading, message);
+        }
+    }
+
     protected boolean checkNetwork() {
         if (!Utils.isNetworkAvailable(requireContext())) {
             DialogHelper.showNoInternetDialog(requireContext());

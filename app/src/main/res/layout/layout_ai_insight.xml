@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/CartiCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_medium"
+    app:cardBackgroundColor="@color/tonal_button_bg">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_medium">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cvAiBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/radius_circle"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/spacing_small"
+                android:paddingVertical="@dimen/spacing_xxs"
+                android:text="@string/menu_ai"
+                android:textColor="@color/status_green"
+                android:textSize="@dimen/text_size_caption"
+                android:fontFamily="@font/plus_jakarta_sans_bold" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:id="@+id/tvAiTitle"
+            style="@style/CartiHeader"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:text="@string/ai_insight_title"
+            android:textSize="@dimen/text_size_header_small"
+            app:layout_constraintBottom_toBottomOf="@id/cvAiBadge"
+            app:layout_constraintEnd_toStartOf="@+id/ivRobot"
+            app:layout_constraintStart_toEndOf="@id/cvAiBadge"
+            app:layout_constraintTop_toTopOf="@id/cvAiBadge" />
+
+        <TextView
+            android:id="@+id/tvAiMessage"
+            style="@style/CartiTextDescription"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/ai_insight_message"
+            android:textColor="@color/text_secondary"
+            android:lineSpacingExtra="4dp"
+            app:layout_constraintEnd_toStartOf="@+id/ivRobot"
+            app:layout_constraintStart_toStartOf="@id/tvAiTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvAiTitle" />
+
+        <LinearLayout
+            android:id="@+id/llActions"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="@id/tvAiTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvAiMessage">
+
+            <TextView
+                android:id="@+id/btnViewReport"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_white"
+                android:paddingHorizontal="@dimen/spacing_medium"
+                android:paddingVertical="@dimen/spacing_small"
+                android:text="@string/btn_view_report"
+                android:textColor="@color/carti_primary_green"
+                android:textSize="@dimen/text_size_xxs"
+                android:fontFamily="@font/plus_jakarta_sans_bold" />
+
+            <LinearLayout
+                android:id="@+id/btnAskAi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_small"
+                android:background="@drawable/bg_pill_white"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/spacing_medium"
+                android:paddingVertical="@dimen/spacing_small">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size_xxs"
+                    android:layout_height="@dimen/icon_size_xxs"
+                    android:layout_marginEnd="@dimen/spacing_xxs"
+                    android:src="@drawable/ic_add"
+                    android:contentDescription="@null"
+                    app:tint="@color/carti_primary_green" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_ask_ai"
+                    android:textColor="@color/carti_primary_green"
+                    android:textSize="@dimen/text_size_xxs"
+                    android:fontFamily="@font/plus_jakarta_sans_bold" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/ivRobot"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ai_holder"
+            android:contentDescription="@null"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

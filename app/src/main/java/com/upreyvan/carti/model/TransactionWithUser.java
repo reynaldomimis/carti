@@ -1,0 +1,85 @@
+package com.upreyvan.carti.model;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.room.Embedded;
+
+import java.util.Objects;
+
+public class TransactionWithUser {
+    @Embedded
+    private Transaction transaction;
+
+    private String userName;
+    private String userRole;
+    private int userAvatarRes;
+    private String userAvatarUrl;
+
+    public Transaction getTransaction() {
+        return transaction;
+    }
+
+    public void setTransaction(Transaction transaction) {
+        this.transaction = transaction;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(String userRole) {
+        this.userRole = userRole;
+    }
+
+    public int getUserAvatarRes() {
+        return userAvatarRes;
+    }
+
+    public void setUserAvatarRes(int userAvatarRes) {
+        this.userAvatarRes = userAvatarRes;
+    }
+
+    public String getUserAvatarUrl() {
+        return userAvatarUrl;
+    }
+
+    public void setUserAvatarUrl(String userAvatarUrl) {
+        this.userAvatarUrl = userAvatarUrl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TransactionWithUser that = (TransactionWithUser) o;
+        return Objects.equals(transaction, that.transaction) &&
+                Objects.equals(userName, that.userName) &&
+                Objects.equals(userRole, that.userRole) &&
+                Objects.equals(userAvatarUrl, that.userAvatarUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(transaction, userName, userRole, userAvatarUrl);
+    }
+
+    public static final DiffUtil.ItemCallback<TransactionWithUser> DIFF_CALLBACK = new DiffUtil.ItemCallback<TransactionWithUser>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull TransactionWithUser oldItem, @NonNull TransactionWithUser newItem) {
+            return oldItem.transaction.getId().equals(newItem.transaction.getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull TransactionWithUser oldItem, @NonNull TransactionWithUser newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
+}

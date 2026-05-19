@@ -9,6 +9,7 @@ import com.upreyvan.carti.data.local.db.dao.TransactionDao;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.data.remote.RealtimeHelper;
 import com.upreyvan.carti.util.Constants;
@@ -62,15 +63,15 @@ public class TransactionRepository {
         }
     }
 
-    public LiveData<List<Transaction>> getRecentTransactions(int limit) {
+    public LiveData<List<TransactionWithUser>> getRecentTransactions(int limit) {
         return transactionDao.getRecentTransactions(pref.getFamilyId(), limit);
     }
 
-    public LiveData<List<Transaction>> getAllTransactions() {
+    public LiveData<List<TransactionWithUser>> getAllTransactions() {
         return transactionDao.getAllTransactions(pref.getFamilyId());
     }
 
-    public LiveData<List<Transaction>> getTransactionsInRange(long start, long end) {
+    public LiveData<List<TransactionWithUser>> getTransactionsInRange(long start, long end) {
         return transactionDao.getTransactionsInRange(pref.getFamilyId(), start, end);
     }
 
@@ -143,6 +144,8 @@ public class TransactionRepository {
         String type = String.valueOf(data.get("type"));
         double amount = Utils.getDouble(data.get("amount"));
         String categoryName = String.valueOf(data.get("category"));
+        String userId = String.valueOf(data.get("userId"));
+        String description = data.containsKey("note") ? String.valueOf(data.get("note")) : "";
         
         // Better mapping logic for icons based on category
         int iconRes = R.drawable.ic_person;
@@ -163,8 +166,9 @@ public class TransactionRepository {
         return new Transaction(
             doc.getId(),
             familyId,
+            userId,
             categoryName,
-            "", // description
+            description,
             Utils.formatTimestamp(doc.getCreatedAt()),
             amount,
             iconRes,

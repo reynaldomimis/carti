@@ -13,12 +13,14 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.viewbinding.ViewBinding;
 
 import com.upreyvan.carti.util.DialogHelper;
+import com.upreyvan.carti.util.LoadingDialog;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
 
 public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActivity {
 
     private VB binding;
+    private LoadingDialog loadingDialog;
 
     protected abstract VB inflateBinding(LayoutInflater inflater);
 
@@ -28,6 +30,26 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
 
     protected void showToast(int resId, ToastHelper.Status status) {
         ToastHelper.show(this, resId, status);
+    }
+
+    protected void showLoading(boolean isLoading) {
+        showLoading(isLoading, getString(com.upreyvan.carti.R.string.label_saving));
+    }
+
+    protected void showLoading(boolean isLoading, String message) {
+        if (isLoading) {
+            if (loadingDialog == null) {
+                loadingDialog = new LoadingDialog(this);
+            }
+            loadingDialog.setMessage(message);
+            if (!loadingDialog.isShowing()) {
+                loadingDialog.show();
+            }
+        } else {
+            if (loadingDialog != null && loadingDialog.isShowing()) {
+                loadingDialog.dismiss();
+            }
+        }
     }
 
     @Override

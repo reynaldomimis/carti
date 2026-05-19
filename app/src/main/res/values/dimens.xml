@@ -60,4 +60,10 @@
 
     <dimen name="pie_chart_size">160dp</dimen>
     <dimen name="date_selector_height">45dp</dimen>
+
+    <!-- Dashboard Dimens -->
+    <dimen name="dash_card_height">180dp</dimen>
+    <dimen name="dash_stat_card_height">110dp</dimen>
+    <dimen name="dash_icon_bg_size">32dp</dimen>
+    <dimen name="dash_progress_height">4dp</dimen>
 </resources>

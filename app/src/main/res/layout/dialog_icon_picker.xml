@@ -1,44 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_bottom_sheet"
+    android:background="@drawable/bg_bottom_sheet_white"
+    android:orientation="vertical"
     android:padding="@dimen/spacing_large">
+
+    <View
+        android:layout_width="@dimen/handle_width"
+        android:layout_height="@dimen/handle_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/spacing_large"
+        android:background="@color/border_subtle" />
 
     <TextView
         android:id="@+id/tvTitle"
         style="@style/CartiHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/label_select_icon"
-        android:textSize="@dimen/text_size_header"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="@string/label_select_icon" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilSearch"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/CartiInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_medium"
-        app:boxCornerRadiusBottomEnd="@dimen/radius_medium"
-        app:boxCornerRadiusBottomStart="@dimen/radius_medium"
-        app:boxCornerRadiusTopEnd="@dimen/radius_medium"
-        app:boxCornerRadiusTopStart="@dimen/radius_medium"
-        app:hintEnabled="false"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:startIconDrawable="@android:drawable/ic_menu_search">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSearch"
-            style="@style/CartiEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/hint_search_icons"
-            android:inputType="text"
-            android:textSize="@dimen/text_size_body" />
+            android:inputType="text" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -47,17 +44,15 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:layout_marginTop="@dimen/spacing_medium"
-        app:layout_constraintTop_toBottomOf="@id/tilSearch"
         tools:listitem="@layout/item_icon_choice" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnUploadCustom"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height_standard"
+        android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_medium"
         android:text="@string/label_upload_device"
-        android:textColor="@color/carti_primary_green"
-        app:layout_constraintTop_toBottomOf="@id/rvIcons" />
+        android:textColor="@color/carti_primary_green" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

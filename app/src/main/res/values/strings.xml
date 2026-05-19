@@ -48,6 +48,22 @@
     <string name="timer_format">Wait %d seconds</string>
     <string name="btn_cancel">Cancel</string>
     <string name="hint_ask_me">Ask me anything...</string>
+    <string name="ai_insight_title">AI Insight</string>
+    <string name="ai_insight_message">You\'re doing great! 🙌\nYou saved 18% more this month.\nTry increasing your emergency fund.</string>
+    <string name="btn_view_report">View Report</string>
+    <string name="btn_ask_ai">Ask AI</string>
+    <string name="ai_suggestions_title">AI Suggestions</string>
+    <string name="label_view">View</string>
+    <string name="label_apply">Apply</string>
+    <string name="label_pay_now">Pay Now</string>
+    <string name="suggestion_predictive_alert">Predictive Alert</string>
+    <string name="suggestion_savings_tip">Savings Tip</string>
+    <string name="suggestion_bill_reminder">Bill Reminder</string>
+    <string name="suggestion_goal_progress">Goal Progress</string>
+    <string name="desc_predictive_alert">You might overspend on Food this week.</string>
+    <string name="desc_savings_tip">Increase monthly savings by PHP 2,000.</string>
+    <string name="desc_bill_reminder">Internet bill due in 3 days.</string>
+    <string name="desc_goal_progress">You\'re on track for your goal!</string>
 
     <!-- Auth -->
     <string name="role_father">Father</string>
@@ -118,6 +134,27 @@
     <string name="add_options_category_desc">Create new category</string>
     <string name="add_options_bills">Bills</string>
     <string name="add_options_bills_desc">Manage your monthly bills</string>
+    <string name="add_options_budget_plan">Budget Plan</string>
+    <string name="add_options_budget_plan_desc">Plan your monthly spending</string>
+
+    <string name="add_budget_plan_title">Add Budget Plan</string>
+    <string name="label_plan_name">Plan Name</string>
+    <string name="label_budget_period">Budget Period</string>
+    <string name="label_add_category">Add Category</string>
+    <string name="ai_recommended_budget">AI Recommended Budget</string>
+    <string name="ai_recommended_budget_desc">Based on your spending pattern.</string>
+    <string name="btn_create_budget_plan">Create Budget Plan</string>
+
+    <string name="label_monthly_contribution">Monthly Contribution</string>
+    <string name="label_family_contribution">Family Contribution</string>
+    <string name="ai_prediction_title">AI Prediction</string>
+    <string name="ai_prediction_msg">You can reach your goal 20 days earlier!</string>
+    <string name="btn_create_goal">Create Goal</string>
+
+    <string name="hint_goal_vacation">e.g. Family Vacation</string>
+    <string name="hint_amount_large">100,000</string>
+    <string name="hint_date_2025">Dec 31, 2025</string>
+    <string name="hint_contribution_amount">5,000</string>
 
     <string name="placeholder_month_year">May 2025</string>
     <string name="select_month">Select Month</string>
@@ -522,4 +559,18 @@
     <string name="format_currency_with_unit">%s / day</string>
     <string name="format_greeting">%s,</string>
     <string name="format_username">%s 👋</string>
+    <string name="desc_prev_month">Previous Month</string>
+    <string name="desc_next_month">Next Month</string>
+    <string name="view_all_bills">View All Bills</string>
+
+    <!-- Dashboard Strings -->
+    <string name="label_total_balance">Total Balance</string>
+    <string name="label_live_sync">Live Sync</string>
+    <string name="label_income">Income</string>
+    <string name="label_expenses">Expenses</string>
+    <string name="label_budget">Budget</string>
+    <string name="trend_vs_last_month">%s vs last month</string>
+
+    <string name="add_bill_at_date">Add Bill for %s</string>
+    <string name="label_bill_amount">Bill Amount</string>
 </resources>

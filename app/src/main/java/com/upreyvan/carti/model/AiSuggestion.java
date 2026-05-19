@@ -1,31 +1,37 @@
 package com.upreyvan.carti.model;
 
 public class AiSuggestion {
-    private final String text;
+    private final String title;
+    private final String description;
     private final int iconResId;
-    private final int iconColor;
-    private final int bgColor;
+    private final int themeColor;
+    private final String actionText;
 
-    public AiSuggestion(String text, int iconResId, int iconColor, int bgColor) {
-        this.text = text;
+    public AiSuggestion(String title, String description, int iconResId, int themeColor, String actionText) {
+        this.title = title;
+        this.description = description;
         this.iconResId = iconResId;
-        this.iconColor = iconColor;
-        this.bgColor = bgColor;
+        this.themeColor = themeColor;
+        this.actionText = actionText;
     }
 
-    public String getText() {
-        return text;
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public int getIconResId() {
         return iconResId;
     }
 
-    public int getIconColor() {
-        return iconColor;
+    public int getThemeColor() {
+        return themeColor;
     }
 
-    public int getBgColor() {
-        return bgColor;
+    public String getActionText() {
+        return actionText;
     }
 }

@@ -8,144 +8,295 @@
 
     <include
         android:id="@+id/layoutToolbar"
-        layout="@layout/layout_custom_toolbar" />
+        layout="@layout/layout_custom_toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/btnSave"
+        app:layout_constraintBottom_toTopOf="@id/btnCreateGoal"
         app:layout_constraintTop_toBottomOf="@id/layoutToolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="@dimen/spacing_large"
-            android:paddingTop="@dimen/spacing_large"
-            android:paddingBottom="@dimen/scroll_bottom_padding">
+            android:paddingHorizontal="@dimen/spacing_medium"
+            android:paddingTop="@dimen/spacing_medium">
 
+            <!-- Goal Name -->
             <TextView
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_goal_name"
-                android:textSize="@dimen/text_size_body" />
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary" />
 
-            <com.google.android.material.card.MaterialCardView
-                style="@style/CartiCard"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilGoalName"
+                style="@style/CartiInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small">
+                android:layout_marginTop="@dimen/spacing_xs"
+                app:hintEnabled="false">
 
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etGoalName"
-                    style="@style/CartiEditText"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/input_height_standard"
-                    android:hint="@string/hint_goal_name"
-                    android:inputType="textCapSentences"
-                    android:importantForAutofill="no" />
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/plus_jakarta_sans_medium"
+                    android:hint="@string/hint_goal_vacation"
+                    android:inputType="text"
+                    android:paddingVertical="@dimen/spacing_medium"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_size_body_large" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                style="@style/CartiHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:text="@string/label_target_amount"
-                android:textSize="@dimen/text_size_body" />
-
-            <com.google.android.material.card.MaterialCardView
-                style="@style/CartiCard"
+            <!-- Target Amount and Date Label -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small">
+                android:layout_marginTop="@dimen/spacing_large"
+                android:orientation="horizontal">
 
-                <EditText
-                    android:id="@+id/etTargetAmount"
-                    style="@style/CartiEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/input_height_standard"
-                    android:fontFamily="@font/plus_jakarta_sans_bold"
-                    android:hint="@string/hint_amount"
-                    android:inputType="numberDecimal"
-                    android:textSize="@dimen/text_size_header"
-                    android:importantForAutofill="no" />
+                <TextView
+                    style="@style/CartiHeader"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_target_amount"
+                    android:textSize="@dimen/text_size_small"
+                    android:textColor="@color/text_secondary" />
 
-            </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    style="@style/CartiHeader"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_target_date"
+                    android:textSize="@dimen/text_size_small"
+                    android:textColor="@color/text_secondary" />
+            </LinearLayout>
 
+            <!-- Target Amount and Date Inputs -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilTargetAmount"
+                    style="@style/CartiInputLayout.Amount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:hintEnabled="false"
+                    app:endIconMode="clear_text">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTargetAmount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/plus_jakarta_sans_bold"
+                        android:hint="@string/hint_amount_large"
+                        android:inputType="numberDecimal"
+                        android:paddingVertical="@dimen/spacing_medium"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body_large" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <View
+                    android:layout_width="@dimen/spacing_small"
+                    android:layout_height="0dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilTargetDate"
+                    style="@style/CartiInputLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:endIconDrawable="@drawable/ic_chevron_right"
+                    app:endIconMode="custom"
+                    app:endIconTint="@color/text_tertiary"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTargetDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:fontFamily="@font/plus_jakarta_sans_medium"
+                        android:hint="@string/hint_date_2025"
+                        android:paddingVertical="@dimen/spacing_medium"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body_large" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <!-- Monthly Contribution -->
             <TextView
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_large"
-                android:text="@string/label_target_date"
-                android:textSize="@dimen/text_size_body" />
+                android:text="@string/label_monthly_contribution"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/btnPickDate"
-                style="@style/CartiCard"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilMonthlyContribution"
+                style="@style/CartiInputLayout.Amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                app:hintEnabled="false"
+                app:endIconMode="clear_text">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etMonthlyContribution"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/plus_jakarta_sans_bold"
+                    android:hint="@string/hint_contribution_amount"
+                    android:inputType="numberDecimal"
+                    android:paddingVertical="@dimen/spacing_medium"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_size_body_large" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Family Contribution -->
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/label_family_contribution"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_small"
-                android:clickable="true"
-                android:focusable="true">
+                android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/tvSelectedDate"
-                    style="@style/CartiSubHeader"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/input_height_standard"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="@dimen/spacing_medium"
-                    android:text="@string/placeholder_date"
-                    android:textColor="@color/text_primary"
-                    android:textSize="@dimen/text_size_body_large"
-                    app:drawableEndCompat="@drawable/ic_calendar"
-                    app:drawableTint="@color/text_secondary" />
+                <LinearLayout
+                    android:id="@+id/btnAddMember"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="4dp">
 
-            </com.google.android.material.card.MaterialCardView>
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/carti_primary_green"
+                        app:strokeWidth="2dp">
 
-            <TextView
-                style="@style/CartiHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:text="@string/label_notes_optional"
-                android:textSize="@dimen/text_size_body" />
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_add"
+                            app:tint="@color/carti_primary_green"
+                            android:contentDescription="@null" />
 
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        style="@style/CartiSubHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/label_add"
+                        android:textSize="@dimen/text_size_xxs" />
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvFamilyContribution"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="4dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_member_avatar_select" />
+
+            </LinearLayout>
+
+            <!-- AI Prediction Card -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small">
+                android:layout_marginTop="@dimen/spacing_large"
+                android:layout_marginBottom="@dimen/spacing_xxl"
+                app:cardBackgroundColor="@color/tonal_button_bg">
 
-                <EditText
-                    android:id="@+id/etNotes"
-                    style="@style/CartiEditText"
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/input_height_standard"
-                    android:hint="@string/hint_notes"
-                    android:inputType="textCapSentences"
-                    android:importantForAutofill="no" />
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/spacing_medium">
 
+                    <ImageView
+                        android:id="@+id/ivAiIcon"
+                        android:layout_width="@dimen/icon_size_large"
+                        android:layout_height="@dimen/icon_size_large"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_chart"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="@color/carti_primary_green" />
+
+                    <TextView
+                        android:id="@+id/tvAiTitle"
+                        style="@style/CartiHeader"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_medium"
+                        android:text="@string/ai_prediction_title"
+                        android:textSize="@dimen/text_size_body"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/ivAiIcon"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvAiDesc"
+                        style="@style/CartiSubHeader"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ai_prediction_msg"
+                        android:textSize="@dimen/text_size_xxs"
+                        app:layout_constraintEnd_toEndOf="@id/tvAiTitle"
+                        app:layout_constraintStart_toStartOf="@id/tvAiTitle"
+                        app:layout_constraintTop_toBottomOf="@id/tvAiTitle" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSave"
+        android:id="@+id/btnCreateGoal"
         style="@style/CartiButton.Primary"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height_standard"
-        android:layout_marginHorizontal="@dimen/spacing_large"
-        android:layout_marginBottom="@dimen/spacing_large"
-        android:text="@string/btn_save_goal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_medium"
+        android:text="@string/btn_create_goal"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

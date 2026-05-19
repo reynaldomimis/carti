@@ -222,6 +222,16 @@ public class Utils {
         return String.format(Locale.getDefault(), "₱%,.2f", amount);
     }
 
+    public static void showDateRangePicker(androidx.fragment.app.FragmentManager fragmentManager, com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener<androidx.core.util.Pair<Long, Long>> listener) {
+        com.google.android.material.datepicker.MaterialDatePicker<androidx.core.util.Pair<Long, Long>> picker =
+                com.google.android.material.datepicker.MaterialDatePicker.Builder.dateRangePicker()
+                        .setTitleText("Select Period")
+                        .build();
+
+        picker.addOnPositiveButtonClickListener(listener);
+        picker.show(fragmentManager, "DATE_RANGE_PICKER");
+    }
+
     public static double getDouble(Object value) {
         if (value instanceof Number) {
             return ((Number) value).doubleValue();

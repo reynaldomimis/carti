@@ -123,7 +123,16 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                         binding.tvName.setText(isMe ? getString(R.string.placeholder_juan_you) : member.getTitle());
                         binding.tvRole.setVisibility(View.VISIBLE);
                         binding.tvRole.setText(member.getDescription());
-                        binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
+                        
+                        if (member.getAvatarUrl() != null && !member.getAvatarUrl().isEmpty()) {
+                            com.bumptech.glide.Glide.with(requireContext())
+                                    .load(member.getAvatarUrl())
+                                    .placeholder(R.drawable.ai_holder)
+                                    .error(R.drawable.ai_holder)
+                                    .into(binding.ivAvatar);
+                        } else {
+                            binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
+                        }
                         binding.cvAvatar.setStrokeColor(getResources().getColor(isMe ? R.color.carti_primary_green : R.color.border_light, null));
                     }
                 }
@@ -138,7 +147,16 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                     boolean isMe = member.getId().equals(currentUserId);
                     binding.tvName.setText(isMe ? getString(R.string.placeholder_juan_you) : member.getTitle());
                     binding.tvAmount.setText(Utils.formatCurrency(member.getAmount()));
-                    binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
+                    
+                    if (member.getAvatarUrl() != null && !member.getAvatarUrl().isEmpty()) {
+                        com.bumptech.glide.Glide.with(requireContext())
+                                .load(member.getAvatarUrl())
+                                .placeholder(R.drawable.ai_holder)
+                                .error(R.drawable.ai_holder)
+                                .into(binding.ivAvatar);
+                    } else {
+                        binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
+                    }
                     
                     double totalIncome = pref.getTotalIncome();
                     int progress = 0;

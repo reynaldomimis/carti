@@ -13,7 +13,7 @@ public class CalendarDay {
     private final boolean hasBill;
 
     public CalendarDay(String day, boolean isSelected, boolean isToday, boolean hasBill) {
-        this.id = day.isEmpty() ? "pad_" + Math.random() : day; // Simple unique ID
+        this.id = day.isEmpty() ? "pad_" + Math.random() : day;
         this.day = day;
         this.isSelected = isSelected;
         this.isToday = isToday;

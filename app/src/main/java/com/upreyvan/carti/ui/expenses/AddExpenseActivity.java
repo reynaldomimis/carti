@@ -14,7 +14,6 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import com.upreyvan.carti.R;
-import android.app.ProgressDialog;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityAddExpenseBinding;
 import com.upreyvan.carti.data.local.CategoryManager;
@@ -31,7 +30,6 @@ import com.upreyvan.carti.util.Validator;
 
 public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> {
 
-    private ProgressDialog progressDialog;
     private TransactionRepository transactionRepository;
 
     @Override
@@ -107,7 +105,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
             String source = getBinding().etSource.getText().toString();
             double amountVal = Double.parseDouble(amount);
             
-            showLoading(true);
+            showLoading(true, getString(R.string.msg_saving_expense));
 
             new ApiHelper(this).addTransaction(amountVal, "EXPENSE", category, "Paid through " + source, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                 @Override
@@ -125,17 +123,10 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
         });
     }
 
-    private void showLoading(boolean loading) {
-        getBinding().btnSave.setEnabled(!loading);
-        if (loading) {
-            progressDialog = ProgressDialog.show(this, "", getString(R.string.msg_saving_expense), true);
-        } else if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
-        }
-    }
-
     private void saveLocalAndFinish(String id, double amountVal, String category, String source) {
-        String familyId = new com.upreyvan.carti.data.local.PreferenceManager(this).getFamilyId();
+        com.upreyvan.carti.data.local.PreferenceManager pref = new com.upreyvan.carti.data.local.PreferenceManager(this);
+        String familyId = pref.getFamilyId();
+        String userId = pref.getUserId();
         String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
         
         Category selectedCategory = null;
@@ -154,8 +145,9 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
         Transaction transaction = new Transaction(
                 id,
                 familyId,
+                userId,
                 category,
-                "", 
+                "Paid through " + source,
                 time,
                 amountVal,
                 iconRes,

@@ -3,12 +3,11 @@ package com.upreyvan.carti.ui.bills;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
@@ -17,8 +16,8 @@ import com.upreyvan.carti.databinding.ActivityBillsBinding;
 import com.upreyvan.carti.databinding.ItemCalendarDayBinding;
 import com.upreyvan.carti.model.Bill;
 import com.upreyvan.carti.model.CalendarDay;
+import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
-import android.content.Intent;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,8 +30,10 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
     private BillAdapter billAdapter;
     private GenericAdapter<CalendarDay, ItemCalendarDayBinding> calendarAdapter;
     private BillRepository billRepository;
-    private Calendar currentDisplayMonth = Calendar.getInstance();
+    private final Calendar currentDisplayMonth = Calendar.getInstance();
     private String selectedDate = "";
+    private boolean showingAllBills = false;
+    private static final int MAX_BILLS_DISPLAY = 5;
 
     @Override
     protected ActivityBillsBinding inflateBinding(LayoutInflater inflater) {
@@ -42,40 +43,50 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        billRepository = new BillRepository(this);
+        billRepository = new BillRepository(getApplication());
+        
         setupToolbar();
-        setupStatusBar();
+        setupDynamicPadding();
         setupCalendarRecyclerView();
         setupBillsRecyclerView();
         setupClickListeners();
+        
         updateCalendarDisplay();
         observeBills();
     }
 
     private void observeBills() {
         billRepository.getAllBills().observe(this, bills -> {
-            billAdapter.submitList(bills);
+            updateBillList(bills);
+            loadCalendarDays(bills);
         });
+    }
+
+    private void updateBillList(List<Bill> bills) {
+        if (bills == null) return;
+        if (!showingAllBills && bills.size() > MAX_BILLS_DISPLAY) {
+            billAdapter.submitList(new ArrayList<>(bills.subList(0, MAX_BILLS_DISPLAY)));
+            getBinding().btnViewAllBills.setVisibility(View.VISIBLE);
+        } else {
+            billAdapter.submitList(new ArrayList<>(bills));
+            getBinding().btnViewAllBills.setVisibility(View.GONE);
+        }
     }
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.bills_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
-        getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnAction.setText(R.string.label_add);
-        getBinding().layoutToolbar.btnAction.setOnClickListener(v -> {
-            startActivity(new Intent(this, AddBillActivity.class));
-        });
     }
 
-    private void setupStatusBar() {
+    private void setupDynamicPadding() {
         Utils.applySystemBarInsets(
                 getBinding().layoutToolbar.getRoot(),
-                getBinding().scrollView,
+                null,
                 1f,
-                20
+                0
         );
+        getBinding().scrollView.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding));
     }
 
     private void setupCalendarRecyclerView() {
@@ -85,12 +96,11 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
                 (binding, item) -> {
                     binding.tvDay.setText(item.getDay());
                     
-                    // Styling base on state
                     if (item.isSelected()) {
                         binding.tvDay.setBackgroundResource(R.drawable.bg_calendar_selected);
                         binding.tvDay.setTextColor(getColor(R.color.white));
                     } else if (item.isToday()) {
-                        binding.tvDay.setBackgroundResource(R.drawable.bg_circle);
+                        binding.tvDay.setBackgroundResource(R.drawable.bg_circle_outline);
                         binding.tvDay.setTextColor(getColor(R.color.carti_primary_green));
                     } else {
                         binding.tvDay.setBackground(null);
@@ -98,19 +108,28 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
                     }
                     
                     binding.viewDot.setVisibility(item.hasBill() ? View.VISIBLE : View.GONE);
-
-                    binding.getRoot().setOnClickListener(v -> {
-                        if (item.getDay().isEmpty()) return;
-                        
-                        selectedDate = item.getDay();
-                        updateSelection(item.getDay());
-                        filterBillsForDate(item.getDay());
-                    });
                 }
         );
 
+        calendarAdapter.setOnItemClickListener(item -> {
+            if (item.getDay().isEmpty()) return;
+
+            selectedDate = item.getDay();
+            updateSelection(item.getDay());
+            showAddBillBottomSheet(item.getDay());
+        });
+
         getBinding().rvCalendar.setLayoutManager(new GridLayoutManager(this, 7));
         getBinding().rvCalendar.setAdapter(calendarAdapter);
+    }
+
+    private void showAddBillBottomSheet(String day) {
+        Calendar cal = (Calendar) currentDisplayMonth.clone();
+        cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day));
+        String formattedDate = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(cal.getTime());
+        
+        AddBillBottomSheet bottomSheet = AddBillBottomSheet.newInstance(formattedDate);
+        bottomSheet.show(getSupportFragmentManager(), "AddBillBottomSheet");
     }
 
     private void updateSelection(String dayToSelect) {
@@ -118,75 +137,61 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
         for (int i = 0; i < currentList.size(); i++) {
             CalendarDay day = currentList.get(i);
             boolean shouldBeSelected = day.getDay().equals(dayToSelect);
-            currentList.set(i, new CalendarDay(day.getDay(), shouldBeSelected, day.isToday(), day.hasBill()));
+            if (day.isSelected() != shouldBeSelected) {
+                currentList.set(i, new CalendarDay(day.getDay(), shouldBeSelected, day.isToday(), day.hasBill()));
+            }
         }
         calendarAdapter.submitList(currentList);
     }
 
     private void setupBillsRecyclerView() {
         billAdapter = new BillAdapter();
+        billAdapter.setOnItemClickListener(item -> {
+            BillDetailsBottomSheet bottomSheet = BillDetailsBottomSheet.newInstance(
+                    item.getId(),
+                    item.getName(),
+                    item.getAmount()
+            );
+            bottomSheet.show(getSupportFragmentManager(), "BillDetailsBottomSheet");
+        });
         getBinding().rvBills.setLayoutManager(new LinearLayoutManager(this));
         getBinding().rvBills.setAdapter(billAdapter);
     }
 
     private void setupClickListeners() {
-        getBinding().btnSelectMonth.setOnClickListener(v -> {
-            MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                    .setTitleText(R.string.select_month)
-                    .setSelection(currentDisplayMonth.getTimeInMillis())
-                    .setTheme(com.google.android.material.R.style.ThemeOverlay_Material3_MaterialCalendar)
-                    .build();
-
-            datePicker.addOnPositiveButtonClickListener(selection -> {
-                currentDisplayMonth.setTimeInMillis(selection);
-                updateCalendarDisplay();
-            });
-
-            datePicker.show(getSupportFragmentManager(), "DATE_PICKER");
-        });
-
-        // Prev Month Arrow
         getBinding().btnPrevMonth.setOnClickListener(v -> {
             currentDisplayMonth.add(Calendar.MONTH, -1);
             updateCalendarDisplay();
         });
 
-        // Next Month Arrow
         getBinding().btnNextMonth.setOnClickListener(v -> {
             currentDisplayMonth.add(Calendar.MONTH, 1);
             updateCalendarDisplay();
         });
-
-        // Prev Year Arrow
-        getBinding().btnPrevYear.setOnClickListener(v -> {
-            currentDisplayMonth.add(Calendar.YEAR, -1);
-            updateCalendarDisplay();
-        });
-
-        // Next Year Arrow
-        getBinding().btnNextYear.setOnClickListener(v -> {
-            currentDisplayMonth.add(Calendar.YEAR, 1);
-            updateCalendarDisplay();
-        });
-
-        getBinding().fabAddBill.setOnClickListener(v -> {
-            startActivity(new Intent(this, AddBillActivity.class));
+        
+        getBinding().btnViewAllBills.setOnClickListener(v -> {
+            showingAllBills = true;
+            updateBillList(billRepository.getAllBills().getValue());
         });
     }
 
     private void updateCalendarDisplay() {
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
         getBinding().tvMonthYear.setText(sdf.format(currentDisplayMonth.getTime()));
-        loadCalendarDays();
+        if (billAdapter.getCurrentList() != null) {
+            loadCalendarDays(billAdapter.getCurrentList());
+        } else {
+            loadCalendarDays(new ArrayList<>());
+        }
     }
 
-    private void loadCalendarDays() {
+    private void loadCalendarDays(List<Bill> bills) {
         List<CalendarDay> days = new ArrayList<>();
         Calendar cal = (Calendar) currentDisplayMonth.clone();
         cal.set(Calendar.DAY_OF_MONTH, 1);
-
-        int firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1; 
-        int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        
+        int firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1;
+        int daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         for (int i = 0; i < firstDayOfWeek; i++) {
             days.add(new CalendarDay("", false, false, false));
@@ -196,26 +201,26 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
         boolean isCurrentMonth = today.get(Calendar.MONTH) == currentDisplayMonth.get(Calendar.MONTH) &&
                 today.get(Calendar.YEAR) == currentDisplayMonth.get(Calendar.YEAR);
 
-        for (int i = 1; i <= maxDay; i++) {
-            boolean isToday = isCurrentMonth && (i == today.get(Calendar.DAY_OF_MONTH));
-            boolean hasBill = (i == 12 || i == 15 || i == 20 || i == 28); // Dummy markers
-            days.add(new CalendarDay(String.valueOf(i), false, isToday, hasBill));
+        for (int i = 1; i <= daysInMonth; i++) {
+            boolean isToday = isCurrentMonth && i == today.get(Calendar.DAY_OF_MONTH);
+            boolean isSelected = selectedDate.equals(String.valueOf(i));
+            
+            boolean hasBill = false;
+            String dayStr = String.valueOf(i);
+            // Check if any bill is on this day
+            for (Bill bill : bills) {
+                // Extract day from date string "MMMM dd, yyyy"
+                // This is a bit brittle, but works for the current format
+                if (bill.getDate().contains(" " + (i < 10 ? "0" + i : i) + ",") || 
+                    bill.getDate().contains(" " + i + ",")) {
+                    hasBill = true;
+                    break;
+                }
+            }
+            
+            days.add(new CalendarDay(dayStr, isSelected, isToday, hasBill));
         }
-        
+
         calendarAdapter.submitList(days);
-        filterBillsForDate("");
-    }
-
-    private void filterBillsForDate(String day) {
-        List<Bill> bills = new ArrayList<>();
-        String monthName = new SimpleDateFormat("MMM", Locale.getDefault()).format(currentDisplayMonth.getTime());
-        String displayDay = day.isEmpty() ? "Select a date" : monthName + " " + day + ", " + currentDisplayMonth.get(Calendar.YEAR);
-        
-        if (day.equals("12") || day.equals("15") || day.equals("20") || day.equals("28") || day.isEmpty()) {
-            bills.add(new Bill("1", "", "Maynilad Water Bill", displayDay, "₱1,200", "Unpaid", R.drawable.ic_calendar));
-            bills.add(new Bill("2", "", "PLDT Internet", displayDay, "₱1,699", "Unpaid", R.drawable.ic_calendar));
-        }
-
-        billAdapter.submitList(bills);
     }
 }

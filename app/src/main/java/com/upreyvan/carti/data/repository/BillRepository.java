@@ -50,4 +50,8 @@ public class BillRepository {
     public void deleteLocally(String id) {
         executor.execute(() -> billDao.deleteById(id));
     }
+
+    public void updateStatus(String id, String status) {
+        executor.execute(() -> billDao.updateStatus(id, status));
+    }
 }
