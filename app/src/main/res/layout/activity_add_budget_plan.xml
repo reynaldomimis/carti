@@ -27,33 +27,52 @@
             android:paddingHorizontal="@dimen/spacing_medium"
             android:paddingTop="@dimen/spacing_medium">
 
+            <!-- Plan Name -->
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_plan_name"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPlanName"
                 style="@style/CartiInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/label_plan_name"
-                app:hintTextColor="@color/carti_primary_green">
+                android:layout_marginTop="@dimen/spacing_xs"
+                app:hintEnabled="false">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPlanName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/plus_jakarta_sans_medium"
+                    android:hint="@string/hint_plan_name"
                     android:inputType="text"
                     android:paddingVertical="@dimen/spacing_medium"
                     android:textColor="@color/text_primary"
-                    android:textSize="@dimen/text_size_body_large"
-                    tools:text="May 2025 Budget" />
+                    android:textSize="@dimen/text_size_body_large" />
             </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Budget Period -->
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/label_budget_period"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilBudgetPeriod"
                 style="@style/CartiInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:hint="@string/label_budget_period"
+                android:layout_marginTop="@dimen/spacing_xs"
+                app:hintEnabled="false"
                 app:endIconDrawable="@drawable/ic_calendar"
                 app:endIconMode="custom"
                 app:endIconTint="@color/text_tertiary">
@@ -65,10 +84,10 @@
                     android:clickable="true"
                     android:focusable="false"
                     android:fontFamily="@font/plus_jakarta_sans_medium"
+                    android:hint="@string/hint_select_period"
                     android:paddingVertical="@dimen/spacing_medium"
                     android:textColor="@color/text_primary"
-                    android:textSize="@dimen/text_size_body_large"
-                    tools:text="May 1 - May 31, 2025" />
+                    android:textSize="@dimen/text_size_body_large" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.divider.MaterialDivider

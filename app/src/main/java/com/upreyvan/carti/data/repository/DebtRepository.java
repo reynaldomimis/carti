@@ -121,7 +121,11 @@ public class DebtRepository {
             Utils.getDouble(data.get("amount")),
             Boolean.TRUE.equals(data.get("isPaid")),
             R.drawable.ic_person,
-            String.valueOf(data.get("notes"))
+            String.valueOf(data.get("notes")),
+            String.valueOf(data.get("type")),
+            String.valueOf(data.get("category")),
+            String.valueOf(data.get("dueDate")),
+            String.valueOf(data.get("reminder"))
         );
     }
 }

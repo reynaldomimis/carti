@@ -106,6 +106,13 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().onBackPressed();
         });
+
+        getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
+        getBinding().layoutToolbar.btnAction.setText(R.string.btn_edit);
+        getBinding().layoutToolbar.btnAction.setOnClickListener(v -> {
+            UpdateGoalBottomSheetFragment bottomSheet = UpdateGoalBottomSheetFragment.newInstance(goal.getId());
+            bottomSheet.show(getChildFragmentManager(), "UPDATE_GOAL");
+        });
     }
 
     private void setupGoalData() {

@@ -35,6 +35,11 @@ public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter
         boolean onItemLongClick(T item);
     }
 
+    @Override
+    public T getItem(int position) {
+        return super.getItem(position);
+    }
+
     public void setOnItemClickListener(OnItemClickListener<T> listener) {
         this.listener = listener;
     }

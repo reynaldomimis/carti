@@ -59,11 +59,31 @@ public class GoalRepository {
         return goalDao.getAllGoals(pref.getFamilyId());
     }
 
+    public LiveData<Goal> getGoalById(String goalId) {
+        return goalDao.getGoalById(goalId);
+    }
+
+    public void updateGoal(Goal goal, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        executor.execute(() -> {
+            goalDao.update(goal);
+            apiHelper.updateGoalAmount(goal.getId(), goal.getCurrentAmount(), new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                @Override
+                public void onSuccess(Map<String, Object> result) {
+                    callback.onSuccess(result);
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    callback.onError(error);
+                }
+            });
+        });
+    }
+
     public void syncGoalsIfNeeded() {
         executor.execute(() -> {
             List<Goal> local = goalDao.getAllGoalsList(pref.getFamilyId());
             if (local == null || local.isEmpty()) {
-                // Reset sync time if local DB was wiped
                 pref.setLastGoalSyncTime("1970-01-01T00:00:00.000Z");
             }
             refreshGoals();
@@ -111,18 +131,26 @@ public class GoalRepository {
         executor.execute(() -> goalDao.deleteById(id));
     }
 
+    public void deleteGoal(String goalId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        executor.execute(() -> {
+            goalDao.deleteById(goalId);
+            apiHelper.deleteGoal(goalId, callback);
+        });
+    }
+
     private Goal mapToGoal(Document<Map<String, Object>> doc, String familyId) {
         Map<String, Object> data = doc.getData();
         return new Goal(
                 doc.getId(),
                 familyId,
                 String.valueOf(data.get("name")),
-                "", // description
+                "",
                 Utils.getDouble(data.get("currentAmount")),
                 Utils.getDouble(data.get("targetAmount")),
-                "", // Date if needed
-                R.drawable.ic_trophy, // Fixed resource ID
-                R.color.carti_light_gray
+                String.valueOf(data.get("targetDate")),
+                R.drawable.ic_trophy,
+                R.color.carti_light_gray,
+                String.valueOf(data.get("contributorIds"))
         );
     }
 }

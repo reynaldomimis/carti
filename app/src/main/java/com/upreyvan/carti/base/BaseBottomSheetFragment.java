@@ -52,6 +52,26 @@ public abstract class BaseBottomSheetFragment<VB extends ViewBinding> extends Bo
         }
     }
 
+    protected void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
+        com.upreyvan.carti.util.ToastHelper.show(getContext(), message, status);
+    }
+
+    protected void showToast(int resId, com.upreyvan.carti.util.ToastHelper.Status status) {
+        com.upreyvan.carti.util.ToastHelper.show(getContext(), resId, status);
+    }
+
+    protected void showLoading(boolean isLoading) {
+        if (getActivity() instanceof BaseActivity) {
+            ((BaseActivity<?>) getActivity()).showLoading(isLoading);
+        }
+    }
+
+    protected void showLoading(boolean isLoading, String message) {
+        if (getActivity() instanceof BaseActivity) {
+            ((BaseActivity<?>) getActivity()).showLoading(isLoading, message);
+        }
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();

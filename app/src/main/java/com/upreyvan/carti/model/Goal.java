@@ -21,6 +21,7 @@ public class Goal {
     private String targetDate;
     private int imageRes;
     private int backgroundColor;
+    private String contributorIds;
 
     @Ignore
     public Goal() {
@@ -28,9 +29,15 @@ public class Goal {
         this.familyId = "";
         this.title = "Title";
         this.description = "Description";
+        this.contributorIds = "";
     }
 
+    @Ignore
     public Goal(@NonNull String id, String familyId, String title, String description, double currentAmount, double targetAmount, String targetDate, int imageRes, int backgroundColor) {
+        this(id, familyId, title, description, currentAmount, targetAmount, targetDate, imageRes, backgroundColor, "");
+    }
+
+    public Goal(@NonNull String id, String familyId, String title, String description, double currentAmount, double targetAmount, String targetDate, int imageRes, int backgroundColor, String contributorIds) {
         this.id = id;
         this.familyId = familyId;
         this.title = title;
@@ -40,6 +47,7 @@ public class Goal {
         this.targetDate = targetDate;
         this.imageRes = imageRes;
         this.backgroundColor = backgroundColor;
+        this.contributorIds = contributorIds;
     }
 
     @NonNull
@@ -61,6 +69,8 @@ public class Goal {
     public void setImageRes(int imageRes) { this.imageRes = imageRes; }
     public int getBackgroundColor() { return backgroundColor; }
     public void setBackgroundColor(int backgroundColor) { this.backgroundColor = backgroundColor; }
+    public String getContributorIds() { return contributorIds != null ? contributorIds : ""; }
+    public void setContributorIds(String contributorIds) { this.contributorIds = contributorIds; }
 
     public boolean isCompleted() {
         return currentAmount >= targetAmount && targetAmount > 0;

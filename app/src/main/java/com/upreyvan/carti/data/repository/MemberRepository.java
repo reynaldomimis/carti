@@ -58,6 +58,10 @@ public class MemberRepository {
         return memberDao.getAllMembers(pref.getFamilyId());
     }
 
+    public LiveData<List<Member>> getMembersByIds(List<String> ids) {
+        return memberDao.getMembersByIds(ids);
+    }
+
 
 
     public void syncMembersIfNeeded() {

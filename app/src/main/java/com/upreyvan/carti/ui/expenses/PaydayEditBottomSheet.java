@@ -111,7 +111,7 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
         }
     }
 
-    private void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
+    protected void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
         com.upreyvan.carti.util.ToastHelper.show(requireContext(), message, status);
     }
 }

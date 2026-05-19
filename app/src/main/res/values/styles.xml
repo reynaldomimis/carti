@@ -64,6 +64,12 @@
         <item name="android:textSize">@dimen/text_size_h1</item>
     </style>
 
+    <style name="CartiHeaderSmall">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/text_size_body_small</item>
+    </style>
+
     <style name="CartiCard" parent="Widget.Material3.CardView.Elevated">
         <item name="cardElevation">0dp</item>
         <item name="cardCornerRadius">@dimen/card_corner_radius</item>

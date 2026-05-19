@@ -21,9 +21,11 @@ import com.upreyvan.carti.databinding.ItemGoalBinding;
 import com.upreyvan.carti.model.Goal;
 import com.upreyvan.carti.util.Utils;
 
+import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.util.SwipeToDeleteHelper;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.List;
-import java.util.Locale;
 
 public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
 
@@ -42,26 +44,29 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         super.onViewCreated(view, savedInstanceState);
         goalRepository = new GoalRepository(requireContext());
         
-        setupDynamicPadding(getBinding().layoutToolbar.getRoot(), getBinding().rvGoals, 0.3f);
+        setupDynamicPadding();
         setupHeader();
         setupTabs();
         setupRecyclerView();
         observeGoals();
     }
 
+    private void setupDynamicPadding() {
+       setupDynamicPadding(getBinding().layoutToolbar.getRoot(), getBinding().rvGoals, 0.3f);
+        com.upreyvan.carti.util.Utils.applySystemBarInsets(
+                getBinding().btnAddGoalFloating,
+                getBinding().btnAddGoalFloating,
+                0f,
+                0
+        );
+    }
+
     private void observeGoals() {
         goalRepository.getAllGoals().observe(getViewLifecycleOwner(), goals -> {
             if (goals != null) {
-                isLoading = goals.isEmpty();
+                isLoading = false;
                 allGoals = goals;
-                if (isLoading) {
-                    List<Goal> placeholders = new ArrayList<>();
-                    for (int i = 0; i < 3; i++) placeholders.add(new Goal());
-                    adapter.submitList(placeholders);
-                } else {
-                    filterGoals(getBinding().tabLayout.getSelectedTabPosition());
-                    updateOverallProgress(allGoals);
-                }
+                filterGoals(getBinding().tabLayout.getSelectedTabPosition());
             }
         });
         goalRepository.syncGoalsIfNeeded();
@@ -70,9 +75,9 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     private void setupHeader() {
         setupToolbar(getBinding().layoutToolbar, R.string.goal_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnAction.setText(R.string.btn_add_goal);
-        getBinding().layoutToolbar.btnAction.setOnClickListener(v -> {
+        getBinding().layoutToolbar.btnAction.setVisibility(View.GONE); // Moved to bottom
+        
+        getBinding().btnAddGoalFloating.setOnClickListener(v -> {
             startActivity(new Intent(requireContext(), AddGoalActivity.class));
         });
     }
@@ -94,35 +99,50 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
 
     private void filterGoals(int position) {
         List<Goal> filteredList = new ArrayList<>();
-        if (position == 0) {
-            for (Goal goal : allGoals) {
-                if (!goal.isCompleted()) filteredList.add(goal);
-            }
-        } else {
-            for (Goal goal : allGoals) {
-                if (goal.isCompleted()) filteredList.add(goal);
-            }
+        String emptyTitle;
+        String emptyDesc;
+
+        switch (position) {
+            case 0:
+                filteredList.addAll(allGoals);
+                emptyTitle = getString(R.string.no_goals_title);
+                emptyDesc = getString(R.string.no_goals_desc);
+                break;
+            case 1:
+                for (Goal goal : allGoals) {
+                    if (!goal.isCompleted()) filteredList.add(goal);
+                }
+                emptyTitle = getString(R.string.no_active_goals_title);
+                emptyDesc = getString(R.string.no_active_goals_desc);
+                break;
+            case 2:
+                for (Goal goal : allGoals) {
+                    if (goal.isCompleted()) filteredList.add(goal);
+                }
+                emptyTitle = getString(R.string.no_completed_goals_title);
+                emptyDesc = getString(R.string.no_completed_goals_desc);
+                break;
+            case 3:
+                emptyTitle = getString(R.string.no_paused_goals_title);
+                emptyDesc = getString(R.string.no_paused_goals_desc);
+                break;
+            default:
+                emptyTitle = getString(R.string.no_goals_title);
+                emptyDesc = getString(R.string.no_goals_desc);
+                break;
         }
+
+        if (filteredList.isEmpty() && !isLoading) {
+            getBinding().rvGoals.setVisibility(View.GONE);
+            getBinding().layoutEmptyState.setVisibility(View.VISIBLE);
+            getBinding().tvEmptyTitle.setText(emptyTitle);
+            getBinding().tvEmptyDesc.setText(emptyDesc);
+        } else {
+            getBinding().rvGoals.setVisibility(View.VISIBLE);
+            getBinding().layoutEmptyState.setVisibility(View.GONE);
+        }
+
         adapter.submitList(filteredList);
-    }
-
-    private void updateOverallProgress(List<Goal> goals) {
-        double totalCurrent = 0;
-        double totalTarget = 0;
-
-        for (Goal goal : goals) {
-            totalCurrent += goal.getCurrentAmount();
-            totalTarget += goal.getTargetAmount();
-        }
-
-        getBinding().tvTotalAmount.setText(Utils.formatCurrency(totalCurrent));
-
-        if (totalTarget > 0) {
-            int progress = (int) ((totalCurrent / totalTarget) * 100);
-            getBinding().tvOverallPercentage.setText(getString(R.string.percentage_format, progress));
-        } else {
-            getBinding().tvOverallPercentage.setText(getString(R.string.zero_percent));
-        }
     }
 
     private void setupRecyclerView() {
@@ -140,23 +160,56 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                         
                         binding.tvGoalTitle.setText(goal.getTitle());
                         binding.ivGoalIcon.setImageResource(goal.getImageRes());
-                        binding.ivGoalIcon.setBackgroundColor(goal.getBackgroundColor());
+                        binding.ivGoalIcon.setBackgroundColor(requireContext().getColor(R.color.surface_variant));
                         
-                        String progressText = String.format(Locale.getDefault(), 
-                                getString(R.string.goal_progress_amount_format),
+                        String progressText = getString(R.string.goal_progress_amount_format,
                                 Utils.formatCurrency(goal.getCurrentAmount()),
                                 Utils.formatCurrency(goal.getTargetAmount()));
                         
                         binding.tvGoalProgressAmount.setText(progressText);
                         binding.progressIndicator.setProgress(goal.getProgress());
                         binding.tvPercentage.setText(getString(R.string.percentage_format, goal.getProgress()));
-                        binding.tvTargetDate.setText(getString(R.string.target_date_label_format, goal.getTargetDate()));
+                        
+                        // Mocking days left for now if not available in model
+                        binding.tvTargetDate.setText(getString(R.string.label_days_left, 60));
                     }
                 }
         );
         adapter.setOnItemClickListener(goal -> navigateTo(GoalDetailFragment.newInstance(goal.getId())));
+        adapter.setOnItemLongClickListener(goal -> {
+            UpdateGoalBottomSheetFragment bottomSheet = UpdateGoalBottomSheetFragment.newInstance(goal.getId());
+            bottomSheet.show(getChildFragmentManager(), "UPDATE_GOAL");
+            return true;
+        });
         getBinding().rvGoals.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvGoals.setAdapter(adapter);
+
+        SwipeToDeleteHelper.attach(getBinding().rvGoals, position -> {
+            Goal goalToDelete = adapter.getItem(position);
+            List<Goal> currentList = new ArrayList<>(adapter.getCurrentList());
+            currentList.remove(position);
+            adapter.submitList(currentList);
+
+            SwipeToDeleteHelper.showUndoSnackbar(getBinding().getRoot(), "Goal '" + goalToDelete.getTitle() + "' deleted", () -> {
+                // UNDO
+                List<Goal> restoredList = new ArrayList<>(adapter.getCurrentList());
+                restoredList.add(position, goalToDelete);
+                adapter.submitList(restoredList);
+            }, () -> {
+                // ACTUAL DELETE
+                goalRepository.deleteGoal(goalToDelete.getId(), new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                    @Override
+                    public void onSuccess(Map<String, Object> result) {
+                        // Successfully deleted remotely and locally (handled by repo)
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        // Error handling could be added here
+                    }
+                });
+            });
+        });
     }
 
     @Override

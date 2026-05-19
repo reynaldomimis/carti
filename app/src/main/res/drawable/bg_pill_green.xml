@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="3dp"
+    android:insetRight="3dp">
+    <shape>
+        <solid android:color="@color/carti_primary_green" />
+        <corners android:radius="@dimen/pill_corner_radius" />
+    </shape>
+</inset>

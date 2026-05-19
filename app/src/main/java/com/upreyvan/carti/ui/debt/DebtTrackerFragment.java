@@ -49,59 +49,40 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         apiHelper = new ApiHelper(requireContext());
         debtRepository = new DebtRepository(requireContext());
         
+        setupDynamicPadding();
         setupToolbar();
         setupTabs();
         setupRecyclerView();
         observeDebts();
     }
 
+    private void setupDynamicPadding() {
+        setupDynamicPadding(getBinding().layoutToolbar.getRoot(), getBinding().rvDebts, 0.3f);
+        com.upreyvan.carti.util.Utils.applySystemBarInsets(
+                getBinding().btnAddDebtFloating,
+                getBinding().btnAddDebtFloating,
+                0f,
+                0
+        );
+    }
+
     private void observeDebts() {
         debtRepository.getAllDebts().observe(getViewLifecycleOwner(), debts -> {
             if (debts != null) {
-                isLoading = debts.isEmpty();
+                isLoading = false;
                 allDebts = debts;
-                if (isLoading) {
-                    List<Debt> placeholders = new ArrayList<>();
-                    for (int i = 0; i < 3; i++) placeholders.add(new Debt());
-                    adapter.submitList(placeholders);
-                } else {
-                    filterDebts(getBinding().tabLayout.getSelectedTabPosition());
-                    updateOverallDebt(allDebts);
-                }
+                filterDebts(getBinding().tabLayout.getSelectedTabPosition());
             }
         });
         debtRepository.syncDebtsIfNeeded();
     }
 
-    private void updateOverallDebt(List<Debt> debts) {
-        double totalOwed = 0;
-        double totalPaid = 0;
-
-        for (Debt debt : debts) {
-            if (debt.isPaid()) {
-                totalPaid += debt.getAmount();
-            } else {
-                totalOwed += debt.getAmount();
-            }
-        }
-
-        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "PH"));
-        getBinding().tvTotalAmount.setText(currencyFormat.format(totalOwed));
-
-        double total = totalOwed + totalPaid;
-        if (total > 0) {
-            int progress = (int) ((totalPaid / total) * 100);
-            getBinding().tvOverallPercentage.setText(getString(R.string.overall_debt_percentage_format, progress));
-        } else {
-            getBinding().tvOverallPercentage.setText(getString(R.string.zero_percent));
-        }
-    }
-
     private void setupToolbar() {
         setupToolbar(getBinding().layoutToolbar, R.string.debt_tracker_title);
-        getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnAction.setText(R.string.btn_add_debt);
-        getBinding().layoutToolbar.btnAction.setOnClickListener(v -> {
+        getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
+        getBinding().layoutToolbar.btnAction.setVisibility(View.GONE);
+        
+        getBinding().btnAddDebtFloating.setOnClickListener(v -> {
             startActivity(new android.content.Intent(requireContext(), AddDebtActivity.class));
         });
     }
@@ -118,6 +99,54 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
         });
+    }
+
+    private void filterDebts(int position) {
+        List<Debt> filteredList = new ArrayList<>();
+        String emptyTitle;
+        String emptyDesc;
+
+        switch (position) {
+            case 0: // Overview / All
+                filteredList.addAll(allDebts);
+                emptyTitle = getString(R.string.no_debts_title);
+                emptyDesc = getString(R.string.no_debts_desc);
+                break;
+            case 1: // My Debts (Unpaid)
+                for (Debt debt : allDebts) {
+                    if (!debt.isPaid()) filteredList.add(debt);
+                }
+                emptyTitle = getString(R.string.no_my_debts_title);
+                emptyDesc = getString(R.string.no_my_debts_desc);
+                break;
+            case 2: // Owed to Me (Placeholders for now if type missing)
+                emptyTitle = getString(R.string.no_owed_me_title);
+                emptyDesc = getString(R.string.no_owed_me_desc);
+                break;
+            case 3: // Settled (Paid)
+                for (Debt debt : allDebts) {
+                    if (debt.isPaid()) filteredList.add(debt);
+                }
+                emptyTitle = getString(R.string.no_settled_debts_title);
+                emptyDesc = getString(R.string.no_settled_debts_desc);
+                break;
+            default:
+                emptyTitle = getString(R.string.no_debts_title);
+                emptyDesc = getString(R.string.no_debts_desc);
+                break;
+        }
+
+        if (filteredList.isEmpty() && !isLoading) {
+            getBinding().rvDebts.setVisibility(View.GONE);
+            getBinding().layoutEmptyState.setVisibility(View.VISIBLE);
+            getBinding().tvEmptyTitle.setText(emptyTitle);
+            getBinding().tvEmptyDesc.setText(emptyDesc);
+        } else {
+            getBinding().rvDebts.setVisibility(View.VISIBLE);
+            getBinding().layoutEmptyState.setVisibility(View.GONE);
+        }
+
+        adapter.submitList(filteredList);
     }
 
     private void setupRecyclerView() {
@@ -149,20 +178,6 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         getBinding().rvDebts.setAdapter(adapter);
 
         adapter.setOnItemClickListener(this::showDebtDetail);
-    }
-
-    private void filterDebts(int tabIndex) {
-        List<Debt> filtered = new ArrayList<>();
-        if (tabIndex == 0) {
-            for (Debt d : allDebts) {
-                if (!d.isPaid()) filtered.add(d);
-            }
-        } else {
-            for (Debt d : allDebts) {
-                if (d.isPaid()) filtered.add(d);
-            }
-        }
-        adapter.submitList(filtered);
     }
 
     private void showDebtDetail(Debt debt) {

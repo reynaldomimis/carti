@@ -5,7 +5,7 @@
     style="@style/CartiCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_medium"
+    android:layout_marginHorizontal="0dp"
     android:layout_marginVertical="@dimen/spacing_xxs">
 
     <FrameLayout
@@ -18,17 +18,18 @@
             android:layout_height="wrap_content"
             android:padding="@dimen/spacing_medium">
 
+            <!-- Goal Image/Icon -->
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/ivGoalIcon"
-                android:layout_width="@dimen/radius_circle"
-                android:layout_height="@dimen/radius_circle"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:scaleType="centerCrop"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
-                tools:src="@android:drawable/ic_menu_gallery" />
+                tools:src="@drawable/ic_image" />
 
+            <!-- Goal Title -->
             <TextView
                 android:id="@+id/tvGoalTitle"
                 style="@style/CartiTextTitle"
@@ -38,55 +39,108 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/ivGoalIcon"
                 app:layout_constraintTop_toTopOf="@id/ivGoalIcon"
-                tools:text="@string/placeholder_car_savings" />
+                tools:text="Family Vacation" />
 
+            <!-- Progress Amount -->
             <TextView
                 android:id="@+id/tvGoalProgressAmount"
-                style="@style/CartiTextAmount"
+                style="@style/CartiSubHeader"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xxs"
+                android:textSize="@dimen/text_size_body_small"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/tvGoalTitle"
                 app:layout_constraintTop_toBottomOf="@id/tvGoalTitle"
-                tools:text="@string/placeholder_goal_progress" />
+                tools:text="PHP 25,000 / PHP 60,000" />
 
+            <!-- Progress Bar -->
             <ProgressBar
                 android:id="@+id/progressIndicator"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="0dp"
-                android:layout_height="@dimen/icon_size_xxs"
+                android:layout_height="6dp"
                 android:layout_marginTop="@dimen/spacing_medium"
                 android:layout_marginEnd="@dimen/spacing_small"
-                android:progress="60"
-                android:progressDrawable="@drawable/daily_progress_bar"
+                android:progress="42"
+                android:progressDrawable="@drawable/bg_dash_progress"
                 app:layout_constraintEnd_toStartOf="@+id/tvPercentage"
                 app:layout_constraintStart_toStartOf="@id/tvGoalTitle"
                 app:layout_constraintTop_toBottomOf="@id/tvGoalProgressAmount" />
 
+            <!-- Percentage Label -->
             <TextView
                 android:id="@+id/tvPercentage"
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_small"
+                android:textSize="@dimen/text_size_xxs"
                 app:layout_constraintBottom_toBottomOf="@id/progressIndicator"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/progressIndicator"
-                tools:text="@string/placeholder_percentage" />
+                tools:text="42%" />
 
+            <!-- Days Left -->
             <TextView
                 android:id="@+id/tvTargetDate"
                 style="@style/CartiTextDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:textSize="@dimen/text_size_caption"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="@dimen/spacing_xxs"
+                android:textSize="@dimen/text_size_xxs"
                 app:layout_constraintStart_toStartOf="@id/tvGoalTitle"
                 app:layout_constraintTop_toBottomOf="@id/progressIndicator"
-                tools:text="@string/placeholder_target_date" />
+                tools:text="60 days left" />
+
+            <!-- Avatar Stack Placeholder -->
+            <LinearLayout
+                android:id="@+id/avatarStack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:orientation="horizontal"
+                app:layout_constraintStart_toStartOf="@id/tvGoalTitle"
+                app:layout_constraintTop_toBottomOf="@id/tvTargetDate">
+
+                <!-- We'll populate this in the adapter or keep as is if not implemented -->
+                <!-- Example of 3 avatars -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_person"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="-8dp"
+                    android:src="@drawable/ic_person"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="-8dp"
+                    android:src="@drawable/ic_person"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="1dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/plus_jakarta_sans_medium"
+                    android:text="+2"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_size_xxs" />
+
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

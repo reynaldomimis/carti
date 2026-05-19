@@ -35,32 +35,60 @@
             android:orientation="vertical"
             android:padding="@dimen/spacing_medium">
 
+            <!-- Category Name -->
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_category_name"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary" />
+
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_category_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/label_category_name"
+                android:layout_marginTop="@dimen/spacing_xs"
+                app:hintEnabled="false"
                 style="@style/CartiInputLayout">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_category_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="@string/hint_category_name"
                     android:textColor="@color/text_primary"
+                    android:paddingVertical="@dimen/spacing_medium"
+                    android:textSize="@dimen/text_size_body_large"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Amount -->
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/label_amount_peso"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary" />
+
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_category_amount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:hint="@string/label_amount_peso"
+                android:layout_marginTop="@dimen/spacing_xs"
+                app:hintEnabled="false"
                 style="@style/CartiInputLayout.Amount">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_category_amount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="@string/placeholder_amount"
                     android:textColor="@color/text_primary"
+                    android:paddingVertical="@dimen/spacing_medium"
+                    android:textSize="@dimen/text_size_body_large"
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 

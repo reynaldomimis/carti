@@ -19,6 +19,9 @@ public interface MemberDao {
     @Query("SELECT * FROM members WHERE familyId = :familyId")
     List<Member> getAllMembersList(String familyId);
 
+    @Query("SELECT * FROM members WHERE id IN (:memberIds)")
+    LiveData<List<Member>> getMembersByIds(List<String> memberIds);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<Member> members);
 

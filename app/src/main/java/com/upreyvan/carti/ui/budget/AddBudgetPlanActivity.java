@@ -63,7 +63,6 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.add_budget_plan_title);
-        getBinding().layoutToolbar.btnBack.setImageResource(R.drawable.ic_close);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
     }
 

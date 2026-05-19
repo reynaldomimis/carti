@@ -19,6 +19,12 @@ public interface GoalDao {
     @Query("SELECT * FROM goals WHERE familyId = :familyId")
     List<Goal> getAllGoalsList(String familyId);
 
+    @Query("SELECT * FROM goals WHERE id = :goalId")
+    LiveData<Goal> getGoalById(String goalId);
+
+    @Query("SELECT * FROM goals WHERE id = :goalId")
+    Goal getGoalByIdSync(String goalId);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<Goal> goals);
 

@@ -177,7 +177,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         getBinding().btnSave.setText(loading ? R.string.label_saving : (mode == Mode.ADD_INCOME ? R.string.label_add_income : R.string.label_save));
     }
 
-    private void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
+    protected void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
         com.upreyvan.carti.util.ToastHelper.show(requireContext(), message, status);
     }
 }

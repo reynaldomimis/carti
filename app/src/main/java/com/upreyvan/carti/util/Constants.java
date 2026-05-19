@@ -40,6 +40,7 @@ public class Constants {
         public static final String UPDATE_GOAL = "update_goal_amount";
         public static final String UPDATE_DEBT = "update_debt_amount";
         public static final String MARK_DEBT_PAID = "mark_debt_paid";
+        public static final String DELETE_GOAL = "delete_goal";
         public static final String UPDATE_FAMILY_TOTALS = "update_family_totals";
     }
 

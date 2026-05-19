@@ -37,6 +37,8 @@ import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
 
 import androidx.recyclerview.widget.DiffUtil;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -333,36 +335,21 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         double totalIncome = pref.getTotalIncome();
         double totalExpense = pref.getTotalExpense();
         
-        // Main Balance
-        getBinding().layoutDashboard.tvTotalBalance.setText(getString(R.string.format_currency, totalBalance));
-        // Hardcoded trend for now as per image or we can calculate if we have history
-        getBinding().layoutDashboard.tvBalanceTrend.setText(getString(R.string.trend_vs_last_month, "12.5%"));
-        
-        // Income
+        // Monthly Income
         getBinding().layoutDashboard.tvIncomeAmount.setText(getString(R.string.format_currency_no_decimal, totalIncome));
-        getBinding().layoutDashboard.tvIncomeTrend.setText("8.5%"); // Placeholder trend
+        getBinding().layoutDashboard.tvIncomeTrend.setText("8.5%");
         
-        // Expenses
+        // Monthly Expenses
         getBinding().layoutDashboard.tvExpensesAmount.setText(getString(R.string.format_currency_no_decimal, totalExpense));
-        getBinding().layoutDashboard.tvExpensesTrend.setText("3.2%"); // Placeholder trend
+        getBinding().layoutDashboard.tvExpensesTrend.setText("3.2%");
         
-        // Budget/Remaining
-        incomeRepository.getTotalIncome().observe(getViewLifecycleOwner(), baseIncome -> {
-            double income = java.util.Objects.requireNonNullElse(baseIncome, 0.0);
-            double dailyBudget = salaryManager.getDailyBudget(income);
-            
-            transactionRepository.getTodayTotalSpent().observe(getViewLifecycleOwner(), todaySpent -> {
-                double spent = java.util.Objects.requireNonNullElse(todaySpent, 0.0);
-                double remaining = dailyBudget - spent;
-                
-                getBinding().layoutDashboard.tvRemainingAmount.setText(getString(R.string.format_currency_no_decimal, Math.max(0, remaining)));
-                
-                int progress = (dailyBudget > 0) ? (int) ((spent / dailyBudget) * 100) : 0;
-                int remainingPercent = 100 - progress;
-                getBinding().layoutDashboard.pbRemaining.setProgress(Math.max(0, remainingPercent));
-                getBinding().layoutDashboard.tvRemainingPercent.setText(String.format(Locale.getDefault(), "%d%%", Math.max(0, remainingPercent)));
-            });
-        });
+        // Total Savings
+        getBinding().layoutDashboard.tvTotalSavings.setText(getString(R.string.format_currency, totalBalance));
+        getBinding().layoutDashboard.tvSavingsTrend.setText("12.5%");
+
+        String currentMonth = new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(new java.util.Date());
+        getBinding().layoutDashboard.tvOverviewDate.setText(currentMonth);
+        
         incomeRepository.refreshIncomes();
     }
 

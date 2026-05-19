@@ -144,6 +144,8 @@
     <string name="ai_recommended_budget">AI Recommended Budget</string>
     <string name="ai_recommended_budget_desc">Based on your spending pattern.</string>
     <string name="btn_create_budget_plan">Create Budget Plan</string>
+    <string name="hint_plan_name">e.g. June 2025 Budget</string>
+    <string name="hint_select_period">Select Period</string>
 
     <string name="label_monthly_contribution">Monthly Contribution</string>
     <string name="label_family_contribution">Family Contribution</string>
@@ -168,7 +170,21 @@
     <string name="placeholder_bill_amount">P1,200</string>
 
     <!-- Debt -->
+    <string name="tab_debt_overview">Overview</string>
+    <string name="tab_my_debts">My Debts</string>
+    <string name="tab_owed_to_me">Owed to Me</string>
+    <string name="tab_settled">Settled</string>
     <string name="opt_no">No</string>
+...
+    <!-- Debt Empty States -->
+    <string name="no_debts_title">No debts yet</string>
+    <string name="no_debts_desc">Track debts you owe or others owe you.</string>
+    <string name="no_my_debts_title">No active debts</string>
+    <string name="no_my_debts_desc">You don\'t owe anyone money right now. Good job!</string>
+    <string name="no_owed_me_title">Nobody owes you</string>
+    <string name="no_owed_me_desc">When you lend money, track it here.</string>
+    <string name="no_settled_debts_title">No settled debts</string>
+    <string name="no_settled_debts_desc">Completed payments will appear here.</string>
     <string name="opt_yes">Yes</string>
     <string name="add_debt_title">New Debt</string>
     <string name="label_who_borrowed">Who borrowed?</string>
@@ -371,7 +387,16 @@
     <string name="debt_summary_subtitle">Summary of money owed</string>
     <string name="overall_debt_description">Manage your family borrowings and lendings.</string>
     <string name="tab_i_owe">I Owe</string>
-    <string name="tab_owes_me">Owes Me</string>
+    <string name="tab_owes_me">Owed to Me</string>
+    <string name="label_to_person">To (Person)</string>
+    <string name="hint_select_member">Select Member</string>
+    <string name="label_debt_purpose">Debt Name / Purpose</string>
+    <string name="hint_debt_purpose">e.g. Electricity Bill, Loan, etc</string>
+    <string name="label_category">Category</string>
+    <string name="label_note_optional">Note (Optional)</string>
+    <string name="hint_add_note">Add a note</string>
+    <string name="label_remind_me">Remind Me</string>
+    <string name="hint_add_reminder">Add Reminder</string>
     <string name="expenses_title">Expenses</string>
     <string name="label_total_spent">Total Spent</string>
     <string name="percentage_decrease_format">vs last period: %s</string>
@@ -379,9 +404,23 @@
     <string name="total_savings_label">Total Savings</string>
     <string name="savings_summary_subtitle">Your family savings progress</string>
     <string name="overall_progress_description">Keep going! You are closer to your goals.</string>
-    <string name="tab_active_goals">Active Goals</string>
+    <string name="tab_active_goals">Active</string>
     <string name="tab_completed_goals">Completed</string>
+    <string name="tab_all_goals">All</string>
+    <string name="tab_paused_goals">Paused</string>
+    <string name="label_days_left">%d days left</string>
     <string name="overall_percentage_target_format">%d%% of target</string>
+
+    <!-- Goal Empty States -->
+    <string name="no_goals_title">No goals yet</string>
+    <string name="no_goals_desc">Start saving for your dreams today!</string>
+    <string name="no_active_goals_title">No active goals</string>
+    <string name="no_active_goals_desc">You don\'t have any active goals right now.</string>
+    <string name="no_completed_goals_title">No completed goals</string>
+    <string name="no_completed_goals_desc">Keep saving to reach your milestones!</string>
+    <string name="no_paused_goals_title">No paused goals</string>
+    <string name="no_paused_goals_desc">All your goals are either active or completed.</string>
+
 
     <!-- Goal Details -->
     <string name="label_monthly_target">Monthly Target</string>
@@ -566,11 +605,29 @@
     <!-- Dashboard Strings -->
     <string name="label_total_balance">Total Balance</string>
     <string name="label_live_sync">Live Sync</string>
-    <string name="label_income">Income</string>
-    <string name="label_expenses">Expenses</string>
-    <string name="label_budget">Budget</string>
+    <string name="label_monthly_income">Monthly Income</string>
+    <string name="label_monthly_expenses">Monthly Expenses</string>
+    <string name="label_monthly_remaining">Remaining Budget</string>
+    <string name="label_total_savings">Net Savings</string>
+    <string name="financial_overview">Financial Overview</string>
+    <string name="vs_last_month">vs last month</string>
     <string name="trend_vs_last_month">%s vs last month</string>
 
     <string name="add_bill_at_date">Add Bill for %s</string>
     <string name="label_bill_amount">Bill Amount</string>
+
+    <!-- Update Goal -->
+    <string name="update_goal_title">Update Goal Amount</string>
+    <string name="label_current_progress">Current Progress</string>
+    <string name="label_update_amount">Update Amount</string>
+    <string name="btn_add_savings">Add Savings</string>
+    <string name="btn_withdraw">Withdraw</string>
+    <string name="label_payment_method">Payment Method / Source</string>
+    <string name="label_note">Note</string>
+    <string name="btn_update_goal">Update Goal</string>
+    <string name="msg_ai_suggestion_goal">Great choice! Staying consistent will help you reach your goal 20% faster.</string>
+    <string name="btn_plus_100">+100</string>
+    <string name="btn_plus_500">+500</string>
+    <string name="btn_plus_1000">+1,000</string>
+    <string name="btn_plus_5000">+5,000</string>
 </resources>

@@ -11,139 +11,118 @@
         layout="@layout/layout_custom_toolbar"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_overall_debt"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="@dimen/spacing_small"
         android:layout_marginHorizontal="@dimen/spacing_medium"
-        app:cardCornerRadius="@dimen/pill_corner_radius"
-        app:cardElevation="0dp"
-        app:layout_constraintTop_toBottomOf="@id/layoutToolbar"
-        app:strokeWidth="0dp">
+        android:background="@android:color/transparent"
+        app:tabBackground="@drawable/sl_tab_pill"
+        app:tabIndicatorAnimationMode="linear"
+        app:tabIndicator="@drawable/bg_pill_green"
+        app:tabIndicatorGravity="center"
+        app:tabIndicatorHeight="32dp"
+        app:tabIndicatorFullWidth="true"
+        app:tabMode="scrollable"
+        app:tabMinWidth="0dp"
+        app:tabPaddingStart="@dimen/spacing_medium"
+        app:tabPaddingEnd="@dimen/spacing_medium"
+        app:tabRippleColor="@null"
+        app:tabSelectedTextColor="@color/white"
+        app:tabTextColor="@color/text_secondary"
+        app:tabTextAppearance="@style/CartiHeaderSmall"
+        app:layout_constraintTop_toBottomOf="@id/layoutToolbar">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_header_gradient"
-            android:orientation="vertical"
-            android:padding="@dimen/spacing_medium">
+            android:text="@string/tab_debt_overview" />
 
-            <TextView
-                android:id="@+id/tv_total_debt_label"
-                style="@style/CartiHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/total_debt_label"
-                android:textColor="@color/white"
-                android:textSize="@dimen/text_size_body" />
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tab_my_debts" />
 
-            <TextView
-                android:id="@+id/tv_subtitle"
-                style="@style/CartiSubHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/debt_summary_subtitle"
-                android:textColor="@color/white_80"
-                android:textSize="@dimen/text_size_small" />
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tab_owed_to_me" />
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium">
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tab_settled" />
 
-                <TextView
-                    android:id="@+id/tv_total_amount"
-                    style="@style/CartiHeader"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_toStartOf="@id/tv_overall_percentage"
-                    android:layout_marginEnd="@dimen/spacing_small"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/text_size_display"
-                    tools:text="@string/placeholder_total_debt" />
-
-                <TextView
-                    android:id="@+id/tv_overall_percentage"
-                    style="@style/CartiHeader"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:background="@drawable/bg_pill_white"
-                    android:paddingHorizontal="@dimen/radius_medium"
-                    android:paddingVertical="@dimen/spacing_xxs"
-                    android:textColor="@color/green_budget_status"
-                    android:textSize="@dimen/text_size_small"
-                    tools:text="@string/placeholder_debt_paid" />
-            </RelativeLayout>
-
-            <TextView
-                android:id="@+id/tv_progress_description"
-                style="@style/CartiSubHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:text="@string/overall_debt_description"
-                android:textColor="@color/white"
-                android:textSize="@dimen/text_size_small" />
-
-        </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/tabContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_medium"
-        android:layout_marginTop="@dimen/spacing_medium"
-        app:cardBackgroundColor="@color/surface_variant"
-        app:cardCornerRadius="@dimen/radius_xl"
-        app:cardElevation="0dp"
-        app:layout_constraintTop_toBottomOf="@id/card_overall_debt"
-        app:strokeWidth="0dp">
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayout"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/spacing_xxl"
-            android:background="@android:color/transparent"
-            app:tabIndicatorAnimationMode="linear"
-            app:tabIndicator="@drawable/bg_pill_white"
-            app:tabIndicatorColor="@color/white"
-            app:tabIndicatorGravity="center"
-            app:tabIndicatorHeight="@dimen/icon_size_xl"
-            app:tabIndicatorFullWidth="true"
-            app:tabMode="fixed"
-            app:tabRippleColor="@null"
-            app:tabSelectedTextColor="@color/carti_primary_green"
-            app:tabTextColor="@color/text_primary"
-            app:tabTextAppearance="@style/CartiHeader">
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tab_i_owe" />
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tab_owes_me" />
-
-        </com.google.android.material.tabs.TabLayout>
-
-    </com.google.android.material.card.MaterialCardView>
+    </com.google.android.material.tabs.TabLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvDebts"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/spacing_small"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
         android:clipToPadding="false"
-        android:paddingBottom="@dimen/spacing_medium"
+        android:paddingBottom="80dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/tabLayout"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tabContainer"
         tools:listitem="@layout/item_debt" />
+
+    <LinearLayout
+        android:id="@+id/layoutEmptyState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tabLayout"
+        app:layout_constraintVertical_bias="0.4"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/ivEmptyIcon"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_calendar"
+            android:contentDescription="@string/no_debts_title"
+            app:tint="@color/surface_variant" />
+
+        <TextView
+            android:id="@+id/tvEmptyTitle"
+            style="@style/CartiHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/no_debts_title"
+            android:textSize="@dimen/text_size_header" />
+
+        <TextView
+            android:id="@+id/tvEmptyDesc"
+            style="@style/CartiSubHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:gravity="center"
+            android:text="@string/no_debts_desc"
+            android:textSize="@dimen/text_size_body_small" />
+
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAddDebtFloating"
+        style="@style/CartiButton.Tonal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_medium"
+        android:text="@string/btn_add_debt"
+        app:icon="@drawable/ic_add"
+        app:iconGravity="textStart"
+        app:iconTint="@color/carti_primary_green"
+        android:textColor="@color/carti_primary_green"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

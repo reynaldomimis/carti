@@ -21,6 +21,10 @@ public class Debt {
     private boolean isPaid;
     private int avatarResId;
     private String notes;
+    private String type;
+    private String category;
+    private String dueDate;
+    private String reminder;
 
     @Ignore
     public Debt() {
@@ -31,9 +35,10 @@ public class Debt {
         this.timestamp = "";
         this.amount = 0.00;
         this.isPaid = false;
+        this.type = "OWE";
     }
 
-    public Debt(@NonNull String id, String familyId, String title, String description, String timestamp, double amount, boolean isPaid, int avatarResId, String notes) {
+    public Debt(@NonNull String id, String familyId, String title, String description, String timestamp, double amount, boolean isPaid, int avatarResId, String notes, String type, String category, String dueDate, String reminder) {
         this.id = id;
         this.familyId = familyId;
         this.title = title;
@@ -43,6 +48,10 @@ public class Debt {
         this.isPaid = isPaid;
         this.avatarResId = avatarResId;
         this.notes = notes;
+        this.type = type;
+        this.category = category;
+        this.dueDate = dueDate;
+        this.reminder = reminder;
     }
 
     @NonNull
@@ -64,6 +73,14 @@ public class Debt {
     public void setAvatarResId(int avatarResId) { this.avatarResId = avatarResId; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+    public String getDueDate() { return dueDate; }
+    public void setDueDate(String dueDate) { this.dueDate = dueDate; }
+    public String getReminder() { return reminder; }
+    public void setReminder(String reminder) { this.reminder = reminder; }
 
     public String getPersonName() { return title; }
     public String getDate() { return timestamp; }

@@ -182,11 +182,15 @@ public class ApiHelper {
         callAction(Constants.Actions.ADD_GOAL, params, callback);
     }
 
-    public void addDebt(String personName, double amount, String type, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+    public void addDebt(String personName, double amount, String type, String category, String dueDate, String reminder, String notes, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("personName", personName);
         params.put("amount", amount);
         params.put("type", type);
+        params.put("category", category);
+        params.put("dueDate", dueDate);
+        params.put("reminder", reminder);
+        params.put("notes", notes);
         callAction(Constants.Actions.ADD_DEBT, params, callback);
     }
 
@@ -229,6 +233,12 @@ public class ApiHelper {
         Map<String, Object> params = new HashMap<>();
         params.put("debtId", debtId);
         callAction(Constants.Actions.MARK_DEBT_PAID, params, callback);
+    }
+
+    public void deleteGoal(String goalId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("goalId", goalId);
+        callAction(Constants.Actions.DELETE_GOAL, params, callback);
     }
 
     public void deleteTransaction(String transactionId, AppwriteManager.AppwriteCallback<Object> callback) {
