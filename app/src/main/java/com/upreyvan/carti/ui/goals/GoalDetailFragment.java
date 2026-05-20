@@ -4,20 +4,19 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentGoalDetailBinding;
 import com.upreyvan.carti.databinding.ItemGoalHistoryBinding;
-import com.upreyvan.carti.model.Goal;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.ui.common.AddFundsFragment;
-import com.upreyvan.carti.data.repository.GoalRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.Utils;
-
+import com.upreyvan.carti.util.ValueHelper;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +25,8 @@ import java.util.Locale;
 public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> {
 
     private String goalId;
-    private Goal goal;
-    private GoalRepository goalRepository;
+    private Transaction goal;
+    private TransactionRepository transactionRepository;
 
     public static GoalDetailFragment newInstance(String goalId) {
         GoalDetailFragment fragment = new GoalDetailFragment();
@@ -53,18 +52,18 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        goalRepository = new GoalRepository(requireContext());
+        transactionRepository = new TransactionRepository(requireContext());
         setupDynamicPadding();
         observeGoal();
         setupHistoryList();
     }
 
     private void observeGoal() {
-        goalRepository.getAllGoals().observe(getViewLifecycleOwner(), goals -> {
+        transactionRepository.getGoals().observe(getViewLifecycleOwner(), goals -> {
             if (goals != null) {
-                for (Goal g : goals) {
-                    if (g.getId().equals(goalId)) {
-                        goal = g;
+                for (TransactionWithUser tWithU : goals) {
+                    if (tWithU.getTransaction().getId().equals(goalId)) {
+                        goal = tWithU.getTransaction();
                         updateUI();
                         break;
                     }
@@ -101,7 +100,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     }
 
     private void setupToolbar() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText(goal.getTitle());
+        getBinding().layoutToolbar.tvToolbarTitle.setText(ValueHelper.toStr(goal.getTitle()));
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().onBackPressed();
@@ -119,20 +118,20 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "PH"));
         currencyFormat.setMaximumFractionDigits(0);
 
-        getBinding().tvGoalName.setText(goal.getTitle());
+        getBinding().tvGoalName.setText(ValueHelper.toStr(goal.getTitle()));
         getBinding().tvGoalProgressAmount.setText(String.format("%s / %s",
-                currencyFormat.format(goal.getCurrentAmount()),
+                currencyFormat.format(goal.getAmount()),
                 currencyFormat.format(goal.getTargetAmount())));
 
         int progress = goal.getProgress();
         getBinding().progressGoal.setProgress(progress);
         getBinding().tvStatusComplete.setText(getString(R.string.goal_progress_complete_format, progress));
 
-        getBinding().tvTargetDate.setText(goal.getTargetDate());
+        getBinding().tvTargetDate.setText(ValueHelper.toStr(goal.getDueDate()));
         getBinding().tvMonthlyTarget.setText(currencyFormat.format(1000));
 
-        if (goal.getImageRes() != 0) {
-            getBinding().ivGoalImage.setImageResource(goal.getImageRes());
+        if (goal.getIconRes() != 0) {
+            getBinding().ivGoalImage.setImageResource(goal.getIconRes());
             getBinding().ivGoalImage.setColorFilter(null);
             getBinding().ivGoalImage.setPadding(0, 0, 0, 0);
         }

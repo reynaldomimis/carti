@@ -251,23 +251,21 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
             @Override
             public void onSuccess(Map<String, Object> userDoc) {
                 PreferenceManager pref = new PreferenceManager(requireContext());
-                
+
                 String name = String.valueOf(userDoc.getOrDefault("username", "User"));
                 String email = String.valueOf(userDoc.getOrDefault("email", ""));
                 String role = String.valueOf(userDoc.getOrDefault("role", "Member"));
-                String familyId = (userDoc.get("familyId") != null && !"null".equals(String.valueOf(userDoc.get("familyId")))) 
-                                  ? String.valueOf(userDoc.get("familyId")) : "";
-                String inviteCode = (userDoc.get("inviteCode") != null && !"null".equals(String.valueOf(userDoc.get("inviteCode")))) 
-                                  ? String.valueOf(userDoc.get("inviteCode")) : "";
+                String familyId = (userDoc.get("familyId") != null && !"null".equals(String.valueOf(userDoc.get("familyId")))) ? String.valueOf(userDoc.get("familyId")) : "";
+                String inviteCode = (userDoc.get("inviteCode") != null && !"null".equals(String.valueOf(userDoc.get("inviteCode")))) ? String.valueOf(userDoc.get("inviteCode")) : "";
                 String userId = String.valueOf(userDoc.getOrDefault("$id", ""));
-                
+
                 boolean isEmployed = false;
                 Object emp = userDoc.get("isEmployed");
                 if (emp instanceof Boolean) isEmployed = (Boolean) emp;
                 else if (emp != null) isEmployed = Boolean.parseBoolean(String.valueOf(emp));
 
                 pref.setUserData(name, email, role, isEmployed, familyId, inviteCode, userId);
-                
+
                 setLoading(false);
                 navigateToNextScreen(familyId);
             }
@@ -290,10 +288,8 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
     }
 
     private void navigateToNextScreen(String familyId) {
-        // If familyId exists, the user is already part of a family group, go to Main.
-        // Otherwise, they need to Create or Join a family in Onboarding.
         boolean needsOnboarding = familyId == null || familyId.isEmpty();
-        
+
         Intent intent = new Intent(requireActivity(), needsOnboarding ? StartActivity.class : MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

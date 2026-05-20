@@ -17,7 +17,6 @@ import com.upreyvan.carti.R;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,11 +47,7 @@ public class TransactionRepository {
         
         realtimeSubscription = realtimeHelper.subscribeToCollection(
                 Constants.Appwrite.COL_TRANSACTIONS,
-                event -> {
-                    // Senior Logic: No matter if it's create, update, or delete, 
-                    // we just refresh the local sync to keep Room updated.
-                    refreshTransactions();
-                }
+                event -> refreshTransactions()
         );
     }
 
@@ -63,8 +58,116 @@ public class TransactionRepository {
         }
     }
 
-    public LiveData<List<TransactionWithUser>> getRecentTransactions(int limit) {
-        return transactionDao.getRecentTransactions(pref.getFamilyId(), limit);
+
+    public void addTransaction(Transaction transaction, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        AppwriteManager.AppwriteCallback<Map<String, Object>> internalCallback = new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                String id = String.valueOf(result.get("$id"));
+                transaction.setId(id);
+                saveLocally(transaction);
+                if (callback != null) callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
+        };
+
+        switch (transaction.getType()) {
+            case "INCOME":
+                apiHelper.addIncome(transaction.getTitle(), transaction.getAmount(), internalCallback);
+                break;
+            case "GOAL":
+                apiHelper.addGoal(transaction.getTitle(), transaction.getTargetAmount(), internalCallback);
+                break;
+            case "DEBT":
+                apiHelper.addDebt(transaction.getTitle(), transaction.getAmount(), "DEBT", transaction.getCategory(), transaction.getDueDate(), transaction.getReminder(), transaction.getDescription(), internalCallback);
+                break;
+            default:
+                apiHelper.addTransaction(transaction.getAmount(), transaction.getType(), transaction.getCategory(), transaction.getDescription(), internalCallback);
+                break;
+        }
+    }
+
+    public void updateTransaction(Transaction transaction, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        AppwriteManager.AppwriteCallback<Map<String, Object>> internalCallback = new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                saveLocally(transaction);
+                if (callback != null) callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
+        };
+
+        switch (transaction.getType()) {
+            case "INCOME":
+                apiHelper.updateIncome(transaction.getId(), transaction.getTitle(), transaction.getAmount(), internalCallback);
+                break;
+            case "GOAL":
+                apiHelper.updateGoalAmount(transaction.getId(), transaction.getAmount(), internalCallback);
+                break;
+            case "DEBT":
+                apiHelper.updateDebtAmount(transaction.getId(), transaction.getAmount(), internalCallback);
+                break;
+            default:
+                saveLocally(transaction);
+                if (callback != null) callback.onSuccess(null);
+                break;
+        }
+    }
+
+    public void deleteTransaction(Transaction transaction, AppwriteManager.AppwriteCallback<Object> callback) {
+        apiHelper.deleteTransaction(transaction.getId(), new AppwriteManager.AppwriteCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                executor.execute(() -> transactionDao.delete(transaction));
+                if (callback != null) callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
+        });
+    }
+
+    public void saveLocally(Transaction transaction) {
+        transaction.setFamilyId(pref.getFamilyId());
+        if (transaction.getCreatedAt() == null) transaction.setCreatedAt(Utils.getCurrentTimestamp());
+        transaction.setUpdatedAt(Utils.getCurrentTimestamp());
+        executor.execute(() -> transactionDao.insert(transaction));
+    }
+
+    public void deleteLocally(String id) {
+        executor.execute(() -> transactionDao.deleteById(id));
+    }
+
+    // --- Getters by Type ---
+
+    public LiveData<List<TransactionWithUser>> getIncome() {
+        return transactionDao.getTransactionsByType(pref.getFamilyId(), "INCOME");
+    }
+
+    public LiveData<List<TransactionWithUser>> getExpenses() {
+        return transactionDao.getTransactionsByType(pref.getFamilyId(), "EXPENSE");
+    }
+
+    public LiveData<List<TransactionWithUser>> getDebt() {
+        return transactionDao.getTransactionsByType(pref.getFamilyId(), "DEBT");
+    }
+
+    public LiveData<List<TransactionWithUser>> getGoals() {
+        return transactionDao.getTransactionsByType(pref.getFamilyId(), "GOAL");
+    }
+
+    public LiveData<List<TransactionWithUser>> getTransactionsByType(String type) {
+        return transactionDao.getTransactionsByType(pref.getFamilyId(), type);
     }
 
     public LiveData<List<TransactionWithUser>> getAllTransactions() {
@@ -73,6 +176,14 @@ public class TransactionRepository {
 
     public LiveData<List<TransactionWithUser>> getTransactionsInRange(long start, long end) {
         return transactionDao.getTransactionsInRange(pref.getFamilyId(), start, end);
+    }
+
+    public LiveData<List<TransactionWithUser>> getRecentTransactions(int limit) {
+        return transactionDao.getRecentTransactions(pref.getFamilyId(), limit);
+    }
+
+    public LiveData<Transaction> getTransactionById(String id) {
+        return transactionDao.getTransactionByIdRaw(id);
     }
 
     public LiveData<Double> getTodayTotalSpent() {
@@ -84,9 +195,14 @@ public class TransactionRepository {
         return transactionDao.getTodayTotalSpent(pref.getFamilyId(), cal.getTimeInMillis());
     }
 
+    public LiveData<Double> getTotalIncome() {
+        return transactionDao.getTotalIncome(pref.getFamilyId());
+    }
+
+    // --- Sync Logic ---
+
     public void syncTransactionsIfNeeded() {
         executor.execute(() -> {
-            // Kung walang laman ang local DB, i-reset ang sync time para makuha lahat mula sa server
             List<Transaction> local = transactionDao.getAllTransactionsList(pref.getFamilyId());
             if (local == null || local.isEmpty()) {
                 pref.resetLastSyncTime();
@@ -110,17 +226,11 @@ public class TransactionRepository {
 
                     for (Document<Map<String, Object>> doc : result.getDocuments()) {
                         transactions.add(mapToTransaction(doc, familyId));
-                        
-                        // Keep track of the most recent record's timestamp
                         if (doc.getCreatedAt().compareTo(latestTimestamp) > 0) {
                             latestTimestamp = doc.getCreatedAt();
                         }
                     }
-                    
-                    // Insert new/updated data without deleting the whole database
                     transactionDao.insertAll(transactions);
-                    
-                    // Save the timestamp for the next sync
                     pref.setLastSyncTime(latestTimestamp);
                 });
             }
@@ -130,28 +240,63 @@ public class TransactionRepository {
         });
     }
 
-    public void saveLocally(Transaction transaction) {
-        transaction.setFamilyId(pref.getFamilyId());
-        executor.execute(() -> transactionDao.insert(transaction));
-    }
+    public LiveData<List<TransactionWithUser>> getTransactionsByMonth(int month, int year) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.set(java.util.Calendar.YEAR, year);
+        cal.set(java.util.Calendar.MONTH, month);
+        cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        cal.set(java.util.Calendar.MINUTE, 0);
+        cal.set(java.util.Calendar.SECOND, 0);
+        cal.set(java.util.Calendar.MILLISECOND, 0);
+        long start = cal.getTimeInMillis();
 
-    public void deleteLocally(String id) {
-        executor.execute(() -> transactionDao.deleteById(id));
+        cal.add(java.util.Calendar.MONTH, 1);
+        cal.add(java.util.Calendar.MILLISECOND, -1);
+        long end = cal.getTimeInMillis();
+
+        return transactionDao.getTransactionsInRange(pref.getFamilyId(), start, end);
     }
 
     private Transaction mapToTransaction(Document<Map<String, Object>> doc, String familyId) {
         Map<String, Object> data = doc.getData();
         String type = String.valueOf(data.get("type"));
         double amount = Utils.getDouble(data.get("amount"));
+        double targetAmount = Utils.getDouble(data.get("targetAmount"));
         String categoryName = String.valueOf(data.get("category"));
         String userId = String.valueOf(data.get("userId"));
-        String description = data.containsKey("note") ? String.valueOf(data.get("note")) : "";
         
-        // Better mapping logic for icons based on category
+        String title = data.containsKey("title") ? String.valueOf(data.get("title")) : 
+                     (data.containsKey("name") ? String.valueOf(data.get("name")) : 
+                     (data.containsKey("source") ? String.valueOf(data.get("source")) : 
+                     (data.containsKey("personName") ? String.valueOf(data.get("personName")) : categoryName)));
+        
+        String description = data.containsKey("description") ? String.valueOf(data.get("description")) : 
+                           (data.containsKey("note") ? String.valueOf(data.get("note")) : 
+                           (data.containsKey("notes") ? String.valueOf(data.get("notes")) : ""));
+        
+        String status = data.containsKey("status") ? String.valueOf(data.get("status")) : "active";
+        
+        boolean isPaid = false;
+        if (data.containsKey("isPaid") && data.get("isPaid") != null) {
+            Object val = data.get("isPaid");
+            if (val instanceof Boolean) isPaid = (Boolean) val;
+        }
+
+        String dueDate = data.containsKey("dueDate") ? String.valueOf(data.get("dueDate")) : 
+                       (data.containsKey("targetDate") ? String.valueOf(data.get("targetDate")) : null);
+        
+        List<String> members = new ArrayList<>();
+        if (data.containsKey("members") && data.get("members") instanceof List) {
+            List<?> list = (List<?>) data.get("members");
+            for (Object item : list) {
+                members.add(String.valueOf(item));
+            }
+        }
+        
         int iconRes = R.drawable.ic_person;
         int iconColor = ContextCompat.getColor(apiHelper.getContext(), R.color.carti_primary_green);
 
-        // Try to match with existing categories for better visuals
         List<com.upreyvan.carti.model.Category> categories = com.upreyvan.carti.data.local.CategoryManager.getInstance(apiHelper.getContext()).getCategories();
         for (com.upreyvan.carti.model.Category cat : categories) {
             if (cat.getName().equalsIgnoreCase(categoryName)) {
@@ -165,17 +310,25 @@ public class TransactionRepository {
         
         return new Transaction(
             doc.getId(),
+            type,
+            amount,
+            title,
+            description,
+            categoryName,
             familyId,
             userId,
-            categoryName,
-            description,
-            Utils.formatTimestamp(doc.getCreatedAt()),
-            amount,
+            doc.getCreatedAt(),
+            doc.getUpdatedAt(),
+            targetAmount,
+            dueDate,
+            status,
+            isPaid,
+            members,
+            data.containsKey("reminder") ? String.valueOf(data.get("reminder")) : "",
             iconRes,
             bgColor,
             iconColor,
-            Utils.getMillisFromIso(doc.getCreatedAt()),
-            type
+            Utils.getMillisFromIso(doc.getCreatedAt())
         );
     }
 }

@@ -25,13 +25,15 @@ public class Constants {
     }
 
     public static final class Actions {
-        public static final String GET_MEMBERS = "get_members";
         public static final String REGISTER = "register";
         public static final String GET_USER = "get_user";
         public static final String CREATE_FAMILY = "create_family";
         public static final String JOIN_FAMILY = "request_join_family";
-        public static final String APPROVE_JOIN = "approve_join_request";
-        public static final String ADD_TRANSACTION = "add_transaction";
+        public static final String APPROVE_JOIN = "approve_member";
+        public static final String LEAVE_FAMILY = "leave_family";
+        public static final String DELETE_ACCOUNT = "delete_account";
+        public static final String ADD_TRANSACTION = "create_transaction";
+        public static final String UPDATE_TRANSACTION = "update_transaction";
         public static final String ADD_INCOME = "add_income";
         public static final String UPDATE_INCOME = "update_income";
         public static final String DELETE_INCOME = "delete_income";
@@ -41,7 +43,9 @@ public class Constants {
         public static final String UPDATE_DEBT = "update_debt_amount";
         public static final String MARK_DEBT_PAID = "mark_debt_paid";
         public static final String DELETE_GOAL = "delete_goal";
+        public static final String DELETE_DEBT = "delete_debt";
         public static final String UPDATE_FAMILY_TOTALS = "update_family_totals";
+        public static final String GET_MEMBERS = "get_members";
     }
 
     public static final class Keys {

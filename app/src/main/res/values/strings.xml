@@ -205,6 +205,7 @@
     <string name="payment_history">Payment History</string>
     <string name="no_payment_yet">No payments recorded yet.</string>
     <string name="mark_as_paid">Mark as Paid</string>
+    <string name="label_paid_on">Paid on %s</string>
 
     <!-- Expenses -->
     <string name="add_expense_title">New Expense</string>

@@ -22,12 +22,8 @@ import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.DialogQuickLogAmountBinding;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.model.Transaction;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
 import java.util.Map;
-
+import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
 
 public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmountBinding> {
@@ -80,33 +76,25 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
 
             try {
                 double amount = Double.parseDouble(getBinding().etAmount.getText().toString().trim());
-                String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
-                
                 int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
                 int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
                 
-                new ApiHelper(requireContext()).addTransaction(amount, "EXPENSE", item.getTitle(), "Quick Log", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                Transaction transaction = new Transaction();
+                transaction.setAmount(amount);
+                transaction.setType("EXPENSE");
+                transaction.setTitle(item.getTitle());
+                transaction.setDescription("Quick Log");
+                transaction.setCategory(item.getTitle());
+                transaction.setUserId(new com.upreyvan.carti.data.local.PreferenceManager(requireContext()).getUserId());
+                transaction.setIconRes(item.getIconRes());
+                transaction.setIconColor(iconColor);
+                transaction.setIconBgColor(bgColor);
+                transaction.setTimestampMillis(System.currentTimeMillis());
+
+                transactionRepository.addTransaction(transaction, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                     @Override
                     public void onSuccess(Map<String, Object> result) {
-                        String id = String.valueOf(result.get("$id"));
-                        com.upreyvan.carti.data.local.PreferenceManager pref = new com.upreyvan.carti.data.local.PreferenceManager(requireContext());
-                        String familyId = pref.getFamilyId();
-                        String userId = pref.getUserId();
-                        Transaction transaction = new Transaction(
-                                id,
-                                familyId,
-                                userId,
-                                item.getTitle(),
-                                "Quick Log", // description
-                                time,
-                                amount,
-                                item.getIconRes(),
-                                bgColor,
-                                iconColor,
-                                System.currentTimeMillis(),
-                                "EXPENSE"
-                        );
-                        transactionRepository.saveLocally(transaction);
+                        // Successfully added and saved locally by repository
                     }
 
                     @Override

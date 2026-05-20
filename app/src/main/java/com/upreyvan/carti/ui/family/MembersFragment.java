@@ -59,7 +59,7 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
     }
 
     private void fetchCurrentUser() {
-        AppwriteManager.getInstance(requireContext()).getUser(new AppwriteManager.AppwriteCallback<User<Map<String, Object>>>() {
+        AppwriteManager.getInstance(requireContext()).getCurrentUser(new AppwriteManager.AppwriteCallback<User<Map<String, Object>>>() {
             @Override
             public void onSuccess(User<Map<String, Object>> result) {
                 currentUserId = result.getId();

@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentSecurityBinding;
 import com.upreyvan.carti.ui.auth.LoginActivity;
@@ -23,6 +24,7 @@ import com.upreyvan.carti.ui.auth.LoginActivity;
 public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
 
     private AppwriteManager appwriteManager;
+    private ApiHelper apiHelper;
     private PreferenceManager pref;
 
     @Override
@@ -34,6 +36,7 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         appwriteManager = AppwriteManager.getInstance(requireContext());
+        apiHelper = new ApiHelper(requireContext());
         pref = new PreferenceManager(requireContext());
 
         setupToolbar();
@@ -157,9 +160,9 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
 
     private void performDeleteAccount() {
         getBinding().btnDeleteAccount.setEnabled(false);
-        appwriteManager.deleteAccount(new AppwriteManager.AppwriteCallback<Object>() {
+        apiHelper.deleteAccount(new AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
             @Override
-            public void onSuccess(Object result) {
+            public void onSuccess(java.util.Map<String, Object> result) {
                 if (!isAdded()) return;
                 pref.clear();
                 Toast.makeText(requireContext(), R.string.msg_account_deleted, Toast.LENGTH_SHORT).show();

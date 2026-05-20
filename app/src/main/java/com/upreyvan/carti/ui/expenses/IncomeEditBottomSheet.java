@@ -1,29 +1,21 @@
 package com.upreyvan.carti.ui.expenses;
 
-import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.repository.IncomeRepository;
-import com.upreyvan.carti.data.repository.MemberRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.DialogEditIncomeBinding;
-import com.upreyvan.carti.model.Income;
-
+import com.upreyvan.carti.model.Transaction;
 import java.util.Map;
-
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.util.Validator;
+import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.ValueHelper;
 
 public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditIncomeBinding> {
 
@@ -33,10 +25,9 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
     }
 
     private OnIncomeUpdatedListener listener;
-    private MemberRepository memberRepository;
-    private IncomeRepository incomeRepository;
+    private TransactionRepository transactionRepository;
     private Mode mode = Mode.ADD_INCOME;
-    private Income incomeToEdit;
+    private Transaction incomeToEdit;
 
     public interface OnIncomeUpdatedListener {
         void onIncomeUpdated();
@@ -48,7 +39,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         return fragment;
     }
 
-    public static IncomeEditBottomSheet newInstance(Income income) {
+    public static IncomeEditBottomSheet newInstance(Transaction income) {
         IncomeEditBottomSheet fragment = new IncomeEditBottomSheet();
         fragment.mode = Mode.EDIT_INCOME;
         fragment.incomeToEdit = income;
@@ -67,12 +58,8 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
-        memberRepository = new MemberRepository(requireContext());
-        incomeRepository = new IncomeRepository(requireContext());
-
+        transactionRepository = new TransactionRepository(requireContext());
         setupUI();
-
         getBinding().btnSave.setOnClickListener(v -> handleSave());
     }
 
@@ -90,7 +77,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
                 getBinding().tvDialogTitle.setText(R.string.title_edit_income_extra);
                 getBinding().cardSource.setVisibility(View.VISIBLE);
                 if (incomeToEdit != null) {
-                    getBinding().etIncomeSource.setText(incomeToEdit.getSource());
+                    getBinding().etIncomeSource.setText(ValueHelper.toStr(incomeToEdit.getTitle()));
                     getBinding().etSalaryAmount.setText(String.valueOf(incomeToEdit.getAmount()));
                 }
                 getBinding().btnSave.setText(R.string.label_update);
@@ -102,12 +89,12 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         if (!checkNetwork()) return;
 
         if (Validator.isEmpty(getBinding().etSalaryAmount)) {
-            showToast("Please enter an amount", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+            showToast("Please enter an amount", ToastHelper.Status.WARNING);
             return;
         }
 
         if (Validator.isEmpty(getBinding().etIncomeSource)) {
-            showToast("Please enter a source", com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+            showToast("Please enter a source", ToastHelper.Status.WARNING);
             return;
         }
 
@@ -122,12 +109,19 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
             }
 
         } catch (NumberFormatException e) {
-            showToast("Invalid amount", com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+            showToast("Invalid amount", ToastHelper.Status.ERROR);
         }
     }
 
     private void addExtraIncome(String source, double amount) {
-        incomeRepository.addIncome(source, amount, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        Transaction income = new Transaction();
+        income.setType("INCOME");
+        income.setTitle(source);
+        income.setAmount(amount);
+        income.setCategory("Income");
+        income.setUserId(com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getUserId());
+
+        transactionRepository.addTransaction(income, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 onActionSuccess("Income added");
@@ -142,7 +136,10 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
 
     private void updateExtraIncome(String source, double amount) {
         if (incomeToEdit == null) return;
-        incomeRepository.updateIncome(incomeToEdit.getId(), source, amount, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        incomeToEdit.setTitle(source);
+        incomeToEdit.setAmount(amount);
+
+        transactionRepository.updateTransaction(incomeToEdit, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 onActionSuccess("Income updated");
@@ -159,7 +156,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         if (!isAdded()) return;
         requireActivity().runOnUiThread(() -> {
             if (listener != null) listener.onIncomeUpdated();
-            showToast(message, com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+            showToast(message, ToastHelper.Status.SUCCESS);
             dismiss();
         });
     }
@@ -168,7 +165,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         if (!isAdded()) return;
         requireActivity().runOnUiThread(() -> {
             setLoading(false);
-            showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+            showToast("Error: " + error.getMessage(), ToastHelper.Status.ERROR);
         });
     }
 
@@ -177,7 +174,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         getBinding().btnSave.setText(loading ? R.string.label_saving : (mode == Mode.ADD_INCOME ? R.string.label_add_income : R.string.label_save));
     }
 
-    protected void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
-        com.upreyvan.carti.util.ToastHelper.show(requireContext(), message, status);
+    protected void showToast(String message, ToastHelper.Status status) {
+        ToastHelper.show(requireContext(), message, status);
     }
 }

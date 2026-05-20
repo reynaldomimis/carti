@@ -4,35 +4,36 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentIncomeModeBinding;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.SalaryManager;
-import com.upreyvan.carti.data.repository.IncomeRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.model.TransactionWithUser;
+import java.util.ArrayList;
+import java.util.List;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ItemIncomeBinding;
-import com.upreyvan.carti.model.Income;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Utils;
-
+import com.upreyvan.carti.util.ValueHelper;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
-
 import io.appwrite.models.RealtimeSubscription;
 import io.appwrite.services.Realtime;
 
 public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> {
 
-    private GenericAdapter<Income, ItemIncomeBinding> incomeAdapter;
-    private IncomeRepository incomeRepository;
+    private GenericAdapter<Transaction, ItemIncomeBinding> incomeAdapter;
+    private TransactionRepository transactionRepository;
     private RealtimeSubscription realtimeSubscription;
 
     @Override
@@ -43,7 +44,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        incomeRepository = new IncomeRepository(requireContext());
+        transactionRepository = new TransactionRepository(requireContext());
         setupDynamicPadding(getBinding().layoutToolbar.getRoot(), null, 0.3f);
         setupHeader();
         setupRecyclerView();
@@ -78,7 +79,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
             }
 
             if (isIncomeEvent) {
-                requireActivity().runOnUiThread(() -> incomeRepository.refreshIncomes());
+                requireActivity().runOnUiThread(() -> transactionRepository.refreshTransactions());
             } else {
                 requireActivity().runOnUiThread(this::updateUI);
             }
@@ -92,26 +93,26 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         if (realtimeSubscription != null) {
             realtimeSubscription.close();
         }
-        if (incomeRepository != null) {
-            incomeRepository.onDestroy();
+        if (transactionRepository != null) {
+            transactionRepository.onDestroy();
         }
     }
 
     private void setupRecyclerView() {
         incomeAdapter = new GenericAdapter<>(
-                Income.DIFF_CALLBACK,
+                Transaction.DIFF_CALLBACK,
                 (inflater, parent) -> ItemIncomeBinding.inflate(inflater, parent, false),
                 (binding, income) -> {
-                    binding.tvSource.setText(income.getSource());
+                    binding.tvSource.setText(income.getTitle());
                     binding.tvAmount.setText(String.format(Locale.getDefault(), "+₱%,.2f", income.getAmount()));
-                    binding.tvDate.setText(Utils.formatTimestamp(income.getCreatedAt()));
+                    binding.tvDate.setText(Utils.getTimeAgo(income.getTimestampMillis()));
                     
-                    if (income.getSource().toLowerCase().contains("salary")) {
+                    if (ValueHelper.toStr(income.getTitle()).toLowerCase().contains("salary")) {
                         binding.ivIcon.setImageResource(R.drawable.ic_calendar);
-                        binding.viewIconBg.setBackgroundTintList(androidx.core.content.ContextCompat.getColorStateList(requireContext(), R.color.log_food));
+                        binding.viewIconBg.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.log_food));
                     } else {
                         binding.ivIcon.setImageResource(R.drawable.ic_chart);
-                        binding.viewIconBg.setBackgroundTintList(androidx.core.content.ContextCompat.getColorStateList(requireContext(), R.color.log_fare));
+                        binding.viewIconBg.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.log_fare));
                     }
                 }
         );
@@ -121,33 +122,38 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
             bottomSheet.show(getChildFragmentManager(), "IncomeEditBottomSheet");
             return true;
         });
-        getBinding().rvIncomeHistory.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
+        getBinding().rvIncomeHistory.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvIncomeHistory.setAdapter(incomeAdapter);
     }
 
     private void observeIncomes() {
-        incomeRepository.getUserIncomes().observe(getViewLifecycleOwner(), incomes -> {
-            boolean hasIncomes = incomes != null && !incomes.isEmpty();
+        transactionRepository.getIncome().observe(getViewLifecycleOwner(), incomesWithUser -> {
+            List<Transaction> incomes = new ArrayList<>();
+            if (incomesWithUser != null) {
+                for (TransactionWithUser t : incomesWithUser) {
+                    incomes.add(t.getTransaction());
+                }
+            }
+            boolean hasIncomes = !incomes.isEmpty();
             getBinding().tvIncomeHistoryLabel.setVisibility(hasIncomes ? View.VISIBLE : View.GONE);
             getBinding().rvIncomeHistory.setVisibility(hasIncomes ? View.VISIBLE : View.GONE);
 
             incomeAdapter.submitList(incomes);
         });
 
-        incomeRepository.getTotalIncome().observe(getViewLifecycleOwner(), totalIncome -> {
+        transactionRepository.getTotalIncome().observe(getViewLifecycleOwner(), totalIncome -> {
             updateTotalBudget(totalIncome != null ? totalIncome : 0.0);
         });
 
-        incomeRepository.refreshIncomes();
+        transactionRepository.refreshTransactions();
     }
 
     private void updateTotalBudget(double totalBudget) {
         SalaryManager manager = SalaryManager.getInstance(requireContext());
-        int daysLeft = manager.getDaysUntilNextPayday();
         double dailyBudget = manager.getDailyBudget(totalBudget);
 
-        getBinding().tvSalaryAmount.setText(com.upreyvan.carti.util.Utils.formatCurrency(totalBudget));
-        getBinding().tvDailyBudget.setText(getString(R.string.format_currency_with_unit, com.upreyvan.carti.util.Utils.formatCurrency(dailyBudget)));
+        getBinding().tvSalaryAmount.setText(Utils.formatCurrency(totalBudget));
+        getBinding().tvDailyBudget.setText(getString(R.string.format_currency_with_unit, Utils.formatCurrency(dailyBudget)));
     }
     
 
@@ -169,7 +175,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         getBinding().tvTargetDate.setText(sdf.format(nextPayday.getTime()));
         
-        incomeRepository.refreshIncomes();
+        transactionRepository.refreshTransactions();
     }
 
     private void setupListeners() {
@@ -179,8 +185,6 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
             return true;
         });
     }
-
-
 
     private void showPaydaySettings() {
         PaydayEditBottomSheet bottomSheet = PaydayEditBottomSheet.newInstance();
@@ -195,11 +199,9 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         android.app.DatePickerDialog datePickerDialog = new android.app.DatePickerDialog(
                 requireContext(),
                 (view, year, month, dayOfMonth) -> {
-                    // Update the day of month for the payday schedule
                     if (manager.isMonthly()) {
                         manager.setFirstPayday(dayOfMonth);
                     } else {
-                        // Semi-monthly: update the day that was most recently "next"
                         int currentNextDay = nextPayday.get(Calendar.DAY_OF_MONTH);
                         int first = manager.getFirstPayday();
                         int second = manager.getSecondPayday();

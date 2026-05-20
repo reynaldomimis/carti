@@ -4,31 +4,29 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.repository.GoalRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
+import java.util.ArrayList;
+import java.util.List;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.databinding.ItemMemberAvatarSelectBinding;
 import com.upreyvan.carti.databinding.LayoutBottomSheetUpdateGoalBinding;
-import com.upreyvan.carti.model.Goal;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
-
+import com.upreyvan.carti.util.ValueHelper;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -37,8 +35,8 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
 
     public static final String ARG_GOAL_ID = "arg_goal_id";
     private String goalId;
-    private Goal currentGoal;
-    private GoalRepository goalRepository;
+    private Transaction currentGoal;
+    private TransactionRepository transactionRepository;
     private MemberRepository memberRepository;
     private GenericAdapter<Member, ItemMemberAvatarSelectBinding> memberAdapter;
     private final Set<String> selectedMemberIds = new HashSet<>();
@@ -57,7 +55,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
         if (getArguments() != null) {
             goalId = getArguments().getString(ARG_GOAL_ID);
         }
-        goalRepository = new GoalRepository(requireContext());
+        transactionRepository = new TransactionRepository(requireContext());
         memberRepository = new MemberRepository(requireContext());
     }
 
@@ -76,7 +74,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
     }
 
     private void observeGoal() {
-        goalRepository.getGoalById(goalId).observe(getViewLifecycleOwner(), goal -> {
+        transactionRepository.getTransactionById(goalId).observe(getViewLifecycleOwner(), goal -> {
             if (goal != null) {
                 currentGoal = goal;
                 preFillData();
@@ -85,14 +83,14 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
     }
 
     private void preFillData() {
-        getBinding().etGoalName.setText(currentGoal.getTitle());
+        getBinding().etGoalName.setText(ValueHelper.toStr(currentGoal.getTitle()));
         getBinding().etTargetAmount.setText(String.valueOf(currentGoal.getTargetAmount()));
-        getBinding().etTargetDate.setText(currentGoal.getTargetDate());
+        getBinding().etTargetDate.setText(ValueHelper.toStr(currentGoal.getDueDate()));
 
-        String contributorIdsStr = currentGoal.getContributorIds();
-        if (contributorIdsStr != null && !contributorIdsStr.isEmpty()) {
-            selectedMemberIds.clear();
-            selectedMemberIds.addAll(Arrays.asList(contributorIdsStr.split(",")));
+        selectedMemberIds.clear();
+        List<String> members = currentGoal.getMembers();
+        if (members != null) {
+            selectedMemberIds.addAll(members);
         }
         
         loadMembers();
@@ -174,16 +172,15 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
         String name = getBinding().etGoalName.getText().toString().trim();
         double targetAmount = Double.parseDouble(getBinding().etTargetAmount.getText().toString().trim());
         String date = getBinding().etTargetDate.getText() != null ? getBinding().etTargetDate.getText().toString().trim() : "";
-        String contributorIds = String.join(",", selectedMemberIds);
 
         showLoading(true, "Updating goal...");
 
         currentGoal.setTitle(name);
         currentGoal.setTargetAmount(targetAmount);
-        currentGoal.setTargetDate(date);
-        currentGoal.setContributorIds(contributorIds);
+        currentGoal.setDueDate(date);
+        currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
 
-        goalRepository.updateGoal(currentGoal, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<>() {
+        transactionRepository.updateTransaction(currentGoal, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 if (isAdded()) {
@@ -206,7 +203,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (goalRepository != null) goalRepository.onDestroy();
+        if (transactionRepository != null) transactionRepository.onDestroy();
         if (memberRepository != null) memberRepository.onDestroy();
     }
 }

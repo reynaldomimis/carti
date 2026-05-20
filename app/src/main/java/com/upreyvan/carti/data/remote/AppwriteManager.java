@@ -9,10 +9,10 @@ import com.upreyvan.carti.BuildConfig;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.appwrite.Client;
-import io.appwrite.ID;
 import io.appwrite.enums.ExecutionMethod;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
@@ -22,8 +22,6 @@ import io.appwrite.models.User;
 import io.appwrite.services.Account;
 import io.appwrite.services.Databases;
 import io.appwrite.services.Functions;
-
-import java.util.List;
 
 import kotlin.Unit;
 import kotlin.coroutines.EmptyCoroutineContext;
@@ -50,7 +48,6 @@ public class AppwriteManager {
 
     public interface AppwriteCallback<T> {
         void onSuccess(T result);
-
         void onError(Throwable error);
     }
 
@@ -59,11 +56,9 @@ public class AppwriteManager {
         String projectId = BuildConfig.APPWRITE_PROJECT_ID;
 
         if (com.upreyvan.carti.util.Validator.isEmpty(projectId)) {
-            android.util.Log.e("AppwriteManager", "CRITICAL ERROR: APPWRITE_PROJECT_ID is missing from BuildConfig!");
+            android.util.Log.e("AppwriteManager", "CRITICAL ERROR: APPWRITE_PROJECT_ID is missing!");
             mainHandler.post(() -> ToastHelper.show(context, "Error: Project ID is missing!", ToastHelper.Status.ERROR));
         }
-
-        android.util.Log.d("AppwriteManager", "Initializing with Project: " + projectId + " | Endpoint: " + endpoint);
 
         client = new Client(
                 context,
@@ -86,21 +81,10 @@ public class AppwriteManager {
         return instance;
     }
 
-    public Client getClient() {
-        return client;
-    }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public Databases getDatabases() {
-        return databases;
-    }
-
-    public Functions getFunctions() {
-        return functions;
-    }
+    public Client getClient() { return client; }
+    public Account getAccount() { return account; }
+    public Databases getDatabases() { return databases; }
+    public Functions getFunctions() { return functions; }
 
     private <T> void postSuccess(AppwriteCallback<T> callback, T result) {
         mainHandler.post(() -> callback.onSuccess(result));
@@ -112,22 +96,13 @@ public class AppwriteManager {
 
         if (error instanceof io.appwrite.exceptions.AppwriteException) {
             io.appwrite.exceptions.AppwriteException ae = (io.appwrite.exceptions.AppwriteException) error;
-            int code = ae.getCode();
-            switch (code) {
-                case 401:
-                    userFriendlyMessage = Constants.ErrorCodes.UNAUTHORIZED;
-                    break;
-                case 404:
-                    userFriendlyMessage = Constants.ErrorCodes.NOT_FOUND;
-                    break;
-                case 429:
-                    userFriendlyMessage = Constants.ErrorCodes.RATE_LIMIT;
-                    break;
+            switch (ae.getCode()) {
+                case 401: userFriendlyMessage = Constants.ErrorCodes.UNAUTHORIZED; break;
+                case 404: userFriendlyMessage = Constants.ErrorCodes.NOT_FOUND; break;
+                case 429: userFriendlyMessage = Constants.ErrorCodes.RATE_LIMIT; break;
                 case 500:
                 case 502:
-                case 503:
-                    userFriendlyMessage = Constants.ErrorCodes.SERVER_ERROR;
-                    break;
+                case 503: userFriendlyMessage = Constants.ErrorCodes.SERVER_ERROR; break;
                 default:
                     if (message != null && (message.contains("Network") || message.contains("hostname"))) {
                         userFriendlyMessage = Constants.ErrorCodes.NETWORK_ERROR;
@@ -138,8 +113,7 @@ public class AppwriteManager {
             userFriendlyMessage = Constants.ErrorCodes.NETWORK_ERROR;
         }
 
-        android.util.Log.e("AppwriteManager", "Operation Error: " + message, error);
-
+        android.util.Log.e("AppwriteManager", "Error: " + message, error);
         final String finalMsg = userFriendlyMessage;
         mainHandler.post(() -> callback.onError(new Exception(finalMsg)));
     }
@@ -148,22 +122,15 @@ public class AppwriteManager {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
                 try {
-                    BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                        try {
-                            return account.deleteSession("current", (kotlin.coroutines.Continuation<Object>) continuation2);
-                        } catch (Exception e) {
-                            return null;
-                        }
+                    BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                        try { return account.deleteSession("current", (kotlin.coroutines.Continuation<Object>) c2); }
+                        catch (Exception e) { return null; }
                     });
-                } catch (Exception ignored) {
-                }
+                } catch (Exception ignored) {}
 
-                Session result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return account.createEmailPasswordSession(email, password, continuation2);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                Session result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return account.createEmailPasswordSession(email, password, c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -173,15 +140,12 @@ public class AppwriteManager {
         });
     }
 
-    public void getUser(AppwriteCallback<User<Map<String, Object>>> callback) {
+    public void getCurrentUser(AppwriteCallback<User<Map<String, Object>>> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                User<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return account.get(continuation2);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                User<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return account.get(c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -194,12 +158,9 @@ public class AppwriteManager {
     public void updatePrefs(Map<String, Object> prefs, AppwriteCallback<User<Map<String, Object>>> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                User<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return account.updatePrefs(prefs, continuation2);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                User<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return account.updatePrefs(prefs, c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -212,12 +173,9 @@ public class AppwriteManager {
     public void logout(AppwriteCallback<Object> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return account.deleteSession("current", (kotlin.coroutines.Continuation<Object>) continuation2);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return account.deleteSession("current", (kotlin.coroutines.Continuation<Object>) c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -230,12 +188,9 @@ public class AppwriteManager {
     public void logoutAll(AppwriteCallback<Object> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return account.deleteSessions((kotlin.coroutines.Continuation<Object>) continuation2);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return account.deleteSessions((kotlin.coroutines.Continuation<Object>) c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -248,16 +203,9 @@ public class AppwriteManager {
     public void createPasswordRecovery(String email, String url, AppwriteCallback<Object> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return account.createRecovery(
-                                email,
-                                url != null ? url : RECOVERY_URL,
-                                (kotlin.coroutines.Continuation<Object>) continuation2
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return account.createRecovery(email, url != null ? url : RECOVERY_URL, (kotlin.coroutines.Continuation<Object>) c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -274,17 +222,9 @@ public class AppwriteManager {
     public void updatePasswordRecovery(String userId, String secret, String password, AppwriteCallback<Object> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return account.updateRecovery(
-                                userId,
-                                secret,
-                                password,
-                                (kotlin.coroutines.Continuation<Object>) continuation2
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return account.updateRecovery(userId, secret, password, (kotlin.coroutines.Continuation<Object>) c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -297,12 +237,9 @@ public class AppwriteManager {
     public void updatePassword(String newPassword, String oldPassword, AppwriteCallback<User<Map<String, Object>>> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                User<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return account.updatePassword(newPassword, oldPassword, continuation2);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                User<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return account.updatePassword(newPassword, oldPassword, c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -312,36 +249,12 @@ public class AppwriteManager {
         });
     }
 
-    public void deleteAccount(AppwriteCallback<Object> callback) {
-        callGateway("delete_account", new HashMap<>(), new AppwriteCallback<Execution>() {
-            @Override
-            public void onSuccess(Execution result) {
-                postSuccess(callback, result);
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                postError(callback, error);
-            }
-        });
-    }
-
     public void listDocuments(String databaseId, String collectionId, List<String> queries, AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                DocumentList<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return databases.listDocuments(
-                                databaseId,
-                                collectionId,
-                                queries,
-                                null,
-                                (Class) Map.class,
-                                continuation2
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                DocumentList<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return databases.listDocuments(databaseId, collectionId, queries, null, (Class) Map.class, c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -354,20 +267,9 @@ public class AppwriteManager {
     public void createDocument(String databaseId, String collectionId, String documentId, Map<String, Object> data, List<String> permissions, AppwriteCallback<Document<Map<String, Object>>> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                Document<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return databases.createDocument(
-                                databaseId,
-                                collectionId,
-                                documentId,
-                                data,
-                                permissions,
-                                (Class) Map.class,
-                                continuation2
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                Document<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return databases.createDocument(databaseId, collectionId, documentId, data, permissions, (Class) Map.class, c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -380,17 +282,9 @@ public class AppwriteManager {
     public void deleteDocument(String databaseId, String collectionId, String documentId, AppwriteCallback<Object> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return databases.deleteDocument(
-                                databaseId,
-                                collectionId,
-                                documentId,
-                                continuation2
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return databases.deleteDocument(databaseId, collectionId, documentId, c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -403,17 +297,9 @@ public class AppwriteManager {
     public void getDocument(String databaseId, String collectionId, String documentId, AppwriteCallback<Document<Map<String, Object>>> callback) {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                Document<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
-                    try {
-                        return databases.getDocument(
-                                databaseId,
-                                collectionId,
-                                documentId,
-                                continuation2
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                Document<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return databases.getDocument(databaseId, collectionId, documentId, c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -423,12 +309,8 @@ public class AppwriteManager {
         });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // CLOUD FUNCTIONS (GATEWAY)
-    // ─────────────────────────────────────────────────────────────────────────
-
     public void callGateway(String action, Map<String, Object> params, AppwriteCallback<Execution> callback) {
-        getUser(new AppwriteCallback<>() {
+        getCurrentUser(new AppwriteCallback<>() {
             @Override
             public void onSuccess(User<Map<String, Object>> user) {
                 executeGatewayCall(action, params, user.getId(), callback);
@@ -436,63 +318,44 @@ public class AppwriteManager {
 
             @Override
             public void onError(Throwable error) {
-                android.util.Log.w("AppwriteManager", "User not logged in, checking action: " + action);
                 if ("register".equals(action)) {
                     executeGatewayCall(action, params, null, callback);
                 } else {
-                    postError(callback, new Exception("App Error: Unauthorized. Please login first (Action: " + action + ")"));
+                    postError(callback, new Exception(Constants.ErrorCodes.UNAUTHORIZED));
                 }
             }
         });
     }
 
     private void executeGatewayCall(String action, Map<String, Object> params, String userId, AppwriteCallback<Execution> callback) {
-        Map<String, Object> payload = new HashMap<>(params);
+        Map<String, Object> payload = new HashMap<>();
         payload.put("action", action);
-        if (userId != null) {
-            payload.put("userId", userId);
-        }
+        payload.put("data", params);
 
         String functionId = BuildConfig.APPWRITE_GATEWAY_FUNCTION_ID;
-
         if (functionId == null || functionId.trim().isEmpty()) {
-            String endpointFunc = BuildConfig.APPWRITE_ENDPOINT_FUNCTION;
-            if (endpointFunc != null && endpointFunc.contains("://")) {
-                try {
-                    String host = new java.net.URL(endpointFunc).getHost();
-                    if (host != null && host.contains(".")) {
-                        functionId = host.split("\\.")[0];
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-        }
-
-        if (functionId == null || functionId.trim().isEmpty()) {
-            postError(callback, new Exception("Appwrite Function ID is missing. Please check your secrets.properties"));
+            postError(callback, new Exception("Appwrite Function ID is missing."));
             return;
         }
 
         final String finalFunctionId = functionId.trim();
-        android.util.Log.d("AppwriteManager", "Action: " + action + " | Using FunctionID: " + finalFunctionId + " | ProjectID: " + BuildConfig.APPWRITE_PROJECT_ID);
+        android.util.Log.d("AppwriteManager", "callGateway | action: " + action + " | userId: " + userId + " | functionId: " + finalFunctionId);
 
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
-                Execution result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, continuation2) -> {
+                Execution result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
                     try {
                         return functions.createExecution(
                                 finalFunctionId,
-                                gson.toJson(payload),
+                                new Gson().toJson(payload),
                                 false,
                                 "/",
                                 ExecutionMethod.POST,
                                 Collections.emptyMap(),
                                 null,
-                                continuation2
+                                c2
                         );
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                    } catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {

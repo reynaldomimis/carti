@@ -250,4 +250,16 @@ public class Utils {
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         return sdf.format(new Date());
     }
+
+    public static String joinStrings(java.util.List<?> list, String delimiter) {
+        if (list == null || list.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            sb.append(String.valueOf(list.get(i)));
+            if (i < list.size() - 1) {
+                sb.append(delimiter);
+            }
+        }
+        return sb.toString();
+    }
 }

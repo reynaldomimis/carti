@@ -1,15 +1,14 @@
 package com.upreyvan.carti.ui.expenses;
 
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -25,10 +24,13 @@ import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.util.ValueHelper;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
 
@@ -90,11 +92,12 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
             return;
         }
 
-        java.util.Map<String, Double> categoryTotals = new java.util.HashMap<>();
+        Map<String, Double> categoryTotals = new HashMap<>();
         for (TransactionWithUser tWithU : transactions) {
             Transaction t = tWithU.getTransaction();
             if ("EXPENSE".equals(t.getType())) {
-                categoryTotals.put(t.getTitle(), categoryTotals.getOrDefault(t.getTitle(), 0.0) + t.getAmountDouble());
+                String name = ValueHelper.toStr(t.getName());
+                categoryTotals.put(name, categoryTotals.getOrDefault(name, 0.0) + t.getAmount());
             }
         }
 
@@ -105,7 +108,7 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         double total = 0;
         for (double val : categoryTotals.values()) total += val;
 
-        for (java.util.Map.Entry<String, Double> entry : categoryTotals.entrySet()) {
+        for (Map.Entry<String, Double> entry : categoryTotals.entrySet()) {
             float percentage = total > 0 ? (float) (entry.getValue() / total * 100) : 0;
             entries.add(new PieEntry(entry.getValue().floatValue(), entry.getKey()));
             
@@ -151,7 +154,7 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         pieChart.setDrawEntryLabels(false);
 
         pieChart.setDrawHoleEnabled(true);
-        pieChart.setHoleColor(android.R.color.transparent);
+        pieChart.setHoleColor(ContextCompat.getColor(requireContext(), android.R.color.transparent));
         pieChart.setTransparentCircleRadius(61f);
         pieChart.setHoleRadius(58f);
 
@@ -164,8 +167,8 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
                 ExpenseCategory.DIFF_CALLBACK,
                 (inflater, parent) -> ItemLegendExpenseBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
-                    binding.viewColor.setBackgroundTintList(android.content.res.ColorStateList.valueOf(item.getColor()));
-                    binding.tvCategory.setText(item.getName());
+                    binding.viewColor.setBackgroundTintList(ColorStateList.valueOf(item.getColor()));
+                    binding.tvCategory.setText(ValueHelper.toStr(item.getName()));
                     
                     String amountFormatted = Utils.formatCurrency(item.getAmount());
                     String text = String.format(Locale.getDefault(), "%s (%.0f%%)", amountFormatted, item.getPercentage());

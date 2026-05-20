@@ -2,17 +2,16 @@ package com.upreyvan.carti.ui.home;
 
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
-
+import com.bumptech.glide.Glide;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemTransactionBinding;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
-
+import com.upreyvan.carti.util.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,14 +54,13 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
         binding.shimmerView.getRoot().setVisibility(View.GONE);
         binding.layoutContent.setVisibility(View.VISIBLE);
 
-        // Display user info
-        binding.tvTitle.setText(itemWithUser.getUserName() != null ? itemWithUser.getUserName() : item.getTitle());
-        binding.tvDescription.setText(item.getDescription());
-        binding.tvTimestamp.setText(com.upreyvan.carti.util.Utils.getTimeAgo(item.getTimestampMillis()));
+        binding.tvTitle.setText(itemWithUser.getUserName() != null ? itemWithUser.getUserName() : item.getName());
+        binding.tvDescription.setText(item.getNote());
+        binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
 
         binding.divider.setVisibility(position == getItemCount() - 1 ? View.GONE : View.VISIBLE);
         
-        String formattedAmount = com.upreyvan.carti.util.Utils.formatCurrency(item.getAmount());
+        String formattedAmount = Utils.formatCurrency(item.getAmount());
         if ("EXPENSE".equalsIgnoreCase(item.getType())) {
             binding.tvAmount.setText(binding.getRoot().getContext().getString(R.string.format_expense, formattedAmount));
             binding.tvAmount.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_red));
@@ -73,7 +71,7 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
 
         binding.ivIcon.setColorFilter(null);
         if (itemWithUser.getUserAvatarUrl() != null && !itemWithUser.getUserAvatarUrl().isEmpty()) {
-            com.bumptech.glide.Glide.with(binding.getRoot().getContext())
+            Glide.with(binding.getRoot().getContext())
                     .load(itemWithUser.getUserAvatarUrl())
                     .placeholder(R.drawable.ai_holder)
                     .error(R.drawable.ai_holder)

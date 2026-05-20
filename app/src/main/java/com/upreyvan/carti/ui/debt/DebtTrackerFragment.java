@@ -17,25 +17,24 @@ import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.repository.DebtRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
 import com.upreyvan.carti.databinding.ItemDebtBinding;
-import com.upreyvan.carti.model.Debt;
+import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.Utils;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding> {
 
-    private GenericAdapter<Debt, ItemDebtBinding> adapter;
-    private List<Debt> allDebts = new ArrayList<>();
+    private GenericAdapter<TransactionWithUser, ItemDebtBinding> adapter;
+    private List<TransactionWithUser> allDebts = new ArrayList<>();
     private ApiHelper apiHelper;
-    private DebtRepository debtRepository;
+    private TransactionRepository transactionRepository;
     private boolean isLoading = true;
 
     @Override
@@ -47,7 +46,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         apiHelper = new ApiHelper(requireContext());
-        debtRepository = new DebtRepository(requireContext());
+        transactionRepository = new TransactionRepository(requireContext());
         
         setupDynamicPadding();
         setupToolbar();
@@ -67,14 +66,14 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     }
 
     private void observeDebts() {
-        debtRepository.getAllDebts().observe(getViewLifecycleOwner(), debts -> {
+        transactionRepository.getTransactionsByType("DEBT").observe(getViewLifecycleOwner(), debts -> {
             if (debts != null) {
                 isLoading = false;
                 allDebts = debts;
                 filterDebts(getBinding().tabLayout.getSelectedTabPosition());
             }
         });
-        debtRepository.syncDebtsIfNeeded();
+        transactionRepository.syncTransactionsIfNeeded();
     }
 
     private void setupToolbar() {
@@ -102,7 +101,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     }
 
     private void filterDebts(int position) {
-        List<Debt> filteredList = new ArrayList<>();
+        List<TransactionWithUser> filteredList = new ArrayList<>();
         String emptyTitle;
         String emptyDesc;
 
@@ -113,19 +112,15 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
                 emptyDesc = getString(R.string.no_debts_desc);
                 break;
             case 1: // My Debts (Unpaid)
-                for (Debt debt : allDebts) {
-                    if (!debt.isPaid()) filteredList.add(debt);
+                for (TransactionWithUser debt : allDebts) {
+                    if (!debt.getTransaction().isPaid()) filteredList.add(debt);
                 }
                 emptyTitle = getString(R.string.no_my_debts_title);
                 emptyDesc = getString(R.string.no_my_debts_desc);
                 break;
-            case 2: // Owed to Me (Placeholders for now if type missing)
-                emptyTitle = getString(R.string.no_owed_me_title);
-                emptyDesc = getString(R.string.no_owed_me_desc);
-                break;
-            case 3: // Settled (Paid)
-                for (Debt debt : allDebts) {
-                    if (debt.isPaid()) filteredList.add(debt);
+            case 2: // Settled (Paid)
+                for (TransactionWithUser debt : allDebts) {
+                    if (debt.getTransaction().isPaid()) filteredList.add(debt);
                 }
                 emptyTitle = getString(R.string.no_settled_debts_title);
                 emptyDesc = getString(R.string.no_settled_debts_desc);
@@ -151,9 +146,10 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
 
     private void setupRecyclerView() {
         adapter = new GenericAdapter<>(
-                Debt.DIFF_CALLBACK,
+                TransactionWithUser.DIFF_CALLBACK,
                 (inflater, parent) -> ItemDebtBinding.inflate(inflater, parent, false),
-                (binding, debt) -> {
+                (binding, itemWithUser) -> {
+                    Transaction debt = itemWithUser.getTransaction();
                     View shimmer = binding.getRoot().findViewById(R.id.shimmerView);
                     if (isLoading) {
                         if (shimmer != null) shimmer.setVisibility(View.VISIBLE);
@@ -162,11 +158,11 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
                         if (shimmer != null) shimmer.setVisibility(View.GONE);
                         binding.layoutContent.setVisibility(View.VISIBLE);
                         
-                        binding.tvPersonName.setText(debt.getTitle());
-                        binding.tvDescription.setText(debt.getDescription());
+                        binding.tvPersonName.setText(debt.getName());
+                        binding.tvDescription.setText(debt.getNote());
                         binding.tvAmount.setText(Utils.formatCurrency(debt.getAmount()));
-                        binding.tvDate.setText(debt.getTimestamp());
-                        binding.ivAvatar.setImageResource(debt.getAvatarResId());
+                        binding.tvDate.setText(Utils.getTimeAgo(debt.getTimestampMillis()));
+                        binding.ivAvatar.setImageResource(debt.getIconRes() != 0 ? debt.getIconRes() : R.drawable.ic_person);
                         
                         binding.tvStatus.setText(debt.isPaid() ? R.string.status_paid : R.string.status_not_paid);
                         binding.tvStatus.setTextColor(ContextCompat.getColor(requireContext(), 
@@ -180,22 +176,23 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         adapter.setOnItemClickListener(this::showDebtDetail);
     }
 
-    private void showDebtDetail(Debt debt) {
+    private void showDebtDetail(TransactionWithUser itemWithUser) {
+        Transaction debt = itemWithUser.getTransaction();
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
         DialogDebtDetailBinding dialogBinding = DialogDebtDetailBinding.inflate(getLayoutInflater());
         dialog.setContentView(dialogBinding.getRoot());
 
-        dialogBinding.tvDetailName.setText(debt.getTitle());
-        dialogBinding.tvDetailDesc.setText(debt.getDescription());
+        dialogBinding.tvDetailName.setText(debt.getName());
+        dialogBinding.tvDetailDesc.setText(debt.getNote());
         dialogBinding.tvDetailAmount.setText(Utils.formatCurrency(debt.getAmount()));
-        dialogBinding.tvDetailDate.setText(debt.getTimestamp());
-        dialogBinding.tvNotes.setText(debt.getNotes());
-        dialogBinding.ivDetailAvatar.setImageResource(debt.getAvatarResId());
+        dialogBinding.tvDetailDate.setText(Utils.getTimeAgo(debt.getTimestampMillis()));
+        dialogBinding.tvNotes.setText(debt.getNote());
+        dialogBinding.ivDetailAvatar.setImageResource(debt.getIconRes() != 0 ? debt.getIconRes() : R.drawable.ic_person);
 
         if (debt.isPaid()) {
             dialogBinding.btnMarkAsPaid.setEnabled(false);
             dialogBinding.btnMarkAsPaid.setText(R.string.status_paid);
-            dialogBinding.tvPaymentHistory.setText("Paid on " + debt.getTimestamp());
+            dialogBinding.tvPaymentHistory.setText(getString(R.string.label_paid_on, Utils.getTimeAgo(debt.getTimestampMillis())));
         } else {
             dialogBinding.btnMarkAsPaid.setOnClickListener(v -> {
                 dialogBinding.btnMarkAsPaid.setEnabled(false);
@@ -203,8 +200,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
                     @Override
                     public void onSuccess(Map<String, Object> result) {
                         requireActivity().runOnUiThread(() -> {
-                            debt.setPaid(true);
-                            adapter.notifyDataSetChanged();
+                            transactionRepository.refreshTransactions();
                             dialog.dismiss();
                         });
                     }
@@ -226,8 +222,8 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (debtRepository != null) {
-            debtRepository.onDestroy();
+        if (transactionRepository != null) {
+            transactionRepository.onDestroy();
         }
     }
 }

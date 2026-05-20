@@ -5,23 +5,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentAddFundsBinding;
-import com.upreyvan.carti.model.Goal;
-
+import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.util.ValueHelper;
 import java.text.NumberFormat;
 import java.util.Locale;
 
 public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
 
-    private Goal goal;
+    private Transaction goal;
 
-    public static AddFundsFragment newInstance(Goal goal) {
+    public static AddFundsFragment newInstance(Transaction goal) {
         AddFundsFragment fragment = new AddFundsFragment();
         fragment.goal = goal;
         return fragment;
@@ -55,9 +54,9 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "PH"));
         currencyFormat.setMaximumFractionDigits(0);
 
-        getBinding().tvGoalName.setText(goal.getTitle());
-        getBinding().tvCurrentProgress.setText(getString(R.string.label_current_amount,
-                currencyFormat.format(goal.getCurrentAmount()),
+        getBinding().tvGoalName.setText(ValueHelper.toStr(goal.getName()));
+        getBinding().tvCurrentProgress.setText(getString(R.string.goal_progress_amount_format,
+                currencyFormat.format(goal.getAmount()),
                 currencyFormat.format(goal.getTargetAmount())));
 
         int progress = goal.getProgress();
@@ -67,8 +66,8 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
 
     private void setupListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
-            String amount = getBinding().etAmount.getText().toString();
-            if (amount.isEmpty()) {
+            String amountStr = getBinding().etAmount.getText().toString();
+            if (amountStr.isEmpty()) {
                 Toast.makeText(requireContext(), "Please enter an amount", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -82,11 +81,10 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
     }
 
     private void selectSource(int index) {
-        // Simple visual toggle logic could go here
     }
 
     private void setupDynamicPadding() {
-        com.upreyvan.carti.util.Utils.applySystemBarInsets(
+        Utils.applySystemBarInsets(
                 getBinding().layoutToolbar.getRoot(),
                 getBinding().btnSave,
                 0.3f,

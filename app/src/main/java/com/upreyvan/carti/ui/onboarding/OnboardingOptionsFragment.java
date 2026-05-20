@@ -52,7 +52,7 @@ public class OnboardingOptionsFragment extends BaseFragment<FragmentOnboardingOp
 
     private void checkIfAlreadyInFamily() {
         setLoading(true);
-        AppwriteManager.getInstance(requireContext()).getUser(new AppwriteManager.AppwriteCallback<>() {
+        AppwriteManager.getInstance(requireContext()).getCurrentUser(new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(User<Map<String, Object>> result) {
                 if (isAdded()) {

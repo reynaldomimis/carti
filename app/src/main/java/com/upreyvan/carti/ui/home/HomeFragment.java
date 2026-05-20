@@ -16,14 +16,10 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.CategoryManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.repository.DebtRepository;
-import com.upreyvan.carti.data.repository.GoalRepository;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.data.repository.IncomeRepository;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
 import com.upreyvan.carti.databinding.ItemAiSuggestionCardBinding;
@@ -43,6 +39,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import io.appwrite.models.Document;
+import io.appwrite.models.DocumentList;
+import com.upreyvan.carti.ui.bills.BillsActivity;
+import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.DialogHelper;
+import androidx.core.graphics.ColorUtils;
 
 import io.appwrite.models.RealtimeSubscription;
 import io.appwrite.services.Realtime;
@@ -56,12 +59,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private RealtimeSubscription userSubscription;
     private RealtimeSubscription familySubscription;
     private RealtimeSubscription transactionSubscription;
-    private RealtimeSubscription goalSubscription;
-    private RealtimeSubscription debtSubscription;
     private RealtimeSubscription memberSubscription;
     private TransactionRepository transactionRepository;
-    private GoalRepository goalRepository;
-    private DebtRepository debtRepository;
     private MemberRepository memberRepository;
 
     @Override
@@ -73,8 +72,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = new TransactionRepository(requireContext());
-        goalRepository = new GoalRepository(requireContext());
-        debtRepository = new DebtRepository(requireContext());
         memberRepository = new MemberRepository(requireContext());
         
         setupDynamicPadding(getBinding().layoutHeader, getBinding().home, 0.3f);
@@ -196,14 +193,13 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private void initRealtime() {
         PreferenceManager pref = new PreferenceManager(requireContext());
-        ApiHelper apiHelper = new ApiHelper(requireContext());
         Realtime realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
         
         String familyId = pref.getFamilyId();
         
         String userChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_USERS + ".documents";
         userSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
-            checkNotifications(apiHelper, pref);
+            checkNotifications(new ApiHelper(requireContext()), pref);
             return null;
         });
 
@@ -211,22 +207,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         transactionSubscription = realtime.subscribe(new String[]{transactionChannel}, event -> {
             if (transactionRepository != null) {
                 transactionRepository.refreshTransactions();
-            }
-            return null;
-        });
-
-        String goalChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_GOALS + ".documents";
-        goalSubscription = realtime.subscribe(new String[]{goalChannel}, event -> {
-            if (goalRepository != null) {
-                goalRepository.refreshGoals();
-            }
-            return null;
-        });
-
-        String debtChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_DEBTS + ".documents";
-        debtSubscription = realtime.subscribe(new String[]{debtChannel}, event -> {
-            if (debtRepository != null) {
-                debtRepository.refreshDebts();
             }
             return null;
         });
@@ -267,7 +247,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
         apiHelper.getFamilySummary(new AppwriteManager.AppwriteCallback<>() {
             @Override
-            public void onSuccess(io.appwrite.models.Document<Map<String, Object>> result) {
+            public void onSuccess(Document<Map<String, Object>> result) {
                 if (!isAdded()) return;
                 Map<String, Object> data = result.getData();
                 double balance = Utils.getDouble(data.get("balance"));
@@ -292,7 +272,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private void checkNotifications(ApiHelper apiHelper, PreferenceManager pref) {
         boolean isAdmin = false;
         String role = pref.getUserRole();
-        for (String r : com.upreyvan.carti.util.Constants.Roles.PARENTS) {
+        for (String r : Constants.Roles.PARENTS) {
             if (r.equalsIgnoreCase(role)) {
                 isAdmin = true;
                 break;
@@ -302,12 +282,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         if (isAdmin) {
             apiHelper.getMembers(new AppwriteManager.AppwriteCallback<>() {
                 @Override
-                public void onSuccess(io.appwrite.models.DocumentList<Map<String, Object>> result) {
+                public void onSuccess(DocumentList<Map<String, Object>> result) {
                     if (!isAdded()) return;
                     boolean hasPending = false;
-                    for (io.appwrite.models.Document<Map<String, Object>> doc : result.getDocuments()) {
+                    for (Document<Map<String, Object>> doc : result.getDocuments()) {
                         Object status = doc.getData().get("status");
-                        if (java.util.Objects.equals("pending", status)) {
+                        if (Objects.equals("pending", status)) {
                             hasPending = true;
                             break;
                         }
@@ -328,8 +308,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private void setupDashboard() {
         PreferenceManager pref = new PreferenceManager(requireContext());
-        IncomeRepository incomeRepository = new IncomeRepository(requireContext());
-        SalaryManager salaryManager = SalaryManager.getInstance(requireContext());
         
         double totalBalance = pref.getTotalIncome() - pref.getTotalExpense();
         double totalIncome = pref.getTotalIncome();
@@ -349,13 +327,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
         String currentMonth = new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(new java.util.Date());
         getBinding().layoutDashboard.tvOverviewDate.setText(currentMonth);
-        
-        incomeRepository.refreshIncomes();
     }
 
     private void setupRecurringBills() {
         getBinding().layoutDashboard.btnViewAllBills.setOnClickListener(v -> 
-            startActivity(new Intent(requireContext(), com.upreyvan.carti.ui.bills.BillsActivity.class))
+            startActivity(new Intent(requireContext(), BillsActivity.class))
         );
     }
 
@@ -364,13 +340,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         if (userSubscription != null) userSubscription.close();
         if (familySubscription != null) familySubscription.close();
         if (transactionSubscription != null) transactionSubscription.close();
-        if (goalSubscription != null) goalSubscription.close();
-        if (debtSubscription != null) debtSubscription.close();
         if (memberSubscription != null) memberSubscription.close();
         
         if (transactionRepository != null) transactionRepository.onDestroy();
-        if (goalRepository != null) goalRepository.onDestroy();
-        if (debtRepository != null) debtRepository.onDestroy();
         if (memberRepository != null) memberRepository.onDestroy();
         
         super.onDestroyView();
@@ -449,17 +421,17 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                     binding.ivIcon.setImageResource(item.getIconRes());
 
                     int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
-                    int bgColor = androidx.core.graphics.ColorUtils.setAlphaComponent(iconColor, 25);
+                    int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
                     binding.cvIconBg.setCardBackgroundColor(bgColor);
                     binding.ivIcon.setColorFilter(iconColor);
                 }
         );
         
         quickLogAdapter.setOnItemClickListener(item -> {
-            if (java.util.Objects.equals(item.getTitle(), othersLabel)) {
+            if (Objects.equals(item.getTitle(), othersLabel)) {
                 isExpanded = true;
                 setupQuickLog();
-            } else if (java.util.Objects.equals(item.getTitle(), seeLessLabel)) {
+            } else if (Objects.equals(item.getTitle(), seeLessLabel)) {
                 isExpanded = false;
                 setupQuickLog();
             } else {
@@ -468,7 +440,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         });
 
         quickLogAdapter.setOnItemLongClickListener(item -> {
-            if (!java.util.Objects.equals(item.getTitle(), othersLabel) && !java.util.Objects.equals(item.getTitle(), seeLessLabel)) {
+            if (!Objects.equals(item.getTitle(), othersLabel) && !Objects.equals(item.getTitle(), seeLessLabel)) {
                 showDeleteCategoryDialog(item);
                 return true;
             }
@@ -480,10 +452,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void showDeleteCategoryDialog(QuickLogItem item) {
-        com.upreyvan.carti.util.DialogHelper.showConfirmation(
+        DialogHelper.showConfirmation(
                 requireContext(),
                 getString(R.string.add_options_category),
-                getString(R.string.btn_delete_account) + " \"" + item.getTitle() + "\'?",
+                getString(R.string.btn_delete_account) + " \"" + item.getTitle() + "?\"",
                 getString(R.string.btn_delete_account),
                 () -> deleteCategory(item.getTitle())
         );
@@ -503,14 +475,14 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             categories.remove(toRemove);
             manager.updateCategories(categories);
             setupQuickLog();
-            showToast(categoryName + " deleted", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+            showToast(categoryName + " deleted", ToastHelper.Status.SUCCESS);
         }
     }
 
     private void showQuickLogDialog(QuickLogItem item) {
         QuickLogDialog dialog = QuickLogDialog.newInstance(item);
         dialog.setListener((loggedItem, amount) -> showToast(getString(R.string.msg_logged_success, String.format(Locale.getDefault(), "%.2f", amount), loggedItem.getTitle()), 
-                com.upreyvan.carti.util.ToastHelper.Status.SUCCESS));
+                ToastHelper.Status.SUCCESS));
         dialog.show(getChildFragmentManager(), "QUICK_LOG_DIALOG");
     }
 

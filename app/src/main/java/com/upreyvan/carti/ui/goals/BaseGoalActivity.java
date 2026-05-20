@@ -10,7 +10,7 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.repository.GoalRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.databinding.ActivityAddGoalBinding;
 import com.upreyvan.carti.databinding.ItemMemberAvatarSelectBinding;
@@ -27,7 +27,7 @@ import java.util.Set;
 
 public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
 
-    protected GoalRepository goalRepository;
+    protected TransactionRepository transactionRepository;
     protected MemberRepository memberRepository;
     protected GenericAdapter<Member, ItemMemberAvatarSelectBinding> memberAdapter;
     protected final Set<String> selectedMemberIds = new HashSet<>();
@@ -40,7 +40,7 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        goalRepository = new GoalRepository(this);
+        transactionRepository = new TransactionRepository(this);
         memberRepository = new MemberRepository(this);
         
         setupDynamicPadding();
@@ -136,7 +136,7 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (goalRepository != null) goalRepository.onDestroy();
+        if (transactionRepository != null) transactionRepository.onDestroy();
         if (memberRepository != null) memberRepository.onDestroy();
     }
 }

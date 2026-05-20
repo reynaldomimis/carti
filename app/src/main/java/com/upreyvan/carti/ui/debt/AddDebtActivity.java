@@ -7,27 +7,30 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-
 import androidx.core.content.ContextCompat;
-
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.data.local.CategoryManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.repository.DebtRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.databinding.ActivityAddDebtBinding;
 import com.upreyvan.carti.databinding.ItemQuickLogBinding;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.QuickLogItem;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.ui.goals.MemberPickerBottomSheet;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
-
+import com.upreyvan.carti.util.ToastHelper.Status;
+import com.upreyvan.carti.util.ValueHelper;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,7 +41,7 @@ import java.util.Map;
 
 public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
-    private DebtRepository debtRepository;
+    private TransactionRepository transactionRepository;
     private String selectedMemberId;
     private String selectedMemberName;
     private String selectedCategoryName = "";
@@ -53,7 +56,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        debtRepository = new DebtRepository(this);
+        transactionRepository = new TransactionRepository(this);
         setupDynamicPadding();
         setupToolbar();
         setupTabs();
@@ -93,10 +96,6 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.length() > 0 && !s.toString().startsWith("₱")) {
-                    // This might be tricky with numeric input type, 
-                    // usually better to just show currency in a separate TextView
-                }
             }
         });
     }
@@ -168,8 +167,8 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         getBinding().btnPlus5000.setOnClickListener(v -> addAmount(5000));
 
         getBinding().btnReminder.setOnClickListener(v -> {
-            com.google.android.material.timepicker.MaterialTimePicker timePicker = new com.google.android.material.timepicker.MaterialTimePicker.Builder()
-                    .setTimeFormat(com.google.android.material.timepicker.TimeFormat.CLOCK_12H)
+            MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
+                    .setTimeFormat(TimeFormat.CLOCK_12H)
                     .setHour(12)
                     .setMinute(0)
                     .setTitleText(R.string.label_remind_me)
@@ -218,7 +217,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         if (!checkNetwork()) return;
 
         if (selectedMemberName == null || Validator.isEmpty(getBinding().etAmount)) {
-            showToast(getString(R.string.msg_fill_name_amount), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+            showToast(getString(R.string.msg_fill_name_amount), Status.WARNING);
             return;
         }
 
@@ -230,32 +229,43 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
         showLoading(true, getString(R.string.msg_saving_debt));
 
-        new ApiHelper(this).addDebt(selectedMemberName, amount, selectedType, selectedCategoryName, dueDateStr, reminder, notes, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        new ApiHelper(this).addDebt(selectedMemberName, amount, selectedType, selectedCategoryName, dueDateStr, reminder, notes, new AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
-                String id = String.valueOf(result.get("$id"));
-                debtRepository.saveLocally(
-                        new com.upreyvan.carti.model.Debt(
-                                id, 
-                                new PreferenceManager(AddDebtActivity.this).getFamilyId(), 
-                                selectedMemberName, 
-                                purpose, 
-                                Utils.getCurrentTimestamp(), 
-                                amount, 
-                                false, 
-                                R.drawable.ic_person, 
-                                notes,
-                                selectedType,
-                                selectedCategoryName,
-                                dueDateStr,
-                                reminder
-                        )
+                String id = ValueHelper.toStr(result.get("$id"));
+                PreferenceManager pref = new PreferenceManager(AddDebtActivity.this);
+                
+                List<String> membersList = new ArrayList<>();
+                if (selectedMemberId != null) membersList.add(selectedMemberId);
+                
+                Transaction transaction = new Transaction(
+                        id,
+                        "DEBT",
+                        amount,
+                        selectedMemberName,
+                        purpose + (notes.isEmpty() ? "" : ": " + notes),
+                        selectedCategoryName,
+                        pref.getFamilyId(),
+                        pref.getUserId(),
+                        Utils.getCurrentTimestamp(),
+                        Utils.getCurrentTimestamp(),
+                        0.0,
+                        dueDateStr,
+                        "active",
+                        false,
+                        membersList,
+                        reminder,
+                        R.drawable.ic_person,
+                        0,
+                        0,
+                        System.currentTimeMillis()
                 );
+                transactionRepository.saveLocally(transaction);
 
                 showLoading(false);
-                showToast(getString(R.string.msg_debt_saved), com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+                showToast(getString(R.string.msg_debt_saved), Status.SUCCESS);
                 
-                Intent intent = new Intent(AddDebtActivity.this, com.upreyvan.carti.MainActivity.class);
+                Intent intent = new Intent(AddDebtActivity.this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 finish();
@@ -264,7 +274,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
             @Override
             public void onError(Throwable error) {
                 showLoading(false);
-                showToast(getString(R.string.err_generic, error.getMessage()), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                showToast(getString(R.string.err_generic, error.getMessage()), Status.ERROR);
             }
         });
     }
