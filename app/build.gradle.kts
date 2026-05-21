@@ -75,6 +75,10 @@ dependencies {
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
 
+    // Navigation
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
+
     // Room
     implementation(libs.room.runtime)
     annotationProcessor(libs.room.compiler)

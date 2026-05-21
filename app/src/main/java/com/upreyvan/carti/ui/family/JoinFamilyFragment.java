@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,11 +16,10 @@ import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentJoinFamilyBinding;
+import com.upreyvan.carti.ui.onboarding.OnboardingStatusFragment;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.Map;
-
-import com.upreyvan.carti.util.Validator;
 
 public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> {
 
@@ -34,78 +32,76 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupDynamicPadding();
-        displayUserRole();
-        setupListeners();
-    }
 
-    private void displayUserRole() {
         PreferenceManager pref = new PreferenceManager(requireContext());
         getBinding().tvUserRole.setText(pref.getUserRole());
+
+        getBinding().btnJoin.setOnClickListener(v -> {
+            String inviteCode = getBinding().etFamilyId.getText().toString().trim();
+            if (inviteCode.isEmpty()) {
+                showToast(R.string.error_empty_invite_code, com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                return;
+            }
+            joinFamily(inviteCode);
+        });
+    }
+
+    private void joinFamily(String inviteCode) {
+        setLoading(true);
+        new ApiHelper(requireContext()).joinFamily(inviteCode, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                if (isAdded()) {
+                    setLoading(false);
+                    PreferenceManager pref = new PreferenceManager(requireContext());
+                    
+                    String familyId = null;
+                    if (result.containsKey("familyId")) {
+                        familyId = String.valueOf(result.get("familyId"));
+                    } else if (result.containsKey("data") && result.get("data") instanceof Map) {
+                        Map<?, ?> data = (Map<?, ?>) result.get("data");
+                        if (data.containsKey("familyId")) {
+                            familyId = String.valueOf(data.get("familyId"));
+                        }
+                    }
+
+                    if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
+                        saveAndFinish(pref, familyId);
+                    } else {
+                        // Navigate to OnboardingStatusFragment in "Waiting" mode
+                        navigateTo(OnboardingStatusFragment.newInstanceForWaiting());
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (isAdded()) {
+                    setLoading(false);
+                    showToast(error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                }
+            }
+        });
+    }
+
+    private void saveAndFinish(PreferenceManager pref, String familyId) {
+        pref.setFamilyId(familyId);
+        pref.setOnboardingFinished(true);
+        
+        showToast(R.string.msg_join_success, com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+        Intent intent = new Intent(requireActivity(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        requireActivity().finish();
     }
 
     private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().joinFamilyHeader,
-                getBinding().joinFamilyRoot,
-                0f,
-                0
-        );
-    }
-
-    private void setupListeners() {
-        getBinding().btnJoin.setOnClickListener(v -> {
-            if (!checkNetwork()) return;
-
-            if (Validator.isEmpty(getBinding().etFamilyId)) {
-                getBinding().tilFamilyId.setError(getString(R.string.err_invalid_family_id));
-                return;
-            }
-
-            String inviteCode = getBinding().etFamilyId.getText().toString().trim();
-            setLoading(true);
-            new ApiHelper(requireContext()).joinFamily(inviteCode, new AppwriteManager.AppwriteCallback<>() {
-                @Override
-                public void onSuccess(Map<String, Object> result) {
-                    if (isAdded()) {
-                        setLoading(false);
-                        PreferenceManager pref = new PreferenceManager(requireContext());
-                        pref.setOnboardingFinished(true);
-                        
-                        String familyId = String.valueOf(result.get("familyId"));
-                        if (familyId != null && !"null".equals(familyId)) {
-                            pref.setFamilyId(familyId);
-                        }
-
-                        showToast(R.string.msg_join_success, com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
-                        Intent intent = new Intent(requireActivity(), MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        requireActivity().finish();
-                    }
-                }
-
-                @Override
-                public void onError(Throwable error) {
-                    if (isAdded()) {
-                        setLoading(false);
-                        String message = error.getMessage();
-                        if ("ALREADY_IN_A_FAMILY".equals(message)) {
-                            showToast(R.string.err_already_in_family, com.upreyvan.carti.util.ToastHelper.Status.WARNING);
-                            startActivity(new Intent(requireActivity(), MainActivity.class));
-                            requireActivity().finish();
-                        } else if ("INVALID_INVITE_CODE".equals(message)) {
-                            getBinding().tilFamilyId.setError(getString(R.string.err_invalid_invite_code));
-                        } else {
-                            showToast(getString(R.string.err_error_prefix, message), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
-                        }
-                    }
-                }
-            });
-        });
+        Utils.applySystemBarInsets(getBinding().joinFamilyRoot, null, 0f, 0);
     }
 
     private void setLoading(boolean isLoading) {
         getBinding().btnJoin.setEnabled(!isLoading);
+        getBinding().etFamilyId.setEnabled(!isLoading);
         getBinding().btnJoin.setText(isLoading ? getString(R.string.btn_joining) : getString(R.string.btn_join_family));
     }
 }

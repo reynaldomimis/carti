@@ -112,7 +112,7 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
         getBinding().rvFamilyContribution.setAdapter(memberAdapter);
     }
 
-    private void setupBaseListeners() {
+    protected void setupBaseListeners() {
         getBinding().btnAddMember.setOnClickListener(v -> {
             MemberPickerBottomSheet bottomSheet = MemberPickerBottomSheet.newInstance(selectedMemberIds);
             bottomSheet.setListener(members -> {
@@ -126,6 +126,19 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
         });
 
         getBinding().btnCreateGoal.setOnClickListener(v -> onSaveClicked());
+    }
+
+    protected void preSelectAllMembers() {
+        memberRepository.getMembers().observe(this, members -> {
+            if (members != null && !members.isEmpty() && selectedMemberIds.isEmpty()) {
+                selectedMemberIds.clear();
+                for (Member m : members) {
+                    selectedMemberIds.add(m.getId());
+                }
+                memberAdapter.submitList(new ArrayList<>(members));
+            }
+        });
+        memberRepository.syncMembersIfNeeded();
     }
 
     protected abstract void onSaveClicked();

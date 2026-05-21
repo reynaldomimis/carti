@@ -61,20 +61,28 @@ public class TransactionRepository {
         if (realtimeSubscription != null) return;
         
         String[] channels = { getChannel(Constants.Appwrite.COL_TRANSACTIONS) };
+        Log.d(TAG, "Initializing Realtime for Transactions...");
 
         realtimeSubscription = realtimeHelper.subscribe(channels, event -> {
             Map<String, Object> payload = RealtimeHelper.getPayload(event);
             if (payload == null) return;
 
+            Log.d(TAG, "Realtime Event received: " + event.getEvents());
+
             if (RealtimeHelper.isDeleteEvent(event)) {
                 String id = String.valueOf(payload.get("$id"));
-                executor.execute(() -> transactionDao.deleteById(id));
+                executor.execute(() -> {
+                    transactionDao.deleteById(id);
+                    Log.d(TAG, "Realtime: Deleted " + id);
+                });
             } else {
                 executor.execute(() -> {
-                    Transaction transaction = mapPayloadToTransaction(payload, pref.getFamilyId());
+                    // Refresh familyId from prefs to be sure
+                    String currentFamilyId = pref.getFamilyId();
+                    Transaction transaction = mapPayloadToTransaction(payload, currentFamilyId);
                     if (transaction != null) {
                         transactionDao.insert(transaction);
-                        Log.d(TAG, "Realtime sync: Saved transaction " + transaction.getId());
+                        Log.d(TAG, "Realtime: Saved/Updated " + transaction.getId() + " [" + transaction.getType() + "]");
                     }
                 });
             }
@@ -278,6 +286,7 @@ public class TransactionRepository {
         data.put("description", transaction.getDescription());
         data.put("type", transaction.getType());
         data.put("note", transaction.getNote());
+        data.put("members", transaction.getMembers());
 
         if ("INCOME".equals(transaction.getType())) {
             data.put("source", transaction.getTitle());
@@ -287,7 +296,18 @@ public class TransactionRepository {
             data.put("personName", transaction.getTitle());
         }
 
-        apiHelper.callAction(Constants.Actions.ADD_TRANSACTION, data, callback);
+        apiHelper.callAction(Constants.Actions.ADD_TRANSACTION, data, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                refreshTransactions();
+                if (callback != null) callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
+        });
     }
 
     public void updateTransaction(Transaction transaction, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
@@ -322,7 +342,9 @@ public class TransactionRepository {
             double amount = Utils.getDouble(data.get("amount"));
             double targetAmount = Utils.getDouble(data.get("targetAmount"));
             String categoryName = data.containsKey("category") ? String.valueOf(data.get("category")) : type;
-            String userId = String.valueOf(data.get("userId"));
+            
+            // Fix: Get userId from payload or fallback to current user if it's a local creation
+            String userId = data.containsKey("userId") ? String.valueOf(data.get("userId")) : pref.getUserId();
             
             String title = data.containsKey("title") ? String.valueOf(data.get("title")) : 
                          (data.containsKey("username") ? String.valueOf(data.get("username")) : 

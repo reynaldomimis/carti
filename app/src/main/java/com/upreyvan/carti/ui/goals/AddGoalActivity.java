@@ -18,7 +18,7 @@ public class AddGoalActivity extends BaseGoalActivity {
     protected void initForm() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.add_goal_title);
         getBinding().btnCreateGoal.setText(R.string.btn_create_goal);
-        memberAdapter.submitList(new ArrayList<>());
+        preSelectAllMembers();
     }
 
     @Override

@@ -62,6 +62,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private boolean isExpanded = false;
     private RealtimeSubscription userSubscription;
     private RealtimeSubscription familySubscription;
+    private RealtimeSubscription transSubscription;
     private TransactionRepository transactionRepository;
     private MemberRepository memberRepository;
 
@@ -307,6 +308,19 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             return null;
         });
 
+        // Dedicated Transaction Listener for instant UI updates
+        String transChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_TRANSACTIONS + ".documents";
+        transSubscription = realtime.subscribe(new String[]{transChannel}, event -> {
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    if (transactionRepository != null) {
+                        transactionRepository.refreshTransactions();
+                    }
+                });
+            }
+            return null;
+        });
+
         if (familyId != null && !familyId.isEmpty()) {
             String familyChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_FAMILIES + ".documents." + familyId;
             familySubscription = realtime.subscribe(new String[]{familyChannel}, event -> {
@@ -322,6 +336,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                         requireActivity().runOnUiThread(() -> {
                             setupHeaders();
                             setupDashboard();
+                            // Force sync transactions when family summary changes
+                            if (transactionRepository != null) {
+                                transactionRepository.syncTransactionsIfNeeded();
+                            }
                         });
                     }
                 }
@@ -457,6 +475,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     public void onDestroyView() {
         if (userSubscription != null) userSubscription.close();
         if (familySubscription != null) familySubscription.close();
+        if (transSubscription != null) transSubscription.close();
         
         if (transactionRepository != null) transactionRepository.onDestroy();
         if (memberRepository != null) memberRepository.onDestroy();

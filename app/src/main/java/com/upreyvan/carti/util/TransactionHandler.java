@@ -3,6 +3,7 @@ package com.upreyvan.carti.util;
 import android.content.Context;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.Transaction;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ public class TransactionHandler {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 callback.onLoading(false);
+                TransactionRepository.getInstance(appContext).refreshTransactions();
                 callback.onSuccess(null); 
             }
 
@@ -45,6 +47,7 @@ public class TransactionHandler {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 callback.onLoading(false);
+                TransactionRepository.getInstance(appContext).refreshTransactions();
                 callback.onSuccess(null);
             }
 
@@ -64,6 +67,7 @@ public class TransactionHandler {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 callback.onLoading(false);
+                TransactionRepository.getInstance(appContext).refreshTransactions();
                 callback.onSuccess(null);
             }
 

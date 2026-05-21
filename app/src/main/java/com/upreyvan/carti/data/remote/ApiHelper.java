@@ -214,6 +214,8 @@ public class ApiHelper {
 
     public void getGoalsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+        
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
         queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
@@ -262,6 +264,8 @@ public class ApiHelper {
 
     public void getDebtsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
         queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
@@ -300,6 +304,8 @@ public class ApiHelper {
 
     public void getIncomes(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
         queries.add(Query.Companion.orderDesc("$createdAt"));
@@ -310,6 +316,10 @@ public class ApiHelper {
 
     public void getFamilySummary(AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
+        if (familyId == null || familyId.isEmpty() || "null".equals(familyId)) {
+            callback.onError(new Exception("No family ID found"));
+            return;
+        }
         appwriteManager.getDocument(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_FAMILIES, familyId, callback);
     }
 

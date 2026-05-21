@@ -266,6 +266,7 @@
     <string name="step_2">Step 2: Share it</string>
     <string name="step_3">Step 3: Join</string>
     <string name="validity_format">Valid until: %s</string>
+    <string name="error_empty_invite_code">Please enter an invite code</string>
     <string name="err_invalid_family_id">Invalid Family ID</string>
     <string name="msg_join_success">Joined family successfully!</string>
     <string name="err_already_in_family">You are already in a family</string>

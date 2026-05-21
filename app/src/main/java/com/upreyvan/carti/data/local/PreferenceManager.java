@@ -32,7 +32,8 @@ public class PreferenceManager {
     }
 
     public String getFamilyId() {
-        return sharedPreferences.getString(Constants.Keys.KEY_FAMILY_ID, "");
+        String id = sharedPreferences.getString(Constants.Keys.KEY_FAMILY_ID, "");
+        return (id == null || id.equals("null")) ? "" : id;
     }
 
     public void setFamilyId(String familyId) {
