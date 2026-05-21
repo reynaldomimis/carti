@@ -9,10 +9,10 @@
     <string name="budget_amount">%s</string>
     <string name="total_budget">/ %s</string>
     <string name="spent_remaining_days">Income Mode: %1$d days to payday | %2$d%% spent </string>
-    <string name="quick_log_title">Quick Expense Log</string>
-    <string name="quick_log_subtitle">Just select, 1 tap!</string>
+    <string name="quick_log_title">Quick Log</string>
+    <string name="quick_log_subtitle">Tap once to record</string>
     <string name="customize">Customize</string>
-    <string name="recent_transactions">Recent Transactions</string>
+    <string name="recent_activity">Recents Activity</string>
     <string name="see_all">See all</string>
     <string name="see_less">See Less</string>
 
@@ -50,7 +50,7 @@
     <string name="hint_ask_me">Ask me anything...</string>
     <string name="ai_insight_title">AI Insight</string>
     <string name="ai_insight_message">You\'re doing great! 🙌\nYou saved 18% more this month.\nTry increasing your emergency fund.</string>
-    <string name="btn_view_report">View Report</string>
+    <string name="btn_view_report">View Insight</string>
     <string name="btn_ask_ai">Ask AI</string>
     <string name="ai_suggestions_title">AI Suggestions</string>
     <string name="label_view">View</string>
@@ -198,6 +198,8 @@
     <string name="btn_save_debt">Save Debt</string>
     <string name="status_paid">Paid</string>
     <string name="status_not_paid">Pending</string>
+    <string name="no_expenses_title">No expenses yet</string>
+    <string name="no_expenses_desc">Start tracking your expenses to see them here.</string>
     <string name="overall_debt_percentage_format">Overall: %d%%</string>
     <string name="debt_tracker_title">Debt Tracker</string>
     <string name="btn_add_debt">Add Debt</string>
@@ -210,10 +212,15 @@
     <!-- Expenses -->
     <string name="add_expense_title">New Expense</string>
     <string name="label_what_bought">What did you buy?</string>
+    <string name="hint_what_bought">e.g. Starbucks Coffee</string>
     <string name="hint_select_category">Select Category</string>
     <string name="label_payment_source">Payment Source</string>
     <string name="hint_select_source">Select Source</string>
+    <string name="label_balance_allocation">Balance Allocation</string>
+    <string name="label_budget_plan_allocation">Budget Plan Allocation</string>
     <string name="btn_save_expense">Save Expense</string>
+    <string name="category_expense_label">%s Expense Allocation</string>
+    <string name="quick_log_expense_title">Quick Expense</string>
 
     <!-- Income Mode -->
     <string name="income_mode_title">Income Mode</string>
@@ -631,4 +638,24 @@
     <string name="btn_plus_500">+500</string>
     <string name="btn_plus_1000">+1,000</string>
     <string name="btn_plus_5000">+5,000</string>
+    <string name="title_set_budget_plan">Set Budget Plan Now</string>
+    <string name="desc_set_budget_plan">Plan your monthly spending to stay on track.</string>
+    <string name="btn_set_now">Set Now</string>
+    <string name="next_payday_title">Upcoming Payday</string>
+    <string name="next_payday_for">Payday for %s</string>
+    <string name="days_to_go">%d days to go</string>
+    <string name="payday_date_format">%s</string>
+    <string name="no_transactions_yet">No expenses recorded yet.</string>
+    <string name="hint_search_transactions">Search transactions...</string>
+    <string name="quick_actions_title">Shortcuts</string>
+    <string name="action_add_expense">Add Expense</string>
+    <string name="action_family_chat">Family Chat</string>
+    <string name="action_add_debt">Add Utang</string>
+    <string name="action_goal_ipon">Goal / Ipon</string>
+    <string name="action_add_income">Add Income</string>
+    <string name="action_manage_goals">Family Goals</string>
+    <string name="label_transport">Transport</string>
+    <string name="label_grocery">Grocery</string>
+    <string name="label_health">Health</string>
+    <string name="label_home">Home</string>
 </resources>

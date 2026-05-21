@@ -135,13 +135,14 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_help, R.string.menu_help, getString(R.string.menu_help_sub), new HelpFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_info_details, R.string.menu_about, getString(R.string.menu_about_sub), new AboutFragment(), false));
 
-        adapter = new ProfileMenuAdapter(menuItems, item -> {
+        adapter = new ProfileMenuAdapter(item -> {
             if (item.getTitleResId() == R.string.menu_invite) {
                 startActivity(new Intent(this, InviteFamilyActivity.class));
             } else if (item.getFragment() != null) {
                 navigateTo(item.getFragment());
             }
         });
+        adapter.submitList(menuItems);
 
         getBinding().rvProfileMenu.setLayoutManager(new LinearLayoutManager(this));
         getBinding().rvProfileMenu.setAdapter(adapter);
@@ -176,7 +177,7 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
         );
 
         menuItems.set(0, newItem);
-        runOnUiThread(() -> adapter.notifyItemChanged(0));
+        runOnUiThread(() -> adapter.submitList(new ArrayList<>(menuItems)));
     }
 
     private void navigateTo(androidx.fragment.app.Fragment fragment) {

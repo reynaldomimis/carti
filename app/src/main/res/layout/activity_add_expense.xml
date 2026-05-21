@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white">
@@ -25,92 +24,26 @@
             android:paddingTop="@dimen/spacing_large"
             android:paddingBottom="@dimen/scroll_bottom_padding">
 
-            <TextView
-                style="@style/CartiHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_amount_peso"
-                android:textSize="@dimen/text_size_body" />
+            <include
+                android:id="@+id/layout_form"
+                layout="@layout/layout_expense_form_content" />
 
-            <com.google.android.material.card.MaterialCardView
-                style="@style/CartiCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small">
-
-                <EditText
-                    android:id="@+id/et_amount"
-                    style="@style/CartiEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/input_height_standard"
-                    android:fontFamily="@font/plus_jakarta_sans_bold"
-                    android:hint="@string/hint_amount"
-                    android:inputType="numberDecimal"
-                    android:textSize="@dimen/text_size_header"
-                    android:importantForAutofill="no" />
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                style="@style/CartiHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:text="@string/label_what_bought"
-                android:textSize="@dimen/text_size_body" />
-
+            <!-- Category Selector for general Add Expense (not Quick Log) -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:id="@+id/tilCategory"
+                style="@style/CartiInputLayout.Dropdown"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                app:boxBackgroundColor="@color/white"
-                app:boxCornerRadiusBottomEnd="@dimen/radius_medium"
-                app:boxCornerRadiusBottomStart="@dimen/radius_medium"
-                app:boxCornerRadiusTopEnd="@dimen/radius_medium"
-                app:boxCornerRadiusTopStart="@dimen/radius_medium"
-                app:boxStrokeColor="@color/border_subtle"
-                app:hintEnabled="false">
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:hint="@string/label_category">
 
-                <AutoCompleteTextView
-                    android:id="@+id/et_category"
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/actvCategory"
                     style="@style/CartiEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/hint_select_category"
-                    android:inputType="none" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <TextView
-                style="@style/CartiHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:text="@string/label_payment_source"
-                android:textSize="@dimen/text_size_body" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                app:boxBackgroundColor="@color/white"
-                app:boxCornerRadiusBottomEnd="@dimen/radius_medium"
-                app:boxCornerRadiusBottomStart="@dimen/radius_medium"
-                app:boxCornerRadiusTopEnd="@dimen/radius_medium"
-                app:boxCornerRadiusTopStart="@dimen/radius_medium"
-                app:boxStrokeColor="@color/border_subtle"
-                app:hintEnabled="false">
-
-                <AutoCompleteTextView
-                    android:id="@+id/et_source"
-                    style="@style/CartiEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_select_source"
-                    android:inputType="none" />
-
+                    android:inputType="none"
+                    android:paddingVertical="@dimen/spacing_medium" />
             </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>

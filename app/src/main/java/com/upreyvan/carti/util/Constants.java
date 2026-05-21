@@ -34,16 +34,16 @@ public class Constants {
         public static final String DELETE_ACCOUNT = "delete_account";
         public static final String ADD_TRANSACTION = "create_transaction";
         public static final String UPDATE_TRANSACTION = "update_transaction";
-        public static final String ADD_INCOME = "add_income";
-        public static final String UPDATE_INCOME = "update_income";
-        public static final String DELETE_INCOME = "delete_income";
-        public static final String ADD_GOAL = "add_goal";
-        public static final String ADD_DEBT = "add_debt";
-        public static final String UPDATE_GOAL = "update_goal_amount";
-        public static final String UPDATE_DEBT = "update_debt_amount";
-        public static final String MARK_DEBT_PAID = "mark_debt_paid";
-        public static final String DELETE_GOAL = "delete_goal";
-        public static final String DELETE_DEBT = "delete_debt";
+        public static final String ADD_INCOME = "create_transaction";
+        public static final String UPDATE_INCOME = "update_transaction";
+        public static final String DELETE_INCOME = "delete_transaction";
+        public static final String ADD_GOAL = "create_transaction";
+        public static final String ADD_DEBT = "create_transaction";
+        public static final String UPDATE_GOAL = "update_transaction";
+        public static final String UPDATE_DEBT = "update_transaction";
+        public static final String MARK_DEBT_PAID = "update_transaction";
+        public static final String DELETE_GOAL = "delete_transaction";
+        public static final String DELETE_DEBT = "delete_transaction";
         public static final String UPDATE_FAMILY_TOTALS = "update_family_totals";
         public static final String GET_MEMBERS = "get_members";
     }
@@ -79,6 +79,7 @@ public class Constants {
         public static final String KEY_LAST_SYNC_TIME = "last_sync_time";
         public static final String KEY_LAST_GOAL_SYNC_TIME = "last_goal_sync_time";
         public static final String KEY_LAST_DEBT_SYNC_TIME = "last_debt_sync_time";
+        public static final String KEY_BUDGET_PLAN_DISMISSED_MONTH = "budget_plan_dismissed_month";
 
         // Manager Keys
         public static final String KEY_TRANSACTIONS = "transactions_list";

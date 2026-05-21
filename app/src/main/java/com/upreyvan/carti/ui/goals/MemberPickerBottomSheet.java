@@ -87,28 +87,27 @@ public class MemberPickerBottomSheet extends BaseBottomSheetFragment<LayoutBotto
 
             boolean allSelected = true;
             for (Member m : members) {
-                if (!selectedIds.contains(m.getId())) {
+                if (!m.isSelected()) {
                     allSelected = false;
                     break;
                 }
             }
 
-            if (allSelected) {
-                selectedIds.clear();
-            } else {
-                for (Member m : members) {
-                    selectedIds.add(m.getId());
-                }
+            List<Member> newList = new ArrayList<>();
+            for (Member m : members) {
+                Member newMember = cloneMember(m);
+                newMember.setSelected(!allSelected);
+                newList.add(newMember);
             }
-            adapter.notifyDataSetChanged();
-            updateSelectAllText();
+            adapter.submitList(newList);
+            updateSelectAllText(newList);
         });
 
         getBinding().btnConfirmSelection.setOnClickListener(v -> {
             if (listener != null) {
                 List<Member> selectedMembers = new ArrayList<>();
                 for (Member m : adapter.getCurrentList()) {
-                    if (selectedIds.contains(m.getId())) {
+                    if (m.isSelected()) {
                         selectedMembers.add(m);
                     }
                 }
@@ -118,18 +117,28 @@ public class MemberPickerBottomSheet extends BaseBottomSheetFragment<LayoutBotto
         });
     }
 
+    private Member cloneMember(Member m) {
+        Member newMember = new Member(m.getId(), m.getFamilyId(), m.getTitle(), m.getDescription(), m.getStatus(), m.getAvatarRes(), m.getAmount());
+        newMember.setAvatarUrl(m.getAvatarUrl());
+        newMember.setSelected(m.isSelected());
+        return newMember;
+    }
+
     private void updateSelectAllText() {
+        updateSelectAllText(adapter.getCurrentList());
+    }
+
+    private void updateSelectAllText(List<Member> members) {
         if (!isMultiSelect) return;
 
-        List<Member> members = adapter.getCurrentList();
-        if (members.isEmpty()) {
+        if (members == null || members.isEmpty()) {
             getBinding().btnSelectAll.setText("Select All");
             return;
         }
 
         boolean allSelected = true;
         for (Member m : members) {
-            if (!selectedIds.contains(m.getId())) {
+            if (!m.isSelected()) {
                 allSelected = false;
                 break;
             }
@@ -145,7 +154,7 @@ public class MemberPickerBottomSheet extends BaseBottomSheetFragment<LayoutBotto
                     binding.ivAvatar.setImageResource(item.getAvatarRes());
                     binding.tvName.setText(item.getTitle());
                     
-                    boolean isSelected = selectedIds.contains(item.getId());
+                    boolean isSelected = item.isSelected();
 
                     // Visual indicators for selection
                     binding.vOverlay.setVisibility(isSelected ? View.GONE : View.VISIBLE);
@@ -158,22 +167,21 @@ public class MemberPickerBottomSheet extends BaseBottomSheetFragment<LayoutBotto
         );
 
         adapter.setOnItemClickListener(item -> {
-            if (isMultiSelect) {
-                if (selectedIds.contains(item.getId())) {
-                    selectedIds.remove(item.getId());
-                } else {
-                    selectedIds.add(item.getId());
+            List<Member> currentList = adapter.getCurrentList();
+            List<Member> newList = new ArrayList<>();
+
+            for (Member m : currentList) {
+                Member newMember = cloneMember(m);
+                if (m.getId().equals(item.getId())) {
+                    newMember.setSelected(!m.isSelected());
+                } else if (!isMultiSelect) {
+                    newMember.setSelected(false);
                 }
-            } else {
-                String id = item.getId();
-                boolean wasSelected = selectedIds.contains(id);
-                selectedIds.clear();
-                if (!wasSelected) {
-                    selectedIds.add(id);
-                }
+                newList.add(newMember);
             }
-            adapter.notifyDataSetChanged();
-            updateSelectAllText();
+            
+            adapter.submitList(newList);
+            updateSelectAllText(newList);
         });
 
         getBinding().rvMembers.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
@@ -183,8 +191,14 @@ public class MemberPickerBottomSheet extends BaseBottomSheetFragment<LayoutBotto
     private void loadMembers() {
         memberRepository.getMembers().observe(getViewLifecycleOwner(), members -> {
             if (members != null) {
-                adapter.submitList(members);
-                updateSelectAllText();
+                List<Member> initialList = new ArrayList<>();
+                for (Member m : members) {
+                    Member cloned = cloneMember(m);
+                    cloned.setSelected(selectedIds.contains(m.getId()));
+                    initialList.add(cloned);
+                }
+                adapter.submitList(initialList);
+                updateSelectAllText(initialList);
             }
         });
         memberRepository.syncMembersIfNeeded();

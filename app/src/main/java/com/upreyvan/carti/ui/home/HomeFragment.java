@@ -23,6 +23,7 @@ import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
 import com.upreyvan.carti.databinding.ItemAiSuggestionCardBinding;
+import com.upreyvan.carti.databinding.ItemQuickActionBinding;
 import com.upreyvan.carti.databinding.ItemQuickLogBinding;
 import com.upreyvan.carti.model.AiSuggestion;
 import com.upreyvan.carti.model.Category;
@@ -36,13 +37,15 @@ import androidx.recyclerview.widget.DiffUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
-import com.upreyvan.carti.ui.bills.BillsActivity;
+import com.upreyvan.carti.data.local.SalaryManager;
+import com.upreyvan.carti.ui.budget.AddBudgetPlanActivity;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.DialogHelper;
 import androidx.core.graphics.ColorUtils;
@@ -53,12 +56,12 @@ import io.appwrite.services.Realtime;
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private GenericAdapter<QuickLogItem, ItemQuickLogBinding> quickLogAdapter;
+    private GenericAdapter<QuickLogItem, ItemQuickActionBinding> quickActionsAdapter;
     private GenericAdapter<AiSuggestion, ItemAiSuggestionCardBinding> aiSuggestionsAdapter;
     private TransactionAdapter transactionAdapter;
     private boolean isExpanded = false;
     private RealtimeSubscription userSubscription;
     private RealtimeSubscription familySubscription;
-    private RealtimeSubscription transactionSubscription;
     private RealtimeSubscription memberSubscription;
     private TransactionRepository transactionRepository;
     private MemberRepository memberRepository;
@@ -71,11 +74,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        transactionRepository = new TransactionRepository(requireContext());
+        transactionRepository = TransactionRepository.getInstance(requireContext());
         memberRepository = new MemberRepository(requireContext());
         
         setupDynamicPadding(getBinding().layoutHeader, getBinding().home, 0.3f);
         setupHeaders();
+        setupQuickActions();
         setupQuickLog();
         setupRecentTransactions();
         setupNotifications();
@@ -83,7 +87,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         
         observeTransactions();
         setupDashboard();
-        setupRecurringBills();
+        setupPaydayCard();
+        setupBudgetPlanPrompt();
         setupAiInsightCard();
         setupAiSuggestions();
         fetchFamilyData();
@@ -125,9 +130,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 }
         );
 
-        getBinding().layoutAiSuggestions.rvAiSuggestions.setAdapter(aiSuggestionsAdapter);
-        getBinding().layoutAiSuggestions.btnCloseContainer.setOnClickListener(v -> 
-            getBinding().layoutAiSuggestions.getRoot().setVisibility(View.GONE)
+        getBinding().viewAiSuggestions.rvAiSuggestions.setAdapter(aiSuggestionsAdapter);
+        getBinding().viewAiSuggestions.btnCloseContainer.setOnClickListener(v -> 
+            getBinding().viewAiSuggestions.getRoot().setVisibility(View.GONE)
         );
 
         loadAiSuggestions();
@@ -167,13 +172,13 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void setupAiInsightCard() {
-        getBinding().layoutAiInsight.btnAskAi.setOnClickListener(v -> {
+        getBinding().viewAiInsight.btnAskAi.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).navigateTo(6);
             }
         });
 
-        getBinding().layoutAiInsight.btnViewReport.setOnClickListener(v -> {
+        getBinding().viewAiInsight.btnViewReport.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).navigateTo(2);
             }
@@ -185,6 +190,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             if (transactionAdapter != null) {
                 transactionAdapter.setLoading(false);
                 transactionAdapter.submitList(transactions);
+                
+                boolean isEmpty = transactions == null || transactions.isEmpty();
+                getBinding().rvTransactions.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                getBinding().tvNoTransactions.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                getBinding().viewHeaderRecent.btnSectionAction.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
             }
         });
 
@@ -200,14 +210,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         String userChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_USERS + ".documents";
         userSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
             checkNotifications(new ApiHelper(requireContext()), pref);
-            return null;
-        });
-
-        String transactionChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_TRANSACTIONS + ".documents";
-        transactionSubscription = realtime.subscribe(new String[]{transactionChannel}, event -> {
-            if (transactionRepository != null) {
-                transactionRepository.refreshTransactions();
-            }
             return null;
         });
 
@@ -314,32 +316,63 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         double totalExpense = pref.getTotalExpense();
         
         // Monthly Income
-        getBinding().layoutDashboard.tvIncomeAmount.setText(getString(R.string.format_currency_no_decimal, totalIncome));
-        getBinding().layoutDashboard.tvIncomeTrend.setText("8.5%");
+        getBinding().viewHomeDashboard.tvIncomeAmount.setText(getString(R.string.format_currency_no_decimal, totalIncome));
+        getBinding().viewHomeDashboard.tvIncomeTrend.setText("8.5%");
         
         // Monthly Expenses
-        getBinding().layoutDashboard.tvExpensesAmount.setText(getString(R.string.format_currency_no_decimal, totalExpense));
-        getBinding().layoutDashboard.tvExpensesTrend.setText("3.2%");
+        getBinding().viewHomeDashboard.tvExpensesAmount.setText(getString(R.string.format_currency_no_decimal, totalExpense));
+        getBinding().viewHomeDashboard.tvExpensesTrend.setText("3.2%");
         
         // Total Savings
-        getBinding().layoutDashboard.tvTotalSavings.setText(getString(R.string.format_currency, totalBalance));
-        getBinding().layoutDashboard.tvSavingsTrend.setText("12.5%");
+        getBinding().viewHomeDashboard.tvTotalSavings.setText(getString(R.string.format_currency, totalBalance));
+        getBinding().viewHomeDashboard.tvSavingsTrend.setText("12.5%");
 
         String currentMonth = new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(new java.util.Date());
-        getBinding().layoutDashboard.tvOverviewDate.setText(currentMonth);
+        getBinding().viewHomeDashboard.tvOverviewDate.setText(currentMonth);
     }
 
-    private void setupRecurringBills() {
-        getBinding().layoutDashboard.btnViewAllBills.setOnClickListener(v -> 
-            startActivity(new Intent(requireContext(), BillsActivity.class))
-        );
+    private void setupPaydayCard() {
+        SalaryManager salaryManager = SalaryManager.getInstance(requireContext());
+        PreferenceManager pref = new PreferenceManager(requireContext());
+
+        int daysLeft = salaryManager.getDaysUntilNextPayday();
+         Calendar nextPayday = salaryManager.getNextPayday();
+
+        String name = pref.getUserName();
+        getBinding().viewHomeDashboard.tvDaysRemaining.setText(getString(R.string.days_to_go, daysLeft));
+        getBinding().viewHomeDashboard.tvPaydayFor.setText(getString(R.string.next_payday_for, name));
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
+        String dateStr = sdf.format(nextPayday.getTime());
+        getBinding().viewHomeDashboard.tvPaydayDate.setText(dateStr);
+    }
+
+    private void setupBudgetPlanPrompt() {
+        PreferenceManager pref = new PreferenceManager(requireContext());
+        String currentMonth = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new java.util.Date());
+        String dismissedMonth = pref.getBudgetPlanDismissedMonth();
+
+        if (currentMonth.equals(dismissedMonth)) {
+            getBinding().viewHomeDashboard.cardBudgetPlan.setVisibility(View.GONE);
+            return;
+        }
+
+        getBinding().viewHomeDashboard.cardBudgetPlan.setVisibility(View.VISIBLE);
+        
+        getBinding().viewHomeDashboard.btnCloseBudgetPlan.setOnClickListener(v -> {
+            getBinding().viewHomeDashboard.cardBudgetPlan.setVisibility(View.GONE);
+            pref.setBudgetPlanDismissedMonth(currentMonth);
+        });
+
+        getBinding().viewHomeDashboard.btnSetNow.setOnClickListener(v -> {
+            startActivity(new Intent(requireContext(), AddBudgetPlanActivity.class));
+        });
     }
 
     @Override
     public void onDestroyView() {
         if (userSubscription != null) userSubscription.close();
         if (familySubscription != null) familySubscription.close();
-        if (transactionSubscription != null) transactionSubscription.close();
         if (memberSubscription != null) memberSubscription.close();
         
         if (transactionRepository != null) transactionRepository.onDestroy();
@@ -353,6 +386,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         super.onResume();
         setupQuickLog();
         setupDashboard();
+        setupPaydayCard();
+        setupBudgetPlanPrompt();
     }
 
     private void updateNotificationBadge(boolean hasNotifications) {
@@ -380,16 +415,25 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         double net = income - expense;
         getBinding().tvGreetingSub.setText(getString(R.string.family_label, String.format(Locale.getDefault(), "₱%,.0f", net)));
 
-        getBinding().headerQuickLog.tvSectionTitle.setText(R.string.quick_log_title);
-        getBinding().headerQuickLog.tvSectionSubTitle.setVisibility(View.VISIBLE);
-        getBinding().headerQuickLog.tvSectionSubTitle.setText(R.string.quick_log_subtitle);
-        
-        getBinding().headerQuickLog.btnSectionAction.setText(R.string.customize);
-        getBinding().headerQuickLog.btnSectionAction.setOnClickListener(v -> startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class)));
+        getBinding().viewHeaderQuickActions.tvSectionTitle.setText(R.string.quick_actions_title);
+        getBinding().viewHeaderQuickActions.btnSectionAction.setVisibility(View.GONE);
 
-        getBinding().headerRecent.tvSectionTitle.setText(R.string.recent_transactions);
-        getBinding().headerRecent.btnSectionAction.setText(R.string.see_all);
-        getBinding().headerRecent.btnSectionAction.setOnClickListener(v -> navigateTo(new AllTransactionsFragment()));
+        getBinding().viewHeaderQuickLog.tvSectionTitle.setText(R.string.quick_log_title);
+        getBinding().viewHeaderQuickLog.tvSectionSubTitle.setVisibility(View.VISIBLE);
+        getBinding().viewHeaderQuickLog.tvSectionSubTitle.setText(R.string.quick_log_subtitle);
+        
+        getBinding().viewHeaderQuickLog.getRoot().setOnClickListener(v -> {
+            com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment fragment = 
+                    com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment.newInstance(null);
+            fragment.show(getChildFragmentManager(), "QUICK_LOG_BOTTOM_SHEET");
+        });
+
+        getBinding().viewHeaderQuickLog.btnSectionAction.setText(R.string.customize);
+        getBinding().viewHeaderQuickLog.btnSectionAction.setOnClickListener(v -> startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class)));
+
+        getBinding().viewHeaderRecent.tvSectionTitle.setText(R.string.recent_activity);
+        getBinding().viewHeaderRecent.btnSectionAction.setText(R.string.see_all);
+        getBinding().viewHeaderRecent.btnSectionAction.setOnClickListener(v -> navigateTo(AllTransactionsFragment.newInstance(null)));
     }
 
     private void setupQuickLog() {
@@ -451,6 +495,49 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().rvQuickLog.setAdapter(quickLogAdapter);
     }
 
+    private void setupQuickActions() {
+        List<QuickLogItem> actions = new ArrayList<>();
+        // 1. Full Add Expense
+        actions.add(new QuickLogItem(getString(R.string.add_options_expense), R.drawable.ic_add, R.color.status_red_tonal, R.color.status_red));
+        // 2. Add Income (New)
+        actions.add(new QuickLogItem(getString(R.string.action_add_income), R.drawable.ic_arrow_up, R.color.dash_green_alpha, R.color.dash_green));
+        // 3. Family Chat
+        actions.add(new QuickLogItem(getString(R.string.action_family_chat), R.drawable.ic_sync, R.color.log_fare, R.color.carti_primary_blue));
+        // 4. Manage Goals
+        actions.add(new QuickLogItem(getString(R.string.action_manage_goals), R.drawable.ic_trophy, R.color.mint_green_alpha, R.color.mint_green));
+
+        quickActionsAdapter = new GenericAdapter<>(
+                QuickLogItem.DIFF_CALLBACK,
+                (inflater, parent) -> ItemQuickActionBinding.inflate(inflater, parent, false),
+                (binding, item) -> {
+                    binding.tvLabel.setText(item.getTitle());
+                    binding.ivIcon.setImageResource(item.getIconRes());
+                    int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
+                    int bgColor = ContextCompat.getColor(requireContext(), item.getBgColor());
+                    binding.cvIconBg.setCardBackgroundColor(bgColor);
+                    binding.ivIcon.setColorFilter(iconColor);
+                }
+        );
+
+        quickActionsAdapter.setOnItemClickListener(item -> {
+            if (item.getTitle().equals(getString(R.string.add_options_expense))) {
+                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(7);
+            } else if (item.getTitle().equals(getString(R.string.action_add_income))) {
+                // Navigate to Income Mode or show Add Income BS
+                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(2); 
+            } else if (item.getTitle().equals(getString(R.string.action_family_chat))) {
+                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(5);
+            } else if (item.getTitle().equals(getString(R.string.action_manage_goals))) {
+                // Navigate to Goals
+                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(6);
+            }
+        });
+
+        getBinding().rvQuickActions.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        getBinding().rvQuickActions.setAdapter(quickActionsAdapter);
+        quickActionsAdapter.submitList(actions);
+    }
+
     private void showDeleteCategoryDialog(QuickLogItem item) {
         DialogHelper.showConfirmation(
                 requireContext(),
@@ -480,10 +567,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void showQuickLogDialog(QuickLogItem item) {
-        QuickLogDialog dialog = QuickLogDialog.newInstance(item);
-        dialog.setListener((loggedItem, amount) -> showToast(getString(R.string.msg_logged_success, String.format(Locale.getDefault(), "%.2f", amount), loggedItem.getTitle()), 
-                ToastHelper.Status.SUCCESS));
-        dialog.show(getChildFragmentManager(), "QUICK_LOG_DIALOG");
+        com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment fragment = 
+                com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment.newInstance(item.getTitle());
+        fragment.show(getChildFragmentManager(), "QUICK_LOG_BOTTOM_SHEET");
     }
 
     private void setupRecentTransactions() {

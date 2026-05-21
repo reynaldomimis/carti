@@ -1,0 +1,214 @@
+package com.upreyvan.carti.ui.common;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.upreyvan.carti.R;
+import com.upreyvan.carti.base.BaseBottomSheetFragment;
+import com.upreyvan.carti.data.repository.MemberRepository;
+import com.upreyvan.carti.databinding.FragmentQuickLogsBottomSheetBinding;
+import com.upreyvan.carti.model.Member;
+import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.util.BudgetAllocationHelper;
+import com.upreyvan.carti.util.StringHelper;
+import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.TransactionHandler;
+import com.upreyvan.carti.util.Validator;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<FragmentQuickLogsBottomSheetBinding> {
+
+    public enum LogType {
+        EXPENSE, DEBT, GOAL
+    }
+
+    private String selectedCategory;
+    private LogType logType = LogType.EXPENSE;
+    private MemberRepository memberRepository;
+
+    public static QuickLogsBottomSheetFragment newInstance(String categoryName) {
+        QuickLogsBottomSheetFragment fragment = new QuickLogsBottomSheetFragment();
+        Bundle args = new Bundle();
+        args.putString("category_name", categoryName);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        memberRepository = new MemberRepository(requireContext());
+        if (getArguments() != null) {
+            selectedCategory = getArguments().getString("category_name");
+            determineLogType();
+        }
+    }
+
+    private void determineLogType() {
+        if (selectedCategory == null) {
+            logType = LogType.EXPENSE;
+            return;
+        }
+
+        String lowerCat = selectedCategory.toLowerCase();
+        if (lowerCat.contains("debt") || lowerCat.contains("utang")) {
+            logType = LogType.DEBT;
+        } else if (lowerCat.contains("goal") || lowerCat.contains("savings") || lowerCat.contains("ipon")) {
+            logType = LogType.GOAL;
+        } else {
+            logType = LogType.EXPENSE;
+        }
+    }
+
+    @Override
+    protected FragmentQuickLogsBottomSheetBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        return FragmentQuickLogsBottomSheetBinding.inflate(inflater, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setupDropdowns();
+        setupClickListeners();
+        updateUI();
+    }
+
+    private void updateUI() {
+        String title = getString(R.string.quick_log_title);
+        String btnText = getString(R.string.btn_save_expense);
+        
+        switch (logType) {
+            case DEBT:
+                title = "Quick Debt Log";
+                btnText = "Save Debt";
+                getBinding().layoutForm.tilDescription.setHint("Reason / Note");
+                getBinding().layoutForm.tilSource.setHint("Who borrowed?");
+                getBinding().layoutForm.cvBalanceInfo.setVisibility(View.GONE);
+                break;
+            case GOAL:
+                title = "Quick Goal Log";
+                btnText = "Add Savings";
+                getBinding().layoutForm.tilDescription.setHint("Note");
+                getBinding().layoutForm.tilSource.setVisibility(View.GONE);
+                getBinding().layoutForm.allocatedHeader.setText("Goal Progress");
+                break;
+            case EXPENSE:
+                title = getString(R.string.quick_log_title);
+                btnText = getString(R.string.btn_save_expense);
+                getBinding().layoutForm.tilDescription.setHint(getString(R.string.label_what_bought));
+                getBinding().layoutForm.tilSource.setHint(getString(R.string.label_payment_source));
+                
+                if (selectedCategory != null) {
+                    getBinding().layoutForm.allocatedHeader.setText(getString(R.string.category_expense_label, selectedCategory));
+                    BudgetAllocationHelper.getRemainingBalance(requireContext(), selectedCategory, balance -> {
+                        if (getBinding() != null && getBinding().layoutForm != null) {
+                            getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(balance));
+                        }
+                    });
+                } else {
+                    getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(0.0));
+                }
+                break;
+        }
+
+        getBinding().tvCategoryLabel.setText(title);
+        getBinding().btnSave.setText(btnText);
+    }
+
+    private void setupDropdowns() {
+        if (logType == LogType.EXPENSE) {
+            String[] sources = {"Cash", "GCash", "Maya", "Bank Transfer", "Credit Card"};
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_dropdown_item_1line, sources);
+            getBinding().layoutForm.actvSource.setAdapter(adapter);
+            getBinding().layoutForm.actvSource.setText(sources[0], false);
+        } else if (logType == LogType.DEBT) {
+            memberRepository.getMembers().observe(getViewLifecycleOwner(), members -> {
+                List<String> names = new ArrayList<>();
+                for (Member m : members) names.add(m.getTitle());
+                if (names.isEmpty()) names.add("Self");
+                
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, names);
+                getBinding().layoutForm.actvSource.setAdapter(adapter);
+                if (!names.isEmpty()) getBinding().layoutForm.actvSource.setText(names.get(0), false);
+            });
+        }
+    }
+
+    private void setupClickListeners() {
+        getBinding().btnSave.setOnClickListener(v -> {
+            if (!checkNetwork()) return;
+
+            if (selectedCategory == null) {
+                showToast("No category selected", ToastHelper.Status.WARNING);
+                return;
+            }
+
+            if (Validator.isEmpty(getBinding().layoutForm.etAmount)) {
+                showToast(getString(R.string.msg_fill_all_fields), ToastHelper.Status.WARNING);
+                return;
+            }
+
+            double amountVal = StringHelper.parseDouble(getBinding().layoutForm.etAmount.getText().toString());
+            String description = getBinding().layoutForm.etDescription.getText().toString();
+            String sourceOrPerson = getBinding().layoutForm.actvSource.getText().toString();
+
+            if (amountVal <= 0) {
+                showToast(getString(R.string.msg_invalid_amount), ToastHelper.Status.WARNING);
+                return;
+            }
+
+            handleSave(amountVal, description, sourceOrPerson);
+        });
+    }
+
+    private void handleSave(double amount, String description, String extra) {
+        TransactionHandler.TransactionCallback callback = new TransactionHandler.TransactionCallback() {
+            @Override
+            public void onLoading(boolean isLoading) {
+                String msg = "Saving...";
+                if (logType == LogType.EXPENSE) msg = getString(R.string.msg_saving_expense);
+                else if (logType == LogType.DEBT) msg = "Saving debt...";
+                else if (logType == LogType.GOAL) msg = "Saving goal...";
+                showLoading(isLoading, msg);
+            }
+
+            @Override
+            public void onSuccess(Transaction transaction) {
+                String successMsg = "Saved!";
+                if (logType == LogType.EXPENSE) successMsg = getString(R.string.msg_expense_saved);
+                else if (logType == LogType.DEBT) successMsg = "Debt saved!";
+                else if (logType == LogType.GOAL) successMsg = "Goal updated!";
+                
+                showToast(successMsg, ToastHelper.Status.SUCCESS);
+                dismiss();
+            }
+
+            @Override
+            public void onError(String message) {
+                showToast(getString(R.string.err_failed_save, message), ToastHelper.Status.ERROR);
+            }
+        };
+
+        switch (logType) {
+            case EXPENSE:
+                TransactionHandler.saveExpense(requireContext(), amount, selectedCategory, description, extra, callback);
+                break;
+            case DEBT:
+                TransactionHandler.saveDebt(requireContext(), amount, extra, description, callback);
+                break;
+            case GOAL:
+                TransactionHandler.saveGoal(requireContext(), amount, selectedCategory, callback);
+                break;
+        }
+    }
+}

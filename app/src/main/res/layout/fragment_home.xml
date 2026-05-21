@@ -112,16 +112,34 @@
             android:orientation="vertical">
 
             <include
-                android:id="@+id/layoutAiInsight"
-                layout="@layout/layout_ai_insight" />
+                android:id="@+id/viewAiInsight"
+                layout="@layout/view_ai_insight" />
 
             <include
-                android:id="@+id/layoutDashboard"
-                layout="@layout/layout_home_dashboard" />
+                android:id="@+id/viewHomeDashboard"
+                layout="@layout/view_home_dashboard" />
 
             <include
-                android:id="@+id/headerQuickLog"
-                layout="@layout/layout_section_header" />
+                android:id="@+id/viewHeaderQuickActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                layout="@layout/view_section_header" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvQuickActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:scrollbars="none"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_quick_action" />
+
+            <include
+                android:id="@+id/viewHeaderQuickLog"
+                layout="@layout/view_section_header" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvQuickLog"
@@ -135,14 +153,15 @@
                 tools:listitem="@layout/item_quick_log" />
 
             <include
-                android:id="@+id/layoutAiSuggestions"
-                layout="@layout/layout_ai_suggestions" />
+                android:id="@+id/viewAiSuggestions"
+                layout="@layout/view_ai_suggestions" />
 
             <include
-                android:id="@+id/headerRecent"
-                layout="@layout/layout_section_header" />
+                android:id="@+id/viewHeaderRecent"
+                layout="@layout/view_section_header" />
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardRecentTransactions"
                 style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -151,13 +170,31 @@
                 app:cardElevation="0dp"
                 app:contentPaddingBottom="12dp">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvTransactions"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    android:scrollbars="none"
-                    tools:listitem="@layout/item_transaction" />
+                    android:layout_height="wrap_content">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvTransactions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:scrollbars="none"
+                        tools:listitem="@layout/item_transaction" />
+
+                    <TextView
+                        android:id="@+id/tvNoTransactions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/spacing_large"
+                        android:fontFamily="@font/plus_jakarta_sans_medium"
+                        android:gravity="center"
+                        android:text="@string/no_transactions_yet"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="@dimen/text_size_body"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+                </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>

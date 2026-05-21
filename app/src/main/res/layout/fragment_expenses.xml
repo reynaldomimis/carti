@@ -25,6 +25,61 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <LinearLayout
+            android:id="@+id/layout_search_container"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:background="@drawable/bg_search_bar_outlined"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/spacing_medium"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnSearchToggle"
+            app:layout_constraintStart_toEndOf="@id/tvHeaderTitle"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible">
+
+            <EditText
+                android:id="@+id/et_search"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:fontFamily="@font/plus_jakarta_sans_medium"
+                android:hint="@string/hint_search_transactions"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingHorizontal="@dimen/spacing_xs"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"
+                android:textSize="@dimen/text_size_body_small" />
+
+            <ImageButton
+                android:id="@+id/btn_clear_search"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                app:tint="@color/text_tertiary" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnSearchToggle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/hint_search_transactions"
+            android:src="@android:drawable/ic_menu_search"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/text_primary" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -175,26 +230,74 @@
 
             <!-- Transactions Section -->
             <include
-                android:id="@+id/headerTransactions"
-                layout="@layout/layout_section_header"
+                android:id="@+id/viewHeaderTransactions"
+                layout="@layout/view_section_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_medium" />
 
-            <com.google.android.material.card.MaterialCardView
-                style="@style/CartiCard"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_small">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvTransactions"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTransactions"
+                    style="@style/CartiCard"
                     android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvTransactions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:scrollbars="none"
+                        tools:listitem="@layout/item_transaction" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:id="@+id/layoutEmptyState"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    android:scrollbars="none"
-                    tools:listitem="@layout/item_transaction" />
-            </com.google.android.material.card.MaterialCardView>
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/spacing_large"
+                    android:layout_marginBottom="@dimen/spacing_large"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:id="@+id/ivEmptyIcon"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:contentDescription="@string/no_expenses_title"
+                        android:src="@drawable/ic_calendar"
+                        app:tint="@color/surface_variant" />
+
+                    <TextView
+                        android:id="@+id/tvEmptyTitle"
+                        style="@style/CartiHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_medium"
+                        android:text="@string/no_expenses_title"
+                        android:textSize="@dimen/text_size_header" />
+
+                    <TextView
+                        android:id="@+id/tvEmptyDesc"
+                        style="@style/CartiSubHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:gravity="center"
+                        android:text="@string/no_expenses_desc"
+                        android:textSize="@dimen/text_size_body_small" />
+
+                </LinearLayout>
+
+            </FrameLayout>
 
         </LinearLayout>
 

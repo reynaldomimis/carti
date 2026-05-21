@@ -19,6 +19,7 @@ public class Member {
     private int avatarRes;
     private String avatarUrl;
     private double amount;
+    private boolean isSelected;
 
     public Member(@NonNull String id, String familyId, String title, String description, String status, int avatarRes, double amount) {
         this.id = id;
@@ -47,6 +48,8 @@ public class Member {
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
+    public boolean isSelected() { return isSelected; }
+    public void setSelected(boolean selected) { isSelected = selected; }
 
     @Override
     public boolean equals(Object o) {
@@ -55,6 +58,7 @@ public class Member {
         Member member = (Member) o;
         return Double.compare(member.amount, amount) == 0 &&
                 id.equals(member.id) &&
+                isSelected == member.isSelected &&
                 Objects.equals(title, member.title) &&
                 Objects.equals(description, member.description) &&
                 Objects.equals(status, member.status) &&
@@ -63,7 +67,7 @@ public class Member {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, status, amount, avatarUrl);
+        return Objects.hash(id, title, description, status, amount, avatarUrl, isSelected);
     }
 
     public static final DiffUtil.ItemCallback<Member> DIFF_CALLBACK = new DiffUtil.ItemCallback<Member>() {

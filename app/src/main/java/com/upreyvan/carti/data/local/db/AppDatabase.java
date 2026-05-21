@@ -13,7 +13,7 @@ import com.upreyvan.carti.model.Bill;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.model.Transaction;
 
-@Database(entities = {Member.class, Transaction.class, Bill.class}, version = 17, exportSchema = false)
+@Database(entities = {Member.class, Transaction.class, Bill.class}, version = 18, exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 

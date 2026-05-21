@@ -135,6 +135,14 @@ public class PreferenceManager {
         return sharedPreferences.getString(Constants.Keys.KEY_LAST_DEBT_SYNC_TIME, "1970-01-01T00:00:00.000Z");
     }
 
+    public void setBudgetPlanDismissedMonth(String month) {
+        sharedPreferences.edit().putString(Constants.Keys.KEY_BUDGET_PLAN_DISMISSED_MONTH, month).apply();
+    }
+
+    public String getBudgetPlanDismissedMonth() {
+        return sharedPreferences.getString(Constants.Keys.KEY_BUDGET_PLAN_DISMISSED_MONTH, "");
+    }
+
     public void clear() {
         sharedPreferences.edit().clear().apply();
     }

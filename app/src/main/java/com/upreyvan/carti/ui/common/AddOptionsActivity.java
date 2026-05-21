@@ -75,7 +75,7 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
         options.add(new AddOption(R.drawable.ic_chart, R.color.status_green, R.color.tonal_button_bg, R.string.add_options_budget_plan, R.string.add_options_budget_plan_desc, null));
         options.add(new AddOption(R.drawable.ic_add, R.color.icon_others, R.color.log_others, R.string.add_options_category, R.string.add_options_category_desc, null));
 
-        AddOptionsAdapter adapter = new AddOptionsAdapter(options, item -> {
+        AddOptionsAdapter adapter = new AddOptionsAdapter(item -> {
             Intent intent = null;
             if (item.getTitleResId() == R.string.add_options_expense) {
                 intent = new Intent(this, AddExpenseActivity.class);
@@ -97,6 +97,7 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
                 startActivity(intent);
             }
         });
+        adapter.submitList(options);
         
         getBinding().rvOptions.setLayoutManager(new GridLayoutManager(this, 2));
         getBinding().rvOptions.setAdapter(adapter);

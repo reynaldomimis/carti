@@ -2,34 +2,27 @@ package com.upreyvan.carti.ui.expenses;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import androidx.core.graphics.ColorUtils;
-import java.util.List;
-import java.util.Map;
-import java.util.Calendar;
-import com.upreyvan.carti.R;
+
 import com.upreyvan.carti.MainActivity;
+import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.databinding.ActivityAddExpenseBinding;
 import com.upreyvan.carti.data.local.CategoryManager;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.databinding.ActivityAddExpenseBinding;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.util.StringHelper;
+import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.TransactionHandler;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
-import com.upreyvan.carti.util.ToastHelper;
-import com.upreyvan.carti.util.ToastHelper.Status;
-import com.upreyvan.carti.util.ValueHelper;
-import com.upreyvan.carti.util.FormatUtils;
+
+import java.util.List;
 
 public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> {
-
-    private TransactionRepository transactionRepository;
 
     @Override
     protected ActivityAddExpenseBinding inflateBinding(LayoutInflater inflater) {
@@ -39,11 +32,11 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        transactionRepository = new TransactionRepository(this);
         setupDynamicPadding();
         setupToolbar();
         setupDropdowns();
         setupClickListeners();
+        getBinding().layoutForm.cvBalanceInfo.setVisibility(View.GONE);
     }
 
     private void setupDropdowns() {
@@ -54,16 +47,30 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
 
         ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, categoryNames);
-        getBinding().etCategory.setAdapter(categoryAdapter);
+        getBinding().actvCategory.setAdapter(categoryAdapter);
         if (categoryNames.length > 0) {
-            getBinding().etCategory.setText(categoryNames[0], false);
+            String firstCategory = categoryNames[0];
+            getBinding().actvCategory.setText(firstCategory, false);
+            updateBalanceInfo(firstCategory);
         }
+
+        getBinding().actvCategory.setOnItemClickListener((parent, view, position, id) -> {
+            String selected = (String) parent.getItemAtPosition(position);
+            updateBalanceInfo(selected);
+        });
 
         String[] sources = {"Cash", "GCash", "Maya", "Bank Transfer", "Credit Card"};
         ArrayAdapter<String> sourceAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, sources);
-        getBinding().etSource.setAdapter(sourceAdapter);
-        getBinding().etSource.setText(sources[0], false);
+        getBinding().layoutForm.actvSource.setAdapter(sourceAdapter);
+        getBinding().layoutForm.actvSource.setText(sources[0], false);
+    }
+
+    private void updateBalanceInfo(String categoryName) {
+        getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
+        com.upreyvan.carti.util.BudgetAllocationHelper.getRemainingBalance(this, categoryName, balance -> 
+            getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(balance))
+        );
     }
 
     private void setupDynamicPadding() {
@@ -81,73 +88,41 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
         getBinding().btnSave.setOnClickListener(v -> {
             if (!checkNetwork()) return;
 
-            if (Validator.isEmpty(getBinding().etAmount) || Validator.isEmpty(getBinding().etCategory) || Validator.isEmpty(getBinding().etSource)) {
-                showToast(getString(R.string.msg_fill_all_fields), Status.WARNING);
+            if (Validator.isEmpty(getBinding().layoutForm.etAmount) || 
+                Validator.isEmpty(getBinding().actvCategory) || 
+                Validator.isEmpty(getBinding().layoutForm.etDescription)) {
+                showToast(getString(R.string.msg_fill_all_fields), ToastHelper.Status.WARNING);
                 return;
             }
 
-            double amountVal = Utils.getDouble(getBinding().etAmount.getText().toString());
-            String category = getBinding().etCategory.getText().toString();
-            String source = getBinding().etSource.getText().toString();
-            
-            showLoading(true, getString(R.string.msg_saving_expense));
+            Editable amountText = getBinding().layoutForm.etAmount.getText();
+            if (amountText == null) return;
 
-            new ApiHelper(this).addTransaction(amountVal, "EXPENSE", category, "Paid through " + source, new AppwriteCallback<Map<String, Object>>() {
+            double amountVal = StringHelper.parseDouble(amountText.toString());
+            String category = getBinding().actvCategory.getText().toString();
+            String description = getBinding().layoutForm.etDescription.getText().toString();
+            String source = getBinding().layoutForm.actvSource.getText().toString();
+
+            TransactionHandler.saveExpense(this, amountVal, category, description, source, new TransactionHandler.TransactionCallback() {
                 @Override
-                public void onSuccess(Map<String, Object> result) {
-                    saveLocalAndFinish(ValueHelper.toStr(result.get("$id")), amountVal, category, source);
+                public void onLoading(boolean isLoading) {
+                    showLoading(isLoading, getString(R.string.msg_saving_expense));
                 }
 
                 @Override
-                public void onError(Throwable error) {
-                    showLoading(false);
-                    showToast(getString(R.string.err_failed_save, error.getMessage()), Status.ERROR);
+                public void onSuccess(Transaction transaction) {
+                    showToast(getString(R.string.msg_expense_saved), ToastHelper.Status.SUCCESS);
+                    Intent intent = new Intent(AddExpenseActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
+                }
+
+                @Override
+                public void onError(String message) {
+                    showToast(getString(R.string.err_failed_save, message), ToastHelper.Status.ERROR);
                 }
             });
         });
-    }
-
-    private void saveLocalAndFinish(String id, double amountVal, String category, String source) {
-        PreferenceManager pref = new PreferenceManager(this);
-        Category selectedCategory = CategoryManager.getInstance(this).getCategories().stream()
-                .filter(cat -> cat.getName().equals(category))
-                .findFirst()
-                .orElse(null);
-
-        int iconRes = (selectedCategory != null) ? selectedCategory.getIconRes() : R.drawable.ic_chart;
-        int iconColor = (selectedCategory != null) ? getColor(selectedCategory.getIconColor()) : getColor(R.color.icon_others);
-        int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
-
-        Transaction transaction = new Transaction(
-                id,
-                "EXPENSE",
-                amountVal,
-                category,
-                "Paid through " + source,
-                category,
-                pref.getFamilyId(),
-                pref.getUserId(),
-                Utils.getCurrentTimestamp(),
-                "",
-                0.0,
-                "",
-                "completed",
-                true,
-                null,
-                "",
-                iconRes,
-                bgColor,
-                iconColor,
-                System.currentTimeMillis()
-        );
-        
-        transactionRepository.saveLocally(transaction);
-        showLoading(false);
-        showToast(getString(R.string.msg_expense_saved), Status.SUCCESS);
-        
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(intent);
-        finish();
     }
 }

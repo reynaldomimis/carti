@@ -1,73 +1,44 @@
 package com.upreyvan.carti.ui.notifications;
 
 import android.view.View;
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemNotificationBinding;
 import com.upreyvan.carti.model.Notification;
-import java.util.ArrayList;
-import java.util.List;
+import com.upreyvan.carti.util.Utils;
+import java.util.Collections;
 
-public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
+public class NotificationAdapter extends BaseAdapter<Notification, ItemNotificationBinding> {
 
-    private List<Notification> notifications = new ArrayList<>();
+    public NotificationAdapter() {
+        super(Notification.DIFF_CALLBACK,
+              (inflater, parent) -> ItemNotificationBinding.inflate(inflater, parent, false),
+              (binding, notification) -> {
+                  binding.tvTitle.setText(notification.getTitle());
+                  binding.tvDescription.setText(notification.getDescription());
+                  binding.tvTime.setText(Utils.getTimeAgo(notification.getTimestamp()));
 
-    public void setNotifications(List<Notification> notifications) {
-        this.notifications = notifications;
-        notifyDataSetChanged();
+                  if (notification.getType() == Notification.Type.JOIN_REQUEST) {
+                      binding.layoutActions.setVisibility(View.VISIBLE);
+                      binding.btnAccept.setOnClickListener(v -> {
+                          Toast.makeText(v.getContext(), "Accepted " + notification.getTitle(), Toast.LENGTH_SHORT).show();
+                          // Logic to handle acceptance
+                      });
+                      binding.btnDeny.setOnClickListener(v -> {
+                          Toast.makeText(v.getContext(), "Denied " + notification.getTitle(), Toast.LENGTH_SHORT).show();
+                          // Logic to handle denial
+                      });
+                  } else {
+                      binding.layoutActions.setVisibility(View.GONE);
+                  }
+              });
+    }
+
+    public void setNotifications(java.util.List<Notification> notifications) {
+        submitList(notifications);
     }
 
     public void clearAll() {
-        this.notifications.clear();
-        notifyDataSetChanged();
-    }
-
-    @NonNull
-    @Override
-    public NotificationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemNotificationBinding binding = ItemNotificationBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-        return new NotificationViewHolder(binding);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
-        holder.bind(notifications.get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        return notifications.size();
-    }
-
-    static class NotificationViewHolder extends RecyclerView.ViewHolder {
-        private final ItemNotificationBinding binding;
-
-        public NotificationViewHolder(ItemNotificationBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-        }
-
-        public void bind(Notification notification) {
-            binding.tvTitle.setText(notification.getTitle());
-            binding.tvDescription.setText(notification.getDescription());
-            binding.tvTime.setText(com.upreyvan.carti.util.Utils.getTimeAgo(notification.getTimestamp()));
-
-            if (notification.getType() == Notification.Type.JOIN_REQUEST) {
-                binding.layoutActions.setVisibility(View.VISIBLE);
-                binding.btnAccept.setOnClickListener(v -> {
-                    Toast.makeText(v.getContext(), "Accepted " + notification.getTitle(), Toast.LENGTH_SHORT).show();
-                    // Logic to handle acceptance
-                });
-                binding.btnDeny.setOnClickListener(v -> {
-                    Toast.makeText(v.getContext(), "Denied " + notification.getTitle(), Toast.LENGTH_SHORT).show();
-                    // Logic to handle denial
-                });
-            } else {
-                binding.layoutActions.setVisibility(View.GONE);
-            }
-        }
+        submitList(Collections.emptyList());
     }
 }

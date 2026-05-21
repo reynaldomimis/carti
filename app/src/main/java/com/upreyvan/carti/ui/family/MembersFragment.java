@@ -63,8 +63,13 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
             @Override
             public void onSuccess(User<Map<String, Object>> result) {
                 currentUserId = result.getId();
-                if (horizontalAdapter != null) horizontalAdapter.notifyDataSetChanged();
-                if (contributionAdapter != null) contributionAdapter.notifyDataSetChanged();
+                // Re-submit lists to trigger DiffUtil re-bind with correct currentUserId
+                if (horizontalAdapter != null) {
+                    horizontalAdapter.submitList(new ArrayList<>(horizontalAdapter.getCurrentList()));
+                }
+                if (contributionAdapter != null) {
+                    contributionAdapter.submitList(new ArrayList<>(contributionAdapter.getCurrentList()));
+                }
             }
 
             @Override

@@ -33,15 +33,11 @@ public class CategoryManager {
     }
 
     public List<Category> getCategories() {
-        // Gagamit tayo ng v2 key para ma-force reset ang mga stale Resource IDs
         String json = prefs.getString(Constants.Keys.KEY_CATEGORIES + "_v2", null);
         if (json == null) {
             List<Category> defaults = getDefaultCategories();
             saveCategories(defaults);
-            
-            // Also reset all sync timestamps to refresh all data with new structure
             PreferenceManager.getInstance(context).resetAllSyncTimestamps();
-
             return defaults;
         }
         Type type = new TypeToken<ArrayList<Category>>() {}.getType();
@@ -65,13 +61,14 @@ public class CategoryManager {
 
     private List<Category> getDefaultCategories() {
         List<Category> defaults = new ArrayList<>();
+        // High frequency daily expenses
         defaults.add(new Category("1", "Food", android.R.drawable.ic_menu_gallery, R.color.icon_food, R.color.log_food, true));
-        defaults.add(new Category("2", "Fare", android.R.drawable.ic_dialog_map, R.color.icon_fare, R.color.log_fare, true));
-        defaults.add(new Category("3", "Load", android.R.drawable.ic_menu_send, R.color.icon_load, R.color.log_load, true));
-        defaults.add(new Category("4", "Sari-sari Store", android.R.drawable.ic_input_add, R.color.icon_store, R.color.log_store, true));
-        defaults.add(new Category("5", "Electricity", android.R.drawable.ic_lock_power_off, R.color.icon_electricity, R.color.log_electricity, true));
-        defaults.add(new Category("6", "Water", android.R.drawable.ic_menu_compass, R.color.icon_water, R.color.log_water, true));
-        defaults.add(new Category("7", "Debt", android.R.drawable.ic_menu_agenda, R.color.icon_debt, R.color.log_debt, true));
+        defaults.add(new Category("2", "Transport", android.R.drawable.ic_dialog_map, R.color.icon_fare, R.color.log_fare, true));
+        defaults.add(new Category("3", "Grocery", android.R.drawable.ic_input_add, R.color.icon_others, R.color.log_others, true));
+        defaults.add(new Category("4", "Load/Data", android.R.drawable.ic_menu_send, R.color.icon_load, R.color.log_load, true));
+        defaults.add(new Category("5", "Sari-sari", android.R.drawable.ic_menu_agenda, R.color.icon_store, R.color.log_store, true));
+        defaults.add(new Category("6", "Health", android.R.drawable.ic_menu_compass, R.color.status_red, R.color.status_red_tonal, true));
+        defaults.add(new Category("7", "Debt/Utang", android.R.drawable.ic_lock_lock, R.color.icon_debt, R.color.log_debt, true));
         defaults.add(new Category("8", "Others", android.R.drawable.ic_menu_more, R.color.icon_others, R.color.log_others, true));
         return defaults;
     }

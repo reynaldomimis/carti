@@ -13,12 +13,21 @@ public class QuickLogItem implements Serializable {
     private int iconRes;
     private int bgColor;
     private int iconColor;
+    private boolean selected;
 
     public QuickLogItem(String title, int iconRes, int bgColor, int iconColor) {
         this.title = title;
         this.iconRes = iconRes;
         this.bgColor = bgColor;
         this.iconColor = iconColor;
+    }
+
+    public QuickLogItem(String title, int iconRes, int bgColor, int iconColor, boolean selected) {
+        this.title = title;
+        this.iconRes = iconRes;
+        this.bgColor = bgColor;
+        this.iconColor = iconColor;
+        this.selected = selected;
     }
 
     public String getTitle() { return title; }
@@ -29,6 +38,8 @@ public class QuickLogItem implements Serializable {
     public void setBgColor(int bgColor) { this.bgColor = bgColor; }
     public int getIconColor() { return iconColor; }
     public void setIconColor(int iconColor) { this.iconColor = iconColor; }
+    public boolean isSelected() { return selected; }
+    public void setSelected(boolean selected) { this.selected = selected; }
 
     @Override
     public boolean equals(Object o) {
@@ -38,12 +49,13 @@ public class QuickLogItem implements Serializable {
         return iconRes == that.iconRes &&
                 bgColor == that.bgColor &&
                 iconColor == that.iconColor &&
+                selected == that.selected &&
                 Objects.equals(title, that.title);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, iconRes, bgColor, iconColor);
+        return Objects.hash(title, iconRes, bgColor, iconColor, selected);
     }
 
     public static final DiffUtil.ItemCallback<QuickLogItem> DIFF_CALLBACK = new DiffUtil.ItemCallback<QuickLogItem>() {

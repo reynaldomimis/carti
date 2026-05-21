@@ -40,7 +40,7 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        transactionRepository = new TransactionRepository(this);
+        transactionRepository = TransactionRepository.getInstance(this);
         memberRepository = new MemberRepository(this);
         
         setupDynamicPadding();

@@ -46,7 +46,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         apiHelper = new ApiHelper(requireContext());
-        transactionRepository = new TransactionRepository(requireContext());
+        transactionRepository = TransactionRepository.getInstance(requireContext());
         
         setupDynamicPadding();
         setupToolbar();

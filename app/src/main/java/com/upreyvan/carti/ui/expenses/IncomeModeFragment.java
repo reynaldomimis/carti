@@ -44,7 +44,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        transactionRepository = new TransactionRepository(requireContext());
+        transactionRepository = TransactionRepository.getInstance(requireContext());
         setupDynamicPadding(getBinding().layoutToolbar.getRoot(), null, 0.3f);
         setupHeader();
         setupRecyclerView();

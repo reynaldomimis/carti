@@ -15,17 +15,44 @@ import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentAllTransactionsBinding;
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.ToastHelper.Status;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class AllTransactionsFragment extends BaseFragment<FragmentAllTransactionsBinding> {
 
+    private static final String ARG_TYPE = "transaction_type";
     private TransactionAdapter adapter;
     private TransactionRepository transactionRepository;
     private Calendar currentDisplayDate;
+    private String filterType;
+    private List<TransactionWithUser> fullList = new ArrayList<>();
+    private String currentQuery = "";
+
+    public static AllTransactionsFragment newInstance(String type) {
+        AllTransactionsFragment fragment = new AllTransactionsFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_TYPE, type);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            filterType = getArguments().getString(ARG_TYPE);
+        }
+    }
 
     @Override
     protected FragmentAllTransactionsBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -35,13 +62,82 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        transactionRepository = new TransactionRepository(requireContext());
+        transactionRepository = TransactionRepository.getInstance(requireContext());
         currentDisplayDate = Calendar.getInstance();
         
         setupToolbar();
+        setupSearchBar();
         setupMonthNavigation();
         setupRecyclerView();
         observeTransactions();
+    }
+
+    private void setupSearchBar() {
+        getBinding().layoutToolbar.btnSearchToggle.setVisibility(View.VISIBLE);
+        getBinding().layoutToolbar.btnSearchToggle.setOnClickListener(v -> {
+            showSearch();
+        });
+
+        getBinding().layoutToolbar.btnClearSearch.setOnClickListener(v -> {
+            if (getBinding().layoutToolbar.etSearch.getText().toString().isEmpty()) {
+                hideSearch();
+            } else {
+                getBinding().layoutToolbar.etSearch.setText("");
+            }
+        });
+
+        getBinding().layoutToolbar.etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterBySearch(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void showSearch() {
+        getBinding().layoutToolbar.tvToolbarTitle.setVisibility(View.GONE);
+        getBinding().layoutToolbar.btnSearchToggle.setVisibility(View.GONE);
+        getBinding().layoutToolbar.layoutSearchContainer.setVisibility(View.VISIBLE);
+        getBinding().layoutToolbar.etSearch.requestFocus();
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) imm.showSoftInput(getBinding().layoutToolbar.etSearch, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    private void hideSearch() {
+        getBinding().layoutToolbar.etSearch.setText("");
+        getBinding().layoutToolbar.layoutSearchContainer.setVisibility(View.GONE);
+        getBinding().layoutToolbar.tvToolbarTitle.setVisibility(View.VISIBLE);
+        getBinding().layoutToolbar.btnSearchToggle.setVisibility(View.VISIBLE);
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) imm.hideSoftInputFromWindow(getBinding().layoutToolbar.etSearch.getWindowToken(), 0);
+    }
+
+    private void filterBySearch(String query) {
+        currentQuery = query.toLowerCase().trim();
+        applyFilters();
+    }
+
+    private void applyFilters() {
+        List<TransactionWithUser> filteredList = new ArrayList<>();
+        for (TransactionWithUser t : fullList) {
+            boolean matchesType = filterType == null || filterType.equals(t.getTransaction().getType());
+            boolean matchesSearch = currentQuery.isEmpty() || 
+                                   (t.getTransaction().getTitle() != null && t.getTransaction().getTitle().toLowerCase().contains(currentQuery)) ||
+                                   (t.getTransaction().getCategory() != null && t.getTransaction().getCategory().toLowerCase().contains(currentQuery));
+            
+            if (matchesType && matchesSearch) {
+                filteredList.add(t);
+            }
+        }
+        adapter.submitList(filteredList);
+        getBinding().rvAllTransactions.setVisibility(filteredList.isEmpty() ? View.GONE : View.VISIBLE);
+        getBinding().layoutEmptyState.setVisibility(filteredList.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private void setupMonthNavigation() {
@@ -74,17 +170,19 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
                 currentDisplayDate.get(Calendar.YEAR)
         ).observe(getViewLifecycleOwner(), transactions -> {
             if (transactions != null) {
-                adapter.submitList(transactions);
-                
-                getBinding().rvAllTransactions.setVisibility(transactions.isEmpty() ? View.GONE : View.VISIBLE);
-                getBinding().layoutEmptyState.setVisibility(transactions.isEmpty() ? View.VISIBLE : View.GONE);
+                fullList = transactions;
+                applyFilters();
             }
         });
         transactionRepository.syncTransactionsIfNeeded();
     }
 
     private void setupToolbar() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.all_transactions_title);
+        if ("EXPENSE".equals(filterType)) {
+            getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.expenses_title);
+        } else {
+            getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.all_transactions_title);
+        }
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().onBackPressed();
         });

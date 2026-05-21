@@ -56,7 +56,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        transactionRepository = new TransactionRepository(this);
+        transactionRepository = TransactionRepository.getInstance(this);
         setupDynamicPadding();
         setupToolbar();
         setupTabs();
@@ -102,11 +102,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
     private void setupCategories() {
         List<Category> categories = CategoryManager.getInstance(this).getCategories();
-        List<QuickLogItem> items = new ArrayList<>();
-        for (Category cat : categories) {
-            items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor()));
-        }
-
+        
         GenericAdapter<QuickLogItem, ItemQuickLogBinding> adapter = new GenericAdapter<>(
                 QuickLogItem.DIFF_CALLBACK,
                 (inflater, parent) -> ItemQuickLogBinding.inflate(inflater, parent, false),
@@ -116,8 +112,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
                     binding.cvIconBg.setCardBackgroundColor(ContextCompat.getColor(this, item.getBgColor()));
                     binding.ivIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, item.getIconColor())));
                     
-                    boolean isSelected = item.getTitle().equals(selectedCategoryName);
-                    binding.getRoot().setStrokeWidth(isSelected ? Utils.dpToPx(this, 2) : 0);
+                    binding.getRoot().setStrokeWidth(item.isSelected() ? Utils.dpToPx(this, 2) : 0);
                     binding.getRoot().setStrokeColor(ContextCompat.getColor(this, R.color.carti_primary_green));
                 }
         );
@@ -125,10 +120,23 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         adapter.setOnItemClickListener(item -> {
             selectedCategoryName = item.getTitle();
             getBinding().tvSelectedCategory.setText(selectedCategoryName);
-            adapter.notifyDataSetChanged();
+            
+            // Map to new list to trigger DiffUtil
+            List<QuickLogItem> currentItems = adapter.getCurrentList();
+            List<QuickLogItem> newList = new ArrayList<>();
+            for (QuickLogItem i : currentItems) {
+                newList.add(new QuickLogItem(i.getTitle(), i.getIconRes(), i.getBgColor(), i.getIconColor(), i.getTitle().equals(selectedCategoryName)));
+            }
+            adapter.submitList(newList);
         });
 
         getBinding().rvCategories.setAdapter(adapter);
+        
+        // Initial list
+        List<QuickLogItem> items = new ArrayList<>();
+        for (Category cat : categories) {
+            items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor(), cat.getName().equals(selectedCategoryName)));
+        }
         adapter.submitList(items);
     }
 

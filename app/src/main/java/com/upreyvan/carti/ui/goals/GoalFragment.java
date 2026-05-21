@@ -41,7 +41,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        transactionRepository = new TransactionRepository(requireContext());
+        transactionRepository = TransactionRepository.getInstance(requireContext());
         
         setupDynamicPadding();
         setupHeader();

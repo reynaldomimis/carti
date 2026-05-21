@@ -79,10 +79,11 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
 
     private void setupRecyclerView() {
         allIcons = IconManager.getSystemIcons();
-        adapter = new IconAdapter(new ArrayList<>(allIcons), icon -> {
+        adapter = new IconAdapter(icon -> {
             if (listener != null) listener.onIconSelected(icon);
             dismiss();
         });
+        adapter.updateList(new ArrayList<>(allIcons));
         binding.rvIcons.setLayoutManager(new GridLayoutManager(requireContext(), 5));
         binding.rvIcons.setAdapter(adapter);
     }

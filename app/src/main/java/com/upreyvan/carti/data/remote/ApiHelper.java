@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.Utils;
 import io.appwrite.Query;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
@@ -29,7 +30,7 @@ public class ApiHelper {
 
     public Context getContext() { return context; }
 
-    private void callAction(String action, Map<String, Object> params, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+    public void callAction(String action, Map<String, Object> params, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         appwriteManager.callGateway(action, params, new AppwriteManager.AppwriteCallback<Execution>() {
             @Override
             public void onSuccess(Execution result) {
@@ -132,11 +133,12 @@ public class ApiHelper {
     // ─── TRANSACTIONS ────────────────────────────────────────────────────────
     public void addTransaction(double amount, String type, String category, String note, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("name", pref.getUserName());
+        params.put("username", pref.getUserName());
         params.put("amount", amount);
         params.put("type", type);
         params.put("category", category);
         params.put("note", note);
+        params.put("startDate", Utils.getCurrentTimestamp());
         callAction(Constants.Actions.ADD_TRANSACTION, params, callback);
     }
 
@@ -162,8 +164,16 @@ public class ApiHelper {
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
-    public void getTransactions(String startDate, String endDate, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
-        getTransactionsSince(startDate, callback);
+    public void getTransactionsRange(String startDate, String endDate, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", familyId));
+        queries.add(Query.Companion.between("$createdAt", startDate, endDate));
+        queries.add(Query.Companion.orderDesc("$createdAt"));
+        queries.add(Query.Companion.limit(100));
+        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
     // ─── MEMBERS ─────────────────────────────────────────────────────────────
@@ -179,23 +189,26 @@ public class ApiHelper {
 
     // ─── GOALS ───────────────────────────────────────────────────────────────
 
-    public void addGoal(String name, double targetAmount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+    public void addGoal(String name, double targetAmount, String targetDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
+        params.put("username", pref.getUserName());
         params.put("name", name);
         params.put("targetAmount", targetAmount);
+        params.put("targetDate", targetDate);
+        params.put("startDate", Utils.getCurrentTimestamp());
         callAction(Constants.Actions.ADD_GOAL, params, callback);
     }
 
     public void updateGoalAmount(String goalId, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("goalId", goalId);
+        params.put("txnId", goalId);
         params.put("amount", amount);
         callAction(Constants.Actions.UPDATE_GOAL, params, callback);
     }
 
     public void deleteGoal(String goalId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("goalId", goalId);
+        params.put("txnId", goalId);
         callAction(Constants.Actions.DELETE_GOAL, params, callback);
     }
 
@@ -214,13 +227,14 @@ public class ApiHelper {
 
     // ─── DEBTS ───────────────────────────────────────────────────────────────
 
-    public void addDebt(String personName, double amount, String type, String category, String dueDate, String reminder, String notes, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+    public void addDebt(String personName, double amount, String type, String category, String targetDate, String reminder, String notes, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("personName", personName);
         params.put("amount", amount);
         params.put("type", type);
         params.put("category", category);
-        params.put("dueDate", dueDate);
+        params.put("targetDate", targetDate);
+        params.put("startDate", Utils.getCurrentTimestamp());
         params.put("reminder", reminder);
         params.put("notes", notes);
         callAction(Constants.Actions.ADD_DEBT, params, callback);
@@ -228,20 +242,21 @@ public class ApiHelper {
 
     public void updateDebtAmount(String debtId, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("debtId", debtId);
+        params.put("txnId", debtId); // Unified key for new service
         params.put("amount", amount);
         callAction(Constants.Actions.UPDATE_DEBT, params, callback);
     }
 
     public void markDebtPaid(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("debtId", debtId);
+        params.put("txnId", debtId); // Unified key for new service
+        params.put("isPaid", true);
         callAction(Constants.Actions.MARK_DEBT_PAID, params, callback);
     }
 
     public void deleteDebt(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("debtId", debtId);
+        params.put("txnId", debtId); // Unified key for new service
         callAction(Constants.Actions.DELETE_DEBT, params, callback);
     }
 
@@ -262,14 +277,16 @@ public class ApiHelper {
 
     public void addIncome(String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
+        params.put("username", pref.getUserName());
         params.put("source", source);
         params.put("amount", amount);
+        params.put("startDate", Utils.getCurrentTimestamp());
         callAction(Constants.Actions.ADD_INCOME, params, callback);
     }
 
     public void updateIncome(String incomeId, String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("incomeId", incomeId);
+        params.put("txnId", incomeId); // Unified key for new service
         params.put("source", source);
         params.put("amount", amount);
         callAction(Constants.Actions.UPDATE_INCOME, params, callback);
@@ -277,7 +294,7 @@ public class ApiHelper {
 
     public void deleteIncome(String incomeId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("incomeId", incomeId);
+        params.put("txnId", incomeId); // Unified key for new service
         callAction(Constants.Actions.DELETE_INCOME, params, callback);
     }
 

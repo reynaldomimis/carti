@@ -55,7 +55,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
         if (getArguments() != null) {
             goalId = getArguments().getString(ARG_GOAL_ID);
         }
-        transactionRepository = new TransactionRepository(requireContext());
+        transactionRepository = TransactionRepository.getInstance(requireContext());
         memberRepository = new MemberRepository(requireContext());
     }
 
@@ -76,7 +76,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
     private void observeGoal() {
         transactionRepository.getTransactionById(goalId).observe(getViewLifecycleOwner(), goal -> {
             if (goal != null) {
-                currentGoal = goal;
+                currentGoal = goal.getTransaction();
                 preFillData();
             }
         });
@@ -180,7 +180,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
         currentGoal.setDueDate(date);
         currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
 
-        transactionRepository.updateTransaction(currentGoal, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<>() {
+        transactionRepository.updateTransaction(currentGoal, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 if (isAdded()) {

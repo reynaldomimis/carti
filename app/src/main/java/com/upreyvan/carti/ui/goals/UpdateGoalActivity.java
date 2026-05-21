@@ -27,7 +27,7 @@ public class UpdateGoalActivity extends BaseGoalActivity {
             return;
         }
 
-        transactionRepository = new TransactionRepository(this);
+        transactionRepository = TransactionRepository.getInstance(this);
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.update_goal_title);
         getBinding().btnCreateGoal.setText(R.string.btn_update_goal);
 
@@ -37,7 +37,7 @@ public class UpdateGoalActivity extends BaseGoalActivity {
     private void observeGoal() {
         transactionRepository.getTransactionById(goalId).observe(this, goal -> {
             if (goal != null) {
-                currentGoal = goal;
+                currentGoal = goal.getTransaction();
                 preFillData();
             }
         });

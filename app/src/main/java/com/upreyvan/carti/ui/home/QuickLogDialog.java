@@ -30,7 +30,6 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
 
     private static final String ARG_ITEM = "arg_item";
     private OnLogListener listener;
-    private TransactionRepository transactionRepository;
 
     public interface OnLogListener {
         void onLog(QuickLogItem item, double amount);
@@ -56,7 +55,6 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        transactionRepository = new TransactionRepository(requireContext());
         
         QuickLogItem item = (QuickLogItem) getArguments().getSerializable(ARG_ITEM);
         if (item == null) {
@@ -76,37 +74,26 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
 
             try {
                 double amount = Double.parseDouble(getBinding().etAmount.getText().toString().trim());
-                int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
-                int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
                 
-                Transaction transaction = new Transaction();
-                transaction.setAmount(amount);
-                transaction.setType("EXPENSE");
-                transaction.setTitle(item.getTitle());
-                transaction.setDescription("Quick Log");
-                transaction.setCategory(item.getTitle());
-                transaction.setUserId(new com.upreyvan.carti.data.local.PreferenceManager(requireContext()).getUserId());
-                transaction.setIconRes(item.getIconRes());
-                transaction.setIconColor(iconColor);
-                transaction.setIconBgColor(bgColor);
-                transaction.setTimestampMillis(System.currentTimeMillis());
-
-                transactionRepository.addTransaction(transaction, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                com.upreyvan.carti.util.TransactionHandler.saveExpense(requireContext(), amount, item.getTitle(), "Quick Log", "App", new com.upreyvan.carti.util.TransactionHandler.TransactionCallback() {
                     @Override
-                    public void onSuccess(Map<String, Object> result) {
-                        // Successfully added and saved locally by repository
+                    public void onLoading(boolean isLoading) {
+                        // Optional: show progress
                     }
 
                     @Override
-                    public void onError(Throwable error) {
-                        showToast(getString(R.string.err_generic, error.getMessage()), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                    public void onSuccess(Transaction transaction) {
+                        if (listener != null) {
+                            listener.onLog(item, amount);
+                        }
+                        dismiss();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        showToast(message, com.upreyvan.carti.util.ToastHelper.Status.ERROR);
                     }
                 });
-
-                if (listener != null) {
-                    listener.onLog(item, amount);
-                }
-                dismiss();
             } catch (NumberFormatException e) {
                 showToast(getString(R.string.msg_invalid_amount), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
             }
@@ -116,9 +103,6 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (transactionRepository != null) {
-            transactionRepository.onDestroy();
-        }
     }
 
     protected void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {

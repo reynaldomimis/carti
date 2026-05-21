@@ -25,6 +25,10 @@ import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.ValueHelper;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -38,6 +42,8 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     private TransactionAdapter transactionAdapter;
     private Calendar currentCalendar = Calendar.getInstance();
     private TransactionRepository transactionRepository;
+    private List<TransactionWithUser> fullExpenseList = new ArrayList<>();
+    private String currentSearchQuery = "";
 
     @Override
     protected FragmentExpensesBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -47,15 +53,80 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        transactionRepository = new TransactionRepository(requireContext());
+        transactionRepository = TransactionRepository.getInstance(requireContext());
         
         setupDynamicPadding(getBinding().layoutHeader, getBinding().scrollView, 0.3f);
         setupMonthPicker();
+        setupSearchBar();
         setupChart();
         setupLegend();
         setupTransactions();
         updateMonthDisplay();
         observeTransactions();
+    }
+
+    private void setupSearchBar() {
+        getBinding().btnSearchToggle.setOnClickListener(v -> {
+            showSearch();
+        });
+
+        getBinding().btnClearSearch.setOnClickListener(v -> {
+            if (getBinding().etSearch.getText().toString().isEmpty()) {
+                hideSearch();
+            } else {
+                getBinding().etSearch.setText("");
+            }
+        });
+
+        getBinding().etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentSearchQuery = s.toString().toLowerCase().trim();
+                applyFilters();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void showSearch() {
+        getBinding().tvHeaderTitle.setVisibility(View.GONE);
+        getBinding().btnSearchToggle.setVisibility(View.GONE);
+        getBinding().layoutSearchContainer.setVisibility(View.VISIBLE);
+        getBinding().etSearch.requestFocus();
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) imm.showSoftInput(getBinding().etSearch, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    private void hideSearch() {
+        getBinding().etSearch.setText("");
+        getBinding().layoutSearchContainer.setVisibility(View.GONE);
+        getBinding().tvHeaderTitle.setVisibility(View.VISIBLE);
+        getBinding().btnSearchToggle.setVisibility(View.VISIBLE);
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) imm.hideSoftInputFromWindow(getBinding().etSearch.getWindowToken(), 0);
+    }
+
+    private void applyFilters() {
+        List<TransactionWithUser> filteredList = new ArrayList<>();
+        for (TransactionWithUser t : fullExpenseList) {
+            boolean matchesSearch = currentSearchQuery.isEmpty() ||
+                    (t.getTransaction().getTitle() != null && t.getTransaction().getTitle().toLowerCase().contains(currentSearchQuery)) ||
+                    (t.getTransaction().getCategory() != null && t.getTransaction().getCategory().toLowerCase().contains(currentSearchQuery));
+
+            if (matchesSearch) {
+                filteredList.add(t);
+            }
+        }
+
+        transactionAdapter.submitList(filteredList);
+        boolean isEmpty = filteredList.isEmpty();
+        getBinding().cardTransactions.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        getBinding().layoutEmptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
     }
 
     private void observeTransactions() {
@@ -79,8 +150,14 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
         transactionRepository.getTransactionsInRange(start.getTimeInMillis(), end.getTimeInMillis())
                 .observe(getViewLifecycleOwner(), transactions -> {
                     if (transactions != null) {
-                        processTransactions(transactions);
-                        transactionAdapter.submitList(transactions);
+                        fullExpenseList.clear();
+                        for (TransactionWithUser t : transactions) {
+                            if ("EXPENSE".equals(t.getTransaction().getType())) {
+                                fullExpenseList.add(t);
+                            }
+                        }
+                        processTransactions(fullExpenseList);
+                        applyFilters();
                     }
                 });
     }
@@ -180,9 +257,9 @@ public class ExpensesFragment extends BaseFragment<FragmentExpensesBinding> {
     }
 
     private void setupTransactions() {
-        getBinding().headerTransactions.tvSectionTitle.setText(R.string.recent_transactions);
-        getBinding().headerTransactions.btnSectionAction.setText(R.string.see_all);
-        getBinding().headerTransactions.btnSectionAction.setOnClickListener(v -> navigateTo(new AllTransactionsFragment()));
+        getBinding().viewHeaderTransactions.tvSectionTitle.setText(R.string.recent_activity);
+        getBinding().viewHeaderTransactions.btnSectionAction.setText(R.string.see_all);
+        getBinding().viewHeaderTransactions.btnSectionAction.setOnClickListener(v -> navigateTo(AllTransactionsFragment.newInstance("EXPENSE")));
 
         transactionAdapter = new TransactionAdapter();
         getBinding().rvTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
