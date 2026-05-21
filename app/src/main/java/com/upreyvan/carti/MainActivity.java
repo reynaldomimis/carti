@@ -24,7 +24,7 @@ import com.upreyvan.carti.databinding.ActivityMainBinding;
 import com.upreyvan.carti.databinding.LayoutNavItemBinding;
 import com.upreyvan.carti.ui.ai.AiAssistantFragment;
 import com.upreyvan.carti.ui.debt.DebtTrackerFragment;
-import com.upreyvan.carti.ui.expenses.ExpensesFragment;
+import com.upreyvan.carti.ui.track.TrackFragment;
 import com.upreyvan.carti.ui.family.FamilyChatFragment;
 import com.upreyvan.carti.ui.home.HomeFragment;
 import com.upreyvan.carti.util.Utils;
@@ -80,7 +80,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
     private void setupTabs() {
         initTab(getBinding().tabHome, R.drawable.ic_home, getString(R.string.nav_home), 1);
-        initTab(getBinding().tabExpenses, R.drawable.ic_chart, getString(R.string.nav_expenses), 2);
+        initTab(getBinding().tabExpenses, R.drawable.ic_chart, getString(R.string.nav_track), 2);
         initTab(getBinding().tabAdd, R.drawable.ic_add, getString(R.string.nav_add), 7);
         getBinding().tabAdd.navIcon.getLayoutParams().width = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
         getBinding().tabAdd.navIcon.getLayoutParams().height = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
@@ -90,7 +90,6 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         getBinding().tabAi.navIcon.getLayoutParams().height = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
         getBinding().tabAi.navIcon.setScaleType(ImageView.ScaleType.FIT_XY);
         getBinding().tabAi.navIcon.setImageTintList(null);
-
         initTab(getBinding().tabProfile, R.drawable.ic_person, getString(R.string.nav_profile), 4);
     }
 
@@ -187,7 +186,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         if (id == 1) {
             fragment = new HomeFragment();
         } else if (id == 2) {
-            fragment = new ExpensesFragment();
+            fragment = new TrackFragment();
         } else if (id == 3) {
             fragment = new DebtTrackerFragment();
         } else if (id == 6) {

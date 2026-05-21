@@ -1,4 +1,4 @@
-package com.upreyvan.carti.ui.expenses;
+package com.upreyvan.carti.ui.track;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -24,7 +24,6 @@ import com.upreyvan.carti.databinding.ItemIncomeBinding;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.ValueHelper;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import io.appwrite.models.RealtimeSubscription;
@@ -99,29 +98,31 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     }
 
     private void setupRecyclerView() {
-        incomeAdapter = new GenericAdapter<>(
-                Transaction.DIFF_CALLBACK,
-                (inflater, parent) -> ItemIncomeBinding.inflate(inflater, parent, false),
-                (binding, income) -> {
-                    binding.tvSource.setText(income.getTitle());
-                    binding.tvAmount.setText(String.format(Locale.getDefault(), "+₱%,.2f", income.getAmount()));
-                    binding.tvDate.setText(Utils.getTimeAgo(income.getTimestampMillis()));
-                    
-                    if (ValueHelper.toStr(income.getTitle()).toLowerCase().contains("salary")) {
-                        binding.ivIcon.setImageResource(R.drawable.ic_calendar);
-                        binding.viewIconBg.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.log_food));
-                    } else {
-                        binding.ivIcon.setImageResource(R.drawable.ic_chart);
-                        binding.viewIconBg.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.log_fare));
+        if (incomeAdapter == null) {
+            incomeAdapter = new GenericAdapter<>(
+                    Transaction.DIFF_CALLBACK,
+                    (inflater, parent) -> ItemIncomeBinding.inflate(inflater, parent, false),
+                    (binding, income) -> {
+                        binding.tvSource.setText(income.getTitle());
+                        binding.tvAmount.setText(String.format(Locale.getDefault(), "+₱%,.2f", income.getAmount()));
+                        binding.tvDate.setText(Utils.getTimeAgo(income.getTimestampMillis()));
+                        
+                        if (ValueHelper.toStr(income.getTitle()).toLowerCase().contains("salary")) {
+                            binding.ivIcon.setImageResource(R.drawable.ic_calendar);
+                            binding.viewIconBg.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.log_food));
+                        } else {
+                            binding.ivIcon.setImageResource(R.drawable.ic_chart);
+                            binding.viewIconBg.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.log_fare));
+                        }
                     }
-                }
-        );
-        incomeAdapter.setOnItemLongClickListener(income -> {
-            IncomeEditBottomSheet bottomSheet = IncomeEditBottomSheet.newInstance(income);
-            bottomSheet.setListener(this::updateUI);
-            bottomSheet.show(getChildFragmentManager(), "IncomeEditBottomSheet");
-            return true;
-        });
+            );
+            incomeAdapter.setOnItemLongClickListener(income -> {
+                IncomeEditBottomSheet bottomSheet = IncomeEditBottomSheet.newInstance(income);
+                bottomSheet.setListener(this::updateUI);
+                bottomSheet.show(getChildFragmentManager(), "IncomeEditBottomSheet");
+                return true;
+            });
+        }
         getBinding().rvIncomeHistory.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvIncomeHistory.setAdapter(incomeAdapter);
     }
@@ -172,8 +173,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         getBinding().tvDaysLeft.setText(String.valueOf(daysLeft));
         
         Calendar nextPayday = manager.getNextPayday();
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-        getBinding().tvTargetDate.setText(sdf.format(nextPayday.getTime()));
+        getBinding().tvTargetDate.setText(Utils.formatDateShort(nextPayday));
         
         transactionRepository.refreshTransactions();
     }

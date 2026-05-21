@@ -1,4 +1,4 @@
-package com.upreyvan.carti.ui.expenses;
+package com.upreyvan.carti.ui.track;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,7 +11,8 @@ import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.local.CategoryManager;
-import com.upreyvan.carti.databinding.ActivityAddExpenseBinding;
+import com.upreyvan.carti.databinding.ActivityAddTrackBinding;
+import com.upreyvan.carti.databinding.LayoutExpenseFormBinding;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.StringHelper;
@@ -22,11 +23,11 @@ import com.upreyvan.carti.util.Validator;
 
 import java.util.List;
 
-public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> {
+public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
 
     @Override
-    protected ActivityAddExpenseBinding inflateBinding(LayoutInflater inflater) {
-        return ActivityAddExpenseBinding.inflate(inflater);
+    protected ActivityAddTrackBinding inflateBinding(LayoutInflater inflater) {
+        return ActivityAddTrackBinding.inflate(inflater);
     }
 
     @Override
@@ -103,7 +104,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
             String description = getBinding().layoutForm.etDescription.getText().toString();
             String source = getBinding().layoutForm.actvSource.getText().toString();
 
-            TransactionHandler.saveExpense(this, amountVal, category, description, source, new TransactionHandler.TransactionCallback() {
+            TransactionHandler.saveTrack(this, amountVal, category, description, source, new TransactionHandler.TransactionCallback() {
                 @Override
                 public void onLoading(boolean isLoading) {
                     showLoading(isLoading, getString(R.string.msg_saving_expense));
@@ -112,7 +113,7 @@ public class AddExpenseActivity extends BaseActivity<ActivityAddExpenseBinding> 
                 @Override
                 public void onSuccess(Transaction transaction) {
                     showToast(getString(R.string.msg_expense_saved), ToastHelper.Status.SUCCESS);
-                    Intent intent = new Intent(AddExpenseActivity.this, MainActivity.class);
+                    Intent intent = new Intent(AddTrackActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                     finish();

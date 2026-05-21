@@ -75,7 +75,7 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
             try {
                 double amount = Double.parseDouble(getBinding().etAmount.getText().toString().trim());
                 
-                com.upreyvan.carti.util.TransactionHandler.saveExpense(requireContext(), amount, item.getTitle(), "Quick Log", "App", new com.upreyvan.carti.util.TransactionHandler.TransactionCallback() {
+                com.upreyvan.carti.util.TransactionHandler.saveTrack(requireContext(), amount, item.getTitle(), "Quick Log", "App", new com.upreyvan.carti.util.TransactionHandler.TransactionCallback() {
                     @Override
                     public void onLoading(boolean isLoading) {
                         // Optional: show progress

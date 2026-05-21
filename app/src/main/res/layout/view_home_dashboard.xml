@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingVertical="@dimen/spacing_medium">
+    android:paddingVertical="@dimen/spacing_small">
 
     <!-- Next Payday Card -->
     <com.google.android.material.card.MaterialCardView

@@ -74,15 +74,8 @@
         android:progressDrawable="@drawable/bg_dash_progress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/tvCategoryName"
-        app:layout_constraintTop_toBottomOf="@id/tvCategoryName" />
-
-    <com.google.android.material.divider.MaterialDivider
-        android:layout_width="0dp"
-        android:layout_height="@dimen/divider_thickness"
-        android:layout_marginTop="@dimen/spacing_small"
-        app:dividerColor="@color/border_subtle"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/tvCategoryName"
-        app:layout_constraintTop_toBottomOf="@id/pbBudget" />
+        app:layout_constraintTop_toBottomOf="@id/tvCategoryName"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="@dimen/spacing_xxs" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

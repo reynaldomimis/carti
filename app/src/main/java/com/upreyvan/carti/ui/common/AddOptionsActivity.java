@@ -12,8 +12,8 @@ import com.upreyvan.carti.ui.common.AddOptionsAdapter;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityAddOptionsBinding;
 import com.upreyvan.carti.ui.debt.AddDebtActivity;
-import com.upreyvan.carti.ui.expenses.AddCategoryActivity;
-import com.upreyvan.carti.ui.expenses.AddExpenseActivity;
+import com.upreyvan.carti.ui.track.AddCategoryActivity;
+import com.upreyvan.carti.ui.track.AddTrackActivity;
 import com.upreyvan.carti.ui.family.InviteFamilyActivity;
 import com.upreyvan.carti.ui.goals.AddGoalActivity;
 import com.upreyvan.carti.model.AddOption;
@@ -78,7 +78,7 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
         AddOptionsAdapter adapter = new AddOptionsAdapter(item -> {
             Intent intent = null;
             if (item.getTitleResId() == R.string.add_options_expense) {
-                intent = new Intent(this, AddExpenseActivity.class);
+                intent = new Intent(this, AddTrackActivity.class);
             } else if (item.getTitleResId() == R.string.add_options_debt) {
                 intent = new Intent(this, AddDebtActivity.class);
             } else if (item.getTitleResId() == R.string.add_options_goal) {

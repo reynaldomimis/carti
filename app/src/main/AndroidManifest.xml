@@ -65,7 +65,7 @@
             android:exported="false"
             android:theme="@style/Theme.Carti" />
         <activity
-            android:name=".ui.expenses.AddExpenseActivity"
+            android:name=".ui.track.AddTrackActivity"
             android:exported="false"
             android:theme="@style/Theme.Carti"
             android:windowSoftInputMode="stateHidden|adjustResize" />
@@ -85,7 +85,7 @@
             android:theme="@style/Theme.Carti"
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
-            android:name=".ui.expenses.AddCategoryActivity"
+            android:name=".ui.track.AddCategoryActivity"
             android:exported="false"
             android:theme="@style/Theme.Carti"
             android:windowSoftInputMode="stateHidden|adjustResize" />

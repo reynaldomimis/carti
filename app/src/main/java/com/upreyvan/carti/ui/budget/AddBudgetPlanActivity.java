@@ -2,20 +2,21 @@ package com.upreyvan.carti.ui.budget;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.databinding.ActivityAddBudgetPlanBinding;
 import com.upreyvan.carti.databinding.ItemBudgetCategoryBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
+import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
 import androidx.core.util.Pair;
 import com.google.android.material.datepicker.MaterialDatePicker;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,7 +37,7 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
         setupBudgetPeriod();
         setupRecyclerView();
         setupListeners();
-        loadDummyData();
+        loadExistingPlan();
     }
 
     private void setupListeners() {
@@ -44,11 +45,21 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
             AddBudgetCategoryBottomSheet bottomSheet = new AddBudgetCategoryBottomSheet();
             bottomSheet.setListener((name, amount) -> {
                 List<BudgetCategoryItem> currentList = new ArrayList<>(adapter.getCurrentList());
-                // Set default progress to 10% for visualization
-                currentList.add(new BudgetCategoryItem(name, R.drawable.ic_chart, R.color.mint_green, R.color.mint_green_alpha, amount, 10));
+                currentList.add(new BudgetCategoryItem(name, R.drawable.ic_chart, R.color.mint_green, R.color.mint_green_alpha, amount, 0));
                 adapter.submitList(currentList);
             });
             bottomSheet.show(getSupportFragmentManager(), "ADD_CATEGORY_BOTTOM_SHEET");
+        });
+
+        getBinding().btnCreateBudgetPlan.setOnClickListener(v -> {
+            List<BudgetCategoryItem> items = adapter.getCurrentList();
+            if (items.isEmpty()) {
+                ToastHelper.show(this, R.string.msg_fill_all_fields, ToastHelper.Status.ERROR);
+                return;
+            }
+            BudgetManager.getInstance(this).saveBudgetPlan(items);
+            ToastHelper.show(this, R.string.msg_goal_saved_success, ToastHelper.Status.SUCCESS);
+            finish();
         });
     }
 
@@ -80,11 +91,7 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
 
         picker.addOnPositiveButtonClickListener(selection -> {
             if (selection != null && selection.first != null && selection.second != null) {
-                SimpleDateFormat sdf = new SimpleDateFormat("MMM d", Locale.getDefault());
-                String startDate = sdf.format(new Date(selection.first));
-                String endDate = sdf.format(new Date(selection.second));
-                String year = new SimpleDateFormat("yyyy", Locale.getDefault()).format(new Date(selection.second));
-                getBinding().etBudgetPeriod.setText(String.format("%s - %s, %s", startDate, endDate, year));
+                getBinding().etBudgetPeriod.setText(Utils.formatDateRange(selection.first, selection.second));
             }
         });
 
@@ -97,7 +104,7 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
                 (inflater, parent) -> ItemBudgetCategoryBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
                     binding.tvCategoryName.setText(item.getCategoryName());
-                    binding.tvAmount.setText(String.format(Locale.getDefault(), "PHP %,.0f", item.getAmount()));
+                    binding.tvAmount.setText(Utils.formatCurrency(item.getAmount()));
                     binding.tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", item.getPercentage()));
                     binding.pbBudget.setProgress(item.getPercentage());
                     binding.ivIcon.setImageResource(item.getIconRes());
@@ -110,13 +117,12 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
         getBinding().rvCategories.setAdapter(adapter);
     }
 
-    private void loadDummyData() {
-        List<BudgetCategoryItem> items = new ArrayList<>();
-        items.add(new BudgetCategoryItem("Bills & Utilities", R.drawable.ic_calendar, R.color.icon_water, R.color.log_water, 8000, 80));
-        items.add(new BudgetCategoryItem("Grocery", R.drawable.ic_chart, R.color.icon_food, R.color.log_food, 12000, 60));
-        items.add(new BudgetCategoryItem("Transportation", R.drawable.ic_chart, R.color.icon_fare, R.color.log_fare, 4000, 60));
-        items.add(new BudgetCategoryItem("Education", R.drawable.ic_chart, R.color.icon_load, R.color.log_load, 6000, 50));
-        items.add(new BudgetCategoryItem("Emergency Fund", R.drawable.ic_chart, R.color.icon_others, R.color.log_others, 5000, 40));
+    private void loadExistingPlan() {
+        List<BudgetCategoryItem> items = BudgetManager.getInstance(this).getBudgetPlan();
+        if (items.isEmpty()) {
+            items.add(new BudgetCategoryItem("Bills & Utilities", R.drawable.ic_calendar, R.color.icon_water, R.color.log_water, 8000, 0));
+            items.add(new BudgetCategoryItem("Grocery", R.drawable.ic_chart, R.color.icon_food, R.color.log_food, 12000, 0));
+        }
         adapter.submitList(items);
     }
 }

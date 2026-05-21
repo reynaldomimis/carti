@@ -1,6 +1,8 @@
 package com.upreyvan.carti.util;
 
 public class Constants {
+
+    public static String[] sourcesFund = {"Cash", "GCash", "Maya", "Bank Transfer", "Credit Card"};
     public static final class Roles {
         public static final String FATHER = "Father";
         public static final String MOTHER = "Mother";

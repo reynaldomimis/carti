@@ -1,4 +1,4 @@
-package com.upreyvan.carti.ui.expenses;
+package com.upreyvan.carti.ui.track;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.remote.ApiHelper;
@@ -18,11 +19,12 @@ import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.ToastHelper.Status;
+import com.upreyvan.carti.util.Utils;
+
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -155,8 +157,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     }
 
     private void updateMonthDisplay() {
-        SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
-        getBinding().tvCurrentMonth.setText(sdf.format(currentDisplayDate.getTime()));
+        getBinding().tvCurrentMonth.setText(Utils.formatMonthYear(currentDisplayDate));
     }
 
     private void updateMonthAndRefresh() {
@@ -164,22 +165,31 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         observeTransactions();
     }
 
+    private androidx.lifecycle.Observer<List<TransactionWithUser>> transactionObserver = transactions -> {
+        if (transactions != null) {
+            fullList = transactions;
+            applyFilters();
+        }
+    };
+    private LiveData<List<TransactionWithUser>> currentLiveData;
+
     private void observeTransactions() {
-        transactionRepository.getTransactionsByMonth(
+        if (currentLiveData != null) {
+            currentLiveData.removeObserver(transactionObserver);
+        }
+        
+        currentLiveData = transactionRepository.getTransactionsByMonth(
                 currentDisplayDate.get(Calendar.MONTH),
                 currentDisplayDate.get(Calendar.YEAR)
-        ).observe(getViewLifecycleOwner(), transactions -> {
-            if (transactions != null) {
-                fullList = transactions;
-                applyFilters();
-            }
-        });
+        );
+        currentLiveData.observe(getViewLifecycleOwner(), transactionObserver);
+
         transactionRepository.syncTransactionsIfNeeded();
     }
 
     private void setupToolbar() {
         if ("EXPENSE".equals(filterType)) {
-            getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.expenses_title);
+            getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.nav_track);
         } else {
             getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.all_transactions_title);
         }

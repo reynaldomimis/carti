@@ -5,13 +5,13 @@ import androidx.recyclerview.widget.DiffUtil;
 
 import java.util.Objects;
 
-public class ExpenseCategory {
+public class TrackCategory {
     private String name;
     private double amount;
     private float percentage;
     private int color;
 
-    public ExpenseCategory(String name, double amount, float percentage, int color) {
+    public TrackCategory(String name, double amount, float percentage, int color) {
         this.name = name;
         this.amount = amount;
         this.percentage = percentage;
@@ -27,7 +27,7 @@ public class ExpenseCategory {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ExpenseCategory that = (ExpenseCategory) o;
+        TrackCategory that = (TrackCategory) o;
         return Double.compare(that.amount, amount) == 0 &&
                 Float.compare(that.percentage, percentage) == 0 &&
                 color == that.color &&
@@ -39,14 +39,14 @@ public class ExpenseCategory {
         return Objects.hash(name, amount, percentage, color);
     }
 
-    public static final DiffUtil.ItemCallback<ExpenseCategory> DIFF_CALLBACK = new DiffUtil.ItemCallback<ExpenseCategory>() {
+    public static final DiffUtil.ItemCallback<TrackCategory> DIFF_CALLBACK = new DiffUtil.ItemCallback<TrackCategory>() {
         @Override
-        public boolean areItemsTheSame(@NonNull ExpenseCategory oldItem, @NonNull ExpenseCategory newItem) {
+        public boolean areItemsTheSame(@NonNull TrackCategory oldItem, @NonNull TrackCategory newItem) {
             return oldItem.name.equals(newItem.name);
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull ExpenseCategory oldItem, @NonNull ExpenseCategory newItem) {
+        public boolean areContentsTheSame(@NonNull TrackCategory oldItem, @NonNull TrackCategory newItem) {
             return oldItem.equals(newItem);
         }
     };

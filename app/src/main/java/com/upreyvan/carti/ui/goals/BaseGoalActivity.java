@@ -17,12 +17,10 @@ import com.upreyvan.carti.databinding.ItemMemberAvatarSelectBinding;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.util.Utils;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBinding> {
@@ -82,8 +80,7 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
         datePicker.addOnPositiveButtonClickListener(selection -> {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(selection);
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-            getBinding().etTargetDate.setText(sdf.format(calendar.getTime()));
+            getBinding().etTargetDate.setText(Utils.formatDateShort(calendar));
         });
 
         datePicker.show(getSupportFragmentManager(), "DATE_PICKER");

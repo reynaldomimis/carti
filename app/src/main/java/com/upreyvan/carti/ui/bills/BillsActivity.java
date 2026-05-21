@@ -19,7 +19,6 @@ import com.upreyvan.carti.model.CalendarDay;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -126,7 +125,7 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
     private void showAddBillBottomSheet(String day) {
         Calendar cal = (Calendar) currentDisplayMonth.clone();
         cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day));
-        String formattedDate = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(cal.getTime());
+        String formattedDate = Utils.formatDateFull(cal);
         
         AddBillBottomSheet bottomSheet = AddBillBottomSheet.newInstance(formattedDate);
         bottomSheet.show(getSupportFragmentManager(), "AddBillBottomSheet");
@@ -176,8 +175,7 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
     }
 
     private void updateCalendarDisplay() {
-        SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
-        getBinding().tvMonthYear.setText(sdf.format(currentDisplayMonth.getTime()));
+        getBinding().tvMonthYear.setText(Utils.formatMonthYear(currentDisplayMonth));
         if (billAdapter.getCurrentList() != null) {
             loadCalendarDays(billAdapter.getCurrentList());
         } else {

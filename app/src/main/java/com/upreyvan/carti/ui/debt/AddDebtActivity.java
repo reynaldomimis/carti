@@ -31,7 +31,6 @@ import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
 import com.upreyvan.carti.util.ToastHelper.Status;
 import com.upreyvan.carti.util.ValueHelper;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -217,8 +216,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     }
 
     private void updateDateText() {
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-        getBinding().tvDueDate.setText(sdf.format(selectedDueDate.getTime()));
+        getBinding().tvDueDate.setText(Utils.formatDateShort(selectedDueDate));
     }
 
     private void saveDebt() {
@@ -232,7 +230,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         double amount = Double.parseDouble(getBinding().etAmount.getText().toString());
         String purpose = getBinding().etPurpose.getText().toString();
         String notes = getBinding().etNotes.getText().toString();
-        String dueDateStr = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDueDate.getTime());
+        String dueDateStr = Utils.formatDateQuery(selectedDueDate);
         String reminder = getBinding().tvReminder.getText().toString();
 
         showLoading(true, getString(R.string.msg_saving_debt));

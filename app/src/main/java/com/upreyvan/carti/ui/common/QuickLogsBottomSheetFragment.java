@@ -13,9 +13,11 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.databinding.FragmentQuickLogsBottomSheetBinding;
+import com.upreyvan.carti.databinding.LayoutExpenseFormBinding;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.BudgetAllocationHelper;
+import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.TransactionHandler;
@@ -125,7 +127,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
 
     private void setupDropdowns() {
         if (logType == LogType.EXPENSE) {
-            String[] sources = {"Cash", "GCash", "Maya", "Bank Transfer", "Credit Card"};
+            String[] sources = Constants.sourcesFund;
             ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
                     android.R.layout.simple_dropdown_item_1line, sources);
             getBinding().layoutForm.actvSource.setAdapter(adapter);
@@ -201,7 +203,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
 
         switch (logType) {
             case EXPENSE:
-                TransactionHandler.saveExpense(requireContext(), amount, selectedCategory, description, extra, callback);
+                TransactionHandler.saveTrack(requireContext(), amount, selectedCategory, description, extra, callback);
                 break;
             case DEBT:
                 TransactionHandler.saveDebt(requireContext(), amount, extra, description, callback);

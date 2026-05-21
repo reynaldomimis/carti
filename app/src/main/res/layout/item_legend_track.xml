@@ -5,33 +5,31 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingVertical="4dp">
+    android:paddingVertical="@dimen/spacing_xs">
 
     <View
         android:id="@+id/viewColor"
-        android:layout_width="8dp"
-        android:layout_height="8dp"
-        android:background="@drawable/badge_dot"
-        android:backgroundTint="@color/carti_primary_green" />
+        android:layout_width="@dimen/spacing_small"
+        android:layout_height="@dimen/spacing_small"
+        android:background="@drawable/badge_dot" />
 
     <TextView
         android:id="@+id/tvCategory"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="@dimen/spacing_small"
         android:layout_weight="1"
-        android:fontFamily="@font/plus_jakarta_sans_medium"
+        style="@style/CartiTextDescription"
         android:textColor="@color/text_secondary"
-        android:textSize="12sp"
         tools:text="@string/label_food" />
 
     <TextView
-        android:id="@+id/tvAmountPercent"
+        android:id="@+id/tvPercentage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
+        android:layout_marginStart="@dimen/spacing_small"
+        style="@style/CartiHeaderSmall"
         android:textColor="@color/text_primary"
-        android:textSize="12sp"
-        tools:text="@string/placeholder_amount" />
+        tools:text="@string/placeholder_percentage" />
 
 </LinearLayout>

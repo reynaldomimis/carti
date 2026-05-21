@@ -18,7 +18,7 @@ public class TransactionHandler {
      * SENDS TO SERVER ONLY.
      * Room is updated automatically via Realtime in TransactionRepository.
      */
-    public static void saveExpense(Context context, double amount, String categoryName, String description, String source, TransactionCallback callback) {
+    public static void saveTrack(Context context, double amount, String categoryName, String description, String source, TransactionCallback callback) {
         Context appContext = context.getApplicationContext();
         callback.onLoading(true);
 

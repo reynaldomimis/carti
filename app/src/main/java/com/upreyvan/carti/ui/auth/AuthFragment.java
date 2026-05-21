@@ -254,7 +254,7 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
 
                 String name = String.valueOf(userDoc.getOrDefault("username", "User"));
                 String email = String.valueOf(userDoc.getOrDefault("email", ""));
-                String role = String.valueOf(userDoc.getOrDefault("role", "Member"));
+                String role = String.valueOf(userDoc.getOrDefault("role", getString(R.string.role_child)));
                 String familyId = (userDoc.get("familyId") != null && !"null".equals(String.valueOf(userDoc.get("familyId")))) ? String.valueOf(userDoc.get("familyId")) : "";
                 String inviteCode = (userDoc.get("inviteCode") != null && !"null".equals(String.valueOf(userDoc.get("inviteCode")))) ? String.valueOf(userDoc.get("inviteCode")) : "";
                 String userId = String.valueOf(userDoc.getOrDefault("$id", ""));

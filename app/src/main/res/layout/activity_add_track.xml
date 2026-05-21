@@ -26,9 +26,9 @@
 
             <include
                 android:id="@+id/layout_form"
-                layout="@layout/layout_expense_form_content" />
+                layout="@layout/layout_expense_form" />
 
-            <!-- Category Selector for general Add Expense (not Quick Log) -->
+            <!-- Category Selector for general Add Track (not Quick Log) -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilCategory"
                 style="@style/CartiInputLayout.Dropdown"

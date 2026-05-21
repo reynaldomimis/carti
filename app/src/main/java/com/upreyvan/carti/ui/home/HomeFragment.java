@@ -28,14 +28,14 @@ import com.upreyvan.carti.databinding.ItemQuickLogBinding;
 import com.upreyvan.carti.model.AiSuggestion;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.QuickLogItem;
-import com.upreyvan.carti.ui.expenses.AllTransactionsFragment;
+import com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment;
+import com.upreyvan.carti.ui.track.AllTransactionsFragment;
 import com.upreyvan.carti.ui.notifications.NotificationsFragment;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
 
 import androidx.recyclerview.widget.DiffUtil;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -62,7 +62,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private boolean isExpanded = false;
     private RealtimeSubscription userSubscription;
     private RealtimeSubscription familySubscription;
-    private RealtimeSubscription memberSubscription;
     private TransactionRepository transactionRepository;
     private MemberRepository memberRepository;
 
@@ -78,6 +77,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         memberRepository = new MemberRepository(requireContext());
         
         setupDynamicPadding(getBinding().layoutHeader, getBinding().home, 0.3f);
+        initAdapters();
         setupHeaders();
         setupQuickActions();
         setupQuickLog();
@@ -92,6 +92,96 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupAiInsightCard();
         setupAiSuggestions();
         fetchFamilyData();
+    }
+
+    private void updateQuickLogData() {
+        List<Category> categories = CategoryManager.getInstance(requireContext()).getCategories();
+        List<QuickLogItem> items = new ArrayList<>();
+        
+        int limit = isExpanded ? categories.size() : 7;
+        int i = 0;
+        while (i < Math.min(categories.size(), limit)) {
+            Category cat = categories.get(i);
+            items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor()));
+            i++;
+        }
+
+        String othersLabel = getString(R.string.label_others);
+        String seeLessLabel = getString(R.string.see_less);
+
+        if (categories.size() > 7 && !isExpanded) {
+            items.add(new QuickLogItem(othersLabel, android.R.drawable.ic_menu_more, R.color.log_others, R.color.icon_others));
+        } else if (isExpanded) {
+            items.add(new QuickLogItem(seeLessLabel, android.R.drawable.ic_menu_close_clear_cancel, R.color.log_others, R.color.icon_others));
+        }
+
+        quickLogAdapter.submitList(items);
+    }
+
+    private void initAdapters() {
+        if (quickLogAdapter != null) return;
+
+        quickLogAdapter = new GenericAdapter<>(
+                QuickLogItem.DIFF_CALLBACK,
+                (inflater, parent) -> ItemQuickLogBinding.inflate(inflater, parent, false),
+                (binding, item) -> {
+                    binding.tvLabel.setText(item.getTitle());
+                    binding.ivIcon.setImageResource(item.getIconRes());
+
+                    int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
+                    int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
+                    binding.cvIconBg.setCardBackgroundColor(bgColor);
+                    binding.ivIcon.setColorFilter(iconColor);
+                }
+        );
+        quickLogAdapter.setOnItemClickListener(item -> {
+            String othersLabel = getString(R.string.label_others);
+            String seeLessLabel = getString(R.string.see_less);
+            if (Objects.equals(item.getTitle(), othersLabel)) {
+                isExpanded = true;
+                updateQuickLogData();
+            } else if (Objects.equals(item.getTitle(), seeLessLabel)) {
+                isExpanded = false;
+                updateQuickLogData();
+            } else {
+                showQuickLogDialog(item);
+            }
+        });
+        quickLogAdapter.setOnItemLongClickListener(item -> {
+            String othersLabel = getString(R.string.label_others);
+            String seeLessLabel = getString(R.string.see_less);
+            if (!Objects.equals(item.getTitle(), othersLabel) && !Objects.equals(item.getTitle(), seeLessLabel)) {
+                showDeleteCategoryDialog(item);
+                return true;
+            }
+            return false;
+        });
+
+        quickActionsAdapter = new GenericAdapter<>(
+                QuickLogItem.DIFF_CALLBACK,
+                (inflater, parent) -> ItemQuickActionBinding.inflate(inflater, parent, false),
+                (binding, item) -> {
+                    binding.tvLabel.setText(item.getTitle());
+                    binding.ivIcon.setImageResource(item.getIconRes());
+                    int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
+                    int bgColor = ContextCompat.getColor(requireContext(), item.getBgColor());
+                    binding.cvIconBg.setCardBackgroundColor(bgColor);
+                    binding.ivIcon.setColorFilter(iconColor);
+                }
+        );
+        quickActionsAdapter.setOnItemClickListener(item -> {
+            if (item.getTitle().equals(getString(R.string.add_options_expense))) {
+                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(7);
+            } else if (item.getTitle().equals(getString(R.string.action_add_income))) {
+                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(2); 
+            } else if (item.getTitle().equals(getString(R.string.action_family_chat))) {
+                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(5);
+            } else if (item.getTitle().equals(getString(R.string.action_manage_goals))) {
+                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(6);
+            }
+        });
+
+        transactionAdapter = new TransactionAdapter();
     }
 
     private void setupAiSuggestions() {
@@ -206,14 +296,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         Realtime realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
         
         String familyId = pref.getFamilyId();
-        
         String userChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_USERS + ".documents";
+        
+        // Combined subscription to reduce bandwidth and lag
         userSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
             checkNotifications(new ApiHelper(requireContext()), pref);
-            return null;
-        });
-
-        memberSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
             if (memberRepository != null) {
                 memberRepository.refreshMembers();
             }
@@ -327,8 +414,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().viewHomeDashboard.tvTotalSavings.setText(getString(R.string.format_currency, totalBalance));
         getBinding().viewHomeDashboard.tvSavingsTrend.setText("12.5%");
 
-        String currentMonth = new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(new java.util.Date());
-        getBinding().viewHomeDashboard.tvOverviewDate.setText(currentMonth);
+        getBinding().viewHomeDashboard.tvOverviewDate.setText(Utils.formatMonthYear(Calendar.getInstance()));
     }
 
     private void setupPaydayCard() {
@@ -342,14 +428,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().viewHomeDashboard.tvDaysRemaining.setText(getString(R.string.days_to_go, daysLeft));
         getBinding().viewHomeDashboard.tvPaydayFor.setText(getString(R.string.next_payday_for, name));
 
-        SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
-        String dateStr = sdf.format(nextPayday.getTime());
-        getBinding().viewHomeDashboard.tvPaydayDate.setText(dateStr);
+        getBinding().viewHomeDashboard.tvPaydayDate.setText(Utils.formatDateFull(nextPayday));
     }
 
     private void setupBudgetPlanPrompt() {
         PreferenceManager pref = new PreferenceManager(requireContext());
-        String currentMonth = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new java.util.Date());
+        String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
         String dismissedMonth = pref.getBudgetPlanDismissedMonth();
 
         if (currentMonth.equals(dismissedMonth)) {
@@ -373,7 +457,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     public void onDestroyView() {
         if (userSubscription != null) userSubscription.close();
         if (familySubscription != null) familySubscription.close();
-        if (memberSubscription != null) memberSubscription.close();
         
         if (transactionRepository != null) transactionRepository.onDestroy();
         if (memberRepository != null) memberRepository.onDestroy();
@@ -423,8 +506,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().viewHeaderQuickLog.tvSectionSubTitle.setText(R.string.quick_log_subtitle);
         
         getBinding().viewHeaderQuickLog.getRoot().setOnClickListener(v -> {
-            com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment fragment = 
-                    com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment.newInstance(null);
+            QuickLogsBottomSheetFragment fragment =  QuickLogsBottomSheetFragment.newInstance(null);
             fragment.show(getChildFragmentManager(), "QUICK_LOG_BOTTOM_SHEET");
         });
 
@@ -437,102 +519,16 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void setupQuickLog() {
-        List<Category> categories = CategoryManager.getInstance(requireContext()).getCategories();
-        List<QuickLogItem> items = new ArrayList<>();
-        
-        int limit = isExpanded ? categories.size() : 7;
-        int i = 0;
-        while (i < Math.min(categories.size(), limit)) {
-            Category cat = categories.get(i);
-            items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor()));
-            i++;
-        }
-
-        String othersLabel = getString(R.string.label_others);
-        String seeLessLabel = getString(R.string.see_less);
-
-        if (categories.size() > 7 && !isExpanded) {
-            items.add(new QuickLogItem(othersLabel, android.R.drawable.ic_menu_more, R.color.log_others, R.color.icon_others));
-        } else if (isExpanded) {
-            items.add(new QuickLogItem(seeLessLabel, android.R.drawable.ic_menu_close_clear_cancel, R.color.log_others, R.color.icon_others));
-        }
-
-        quickLogAdapter = new GenericAdapter<>(
-                QuickLogItem.DIFF_CALLBACK,
-                (inflater, parent) -> ItemQuickLogBinding.inflate(inflater, parent, false),
-                (binding, item) -> {
-                    binding.tvLabel.setText(item.getTitle());
-                    binding.ivIcon.setImageResource(item.getIconRes());
-
-                    int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
-                    int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
-                    binding.cvIconBg.setCardBackgroundColor(bgColor);
-                    binding.ivIcon.setColorFilter(iconColor);
-                }
-        );
-        
-        quickLogAdapter.setOnItemClickListener(item -> {
-            if (Objects.equals(item.getTitle(), othersLabel)) {
-                isExpanded = true;
-                setupQuickLog();
-            } else if (Objects.equals(item.getTitle(), seeLessLabel)) {
-                isExpanded = false;
-                setupQuickLog();
-            } else {
-                showQuickLogDialog(item);
-            }
-        });
-
-        quickLogAdapter.setOnItemLongClickListener(item -> {
-            if (!Objects.equals(item.getTitle(), othersLabel) && !Objects.equals(item.getTitle(), seeLessLabel)) {
-                showDeleteCategoryDialog(item);
-                return true;
-            }
-            return false;
-        });
-
-        quickLogAdapter.submitList(items);
         getBinding().rvQuickLog.setAdapter(quickLogAdapter);
+        updateQuickLogData();
     }
 
     private void setupQuickActions() {
         List<QuickLogItem> actions = new ArrayList<>();
-        // 1. Full Add Expense
         actions.add(new QuickLogItem(getString(R.string.add_options_expense), R.drawable.ic_add, R.color.status_red_tonal, R.color.status_red));
-        // 2. Add Income (New)
         actions.add(new QuickLogItem(getString(R.string.action_add_income), R.drawable.ic_arrow_up, R.color.dash_green_alpha, R.color.dash_green));
-        // 3. Family Chat
         actions.add(new QuickLogItem(getString(R.string.action_family_chat), R.drawable.ic_sync, R.color.log_fare, R.color.carti_primary_blue));
-        // 4. Manage Goals
         actions.add(new QuickLogItem(getString(R.string.action_manage_goals), R.drawable.ic_trophy, R.color.mint_green_alpha, R.color.mint_green));
-
-        quickActionsAdapter = new GenericAdapter<>(
-                QuickLogItem.DIFF_CALLBACK,
-                (inflater, parent) -> ItemQuickActionBinding.inflate(inflater, parent, false),
-                (binding, item) -> {
-                    binding.tvLabel.setText(item.getTitle());
-                    binding.ivIcon.setImageResource(item.getIconRes());
-                    int iconColor = ContextCompat.getColor(requireContext(), item.getIconColor());
-                    int bgColor = ContextCompat.getColor(requireContext(), item.getBgColor());
-                    binding.cvIconBg.setCardBackgroundColor(bgColor);
-                    binding.ivIcon.setColorFilter(iconColor);
-                }
-        );
-
-        quickActionsAdapter.setOnItemClickListener(item -> {
-            if (item.getTitle().equals(getString(R.string.add_options_expense))) {
-                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(7);
-            } else if (item.getTitle().equals(getString(R.string.action_add_income))) {
-                // Navigate to Income Mode or show Add Income BS
-                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(2); 
-            } else if (item.getTitle().equals(getString(R.string.action_family_chat))) {
-                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(5);
-            } else if (item.getTitle().equals(getString(R.string.action_manage_goals))) {
-                // Navigate to Goals
-                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(6);
-            }
-        });
-
         getBinding().rvQuickActions.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         getBinding().rvQuickActions.setAdapter(quickActionsAdapter);
         quickActionsAdapter.submitList(actions);

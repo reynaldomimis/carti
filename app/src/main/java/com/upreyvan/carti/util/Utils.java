@@ -251,6 +251,80 @@ public class Utils {
         return sdf.format(new Date());
     }
 
+    public static String formatMonthYear(Calendar calendar) {
+        return new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(calendar.getTime());
+    }
+
+    public static String formatDateFull(Calendar calendar) {
+        return new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault()).format(calendar.getTime());
+    }
+
+    public static String formatDateShort(Calendar calendar) {
+        return new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.getTime());
+    }
+
+    public static String formatDateQuery(Calendar calendar) {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.getTime());
+    }
+
+    public static String formatTime(Calendar calendar) {
+        return new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(calendar.getTime());
+    }
+
+    public static String formatMonthQuery(Calendar calendar) {
+        return new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(calendar.getTime());
+    }
+
+    public static String formatDateRange(long start, long end) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM d", Locale.getDefault());
+        String startDate = sdf.format(new Date(start));
+        String endDate = sdf.format(new Date(end));
+        String year = new SimpleDateFormat("yyyy", Locale.getDefault()).format(new Date(end));
+        return String.format("%s - %s, %s", startDate, endDate, year);
+    }
+
+    public static long getMonthStartMillis(Calendar calendar) {
+        Calendar start = (Calendar) calendar.clone();
+        start.set(Calendar.DAY_OF_MONTH, 1);
+        start.set(Calendar.HOUR_OF_DAY, 0);
+        start.set(Calendar.MINUTE, 0);
+        start.set(Calendar.SECOND, 0);
+        start.set(Calendar.MILLISECOND, 0);
+        return start.getTimeInMillis();
+    }
+
+    public static long getMonthEndMillis(Calendar calendar) {
+        Calendar end = (Calendar) calendar.clone();
+        end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH));
+        end.set(Calendar.HOUR_OF_DAY, 23);
+        end.set(Calendar.MINUTE, 59);
+        end.set(Calendar.SECOND, 59);
+        end.set(Calendar.MILLISECOND, 999);
+        return end.getTimeInMillis();
+    }
+
+    public static long getYearStartMillis(Calendar calendar) {
+        Calendar start = (Calendar) calendar.clone();
+        start.set(Calendar.MONTH, Calendar.JANUARY);
+        start.set(Calendar.DAY_OF_MONTH, 1);
+        start.set(Calendar.HOUR_OF_DAY, 0);
+        start.set(Calendar.MINUTE, 0);
+        start.set(Calendar.SECOND, 0);
+        start.set(Calendar.MILLISECOND, 0);
+        return start.getTimeInMillis();
+    }
+
+    public static long getYearEndMillis(Calendar calendar) {
+        Calendar end = (Calendar) calendar.clone();
+        end.set(Calendar.MONTH, Calendar.DECEMBER);
+        end.set(Calendar.DAY_OF_MONTH, 31);
+        end.set(Calendar.HOUR_OF_DAY, 23);
+        end.set(Calendar.MINUTE, 59);
+        end.set(Calendar.SECOND, 59);
+        end.set(Calendar.MILLISECOND, 999);
+        return end.getTimeInMillis();
+    }
+
     public static String getMonthStart(int month, int year) {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, year);

@@ -25,7 +25,7 @@
         android:fontFamily="@font/plus_jakarta_sans_medium"
         android:textColor="@color/text_primary"
         android:textSize="14sp"
-        tools:text="@string/nav_expenses" />
+        tools:text="@string/nav_track" />
 
     <ImageView
         android:id="@+id/ivCheck"

@@ -13,8 +13,11 @@
     <string name="quick_log_subtitle">Tap once to record</string>
     <string name="customize">Customize</string>
     <string name="recent_activity">Recents Activity</string>
+    <string name="recent_transactions">Recents transactions</string>
+    <string name="track_summary">Track Summary</string>
     <string name="see_all">See all</string>
     <string name="see_less">See Less</string>
+
 
     <!-- Quick Log Items -->
     <string name="label_food">Food</string>
@@ -28,7 +31,7 @@
 
     <!-- Bottom Nav -->
     <string name="nav_home">Home</string>
-    <string name="nav_expenses">Expenses</string>
+    <string name="nav_track">Track</string>
     <string name="nav_add">Add</string>
     <string name="nav_debt">Debt</string>
     <string name="nav_ranking">Ranking</string>
@@ -38,7 +41,7 @@
     <string name="notifications">Notifications</string>
 
     <!-- All Transactions Fragment -->
-    <string name="all_transactions_title">All Expenses</string>
+    <string name="all_transactions_title">All Activity</string>
     <string name="bills_title">Bills</string>
 
     <!-- AI Assistant -->
@@ -210,7 +213,7 @@
     <string name="label_paid_on">Paid on %s</string>
 
     <!-- Expenses -->
-    <string name="add_expense_title">New Expense</string>
+    <string name="add_expense_title">New Record</string>
     <string name="label_what_bought">What did you buy?</string>
     <string name="hint_what_bought">e.g. Starbucks Coffee</string>
     <string name="hint_select_category">Select Category</string>
@@ -218,9 +221,15 @@
     <string name="hint_select_source">Select Source</string>
     <string name="label_balance_allocation">Balance Allocation</string>
     <string name="label_budget_plan_allocation">Budget Plan Allocation</string>
-    <string name="btn_save_expense">Save Expense</string>
-    <string name="category_expense_label">%s Expense Allocation</string>
-    <string name="quick_log_expense_title">Quick Expense</string>
+    <string name="label_budget_allocation">Budget Allocation</string>
+    <string name="label_total_allocation">Total Allocation: %s</string>
+    <string name="btn_save_expense">Save Track</string>
+    <string name="label_income_vs_expense">Income vs Expense</string>
+    <string name="label_income">Income</string>
+    <string name="label_expense">Expense</string>
+    <string name="format_currency_no_decimal_simple">₱%,.0f</string>
+    <string name="category_expense_label">%s Allocation</string>
+    <string name="quick_log_expense_title">Quick Track</string>
 
     <!-- Income Mode -->
     <string name="income_mode_title">Income Mode</string>
@@ -407,6 +416,8 @@
     <string name="hint_add_reminder">Add Reminder</string>
     <string name="expenses_title">Expenses</string>
     <string name="label_total_spent">Total Spent</string>
+    <string name="spending_overview">Spending Overview</string>
+    <string name="this_month">This Month</string>
     <string name="percentage_decrease_format">vs last period: %s</string>
     <string name="family_chat_title">Family Chat</string>
     <string name="total_savings_label">Total Savings</string>
@@ -554,11 +565,11 @@
     <string name="currency_symbol">₱</string>
     <string name="msg_saving_debt">Saving debt...</string>
     <string name="msg_saving_goal">Saving goal...</string>
-    <string name="msg_saving_expense">Saving expense...</string>
+    <string name="msg_saving_expense">Saving...</string>
     <string name="msg_fill_name_amount">Please fill name and amount</string>
     <string name="msg_debt_saved">Debt Saved!</string>
     <string name="msg_goal_saved_success">Goal Saved Successfully!</string>
-    <string name="msg_expense_saved">Expense Saved!</string>
+    <string name="msg_expense_saved">Record Saved!</string>
     <string name="msg_fill_all_fields">Please fill in all fields</string>
     <string name="title_add_category">Add Category</string>
     <string name="title_customize_quick_log">Customize Quick Log</string>

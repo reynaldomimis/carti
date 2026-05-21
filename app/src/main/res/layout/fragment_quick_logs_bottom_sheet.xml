@@ -44,7 +44,7 @@
 
                 <include
                     android:id="@+id/layout_form"
-                    layout="@layout/layout_expense_form_content" />
+                    layout="@layout/layout_expense_form" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

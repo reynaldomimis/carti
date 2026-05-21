@@ -24,7 +24,7 @@ import com.upreyvan.carti.ui.family.FamilyChatFragment;
 import com.upreyvan.carti.ui.goals.GoalFragment;
 import com.upreyvan.carti.ui.debt.DebtTrackerFragment;
 import com.upreyvan.carti.ui.family.MembersFragment;
-import com.upreyvan.carti.ui.expenses.IncomeModeFragment;
+import com.upreyvan.carti.ui.track.IncomeModeFragment;
 import com.upreyvan.carti.ui.profile.SettingsFragment;
 import com.upreyvan.carti.model.ProfileMenuItem;
 import com.upreyvan.carti.util.Utils;

@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/spacing_medium"
+        android:paddingVertical="@dimen/spacing_medium"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvHeaderTitle"
+            style="@style/CartiHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/track_summary"
+            android:textSize="@dimen/text_size_h1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/bottom_nav_medium"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_medium">
+
+            <!-- Filter Tabs -->
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabFilter"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:background="@android:color/transparent"
+                app:tabBackground="@drawable/sl_tab_pill"
+                app:tabIndicatorAnimationMode="linear"
+                app:tabIndicator="@drawable/bg_pill_green"
+                app:tabIndicatorGravity="center"
+                app:tabIndicatorHeight="32dp"
+                app:tabIndicatorFullWidth="true"
+                app:tabMode="scrollable"
+                app:tabMinWidth="0dp"
+                app:tabPaddingStart="@dimen/spacing_medium"
+                app:tabPaddingEnd="@dimen/spacing_medium"
+                app:tabRippleColor="@null"
+                app:tabSelectedTextColor="@color/white"
+                app:tabTextColor="@color/text_secondary"
+                app:tabTextAppearance="@style/CartiHeaderSmall" />
+
+            <!-- Track Summary Card -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/CartiCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_medium">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/plus_jakarta_sans_bold"
+                        android:text="@string/spending_overview"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <!-- Real PieChart from library -->
+                        <com.github.mikephil.charting.charts.PieChart
+                            android:id="@+id/pieChart"
+                            android:layout_width="@dimen/pie_chart_size"
+                            android:layout_height="@dimen/pie_chart_size" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvLegend"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_medium"
+                            android:nestedScrollingEnabled="false"
+                            tools:listitem="@layout/item_legend_track" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Income vs Expense Card -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/DashCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:strokeColor="@color/border_subtle"
+                app:strokeWidth="1dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/spacing_medium">
+
+                    <TextView
+                        android:id="@+id/tvIncomeVsExpenseTitle"
+                        style="@style/CartiHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_income_vs_expense"
+                        android:textSize="@dimen/text_size_body"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutIncomeLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_medium"
+                        android:orientation="vertical"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvIncomeVsExpenseTitle">
+
+                        <TextView
+                            style="@style/CartiSubHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_income"
+                            android:color="@color/carti_primary_green"
+                            android:textSize="@dimen/text_size_xxs" />
+
+                        <TextView
+                            android:id="@+id/tvIncomeAmountComp"
+                            style="@style/CartiHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textSize="@dimen/text_size_body"
+                            tools:text="₱65,600" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutExpenseLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:orientation="vertical"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/layoutIncomeLabel">
+
+                        <TextView
+                            style="@style/CartiSubHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_expense"
+                            android:color="@color/status_red"
+                            android:textSize="@dimen/text_size_xxs" />
+
+                        <TextView
+                            android:id="@+id/tvExpenseAmountComp"
+                            style="@style/CartiHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textSize="@dimen/text_size_body"
+                            tools:text="₱45,250" />
+                    </LinearLayout>
+
+                    <!-- Custom Bars -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="100dp"
+                        android:layout_marginStart="@dimen/spacing_xl"
+                        android:gravity="bottom"
+                        android:paddingTop="@dimen/spacing_small"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/layoutIncomeLabel"
+                        app:layout_constraintTop_toBottomOf="@id/tvIncomeVsExpenseTitle">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="bottom|center_horizontal"
+                            android:orientation="vertical">
+                            <View
+                                android:id="@+id/barIncome"
+                                android:layout_width="32dp"
+                                android:layout_height="80dp"
+                                android:background="@drawable/bg_pill_green" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="@dimen/spacing_medium"
+                            android:layout_height="match_parent" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="bottom|center_horizontal"
+                            android:orientation="vertical">
+                            <View
+                                android:id="@+id/barExpense"
+                                android:layout_width="32dp"
+                                android:layout_height="50dp"
+                                android:background="@drawable/bg_pill_red" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Budget Allocation Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardBudgetAllocation"
+                style="@style/DashCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_medium">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/tvAllocationTitle"
+                            style="@style/CartiHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_budget_allocation"
+                            android:textSize="@dimen/text_size_body"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tvTotalAllocation"
+                            style="@style/DashLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/plus_jakarta_sans_semibold"
+                            android:textColor="@color/carti_primary_green"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tvAllocationTitle"
+                            tools:text="Total: PHP 120,000" />
+
+                        <TextView
+                            android:id="@+id/btnViewAllAllocation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:drawablePadding="4dp"
+                            android:fontFamily="@font/plus_jakarta_sans_bold"
+                            android:gravity="center_vertical"
+                            android:text="@string/see_all"
+                            android:textColor="@color/carti_primary_green"
+                            android:textSize="@dimen/text_size_xxs"
+                            app:drawableEndCompat="@drawable/ic_chevron_right"
+                            app:drawableTint="@color/carti_primary_green"
+                            app:layout_constraintBottom_toBottomOf="@id/tvAllocationTitle"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/tvAllocationTitle" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvBudgetAllocation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:nestedScrollingEnabled="false"
+                        tools:itemCount="3"
+                        tools:listitem="@layout/item_budget_category" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Transactions Section -->
+            <include
+                android:id="@+id/viewHeaderTransactions"
+                layout="@layout/view_section_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:paddingBottom="@dimen/spacing_large">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTransactions"
+                    style="@style/CartiCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:contentPaddingBottom="12dp">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvTransactions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:scrollbars="none"
+                        tools:listitem="@layout/item_transaction" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:id="@+id/layoutEmptyState"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/spacing_large"
+                    android:layout_marginBottom="@dimen/spacing_large"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:id="@+id/ivEmptyIcon"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:contentDescription="@string/no_expenses_title"
+                        android:src="@drawable/ic_calendar"
+                        app:tint="@color/surface_variant" />
+
+                    <TextView
+                        android:id="@+id/tvEmptyTitle"
+                        style="@style/CartiHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_medium"
+                        android:text="@string/no_expenses_title"
+                        android:textSize="@dimen/text_size_header" />
+
+                    <TextView
+                        android:id="@+id/tvEmptyDesc"
+                        style="@style/CartiSubHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:gravity="center"
+                        android:text="@string/no_expenses_desc"
+                        android:textSize="@dimen/text_size_body_small" />
+
+                </LinearLayout>
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

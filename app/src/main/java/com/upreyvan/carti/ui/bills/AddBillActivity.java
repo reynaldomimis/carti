@@ -12,7 +12,6 @@ import com.upreyvan.carti.model.Bill;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.UUID;
@@ -60,7 +59,7 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
             String name = getBinding().etBillName.getText().toString();
             String amount = "₱" + getBinding().etAmount.getText().toString();
             String familyId = new PreferenceManager(this).getFamilyId();
-            String date = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Calendar.getInstance().getTime());
+            String date = Utils.formatDateShort(Calendar.getInstance());
             
             Bill newBill = new Bill(
                     UUID.randomUUID().toString(),
