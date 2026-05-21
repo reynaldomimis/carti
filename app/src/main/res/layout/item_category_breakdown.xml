@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_medium"
     android:layout_marginBottom="@dimen/spacing_small"
+    android:layout_marginHorizontal="@dimen/spacing_medium"
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="@dimen/radius_medium"
     app:cardElevation="0dp"
@@ -18,62 +18,71 @@
         android:padding="@dimen/spacing_medium">
 
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cvAvatar"
-            android:layout_width="@dimen/icon_size_xl"
-            android:layout_height="@dimen/icon_size_xl"
-            app:cardBackgroundColor="@color/surface_variant"
-            app:cardCornerRadius="@dimen/pill_corner_radius"
+            android:id="@+id/cvIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:strokeWidth="0dp">
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivAvatar"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
+            <ImageView
+                android:id="@+id/ivIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                tools:src="@android:drawable/ic_menu_gallery" />
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:id="@+id/tvName"
+            android:id="@+id/tvCategory"
             style="@style/CartiTextTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_medium"
-            android:textSize="@dimen/text_size_body"
-            app:layout_constraintEnd_toStartOf="@+id/tvBtnViewExpenses"
-            app:layout_constraintStart_toEndOf="@id/cvAvatar"
-            app:layout_constraintTop_toTopOf="@id/cvAvatar"
-            tools:text="Reynaldo Mimis" />
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintEnd_toStartOf="@+id/tvAmount"
+            app:layout_constraintStart_toEndOf="@id/cvIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Food &amp; Drinks" />
 
         <TextView
-            android:id="@+id/tvContributionLabel"
+            android:id="@+id/tvDescription"
             style="@style/CartiTextDescription"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_secondary"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textSize="@dimen/text_size_xxs"
-            app:layout_constraintEnd_toStartOf="@+id/tvBtnViewExpenses"
-            app:layout_constraintStart_toStartOf="@id/tvName"
-            app:layout_constraintTop_toBottomOf="@id/tvName"
-            tools:text="Profile Contribution: ₱25,600.00" />
+            app:layout_constraintEnd_toStartOf="@+id/tvTimestamp"
+            app:layout_constraintStart_toStartOf="@id/tvCategory"
+            app:layout_constraintTop_toBottomOf="@id/tvCategory"
+            tools:text="Bought dinner for family" />
 
         <TextView
-            android:id="@+id/tvBtnViewExpenses"
+            android:id="@+id/tvAmount"
+            style="@style/CartiHeaderSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
-            android:text="View Expenses"
-            android:textColor="@color/carti_primary_green"
+            android:textColor="@color/status_red"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="₱4,500.00" />
+
+        <TextView
+            android:id="@+id/tvTimestamp"
+            style="@style/CartiTextDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textSize="@dimen/text_size_xxs"
-            android:background="?attr/selectableItemBackground"
-            android:padding="@dimen/spacing_xs"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/tvAmount"
+            tools:text="10:30 AM" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

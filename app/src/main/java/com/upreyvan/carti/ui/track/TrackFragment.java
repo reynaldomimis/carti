@@ -21,6 +21,7 @@ import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.local.CategoryManager;
+import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.FragmentTrackBinding;
 import com.upreyvan.carti.databinding.ItemBudgetCategoryBinding;
@@ -48,9 +49,12 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
     private GenericAdapter<BudgetCategoryItem, ItemBudgetCategoryBinding> allocationAdapter;
     private TransactionAdapter transactionAdapter;
     private TransactionRepository transactionRepository;
+    private PreferenceManager preferenceManager;
     private List<TransactionWithUser> fullTrackList = new ArrayList<>();
     private final List<BudgetCategoryItem> allAllocations = new ArrayList<>();
     private boolean isAllocationExpanded = false;
+    private long currentStartMillis;
+    private long currentEndMillis;
 
     @Override
     protected FragmentTrackBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -61,15 +65,57 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(requireContext());
+        preferenceManager = new PreferenceManager(requireContext());
         
         setupDynamicPadding(getBinding().layoutHeader, getBinding().scrollView, 0.3f);
         setupFilterTabs();
+        setupSummaryCards();
         setupChart();
         setupLegend();
         setupBudgetAllocation();
         setupTransactions();
+        
+        // Default to "This Month"
         updateDataForRange(0);
         transactionRepository.syncTransactionsIfNeeded();
+    }
+
+    private void setupSummaryCards() {
+        // Initial state
+        getBinding().layoutSummary.tvTotalBalance.setText(Utils.formatCurrency(0));
+        getBinding().layoutSummary.tvSummaryIncome.setText(getString(R.string.format_currency_no_decimal_simple, 0.0));
+        getBinding().layoutSummary.tvSummaryExpense.setText(getString(R.string.format_currency_no_decimal_simple, 0.0));
+        
+        getBinding().layoutSummary.tvSavingsAmount.setText(String.format(Locale.getDefault(), "%s / %s", Utils.formatCurrency(0), Utils.formatCurrency(0)));
+        getBinding().layoutSummary.tvSavingsPercent.setText(getString(R.string.zero_percent));
+        getBinding().layoutSummary.progressSavings.setProgress(0);
+
+        // Initial setup for labels
+        getBinding().layoutSummary.tvSummaryIncomeLabel.setText(R.string.label_monthly_income);
+        getBinding().layoutSummary.tvSummaryExpenseLabel.setText(R.string.label_monthly_expenses);
+
+        // Savings Progress remains tied to goals
+        transactionRepository.getGoals().observe(getViewLifecycleOwner(), goals -> {
+            double savedAmount = 0;
+            double targetAmount = 0;
+            
+            if (goals != null && !goals.isEmpty()) {
+                for (TransactionWithUser tWithU : goals) {
+                    savedAmount += tWithU.getTransaction().getAmount();
+                    targetAmount += tWithU.getTransaction().getTargetAmount();
+                }
+            }
+            
+            int progress = targetAmount > 0 ? (int) ((savedAmount / targetAmount) * 100) : 0;
+            String progressText = String.format(Locale.getDefault(), "%s / %s", Utils.formatCurrency(savedAmount), Utils.formatCurrency(targetAmount));
+            
+            getBinding().layoutSummary.tvSavingsAmount.setText(progressText);
+            getBinding().layoutSummary.tvSavingsPercent.setText(getString(R.string.percentage_format, progress));
+            getBinding().layoutSummary.progressSavings.setProgress(progress);
+        });
+
+        getBinding().layoutSummary.btnViewDetails.setOnClickListener(v -> navigateTo(IncomeContributorsFragment.newInstance(currentStartMillis, currentEndMillis)));
+        getBinding().layoutSummary.cardTotalBalance.setOnClickListener(v -> navigateTo(IncomeContributorsFragment.newInstance(currentStartMillis, currentEndMillis)));
     }
 
     private void setupFilterTabs() {
@@ -95,29 +141,41 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
     }
 
     private void updateDataForRange(int position) {
-        long startMillis;
-        long endMillis;
         Calendar cal = Calendar.getInstance();
+
+        // Update Labels based on selection
+        String incomeLabel;
+        String expenseLabel;
 
         switch (position) {
             case 1: // Last Month
                 cal.add(Calendar.MONTH, -1);
-                startMillis = Utils.getMonthStartMillis(cal);
-                endMillis = Utils.getMonthEndMillis(cal);
+                currentStartMillis = Utils.getMonthStartMillis(cal);
+                currentEndMillis = Utils.getMonthEndMillis(cal);
+                incomeLabel = getString(R.string.label_last_month_income);
+                expenseLabel = getString(R.string.label_last_month_expenses);
                 break;
             case 2: // This Year
-                startMillis = Utils.getYearStartMillis(cal);
-                endMillis = Utils.getYearEndMillis(cal);
+                currentStartMillis = Utils.getYearStartMillis(cal);
+                currentEndMillis = Utils.getYearEndMillis(cal);
+                incomeLabel = getString(R.string.label_total_income);
+                expenseLabel = getString(R.string.label_total_expenses);
                 break;
             default: // This Month
-                startMillis = Utils.getMonthStartMillis(cal);
-                endMillis = Utils.getMonthEndMillis(cal);
+                currentStartMillis = Utils.getMonthStartMillis(cal);
+                currentEndMillis = Utils.getMonthEndMillis(cal);
+                incomeLabel = getString(R.string.label_monthly_income);
+                expenseLabel = getString(R.string.label_monthly_expenses);
                 break;
         }
 
-        transactionRepository.getTransactionsInRange(startMillis, endMillis)
+        getBinding().layoutSummary.tvSummaryIncomeLabel.setText(incomeLabel);
+        getBinding().layoutSummary.tvSummaryExpenseLabel.setText(expenseLabel);
+
+        transactionRepository.getTransactionsInRange(currentStartMillis, currentEndMillis)
                 .observe(getViewLifecycleOwner(), transactions -> {
                     if (transactions != null) {
+                        updateSummaryData(transactions);
                         updateIncomeVsExpense(transactions);
                         fullTrackList.clear();
                         for (TransactionWithUser t : transactions) {
@@ -129,6 +187,23 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
                         applyFilters();
                     }
                 });
+    }
+
+    private void updateSummaryData(List<TransactionWithUser> transactions) {
+        double income = 0;
+        double expense = 0;
+        for (TransactionWithUser tWithU : transactions) {
+            Transaction t = tWithU.getTransaction();
+            if ("INCOME".equals(t.getType())) {
+                income += t.getAmount();
+            } else if ("EXPENSE".equals(t.getType())) {
+                expense += t.getAmount();
+            }
+        }
+        double balance = income - expense;
+        getBinding().layoutSummary.tvTotalBalance.setText(Utils.formatCurrency(balance));
+        getBinding().layoutSummary.tvSummaryIncome.setText(getString(R.string.format_currency_no_decimal_simple, income));
+        getBinding().layoutSummary.tvSummaryExpense.setText(getString(R.string.format_currency_no_decimal_simple, expense));
     }
 
     private void setupBudgetAllocation() {
@@ -196,8 +271,9 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
     private void applyFilters() {
         transactionAdapter.submitList(new ArrayList<>(fullTrackList));
         boolean isEmpty = fullTrackList.isEmpty();
-        getBinding().cardTransactions.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-        getBinding().layoutEmptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        getBinding().rvTransactions.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        getBinding().tvNoTransactions.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        getBinding().viewHeaderTransactions.btnSectionAction.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
         calculateBudgetProgress(fullTrackList);
     }
@@ -352,10 +428,14 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
         getBinding().tvIncomeAmountComp.setText(Utils.formatCurrency(totalIncome));
         getBinding().tvExpenseAmountComp.setText(Utils.formatCurrency(totalExpense));
 
+        // Update Bar heights dynamically
+        // Income is the reference (100% height of the container)
+        // Expense is relative to Income. If Expense > Income, it caps at container height.
         float max = (float) Math.max(totalIncome, totalExpense);
         if (max == 0) max = 1;
 
-        int maxHeightPx = Utils.dpToPx(requireContext(), 100);
+        // Container height is fixed at 120dp in XML
+        int maxHeightPx = Utils.dpToPx(requireContext(), 120);
         
         ViewGroup.LayoutParams incomeParams = getBinding().barIncome.getLayoutParams();
         incomeParams.height = (int) ((totalIncome / max) * maxHeightPx);

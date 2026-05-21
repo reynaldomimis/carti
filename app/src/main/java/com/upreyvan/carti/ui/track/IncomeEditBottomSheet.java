@@ -68,7 +68,9 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
             case ADD_INCOME:
                 getBinding().tvDialogTitle.setText(R.string.title_add_income);
                 getBinding().cardSource.setVisibility(View.VISIBLE);
+                getBinding().tilIncomeSource.setHint(getString(R.string.label_title));
                 getBinding().etIncomeSource.setHint(R.string.hint_income_source);
+                getBinding().tilSalaryAmount.setHint(getString(R.string.label_bill_amount));
                 getBinding().etSalaryAmount.setText("");
                 getBinding().btnSave.setText(R.string.label_add_income);
                 break;
@@ -76,6 +78,8 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
             case EDIT_INCOME:
                 getBinding().tvDialogTitle.setText(R.string.title_edit_income_extra);
                 getBinding().cardSource.setVisibility(View.VISIBLE);
+                getBinding().tilIncomeSource.setHint(getString(R.string.label_title));
+                getBinding().tilSalaryAmount.setHint(getString(R.string.label_bill_amount));
                 if (incomeToEdit != null) {
                     getBinding().etIncomeSource.setText(ValueHelper.toStr(incomeToEdit.getTitle()));
                     getBinding().etSalaryAmount.setText(String.valueOf(incomeToEdit.getAmount()));
@@ -119,6 +123,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         income.setTitle(source);
         income.setAmount(amount);
         income.setCategory("Income");
+        income.setNote(source); // Set note same as title
         income.setUserId(com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getUserId());
 
         transactionRepository.addTransaction(income, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {

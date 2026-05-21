@@ -15,7 +15,6 @@ import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.data.remote.RealtimeHelper;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.R;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -278,6 +277,7 @@ public class TransactionRepository {
         data.put("category", transaction.getCategory());
         data.put("description", transaction.getDescription());
         data.put("type", transaction.getType());
+        data.put("note", transaction.getNote());
 
         if ("INCOME".equals(transaction.getType())) {
             data.put("source", transaction.getTitle());

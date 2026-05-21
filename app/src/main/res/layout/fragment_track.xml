@@ -64,6 +64,11 @@
                 app:tabTextColor="@color/text_secondary"
                 app:tabTextAppearance="@style/CartiHeaderSmall" />
 
+            <!-- Track Summary Section -->
+            <include
+                android:id="@+id/layoutSummary"
+                layout="@layout/view_track_summary" />
+
             <!-- Track Summary Card -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/CartiCard"
@@ -152,7 +157,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_income"
-                            android:color="@color/carti_primary_green"
                             android:textSize="@dimen/text_size_xxs" />
 
                         <TextView
@@ -161,8 +165,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:textSize="@dimen/text_size_body"
-                            tools:text="₱65,600" />
+                            android:textColor="@color/carti_primary_green"
+                            android:textSize="@dimen/text_size_body" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -188,17 +192,17 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:textSize="@dimen/text_size_body"
-                            tools:text="₱45,250" />
+                            android:textColor="@color/status_red"
+                            android:textSize="@dimen/text_size_body" />
                     </LinearLayout>
 
-                    <!-- Custom Bars -->
                     <LinearLayout
+                        android:id="@+id/layoutBars"
                         android:layout_width="0dp"
-                        android:layout_height="100dp"
+                        android:layout_height="120dp"
+                        android:paddingTop="@dimen/spacing_small"
                         android:layout_marginStart="@dimen/spacing_xl"
                         android:gravity="bottom"
-                        android:paddingTop="@dimen/spacing_small"
                         android:orientation="horizontal"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -213,7 +217,7 @@
                             <View
                                 android:id="@+id/barIncome"
                                 android:layout_width="32dp"
-                                android:layout_height="80dp"
+                                android:layout_height="0dp"
                                 android:background="@drawable/bg_pill_green" />
                         </LinearLayout>
 
@@ -229,7 +233,7 @@
                             <View
                                 android:id="@+id/barExpense"
                                 android:layout_width="32dp"
-                                android:layout_height="50dp"
+                                android:layout_height="0dp"
                                 android:background="@drawable/bg_pill_red" />
                         </LinearLayout>
 
@@ -317,18 +321,19 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_medium" />
 
-            <FrameLayout
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTransactions"
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_small"
-                android:paddingBottom="@dimen/spacing_large">
+                android:layout_marginBottom="16dp"
+                app:cardElevation="0dp"
+                app:contentPaddingBottom="12dp">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardTransactions"
-                    style="@style/CartiCard"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:contentPaddingBottom="12dp">
+                    android:layout_height="wrap_content">
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvTransactions"
@@ -337,53 +342,23 @@
                         android:nestedScrollingEnabled="false"
                         android:scrollbars="none"
                         tools:listitem="@layout/item_transaction" />
-                </com.google.android.material.card.MaterialCardView>
-
-                <LinearLayout
-                    android:id="@+id/layoutEmptyState"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="@dimen/spacing_large"
-                    android:layout_marginBottom="@dimen/spacing_large"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    tools:visibility="visible">
-
-                    <ImageView
-                        android:id="@+id/ivEmptyIcon"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:contentDescription="@string/no_expenses_title"
-                        android:src="@drawable/ic_calendar"
-                        app:tint="@color/surface_variant" />
 
                     <TextView
-                        android:id="@+id/tvEmptyTitle"
-                        style="@style/CartiHeader"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/tvNoTransactions"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_medium"
-                        android:text="@string/no_expenses_title"
-                        android:textSize="@dimen/text_size_header" />
-
-                    <TextView
-                        android:id="@+id/tvEmptyDesc"
-                        style="@style/CartiSubHeader"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:layout_marginVertical="@dimen/spacing_large"
+                        android:fontFamily="@font/plus_jakarta_sans_medium"
                         android:gravity="center"
-                        android:text="@string/no_expenses_desc"
-                        android:textSize="@dimen/text_size_body_small" />
-
-                </LinearLayout>
-
-            </FrameLayout>
+                        android:text="@string/no_transactions_yet"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="@dimen/text_size_body"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

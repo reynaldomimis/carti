@@ -33,17 +33,27 @@ import java.util.Locale;
 public class AllTransactionsFragment extends BaseFragment<FragmentAllTransactionsBinding> {
 
     private static final String ARG_TYPE = "transaction_type";
+    private static final String ARG_USER_ID = "user_id";
+    private static final String ARG_USER_NAME = "user_name";
     private TransactionAdapter adapter;
     private TransactionRepository transactionRepository;
     private Calendar currentDisplayDate;
     private String filterType;
+    private String filterUserId;
+    private String filterUserName;
     private List<TransactionWithUser> fullList = new ArrayList<>();
     private String currentQuery = "";
 
     public static AllTransactionsFragment newInstance(String type) {
+        return newInstance(type, null, null);
+    }
+
+    public static AllTransactionsFragment newInstance(String type, String userId, String userName) {
         AllTransactionsFragment fragment = new AllTransactionsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_TYPE, type);
+        args.putString(ARG_USER_ID, userId);
+        args.putString(ARG_USER_NAME, userName);
         fragment.setArguments(args);
         return fragment;
     }
@@ -53,6 +63,8 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             filterType = getArguments().getString(ARG_TYPE);
+            filterUserId = getArguments().getString(ARG_USER_ID);
+            filterUserName = getArguments().getString(ARG_USER_NAME);
         }
     }
 
@@ -129,11 +141,12 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         List<TransactionWithUser> filteredList = new ArrayList<>();
         for (TransactionWithUser t : fullList) {
             boolean matchesType = filterType == null || filterType.equals(t.getTransaction().getType());
+            boolean matchesUser = filterUserId == null || filterUserId.equals(t.getTransaction().getUserId());
             boolean matchesSearch = currentQuery.isEmpty() || 
                                    (t.getTransaction().getTitle() != null && t.getTransaction().getTitle().toLowerCase().contains(currentQuery)) ||
                                    (t.getTransaction().getCategory() != null && t.getTransaction().getCategory().toLowerCase().contains(currentQuery));
             
-            if (matchesType && matchesSearch) {
+            if (matchesType && matchesUser && matchesSearch) {
                 filteredList.add(t);
             }
         }
@@ -188,7 +201,9 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     }
 
     private void setupToolbar() {
-        if ("EXPENSE".equals(filterType)) {
+        if (filterUserName != null) {
+            getBinding().layoutToolbar.tvToolbarTitle.setText(getString(R.string.label_user_expenses, filterUserName));
+        } else if ("EXPENSE".equals(filterType)) {
             getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.nav_track);
         } else {
             getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.all_transactions_title);

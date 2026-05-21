@@ -63,7 +63,6 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
             @Override
             public void onSuccess(User<Map<String, Object>> result) {
                 currentUserId = result.getId();
-                // Re-submit lists to trigger DiffUtil re-bind with correct currentUserId
                 if (horizontalAdapter != null) {
                     horizontalAdapter.submitList(new ArrayList<>(horizontalAdapter.getCurrentList()));
                 }
@@ -108,7 +107,6 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
     }
 
     private void setupRecyclerViews() {
-        // Horizontal Adapter
         horizontalAdapter = new GenericAdapter<>(
                 Member.DIFF_CALLBACK,
                 (inflater, parent) -> ItemMemberHorizontalBinding.inflate(inflater, parent, false),
@@ -151,7 +149,7 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                 (binding, member) -> {
                     boolean isMe = member.getId().equals(currentUserId);
                     binding.tvName.setText(isMe ? getString(R.string.placeholder_juan_you) : member.getTitle());
-                    binding.tvAmount.setText(Utils.formatCurrency(member.getAmount()));
+                    binding.tvContributionLabel.setText(String.format("Profile Contribution: %s", Utils.formatCurrency(member.getAmount())));
                     
                     if (member.getAvatarUrl() != null && !member.getAvatarUrl().isEmpty()) {
                         com.bumptech.glide.Glide.with(requireContext())
@@ -163,13 +161,8 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                         binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
                     }
                     
-                    double totalIncome = pref.getTotalIncome();
-                    int progress = 0;
-                    if (totalIncome > 0) {
-                        progress = (int) ((member.getAmount() / totalIncome) * 100);
-                    }
-                    binding.progressContribution.setProgress(progress);
-                    binding.tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", progress));
+                    binding.tvBtnViewExpenses.setOnClickListener(v -> navigateTo(new com.upreyvan.carti.ui.track.BreakdownExpenseFragment()));
+                    binding.getRoot().setOnClickListener(v -> navigateTo(new com.upreyvan.carti.ui.track.BreakdownExpenseFragment()));
                 }
         );
         getBinding().rvContributions.setLayoutManager(new LinearLayoutManager(requireContext()));

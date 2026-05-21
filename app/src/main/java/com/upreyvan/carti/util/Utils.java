@@ -373,4 +373,31 @@ public class Utils {
         }
         return sb.toString();
     }
+
+    public static int getCategoryColor(android.content.Context context, String category) {
+        if (category == null) return context.getResources().getColor(com.upreyvan.carti.R.color.gray, null);
+        
+        switch (category.toLowerCase()) {
+            case "food":
+            case "food & drinks":
+                return context.getResources().getColor(com.upreyvan.carti.R.color.icon_food, null);
+            case "transport":
+            case "transportation":
+                return context.getResources().getColor(com.upreyvan.carti.R.color.icon_fare, null);
+            case "bills":
+            case "utilities":
+                return context.getResources().getColor(com.upreyvan.carti.R.color.status_red, null);
+            case "shopping":
+                return context.getResources().getColor(com.upreyvan.carti.R.color.icon_store, null);
+            case "health":
+                return context.getResources().getColor(com.upreyvan.carti.R.color.icon_load, null);
+            case "entertainment":
+                return context.getResources().getColor(com.upreyvan.carti.R.color.purple, null);
+            case "income":
+            case "salary":
+                return context.getResources().getColor(com.upreyvan.carti.R.color.carti_primary_green, null);
+            default:
+                return context.getResources().getColor(com.upreyvan.carti.R.color.gray, null);
+        }
+    }
 }
