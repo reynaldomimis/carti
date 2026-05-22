@@ -51,27 +51,34 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
         new ApiHelper(requireContext()).joinFamily(inviteCode, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
-                if (isAdded()) {
+                    android.util.Log.d("CARTI_DEBUG", "JoinFamily Success Result: " + result);
+
+                    if (!isAdded() || getActivity() == null) {
+                        android.util.Log.e("CARTI_DEBUG", "Fragment not attached to activity!");
+                        return;
+                    }
+
                     setLoading(false);
                     PreferenceManager pref = new PreferenceManager(requireContext());
                     
-                    String familyId = null;
-                    if (result.containsKey("familyId")) {
-                        familyId = String.valueOf(result.get("familyId"));
-                    } else if (result.containsKey("data") && result.get("data") instanceof Map) {
-                        Map<?, ?> data = (Map<?, ?>) result.get("data");
-                        if (data.containsKey("familyId")) {
-                            familyId = String.valueOf(data.get("familyId"));
-                        }
+                    // Extract data safely
+                    Map<String, Object> data = result;
+                    if (result.containsKey("data") && result.get("data") instanceof Map) {
+                        data = (Map<String, Object>) result.get("data");
                     }
 
+                    String familyId = data.get("familyId") != null ? String.valueOf(data.get("familyId")) : null;
+                    String status = data.get("status") != null ? String.valueOf(data.get("status")) : null;
+
+                    android.util.Log.d("CARTI_DEBUG", "Parsed -> familyId: " + familyId + ", status: " + status);
+
                     if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
+                        android.util.Log.d("CARTI_DEBUG", "Navigating to MainActivity (Join Immediate)");
                         saveAndFinish(pref, familyId);
                     } else {
-                        // Navigate to OnboardingStatusFragment in "Waiting" mode
+                        android.util.Log.d("CARTI_DEBUG", "Navigating to OnboardingStatusFragment (Pending)");
                         navigateTo(OnboardingStatusFragment.newInstanceForWaiting());
                     }
-                }
             }
 
             @Override

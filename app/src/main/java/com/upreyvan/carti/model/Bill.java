@@ -2,15 +2,10 @@ package com.upreyvan.carti.model;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 import java.util.Objects;
 
-@Entity(tableName = "bills")
 public class Bill {
-    @PrimaryKey
-    @NonNull
     private final String id;
     private final String familyId;
     private final String name;
@@ -19,7 +14,7 @@ public class Bill {
     private final String status;
     private final int iconResId;
 
-    public Bill(@NonNull String id, String familyId, String name, String date, String amount, String status, int iconResId) {
+    public Bill(String id, String familyId, String name, String date, String amount, String status, int iconResId) {
         this.id = id;
         this.familyId = familyId;
         this.name = name;
@@ -29,7 +24,6 @@ public class Bill {
         this.iconResId = iconResId;
     }
 
-    @NonNull
     public String getId() { return id; }
     public String getFamilyId() { return familyId; }
     public String getName() { return name; }

@@ -74,7 +74,7 @@ public class TransactionWithUser {
     public static final DiffUtil.ItemCallback<TransactionWithUser> DIFF_CALLBACK = new DiffUtil.ItemCallback<TransactionWithUser>() {
         @Override
         public boolean areItemsTheSame(@NonNull TransactionWithUser oldItem, @NonNull TransactionWithUser newItem) {
-            return oldItem.transaction.getId().equals(newItem.transaction.getId());
+            return oldItem.getTransaction().getId().equals(newItem.getTransaction().getId());
         }
 
         @Override

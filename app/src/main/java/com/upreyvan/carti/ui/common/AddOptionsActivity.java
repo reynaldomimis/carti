@@ -16,7 +16,9 @@ import com.upreyvan.carti.ui.track.AddCategoryActivity;
 import com.upreyvan.carti.ui.track.AddTrackActivity;
 import com.upreyvan.carti.ui.family.InviteFamilyActivity;
 import com.upreyvan.carti.ui.goals.AddGoalActivity;
+import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.model.AddOption;
+import com.upreyvan.carti.ui.notifications.SendNotificationBottomSheetFragment;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
@@ -74,6 +76,11 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
         options.add(new AddOption(R.drawable.ic_calendar, R.color.carti_primary_blue, R.color.log_water, R.string.add_options_bills, R.string.add_options_bills_desc, null));
         options.add(new AddOption(R.drawable.ic_chart, R.color.status_green, R.color.tonal_button_bg, R.string.add_options_budget_plan, R.string.add_options_budget_plan_desc, null));
         options.add(new AddOption(R.drawable.ic_add, R.color.icon_others, R.color.log_others, R.string.add_options_category, R.string.add_options_category_desc, null));
+        
+        PreferenceManager pref = new PreferenceManager(this);
+        if (pref.isAdmin()) {
+            options.add(new AddOption(R.drawable.ic_bell, R.color.icon_debt, R.color.log_debt, R.string.add_options_announcement, R.string.add_options_announcement_desc, null));
+        }
 
         AddOptionsAdapter adapter = new AddOptionsAdapter(item -> {
             Intent intent = null;
@@ -91,6 +98,9 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
                 intent = new Intent(this, com.upreyvan.carti.ui.bills.BillsActivity.class);
             } else if (item.getTitleResId() == R.string.add_options_budget_plan) {
                 intent = new Intent(this, com.upreyvan.carti.ui.budget.AddBudgetPlanActivity.class);
+            } else if (item.getTitleResId() == R.string.add_options_announcement) {
+                SendNotificationBottomSheetFragment bottomSheet = new SendNotificationBottomSheetFragment();
+                bottomSheet.show(getSupportFragmentManager(), "SendNotificationBottomSheet");
             }
 
             if (intent != null) {

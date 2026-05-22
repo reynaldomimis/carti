@@ -65,6 +65,7 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
                     String familyId = (fid != null && !"null".equals(String.valueOf(fid))) ? String.valueOf(fid) : "";
                     if (!familyId.isEmpty()) {
                         pref.setFamilyId(familyId);
+                        pref.setAdminId(pref.getUserId());
                     }
 
                     Object ic = result.get("inviteCode");

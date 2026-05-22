@@ -12,7 +12,6 @@ import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.data.remote.RealtimeHelper;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.R;
 import java.util.ArrayList;
@@ -25,7 +24,6 @@ import java.util.concurrent.Executors;
 
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
-import io.appwrite.models.RealtimeSubscription;
 
 public class TransactionRepository {
     private static final String TAG = "TransactionRepository";
@@ -33,8 +31,6 @@ public class TransactionRepository {
     private final TransactionDao transactionDao;
     private final ApiHelper apiHelper;
     private final PreferenceManager pref;
-    private final RealtimeHelper realtimeHelper;
-    private RealtimeSubscription realtimeSubscription;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private TransactionRepository(Context context) {
@@ -42,8 +38,6 @@ public class TransactionRepository {
         transactionDao = AppDatabase.getInstance(appContext).transactionDao();
         apiHelper = new ApiHelper(appContext);
         pref = new PreferenceManager(appContext);
-        realtimeHelper = new RealtimeHelper(appContext);
-        initRealtime();
     }
 
     public static synchronized TransactionRepository getInstance(Context context) {
@@ -53,50 +47,10 @@ public class TransactionRepository {
         return instance;
     }
 
-    /**
-     * Realtime Listener: Automatically updates Room when server data changes.
-     * This keeps all family members in sync without extra requests.
-     */
-    private void initRealtime() {
-        if (realtimeSubscription != null) return;
-        
-        String[] channels = { getChannel(Constants.Appwrite.COL_TRANSACTIONS) };
-        Log.d(TAG, "Initializing Realtime for Transactions...");
-
-        realtimeSubscription = realtimeHelper.subscribe(channels, event -> {
-            Map<String, Object> payload = RealtimeHelper.getPayload(event);
-            if (payload == null) return;
-
-            Log.d(TAG, "Realtime Event received: " + event.getEvents());
-
-            if (RealtimeHelper.isDeleteEvent(event)) {
-                String id = String.valueOf(payload.get("$id"));
-                executor.execute(() -> {
-                    transactionDao.deleteById(id);
-                    Log.d(TAG, "Realtime: Deleted " + id);
-                });
-            } else {
-                executor.execute(() -> {
-                    // Refresh familyId from prefs to be sure
-                    String currentFamilyId = pref.getFamilyId();
-                    Transaction transaction = mapPayloadToTransaction(payload, currentFamilyId);
-                    if (transaction != null) {
-                        transactionDao.insert(transaction);
-                        Log.d(TAG, "Realtime: Saved/Updated " + transaction.getId() + " [" + transaction.getType() + "]");
-                    }
-                });
-            }
-        });
-    }
-
-    private String getChannel(String collectionId) {
-        return "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + collectionId + ".documents";
-    }
 
     public void onDestroy() {
-        if (realtimeSubscription != null) {
-            realtimeSubscription.close();
-            realtimeSubscription = null;
+        if (executor != null && !executor.isShutdown()) {
+            executor.shutdown();
         }
     }
 
@@ -123,6 +77,7 @@ public class TransactionRepository {
         apiHelper.getTransactionsRange(start, end, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
             @Override
             public void onSuccess(DocumentList<Map<String, Object>> result) {
+                if (executor.isShutdown()) return;
                 executor.execute(() -> {
                     List<Transaction> transactions = new ArrayList<>();
                     for (Document<Map<String, Object>> doc : result.getDocuments()) {
@@ -150,6 +105,7 @@ public class TransactionRepository {
         apiHelper.getTransactionsRange(start, end, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
             @Override
             public void onSuccess(DocumentList<Map<String, Object>> result) {
+                if (executor.isShutdown()) return;
                 executor.execute(() -> {
                     List<Transaction> transactions = new ArrayList<>();
                     for (Document<Map<String, Object>> doc : result.getDocuments()) {
@@ -168,63 +124,15 @@ public class TransactionRepository {
     }
 
     public void syncIncomes() {
-        apiHelper.getIncomes(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                executor.execute(() -> {
-                    List<Transaction> transactions = new ArrayList<>();
-                    for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                        transactions.add(mapPayloadToTransaction(doc.getData(), pref.getFamilyId()));
-                    }
-                    transactionDao.insertAll(transactions);
-                    Log.d(TAG, "Synced incomes: " + transactions.size());
-                });
-            }
-            @Override
-            public void onError(Throwable error) {
-                Log.e(TAG, "Income sync failed: " + error.getMessage());
-            }
-        });
+        // Migration: Incomes are now unified into Transactions collection
     }
 
     public void syncGoals() {
-        apiHelper.getGoals(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                executor.execute(() -> {
-                    List<Transaction> transactions = new ArrayList<>();
-                    for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                        transactions.add(mapPayloadToTransaction(doc.getData(), pref.getFamilyId()));
-                    }
-                    transactionDao.insertAll(transactions);
-                    Log.d(TAG, "Synced goals: " + transactions.size());
-                });
-            }
-            @Override
-            public void onError(Throwable error) {
-                Log.e(TAG, "Goal sync failed: " + error.getMessage());
-            }
-        });
+        // Migration: Goals are now unified into Transactions collection
     }
 
     public void syncDebts() {
-        apiHelper.getDebts(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                executor.execute(() -> {
-                    List<Transaction> transactions = new ArrayList<>();
-                    for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                        transactions.add(mapPayloadToTransaction(doc.getData(), pref.getFamilyId()));
-                    }
-                    transactionDao.insertAll(transactions);
-                    Log.d(TAG, "Synced debts: " + transactions.size());
-                });
-            }
-            @Override
-            public void onError(Throwable error) {
-                Log.e(TAG, "Debt sync failed: " + error.getMessage());
-            }
-        });
+        // Migration: Debts are now unified into Transactions collection
     }
 
     // --- FETCH-ONLY DATA (Room) ---
@@ -262,6 +170,10 @@ public class TransactionRepository {
         return getTransactionsByType("GOAL");
     }
 
+    public LiveData<List<TransactionWithUser>> getDebts() {
+        return getTransactionsByType("DEBT");
+    }
+
     public LiveData<List<TransactionWithUser>> getRecentTransactions(int limit) {
         return transactionDao.getRecentTransactions(pref.getFamilyId(), limit);
     }
@@ -287,6 +199,7 @@ public class TransactionRepository {
         data.put("type", transaction.getType());
         data.put("note", transaction.getNote());
         data.put("members", transaction.getMembers());
+        data.put("startDate", transaction.getCreatedAt() != null ? transaction.getCreatedAt() : Utils.getCurrentTimestamp());
 
         if ("INCOME".equals(transaction.getType())) {
             data.put("source", transaction.getTitle());
@@ -324,7 +237,11 @@ public class TransactionRepository {
     }
 
     public void saveLocally(Transaction transaction) {
-        executor.execute(() -> transactionDao.insert(transaction));
+        executor.execute(() -> {
+            transactionDao.insert(transaction);
+            // Refresh to ensure all observers are notified of the new state
+            refreshTransactions();
+        });
     }
 
     private Transaction mapPayloadToTransaction(Map<String, Object> data, String familyId) {

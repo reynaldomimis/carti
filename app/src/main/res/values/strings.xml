@@ -90,6 +90,7 @@
     <string name="err_invalid_email">Invalid email address</string>
     <string name="btn_logging_in">Logging in...</string>
     <string name="btn_registering">Registering...</string>
+    <string name="msg_sending">Sending...</string>
 
     <!-- Goals -->
     <string name="add_to_goal_title">Add Funds to Goal</string>
@@ -494,6 +495,16 @@
 
     <!-- Notifications -->
     <string name="empty_notifications">You have no notifications yet.</string>
+    <string name="notif_join_request_title">New Join Request</string>
+    <string name="notif_join_request_desc">%s wants to join your family.</string>
+    <string name="msg_member_approved">Member approved successfully!</string>
+    <string name="msg_member_rejected">Join request rejected.</string>
+    <string name="notif_send_family_title">Send Family Notification</string>
+    <string name="notif_send_family_desc">Notify all family members about news or updates.</string>
+    <string name="hint_news_content">What\'s the news?</string>
+    <string name="action_send_announcement">Send Announcement</string>
+    <string name="add_options_announcement">Announcement</string>
+    <string name="add_options_announcement_desc">Send a message to your family</string>
 
     <!-- Onboarding Create -->
     <string name="onboarding_create_title">Setup your Family</string>

@@ -20,21 +20,17 @@ import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.remote.RealtimeHelper;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentOnboardingStatusBinding;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.Map;
 
-import io.appwrite.models.RealtimeResponseEvent;
-import io.appwrite.models.RealtimeSubscription;
-
 public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingStatusBinding> {
 
     private static final String ARG_INVITE_CODE = "invite_code";
     private static final String ARG_IS_WAITING = "is_waiting_approval";
-    private RealtimeSubscription subscription = null;
 
     public static OnboardingStatusFragment newInstance(String inviteCode) {
         OnboardingStatusFragment fragment = new OnboardingStatusFragment();
@@ -60,67 +56,51 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        setupDynamicPadding();
         handleArguments();
 
         getBinding().btnCopy.setOnClickListener(v -> {
-            String code = getBinding().tvInviteCode.getText().toString();
-            copyToClipboard(code);
+            if (getBinding() != null) {
+                String code = getBinding().tvInviteCode.getText().toString();
+                copyToClipboard(code);
+            }
         });
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (subscription != null) {
-            subscription.close();
-        }
     }
 
     private void copyToClipboard(String text) {
+        if (text == null || text.isEmpty()) return;
         ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText(getString(R.string.invite_code_label), text);
+        ClipData clip = ClipData.newPlainText("Invite Code", text);
         if (clipboard != null) {
             clipboard.setPrimaryClip(clip);
-            Toast.makeText(requireContext(), R.string.invite_code_copied, Toast.LENGTH_SHORT).show();
+            showToast("Invite code copied!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
         }
     }
 
     private void handleArguments() {
-        if (getArguments() != null) {
-            boolean isWaiting = getArguments().getBoolean(ARG_IS_WAITING, false);
-            if (isWaiting) {
-                getBinding().tvTitle.setText("Waiting for Approval");
-                getBinding().tvDescription.setText("Your request to join the family has been sent. Please ask the Family Head to approve your request.");
-                getBinding().layoutInviteCode.setVisibility(View.GONE);
-                getBinding().btnStatus.setText("Check Status");
-                
-                getBinding().btnStatus.setOnClickListener(v -> checkApprovalStatus());
-                
-                // Start Realtime Listening
-                startRealtimeListener();
-                return;
-            }
+        Bundle args = getArguments();
+        if (args == null) return;
 
-            String inviteCode = getArguments().getString(ARG_INVITE_CODE);
-            if (inviteCode != null && !inviteCode.isEmpty()) {
-                getBinding().tvTitle.setText(R.string.onboarding_family_created_title);
-                getBinding().tvDescription.setText(R.string.onboarding_family_created_desc);
-                getBinding().tvInviteCode.setText(inviteCode);
-                getBinding().layoutInviteCode.setVisibility(View.VISIBLE);
-                getBinding().btnStatus.setText(R.string.btn_go_to_home);
-                
-                getBinding().btnStatus.setOnClickListener(v -> {
-                    PreferenceManager pref = new PreferenceManager(requireContext());
-                    pref.setOnboardingFinished(true);
-
-                    Intent intent = new Intent(requireActivity(), MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    requireActivity().finish();
-                });
-            }
+        boolean isWaiting = args.getBoolean(ARG_IS_WAITING, false);
+        if (isWaiting) {
+            getBinding().tvTitle.setText("Waiting for Approval");
+            getBinding().tvDescription.setText("Ang iyong request ay naisend na. Hintayin ang approval ng Family Head.");
+            getBinding().layoutInviteCode.setVisibility(View.GONE);
+            getBinding().btnStatus.setText("Check Status");
+            getBinding().btnStatus.setOnClickListener(v -> checkApprovalStatus());
+            startRealtimeListener();
+        } else {
+            String inviteCode = args.getString(ARG_INVITE_CODE);
+            getBinding().tvTitle.setText("Family Created!");
+            getBinding().tvDescription.setText("I-share ang code na ito sa iyong family members.");
+            getBinding().tvInviteCode.setText(inviteCode);
+            getBinding().layoutInviteCode.setVisibility(View.VISIBLE);
+            getBinding().btnStatus.setText("Go to Home");
+            getBinding().btnStatus.setOnClickListener(v -> finishOnboarding());
         }
     }
 
@@ -129,93 +109,75 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
         String userId = pref.getUserId();
         if (userId.isEmpty()) return;
 
-        RealtimeHelper realtimeHelper = new RealtimeHelper(requireContext());
+        RealtimeRepository.getInstance(requireContext()).getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> {
+            if (payload == null) return;
+            
+            String familyId = String.valueOf(payload.get("familyId"));
+            String pendingFamilyId = String.valueOf(payload.get("pendingFamilyId"));
 
-        subscription = realtimeHelper.subscribeToDocument(
-                Constants.Appwrite.COL_USERS,
-                userId,
-                new RealtimeHelper.RealtimeEventCallback() {
-                    @Override
-                    public void onEvent(RealtimeResponseEvent<?> event) {
-                        if (!isAdded()) return;
+            if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
+                pref.setFamilyId(familyId);
+                getBinding().tvTitle.setText("Welcome to the Family!");
+                getBinding().tvDescription.setText("Your request has been approved. Getting things ready for you...");
+                getBinding().btnStatus.setText("Go to Home");
+                getBinding().btnStatus.setOnClickListener(v -> finishOnboarding());
 
-                        Map<String, Object> payload = RealtimeHelper.getPayload(event);
-                        String familyId = (String) payload.get("familyId");
-                        String pendingFamilyId = (String) payload.get("pendingFamilyId");
-
-                        if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
-                            // CASE: APPROVED
-                            pref.setFamilyId(familyId);
-                            pref.setOnboardingFinished(true);
-                            showToast("Request Accepted! Welcome to the family.", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
-
-                            Intent intent = new Intent(requireActivity(), MainActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            requireActivity().finish();
-                        } else if (pendingFamilyId == null || pendingFamilyId.isEmpty() || "null".equals(pendingFamilyId)) {
-                            // CASE: DENIED
-                            getBinding().tvTitle.setText("Request Declined");
-                            getBinding().tvDescription.setText("Your request to join the family was declined by the Family Head. Please try another code or create your own family.");
-                            getBinding().btnStatus.setText("Return to Join Screen");
-                            getBinding().btnStatus.setEnabled(true);
-                            getBinding().btnStatus.setOnClickListener(v -> requireActivity().onBackPressed());
-
-                            showToast("Join request was declined.", com.upreyvan.carti.util.ToastHelper.Status.ERROR);
-
-                            if (subscription != null) {
-                                subscription.close();
-                                subscription = null;
-                            }
-                        }
+                new android.os.Handler().postDelayed(() -> {
+                    if (isAdded()) finishOnboarding();
+                }, 2000);
+            } else if (pendingFamilyId == null || pendingFamilyId.isEmpty() || "null".equals(pendingFamilyId)) {
+                getBinding().tvTitle.setText("Request Declined");
+                getBinding().tvDescription.setText("We're sorry, but your request to join this family group has been declined by the administrator. Please contact them or try joining a different family.");
+                getBinding().btnStatus.setText("Restart to JOIN");
+                getBinding().btnStatus.setOnClickListener(v -> {
+                    pref.setOnboardingFinished(false);
+                    if (getActivity() != null) {
+                        getActivity().recreate();
                     }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        Log.e("OnboardingStatus", "Realtime Error: " + error.getMessage());
-                    }
-                }
-        );
+                });
+            }
+        });
     }
 
     private void checkApprovalStatus() {
-        getBinding().btnStatus.setEnabled(false);
-        getBinding().btnStatus.setText("Checking...");
-
+        showLoading(true);
         new ApiHelper(requireContext()).getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> user) {
                 if (!isAdded()) return;
-                
+                showLoading(false);
                 String familyId = String.valueOf(user.get("familyId"));
                 if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
-                    PreferenceManager pref = new PreferenceManager(requireContext());
-                    pref.setFamilyId(familyId);
-                    pref.setOnboardingFinished(true);
-
-                    showToast("Approved! Welcome to the family.", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
-                    Intent intent = new Intent(requireActivity(), MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    requireActivity().finish();
+                    new PreferenceManager(requireContext()).setFamilyId(familyId);
+                    
+                    // Show Welcome Success UI
+                    getBinding().tvTitle.setText("Welcome to the Family!");
+                    getBinding().tvDescription.setText("Your request has been approved. Getting things ready for you...");
+                    getBinding().btnStatus.setText("Go to Home");
+                    getBinding().btnStatus.setOnClickListener(v -> finishOnboarding());
+                    
+                    new android.os.Handler().postDelayed(() -> {
+                        if (isAdded()) finishOnboarding();
+                    }, 2000);
                 } else {
-                    getBinding().btnStatus.setEnabled(true);
-                    getBinding().btnStatus.setText("Check Status");
-                    showToast("Still pending approval.", com.upreyvan.carti.util.ToastHelper.Status.INFO);
+                    showToast("Still pending...", com.upreyvan.carti.util.ToastHelper.Status.INFO);
                 }
             }
 
             @Override
             public void onError(Throwable error) {
                 if (!isAdded()) return;
-                getBinding().btnStatus.setEnabled(true);
-                getBinding().btnStatus.setText("Check Status");
-                showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                showLoading(false);
+                showError(error);
             }
         });
     }
 
-    private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(getBinding().onboardingStatusHeader, getBinding().onboardingStatus, 0f, 0);
+    private void finishOnboarding() {
+        new PreferenceManager(requireContext()).setOnboardingFinished(true);
+        Intent intent = new Intent(requireActivity(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        requireActivity().finish();
     }
 }

@@ -19,7 +19,7 @@ public class Transaction {
     @PrimaryKey
     @NonNull
     private String id;
-    private String type; // INCOME, EXPENSE, DEBT, GOAL
+    private String type;
     private double amount;
     private String title;
     private String description;

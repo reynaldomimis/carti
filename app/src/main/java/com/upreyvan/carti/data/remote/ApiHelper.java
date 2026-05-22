@@ -98,7 +98,7 @@ public class ApiHelper {
 
     public void createFamily(String familyName, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("name", familyName); // ✅ fixed: was "familyName"
+        params.put("name", familyName);
         callAction(Constants.Actions.CREATE_FAMILY, params, callback);
     }
 
@@ -187,12 +187,22 @@ public class ApiHelper {
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_USERS, queries, callback);
     }
 
+    public void getPendingMembers(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("pendingFamilyId", familyId));
+        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_USERS, queries, callback);
+    }
+
     // ─── GOALS ───────────────────────────────────────────────────────────────
 
     public void addGoal(String name, double targetAmount, String targetDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("username", pref.getUserName());
-        params.put("name", name);
+        params.put("title", name);
+        params.put("type", "GOAL");
         params.put("targetAmount", targetAmount);
         params.put("targetDate", targetDate);
         params.put("startDate", Utils.getCurrentTimestamp());
@@ -203,6 +213,7 @@ public class ApiHelper {
         Map<String, Object> params = new HashMap<>();
         params.put("txnId", goalId);
         params.put("amount", amount);
+        params.put("type", "GOAL");
         callAction(Constants.Actions.UPDATE_GOAL, params, callback);
     }
 
@@ -218,9 +229,10 @@ public class ApiHelper {
         
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
+        queries.add(Query.Companion.equal("type", "GOAL"));
         queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
         queries.add(Query.Companion.orderDesc("$createdAt"));
-        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_GOALS, queries, callback);
+        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
     public void getGoals(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
@@ -232,8 +244,10 @@ public class ApiHelper {
     public void addDebt(String personName, double amount, String type, String category, String targetDate, String reminder, String notes, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("personName", personName);
+        params.put("title", personName);
         params.put("amount", amount);
-        params.put("type", type);
+        params.put("type", "DEBT");
+        params.put("debtType", type); // borrow or lend
         params.put("category", category);
         params.put("targetDate", targetDate);
         params.put("startDate", Utils.getCurrentTimestamp());
@@ -244,21 +258,23 @@ public class ApiHelper {
 
     public void updateDebtAmount(String debtId, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("txnId", debtId); // Unified key for new service
+        params.put("txnId", debtId);
         params.put("amount", amount);
+        params.put("type", "DEBT");
         callAction(Constants.Actions.UPDATE_DEBT, params, callback);
     }
 
     public void markDebtPaid(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("txnId", debtId); // Unified key for new service
+        params.put("txnId", debtId);
         params.put("isPaid", true);
+        params.put("type", "DEBT");
         callAction(Constants.Actions.MARK_DEBT_PAID, params, callback);
     }
 
     public void deleteDebt(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("txnId", debtId); // Unified key for new service
+        params.put("txnId", debtId);
         callAction(Constants.Actions.DELETE_DEBT, params, callback);
     }
 
@@ -268,9 +284,10 @@ public class ApiHelper {
 
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
+        queries.add(Query.Companion.equal("type", "DEBT"));
         queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
         queries.add(Query.Companion.orderDesc("$createdAt"));
-        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_DEBTS, queries, callback);
+        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
     public void getDebts(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
@@ -282,23 +299,28 @@ public class ApiHelper {
     public void addIncome(String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("username", pref.getUserName());
+        params.put("title", source);
         params.put("source", source);
         params.put("amount", amount);
+        params.put("type", "INCOME");
+        params.put("category", "Income");
         params.put("startDate", Utils.getCurrentTimestamp());
         callAction(Constants.Actions.ADD_INCOME, params, callback);
     }
 
     public void updateIncome(String incomeId, String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("txnId", incomeId); // Unified key for new service
+        params.put("txnId", incomeId);
+        params.put("title", source);
         params.put("source", source);
         params.put("amount", amount);
+        params.put("type", "INCOME");
         callAction(Constants.Actions.UPDATE_INCOME, params, callback);
     }
 
     public void deleteIncome(String incomeId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("txnId", incomeId); // Unified key for new service
+        params.put("txnId", incomeId);
         callAction(Constants.Actions.DELETE_INCOME, params, callback);
     }
 
@@ -308,8 +330,9 @@ public class ApiHelper {
 
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
+        queries.add(Query.Companion.equal("type", "INCOME"));
         queries.add(Query.Companion.orderDesc("$createdAt"));
-        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_INCOMES, queries, callback);
+        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
     // ─── FAMILY SUMMARY ──────────────────────────────────────────────────────
@@ -354,6 +377,25 @@ public class ApiHelper {
                 io.appwrite.ID.Companion.unique(0),
                 data,
                 permissions,
+                callback
+        );
+    }
+
+    public void sendAnnouncement(String title, String content, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("title", title);
+        params.put("content", content);
+        callAction(Constants.Actions.SEND_ANNOUNCEMENT, params, callback);
+    }
+
+    public void getNotifications(String familyId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        appwriteManager.listDocuments(
+                Constants.Appwrite.DATABASE_ID,
+                Constants.Appwrite.COL_NOTIFICATIONS,
+                java.util.Arrays.asList(
+                        io.appwrite.Query.Companion.equal("familyId", familyId),
+                        io.appwrite.Query.Companion.orderDesc("$createdAt")
+                ),
                 callback
         );
     }

@@ -52,11 +52,34 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
     }
 
     protected void navigateTo(Fragment fragment) {
-        if (getActivity() != null) {
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(com.upreyvan.carti.R.id.fragment_container, fragment)
-                    .addToBackStack(null)
-                    .commit();
+        if (getActivity() != null && isAdded()) {
+            // Senior Tip: The most reliable way to get the container ID is from the current fragment itself.
+            // getId() returns the ID of the container this fragment was added to.
+            int containerId = getId();
+
+            // Fallback only if getId() is invalid
+            if (containerId <= 0) {
+                if (getActivity().findViewById(com.upreyvan.carti.R.id.start_fragment_container) != null) {
+                    containerId = com.upreyvan.carti.R.id.start_fragment_container;
+                } else {
+                    containerId = com.upreyvan.carti.R.id.fragment_container;
+                }
+            }
+
+            try {
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(
+                                android.R.anim.fade_in,
+                                android.R.anim.fade_out,
+                                android.R.anim.fade_in,
+                                android.R.anim.fade_out
+                        )
+                        .replace(containerId, fragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss();
+            } catch (Exception e) {
+                android.util.Log.e("CARTI_DEBUG", "Navigation failed", e);
+            }
         }
     }
 

@@ -24,6 +24,7 @@ public class Constants {
         public static final String COL_FAMILIES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_FAMILIES;
         public static final String COL_MESSAGES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_MESSAGES;
         public static final String COL_INCOMES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_INCOMES;
+        public static final String COL_NOTIFICATIONS = "notifications";
     }
 
     public static final class Actions {
@@ -48,6 +49,7 @@ public class Constants {
         public static final String DELETE_DEBT = "delete_transaction";
         public static final String UPDATE_FAMILY_TOTALS = "update_family_totals";
         public static final String GET_MEMBERS = "get_members";
+        public static final String SEND_ANNOUNCEMENT = "send_announcement";
     }
 
     public static final class Keys {
@@ -82,6 +84,8 @@ public class Constants {
         public static final String KEY_LAST_GOAL_SYNC_TIME = "last_goal_sync_time";
         public static final String KEY_LAST_DEBT_SYNC_TIME = "last_debt_sync_time";
         public static final String KEY_BUDGET_PLAN_DISMISSED_MONTH = "budget_plan_dismissed_month";
+        public static final String KEY_HAS_NOTIFICATIONS = "has_notifications";
+        public static final String KEY_LAST_NOTIF_CHECK = "last_notif_check";
 
         // Manager Keys
         public static final String KEY_TRANSACTIONS = "transactions_list";

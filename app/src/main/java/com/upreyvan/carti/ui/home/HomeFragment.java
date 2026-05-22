@@ -21,6 +21,7 @@ import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
 import com.upreyvan.carti.databinding.ItemAiSuggestionCardBinding;
 import com.upreyvan.carti.databinding.ItemQuickActionBinding;
@@ -50,9 +51,6 @@ import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.DialogHelper;
 import androidx.core.graphics.ColorUtils;
 
-import io.appwrite.models.RealtimeSubscription;
-import io.appwrite.services.Realtime;
-
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private GenericAdapter<QuickLogItem, ItemQuickLogBinding> quickLogAdapter;
@@ -60,9 +58,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private GenericAdapter<AiSuggestion, ItemAiSuggestionCardBinding> aiSuggestionsAdapter;
     private TransactionAdapter transactionAdapter;
     private boolean isExpanded = false;
-    private RealtimeSubscription userSubscription;
-    private RealtimeSubscription familySubscription;
-    private RealtimeSubscription transSubscription;
+    private RealtimeRepository realtimeRepo;
     private TransactionRepository transactionRepository;
     private MemberRepository memberRepository;
 
@@ -76,6 +72,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(requireContext());
         memberRepository = new MemberRepository(requireContext());
+        realtimeRepo = RealtimeRepository.getInstance(requireContext());
         
         setupDynamicPadding(getBinding().layoutHeader, getBinding().home, 0.3f);
         initAdapters();
@@ -84,15 +81,58 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupQuickLog();
         setupRecentTransactions();
         setupNotifications();
-        initRealtime();
         
         observeTransactions();
+        observeRealtimeData();
         setupDashboard();
         setupPaydayCard();
         setupBudgetPlanPrompt();
         setupAiInsightCard();
         setupAiSuggestions();
         fetchFamilyData();
+    }
+
+    /**
+     * Senior Implementation: Centralized data observation.
+     * All UI updates are now reactive and triggered by a single websocket connection.
+     */
+    private void observeRealtimeData() {
+        // 1. Transaction Updates
+        realtimeRepo.getTransactionStream().observe(getViewLifecycleOwner(), payload -> {
+            if (transactionRepository != null) {
+                transactionRepository.refreshTransactions();
+            }
+        });
+
+        // 2. User/Member Updates
+        realtimeRepo.getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> {
+            checkNotifications(new ApiHelper(requireContext()), new PreferenceManager(requireContext()), null);
+            if (memberRepository != null) {
+                memberRepository.refreshMembers();
+            }
+        });
+
+        // 3. Family Balance/Summary Updates
+        realtimeRepo.getFamilyStream().observe(getViewLifecycleOwner(), payload -> {
+            if (payload != null) {
+                double balance = Utils.getDouble(payload.get("balance"));
+                double income = Utils.getDouble(payload.get("totalIncome"));
+                double expense = Utils.getDouble(payload.get("totalExpense"));
+                
+                PreferenceManager pref = new PreferenceManager(requireContext());
+                pref.saveFamilySummary(balance, income, expense);
+                
+                requireActivity().runOnUiThread(() -> {
+                    setupHeaders();
+                    setupDashboard();
+                });
+            }
+        });
+
+        // 4. Realtime Notification Badge
+        realtimeRepo.getNotificationStream().observe(getViewLifecycleOwner(), payload -> {
+            checkNotifications(new ApiHelper(requireContext()), new PreferenceManager(requireContext()), null);
+        });
     }
 
     private void updateQuickLogData() {
@@ -292,62 +332,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         transactionRepository.syncTransactionsIfNeeded();
     }
 
-    private void initRealtime() {
-        PreferenceManager pref = new PreferenceManager(requireContext());
-        Realtime realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
-        
-        String familyId = pref.getFamilyId();
-        String userChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_USERS + ".documents";
-        
-        // Combined subscription to reduce bandwidth and lag
-        userSubscription = realtime.subscribe(new String[]{userChannel}, event -> {
-            checkNotifications(new ApiHelper(requireContext()), pref);
-            if (memberRepository != null) {
-                memberRepository.refreshMembers();
-            }
-            return null;
-        });
-
-        // Dedicated Transaction Listener for instant UI updates
-        String transChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_TRANSACTIONS + ".documents";
-        transSubscription = realtime.subscribe(new String[]{transChannel}, event -> {
-            if (isAdded()) {
-                requireActivity().runOnUiThread(() -> {
-                    if (transactionRepository != null) {
-                        transactionRepository.refreshTransactions();
-                    }
-                });
-            }
-            return null;
-        });
-
-        if (familyId != null && !familyId.isEmpty()) {
-            String familyChannel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_FAMILIES + ".documents." + familyId;
-            familySubscription = realtime.subscribe(new String[]{familyChannel}, event -> {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> data = (Map<String, Object>) event.getPayload();
-                if (data != null) {
-                    double balance = Utils.getDouble(data.get("balance"));
-                    double income = Utils.getDouble(data.get("totalIncome"));
-                    double expense = Utils.getDouble(data.get("totalExpense"));
-                    
-                    pref.saveFamilySummary(balance, income, expense);
-                    if (isAdded()) {
-                        requireActivity().runOnUiThread(() -> {
-                            setupHeaders();
-                            setupDashboard();
-                            // Force sync transactions when family summary changes
-                            if (transactionRepository != null) {
-                                transactionRepository.syncTransactionsIfNeeded();
-                            }
-                        });
-                    }
-                }
-                return null;
-            });
-        }
-    }
-
     private void fetchFamilyData() {
         ApiHelper apiHelper = new ApiHelper(requireContext());
         PreferenceManager pref = new PreferenceManager(requireContext());
@@ -362,6 +346,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 double expense = Utils.getDouble(data.get("totalExpense"));
                 
                 pref.saveFamilySummary(balance, income, expense);
+                
+                // Save and check notifications using the adminId from the family data
+                String adminId = String.valueOf(data.get("adminId"));
+                pref.setAdminId(adminId);
+                checkNotifications(apiHelper, pref, adminId);
+
                 requireActivity().runOnUiThread(() -> {
                     setupHeaders();
                     setupDashboard();
@@ -370,19 +360,27 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
             @Override
             public void onError(Throwable error) {
+                // Fallback to role-based check if family summary fails
+                checkNotifications(apiHelper, pref, null);
             }
         });
-
-        checkNotifications(apiHelper, pref);
     }
 
-    private void checkNotifications(ApiHelper apiHelper, PreferenceManager pref) {
+    private void checkNotifications(ApiHelper apiHelper, PreferenceManager pref, String adminId) {
         boolean isAdmin = false;
-        String role = pref.getUserRole();
-        for (String r : Constants.Roles.PARENTS) {
-            if (r.equalsIgnoreCase(role)) {
-                isAdmin = true;
-                break;
+        String currentUserId = pref.getUserId();
+
+        if (adminId != null && !adminId.isEmpty() && !"null".equals(adminId)) {
+            // High Security: Check if current user is the admin recorded in DB
+            isAdmin = currentUserId.equals(adminId);
+        } else {
+            // Fallback for old data: Check role
+            String role = pref.getUserRole();
+            for (String r : Constants.Roles.PARENTS) {
+                if (r.equalsIgnoreCase(role)) {
+                    isAdmin = true;
+                    break;
+                }
             }
         }
 
@@ -399,13 +397,16 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                             break;
                         }
                     }
-                    final boolean finalHasPending = hasPending;
+                    if (hasPending) {
+                        pref.setHasNotifications(true);
+                    }
+                    final boolean finalHasPending = pref.hasNotifications();
                     requireActivity().runOnUiThread(() -> updateNotificationBadge(finalHasPending));
                 }
 
                 @Override
                 public void onError(Throwable error) {
-                    requireActivity().runOnUiThread(() -> updateNotificationBadge(false));
+                    requireActivity().runOnUiThread(() -> updateNotificationBadge(pref.hasNotifications()));
                 }
             });
         } else {
@@ -473,13 +474,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     @Override
     public void onDestroyView() {
-        if (userSubscription != null) userSubscription.close();
-        if (familySubscription != null) familySubscription.close();
-        if (transSubscription != null) transSubscription.close();
-        
         if (transactionRepository != null) transactionRepository.onDestroy();
         if (memberRepository != null) memberRepository.onDestroy();
-        
         super.onDestroyView();
     }
 
@@ -490,12 +486,14 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupDashboard();
         setupPaydayCard();
         setupBudgetPlanPrompt();
+        updateNotificationBadge(new PreferenceManager(requireContext()).hasNotifications());
     }
 
     private void updateNotificationBadge(boolean hasNotifications) {
         if (hasNotifications) {
             getBinding().notifBadge.setVisibility(View.VISIBLE);
-            getBinding().notifBadge.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.carti_primary_green));
+            // Using mint_green or status_green for the "new data" look
+            getBinding().notifBadge.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.mint_green));
         } else {
             getBinding().notifBadge.setVisibility(View.GONE);
         }

@@ -11,7 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.repository.BillRepository;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityBillsBinding;
 import com.upreyvan.carti.databinding.ItemCalendarDayBinding;
 import com.upreyvan.carti.model.Bill;
@@ -28,7 +29,8 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
 
     private BillAdapter billAdapter;
     private GenericAdapter<CalendarDay, ItemCalendarDayBinding> calendarAdapter;
-    private BillRepository billRepository;
+    private TransactionRepository transactionRepository;
+    private RealtimeRepository realtimeRepository;
     private final Calendar currentDisplayMonth = Calendar.getInstance();
     private String selectedDate = "";
     private boolean showingAllBills = false;
@@ -42,7 +44,8 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        billRepository = new BillRepository(getApplication());
+        transactionRepository = TransactionRepository.getInstance(getApplication());
+        realtimeRepository = RealtimeRepository.getInstance(getApplication());
         
         setupToolbar();
         setupDynamicPadding();
@@ -52,13 +55,39 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
         
         updateCalendarDisplay();
         observeBills();
+        observeRealtimeUpdates();
+    }
+
+    private void observeRealtimeUpdates() {
+        realtimeRepository.getTransactionStream().observe(this, payload -> {
+            transactionRepository.refreshTransactions();
+        });
     }
 
     private void observeBills() {
-        billRepository.getAllBills().observe(this, bills -> {
+        transactionRepository.getTransactionsByType("EXPENSE").observe(this, transactions -> {
+            List<Bill> bills = mapTransactionsToBills(transactions);
             updateBillList(bills);
             loadCalendarDays(bills);
         });
+    }
+
+    private List<Bill> mapTransactionsToBills(List<com.upreyvan.carti.model.TransactionWithUser> transactions) {
+        List<Bill> bills = new ArrayList<>();
+        if (transactions == null) return bills;
+        for (com.upreyvan.carti.model.TransactionWithUser twu : transactions) {
+            com.upreyvan.carti.model.Transaction t = twu.getTransaction();
+            bills.add(new Bill(
+                t.getId(),
+                t.getFamilyId(),
+                t.getTitle(),
+                t.getCreatedAt(),
+                "₱" + String.format(Locale.getDefault(), "%.2f", t.getAmount()),
+                t.isPaid() ? "Paid" : "Unpaid",
+                R.drawable.ic_calendar
+            ));
+        }
+        return bills;
     }
 
     private void updateBillList(List<Bill> bills) {
@@ -170,7 +199,7 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
         
         getBinding().btnViewAllBills.setOnClickListener(v -> {
             showingAllBills = true;
-            updateBillList(billRepository.getAllBills().getValue());
+            // Note: In real app we might want to refresh from repository here if not observing
         });
     }
 

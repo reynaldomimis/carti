@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import com.upreyvan.carti.util.Constants;
 
 public class PreferenceManager {
+    public static final String KEY_ADMIN_ID = "admin_id";
+
     private final SharedPreferences sharedPreferences;
 
     public PreferenceManager(Context context) {
@@ -142,6 +144,46 @@ public class PreferenceManager {
 
     public String getBudgetPlanDismissedMonth() {
         return sharedPreferences.getString(Constants.Keys.KEY_BUDGET_PLAN_DISMISSED_MONTH, "");
+    }
+
+    public void setHasNotifications(boolean has) {
+        sharedPreferences.edit().putBoolean(Constants.Keys.KEY_HAS_NOTIFICATIONS, has).apply();
+    }
+
+    public boolean hasNotifications() {
+        return sharedPreferences.getBoolean(Constants.Keys.KEY_HAS_NOTIFICATIONS, false);
+    }
+
+    public void setAdminId(String adminId) {
+        sharedPreferences.edit().putString(KEY_ADMIN_ID, adminId).apply();
+    }
+
+    public String getAdminId() {
+        return sharedPreferences.getString(KEY_ADMIN_ID, "");
+    }
+
+    public boolean isAdmin() {
+        String adminId = getAdminId();
+        String currentUserId = getUserId();
+
+        if (!adminId.isEmpty() && !"null".equals(adminId)) {
+            return currentUserId.equals(adminId);
+        }
+
+        // Fallback to role
+        String role = getUserRole();
+        for (String r : Constants.Roles.PARENTS) {
+            if (r.equalsIgnoreCase(role)) return true;
+        }
+        return false;
+    }
+
+    public void setLastNotifCheck(String timestamp) {
+        sharedPreferences.edit().putString(Constants.Keys.KEY_LAST_NOTIF_CHECK, timestamp).apply();
+    }
+
+    public String getLastNotifCheck() {
+        return sharedPreferences.getString(Constants.Keys.KEY_LAST_NOTIF_CHECK, "1970-01-01T00:00:00.000Z");
     }
 
     public void clear() {

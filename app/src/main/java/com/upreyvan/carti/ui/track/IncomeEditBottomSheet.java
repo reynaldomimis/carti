@@ -123,10 +123,11 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         income.setTitle(source);
         income.setAmount(amount);
         income.setCategory("Income");
-        income.setNote(source); // Set note same as title
+        income.setNote(source);
         income.setUserId(com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getUserId());
+        income.setFamilyId(com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getFamilyId());
 
-        transactionRepository.addTransaction(income, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        transactionRepository.addTransaction(income, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 onActionSuccess("Income added");
@@ -143,8 +144,9 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         if (incomeToEdit == null) return;
         incomeToEdit.setTitle(source);
         incomeToEdit.setAmount(amount);
+        incomeToEdit.setCategory("Income");
 
-        transactionRepository.updateTransaction(incomeToEdit, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        transactionRepository.updateTransaction(incomeToEdit, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 onActionSuccess("Income updated");

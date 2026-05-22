@@ -77,6 +77,35 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <TextView
+                style="@style/CartiHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="Category"
+                android:textSize="@dimen/text_size_body" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_category"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                app:boxStrokeColor="@color/carti_primary_green"
+                app:hintEnabled="false"
+                app:boxBackgroundColor="@color/white">
+
+                <AutoCompleteTextView
+                    android:id="@+id/act_category"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_height_standard"
+                    android:inputType="none"
+                    android:paddingStart="@dimen/spacing_medium"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_size_body"
+                    tools:ignore="RtlSymmetry" />
+            </com.google.android.material.textfield.TextInputLayout>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

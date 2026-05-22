@@ -21,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/spacing_medium"
-        tools:text="Add Bill for May 21, 2024" />
+        tools:text="Add Bill" />
 
     <com.google.android.material.card.MaterialCardView
         style="@style/CartiCard"
@@ -38,21 +38,6 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/label_bill_name"
-                style="@style/CartiInputLayout">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_bill_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
-                    android:inputType="text" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
                 android:hint="@string/label_bill_amount"
                 style="@style/CartiInputLayout.Amount">
 
@@ -62,6 +47,24 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_primary"
                     android:inputType="numberDecimal" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_category"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:hint="Category"
+                app:boxStrokeColor="@color/carti_primary_green"
+                app:hintTextColor="@color/carti_primary_green">
+
+                <AutoCompleteTextView
+                    android:id="@+id/act_category"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:textColor="@color/text_primary" />
             </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>

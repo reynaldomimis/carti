@@ -235,45 +235,23 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
         showLoading(true, getString(R.string.msg_saving_debt));
 
-        new ApiHelper(this).addDebt(selectedMemberName, amount, selectedType, selectedCategoryName, dueDateStr, reminder, notes, new AppwriteCallback<Map<String, Object>>() {
+        Transaction transaction = new Transaction();
+        transaction.setType("DEBT");
+        transaction.setAmount(amount);
+        transaction.setTitle(selectedMemberName);
+        transaction.setDescription(purpose + (notes.isEmpty() ? "" : ": " + notes));
+        transaction.setCategory(selectedCategoryName);
+        transaction.setDueDate(dueDateStr);
+        transaction.setReminder(reminder);
+        transaction.setMembers(selectedMemberId != null ? List.of(selectedMemberId) : new ArrayList<>());
+        transaction.setUserId(new PreferenceManager(this).getUserId());
+        transaction.setFamilyId(new PreferenceManager(this).getFamilyId());
+
+        transactionRepository.addTransaction(transaction, new AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
-                String id = ValueHelper.toStr(result.get("$id"));
-                PreferenceManager pref = new PreferenceManager(AddDebtActivity.this);
-                
-                List<String> membersList = new ArrayList<>();
-                if (selectedMemberId != null) membersList.add(selectedMemberId);
-                
-                Transaction transaction = new Transaction(
-                        id,
-                        "DEBT",
-                        amount,
-                        selectedMemberName,
-                        purpose + (notes.isEmpty() ? "" : ": " + notes),
-                        selectedCategoryName,
-                        pref.getFamilyId(),
-                        pref.getUserId(),
-                        Utils.getCurrentTimestamp(),
-                        Utils.getCurrentTimestamp(),
-                        0.0,
-                        dueDateStr,
-                        "active",
-                        false,
-                        membersList,
-                        reminder,
-                        R.drawable.ic_person,
-                        0,
-                        0,
-                        System.currentTimeMillis()
-                );
-                transactionRepository.saveLocally(transaction);
-
                 showLoading(false);
                 showToast(getString(R.string.msg_debt_saved), Status.SUCCESS);
-                
-                Intent intent = new Intent(AddDebtActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
                 finish();
             }
 

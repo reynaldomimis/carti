@@ -18,6 +18,7 @@ import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
 import com.upreyvan.carti.databinding.ItemDebtBinding;
@@ -35,6 +36,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     private List<TransactionWithUser> allDebts = new ArrayList<>();
     private ApiHelper apiHelper;
     private TransactionRepository transactionRepository;
+    private RealtimeRepository realtimeRepo;
     private boolean isLoading = true;
 
     @Override
@@ -47,12 +49,29 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         super.onViewCreated(view, savedInstanceState);
         apiHelper = new ApiHelper(requireContext());
         transactionRepository = TransactionRepository.getInstance(requireContext());
+        realtimeRepo = RealtimeRepository.getInstance(requireContext());
         
         setupDynamicPadding();
         setupToolbar();
         setupTabs();
         setupRecyclerView();
         observeDebts();
+        observeRealtimeChanges();
+    }
+
+    /**
+     * Senior Optimization: Listen to the central hub for debt changes.
+     */
+    private void observeRealtimeChanges() {
+        realtimeRepo.getDebtStream().observe(getViewLifecycleOwner(), payload -> {
+            // Trigger local refresh when websocket reports a change
+            transactionRepository.refreshTransactions();
+        });
+        
+        // Also listen to transaction stream as debts are technically transactions
+        realtimeRepo.getTransactionStream().observe(getViewLifecycleOwner(), payload -> {
+            transactionRepository.refreshTransactions();
+        });
     }
 
     private void setupDynamicPadding() {

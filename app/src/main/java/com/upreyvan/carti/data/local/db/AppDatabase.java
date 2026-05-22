@@ -6,14 +6,12 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-import com.upreyvan.carti.data.local.db.dao.BillDao;
 import com.upreyvan.carti.data.local.db.dao.MemberDao;
 import com.upreyvan.carti.data.local.db.dao.TransactionDao;
-import com.upreyvan.carti.model.Bill;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.model.Transaction;
 
-@Database(entities = {Member.class, Transaction.class, Bill.class}, version = 18, exportSchema = false)
+@Database(entities = {Member.class, Transaction.class}, version = 19, exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -21,7 +19,6 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract MemberDao memberDao();
     public abstract TransactionDao transactionDao();
-    public abstract BillDao billDao();
 
     public static AppDatabase getInstance(final Context context) {
         if (INSTANCE == null) {

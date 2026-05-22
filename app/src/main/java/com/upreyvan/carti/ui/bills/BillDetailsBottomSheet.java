@@ -3,7 +3,8 @@ package com.upreyvan.carti.ui.bills;
 import android.os.Bundle;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActionBottomSheet;
-import com.upreyvan.carti.data.repository.BillRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.databinding.LayoutBaseActionBottomSheetBinding;
 
 public class BillDetailsBottomSheet extends BaseActionBottomSheet {
@@ -12,7 +13,7 @@ public class BillDetailsBottomSheet extends BaseActionBottomSheet {
     private static final String ARG_BILL_NAME = "arg_bill_name";
     private static final String ARG_BILL_AMOUNT = "arg_bill_amount";
     
-    private BillRepository billRepository;
+    private TransactionRepository transactionRepository;
     private String billId;
     private String billName;
     private String billAmount;
@@ -29,7 +30,7 @@ public class BillDetailsBottomSheet extends BaseActionBottomSheet {
 
     @Override
     protected void onSetupUI(LayoutBaseActionBottomSheetBinding binding) {
-        billRepository = new BillRepository(requireContext());
+        transactionRepository = TransactionRepository.getInstance(requireContext());
         Bundle args = getArguments();
         if (args != null) {
             billId = args.getString(ARG_BILL_ID);
@@ -65,7 +66,7 @@ public class BillDetailsBottomSheet extends BaseActionBottomSheet {
 
     @Override
     protected boolean isNotesVisible() {
-        return true; // Notes field is now available
+        return true;
     }
 
     @Override
@@ -75,8 +76,17 @@ public class BillDetailsBottomSheet extends BaseActionBottomSheet {
             return;
         }
         
-        // Logic to update bill status and perhaps add the notes to the transaction
-        billRepository.updateStatus(billId, getString(R.string.status_paid_label));
-        showSuccess("Bill marked as paid successfully");
+        // Logic to update bill status 
+        transactionRepository.getTransactionById(billId).observe(getViewLifecycleOwner(), twu -> {
+            if (twu != null) {
+                Transaction update = twu.getTransaction();
+                update.setPaid(true);
+                update.setAmount(Double.parseDouble(amount));
+                update.setDescription(notes); // Use setDescription instead of setNote for Transaction model consistency
+                
+                transactionRepository.updateTransaction(update, null);
+                showSuccess("Bill marked as paid successfully");
+            }
+        });
     }
 }

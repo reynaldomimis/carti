@@ -21,6 +21,7 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.databinding.FragmentFamilyChatBinding;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.model.ChatMessage;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
@@ -33,16 +34,13 @@ import java.util.Map;
 import io.appwrite.Query;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
-import io.appwrite.models.RealtimeSubscription;
-import io.appwrite.services.Realtime;
 
 public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> {
 
     private ChatAdapter chatAdapter;
     private ApiHelper apiHelper;
     private PreferenceManager pref;
-    private Realtime realtime;
-    private RealtimeSubscription subscription;
+    private RealtimeRepository realtimeRepo;
     
     private boolean isLoading = false;
     private boolean isLastPage = false;
@@ -65,12 +63,13 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
         apiHelper = new ApiHelper(requireContext());
         pref = new PreferenceManager(requireContext());
+        realtimeRepo = RealtimeRepository.getInstance(requireContext());
 
         setupDynamicPadding();
         setupToolbar();
         setupChatList();
         setupInput();
-        initRealtime();
+        observeChatRealtime();
         loadChatHistory();
     }
 
@@ -94,48 +93,33 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         });
     }
 
-    private void initRealtime() {
-        realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
-        String familyId = pref.getFamilyId();
-        
-        // Subscribe to the messages collection
-        String channel = "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + Constants.Appwrite.COL_MESSAGES + ".documents";
-        
-        subscription = realtime.subscribe(new String[]{channel}, event -> {
-            if (event.getEvents().contains("databases.*.collections.*.documents.*.create")) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> payload = (Map<String, Object>) event.getPayload();
-                String msgFamilyId = String.valueOf(payload.get("familyId"));
+    private void observeChatRealtime() {
+        realtimeRepo.getChatStream().observe(getViewLifecycleOwner(), payload -> {
+            if (payload != null) {
+                ChatMessage msg = mapToChatMessage(payload);
+                List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
+                boolean exists = false;
+                for (ChatMessage m : currentList) {
+                    if (m.getId() != null && m.getId().equals(msg.getId())) {
+                        exists = true;
+                        break;
+                    }
+                }
                 
-                if (familyId.equals(msgFamilyId)) {
-                    ChatMessage msg = mapToChatMessage(payload);
-                    requireActivity().runOnUiThread(() -> {
-                        List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
-                        boolean exists = false;
-                        for (ChatMessage m : currentList) {
-                            if (m.getId() != null && m.getId().equals(msg.getId())) {
-                                exists = true;
-                                break;
+                if (!exists) {
+                    currentList.add(msg);
+                    chatAdapter.submitList(currentList, () -> {
+                        LinearLayoutManager lm = (LinearLayoutManager) getBinding().rvChat.getLayoutManager();
+                        if (lm != null) {
+                            int lastVisible = lm.findLastVisibleItemPosition();
+                            int totalItems = chatAdapter.getItemCount();
+                            if (lastVisible >= totalItems - 3) {
+                                getBinding().rvChat.scrollToPosition(totalItems - 1);
                             }
-                        }
-                        
-                        if (!exists) {
-                            currentList.add(msg);
-                            chatAdapter.submitList(currentList, () -> {
-                                LinearLayoutManager lm = (LinearLayoutManager) getBinding().rvChat.getLayoutManager();
-                                if (lm != null) {
-                                    int lastVisible = lm.findLastVisibleItemPosition();
-                                    int totalItems = chatAdapter.getItemCount();
-                                    if (lastVisible >= totalItems - 3) {
-                                        getBinding().rvChat.scrollToPosition(totalItems - 1);
-                                    }
-                                }
-                            });
                         }
                     });
                 }
             }
-            return null;
         });
     }
 
@@ -274,9 +258,6 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         super.onDestroyView();
         if (getActivity() != null) {
             getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
-        }
-        if (subscription != null) {
-            subscription.close();
         }
     }
 

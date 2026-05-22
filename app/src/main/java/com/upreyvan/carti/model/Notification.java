@@ -15,22 +15,25 @@ public class Notification {
     private String description;
     private long timestamp;
     private Type type;
+    private String applicantId;
 
     public Notification(String title, String description, long timestamp) {
-        this(title, description, timestamp, Type.INFO);
+        this(title, description, timestamp, Type.INFO, null);
     }
 
-    public Notification(String title, String description, long timestamp, Type type) {
+    public Notification(String title, String description, long timestamp, Type type, String applicantId) {
         this.title = title;
         this.description = description;
         this.timestamp = timestamp;
         this.type = type;
+        this.applicantId = applicantId;
     }
 
     public String getTitle() { return title; }
     public String getDescription() { return description; }
     public long getTimestamp() { return timestamp; }
     public Type getType() { return type; }
+    public String getApplicantId() { return applicantId; }
 
     @Override
     public boolean equals(Object o) {

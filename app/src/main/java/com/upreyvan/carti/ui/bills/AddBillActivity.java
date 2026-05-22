@@ -7,8 +7,8 @@ import android.widget.ArrayAdapter;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityAddBillBinding;
-import com.upreyvan.carti.data.repository.BillRepository;
-import com.upreyvan.carti.model.Bill;
+import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
 import com.upreyvan.carti.data.local.PreferenceManager;
@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
 
-    private BillRepository billRepository;
+    private TransactionRepository transactionRepository;
 
     @Override
     protected ActivityAddBillBinding inflateBinding(LayoutInflater inflater) {
@@ -28,9 +28,10 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        billRepository = new BillRepository(this);
+        transactionRepository = TransactionRepository.getInstance(this);
         setupToolbar();
         setupStatusBar();
+        setupCategoryDropdown();
         setupClickListeners();
     }
 
@@ -51,29 +52,40 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
 
     private void setupClickListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
-            if (Validator.isEmpty(getBinding().etBillName) || Validator.isEmpty(getBinding().etAmount)) {
+            String name = getBinding().etBillName.getText().toString();
+            String amountText = getBinding().etAmount.getText().toString();
+            String category = getBinding().actCategory.getText().toString();
+
+            if (Validator.isEmpty(getBinding().etBillName) || Validator.isEmpty(getBinding().etAmount) || category.isEmpty()) {
                 showToast(getString(R.string.msg_fill_all_fields), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
                 return;
             }
 
-            String name = getBinding().etBillName.getText().toString();
-            String amount = "₱" + getBinding().etAmount.getText().toString();
+            double amount = Double.parseDouble(amountText);
             String familyId = new PreferenceManager(this).getFamilyId();
+            String userId = new PreferenceManager(this).getUserId();
             String date = Utils.formatDateShort(Calendar.getInstance());
             
-            Bill newBill = new Bill(
-                    UUID.randomUUID().toString(),
-                    familyId,
-                    name,
-                    date,
-                    amount,
-                    "Unpaid",
-                    R.drawable.ic_calendar
-            );
+            Transaction transaction = new Transaction();
+            transaction.setTitle(name);
+            transaction.setAmount(amount);
+            transaction.setType("EXPENSE");
+            transaction.setCategory(category);
+            transaction.setFamilyId(familyId);
+            transaction.setUserId(userId);
+            transaction.setCreatedAt(date);
+            transaction.setPaid(false);
 
-            billRepository.saveLocally(newBill);
+            transactionRepository.addTransaction(transaction, null);
             showToast(getString(R.string.msg_bill_saved), com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
             finish();
         });
+    }
+
+    private void setupCategoryDropdown() {
+        String[] categories = {"Water", "Electricity", "Internet/Wifi", "Load", "Rent", "Others"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
+        getBinding().actCategory.setAdapter(adapter);
+        getBinding().actCategory.setText(categories[0], false);
     }
 }

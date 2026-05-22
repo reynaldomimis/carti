@@ -7,14 +7,11 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.remote.RealtimeHelper;
-import com.upreyvan.carti.model.ChatMessage;
 import com.upreyvan.carti.util.Constants;
 
 import java.util.Map;
 
 import io.appwrite.models.Document;
-import io.appwrite.models.RealtimeSubscription;
 
 /**
  * Senior Level Repository for Chat.
@@ -23,12 +20,11 @@ import io.appwrite.models.RealtimeSubscription;
 public class ChatRepository {
 
     private final ApiHelper apiHelper;
-    private final RealtimeHelper realtimeHelper;
-    private RealtimeSubscription chatSubscription;
+    private final RealtimeRepository realtimeRepo;
 
     public ChatRepository(Context context) {
         this.apiHelper = new ApiHelper(context);
-        this.realtimeHelper = new RealtimeHelper(context);
+        this.realtimeRepo = RealtimeRepository.getInstance(context);
     }
 
     /**
@@ -41,35 +37,14 @@ public class ChatRepository {
     /**
      * Subscribes to realtime chat messages and returns a LiveData.
      */
-    public LiveData<ChatMessage> getRealtimeMessages() {
-        MutableLiveData<ChatMessage> liveData = new MutableLiveData<>();
-
-        // Close previous subscription if any
-        if (chatSubscription != null) {
-            chatSubscription.close();
-        }
-
-        chatSubscription = realtimeHelper.subscribeToCollection(
-                Constants.Appwrite.COL_MESSAGES,
-                event -> {
-                    if (RealtimeHelper.isCreateEvent(event)) {
-                        ChatMessage msg = realtimeHelper.parsePayload(event, ChatMessage.class);
-                        if (msg != null) {
-                            liveData.setValue(msg);
-                        }
-                    }
-                }
-        );
-
-        return liveData;
+    public LiveData<Map<String, Object>> getRealtimeMessages() {
+        return realtimeRepo.getChatStream();
     }
 
     /**
      * Clean up resources. Should be called when the ViewModel is cleared.
      */
     public void onDestroy() {
-        if (chatSubscription != null) {
-            chatSubscription.close();
-        }
+        // No-op as the hub is central
     }
 }

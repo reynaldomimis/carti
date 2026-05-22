@@ -16,6 +16,7 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentGoalBinding;
 import com.upreyvan.carti.databinding.ItemGoalBinding;
 import com.upreyvan.carti.model.Transaction;
@@ -31,6 +32,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     private GenericAdapter<TransactionWithUser, ItemGoalBinding> adapter;
     private List<TransactionWithUser> allGoals = new ArrayList<>();
     private TransactionRepository transactionRepository;
+    private RealtimeRepository realtimeRepo;
     private boolean isLoading = true;
 
     @Override
@@ -42,12 +44,25 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(requireContext());
+        realtimeRepo = RealtimeRepository.getInstance(requireContext());
         
         setupDynamicPadding();
         setupHeader();
         setupTabs();
         setupRecyclerView();
         observeGoals();
+        observeRealtimeChanges();
+    }
+
+    /**
+     * Senior Optimization: Listen to the central hub for goal changes.
+     */
+    private void observeRealtimeChanges() {
+        realtimeRepo.getGoalStream().observe(getViewLifecycleOwner(), payload -> {
+            // When a goal is added/updated in the background, we force a local refresh
+            // if the Room observer doesn't catch it immediately.
+            transactionRepository.refreshTransactions();
+        });
     }
 
     private void setupDynamicPadding() {

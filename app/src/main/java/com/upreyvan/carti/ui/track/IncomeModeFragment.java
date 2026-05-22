@@ -14,6 +14,7 @@ import com.upreyvan.carti.databinding.FragmentIncomeModeBinding;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.model.TransactionWithUser;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +27,13 @@ import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.ValueHelper;
 import java.util.Calendar;
 import java.util.Locale;
-import io.appwrite.models.RealtimeSubscription;
-import io.appwrite.services.Realtime;
+import java.util.Map;
 
 public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> {
 
     private GenericAdapter<Transaction, ItemIncomeBinding> incomeAdapter;
     private TransactionRepository transactionRepository;
-    private RealtimeSubscription realtimeSubscription;
+    private RealtimeRepository realtimeRepo;
 
     @Override
     protected FragmentIncomeModeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -44,57 +44,29 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(requireContext());
+        realtimeRepo = RealtimeRepository.getInstance(requireContext());
         setupDynamicPadding(getBinding().layoutToolbar.getRoot(), null, 0.3f);
         setupHeader();
         setupRecyclerView();
         observeIncomes();
         updateUI();
         setupListeners();
-        initRealtime();
+        observeRealtime();
     }
 
-    private void initRealtime() {
-        PreferenceManager pref = PreferenceManager.getInstance(requireContext());
-        String familyId = pref.getFamilyId();
-        String userId = pref.getUserId();
-        if (familyId.isEmpty() || userId.isEmpty()) return;
+    private void observeRealtime() {
+        realtimeRepo.getIncomeStream().observe(getViewLifecycleOwner(), payload -> {
+            requireActivity().runOnUiThread(() -> transactionRepository.refreshTransactions());
+        });
 
-        Realtime realtime = new Realtime(AppwriteManager.getInstance(requireContext()).getClient());
-        
-        String incomesChannel = "databases." + Constants.Appwrite.DATABASE_ID + 
-                                ".collections." + Constants.Appwrite.COL_INCOMES + 
-                                ".documents";
-        String userChannel = "databases." + Constants.Appwrite.DATABASE_ID + 
-                             ".collections." + Constants.Appwrite.COL_USERS + 
-                             ".documents." + userId;
-        
-        realtimeSubscription = realtime.subscribe(new String[]{incomesChannel, userChannel}, event -> {
-            boolean isIncomeEvent = false;
-            for (String channel : event.getChannels()) {
-                if (channel.contains(Constants.Appwrite.COL_INCOMES)) {
-                    isIncomeEvent = true;
-                    break;
-                }
-            }
-
-            if (isIncomeEvent) {
-                requireActivity().runOnUiThread(() -> transactionRepository.refreshTransactions());
-            } else {
-                requireActivity().runOnUiThread(this::updateUI);
-            }
-            return null;
+        realtimeRepo.getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> {
+            requireActivity().runOnUiThread(this::updateUI);
         });
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (realtimeSubscription != null) {
-            realtimeSubscription.close();
-        }
-        if (transactionRepository != null) {
-            transactionRepository.onDestroy();
-        }
     }
 
     private void setupRecyclerView() {
