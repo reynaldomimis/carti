@@ -90,7 +90,10 @@ public class RealtimeRepository {
                 if (familyId.equals(payload.get("familyId"))) debtStream.postValue(payload);
             } 
             else if (eventPath.contains(Constants.Appwrite.COL_NOTIFICATIONS)) {
-                if (familyId.equals(payload.get("familyId"))) notificationStream.postValue(payload);
+                if (familyId.equals(payload.get("familyId"))) {
+                    android.util.Log.d("RealtimeRepository", "Notification received: " + payload.get("title"));
+                    notificationStream.postValue(payload);
+                }
             } 
             else if (eventPath.contains(Constants.Appwrite.COL_USERS)) {
                 userUpdateStream.postValue(payload);
@@ -115,7 +118,6 @@ public class RealtimeRepository {
         return "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + collectionId + ".documents." + documentId;
     }
 
-    // LiveData Getters
     public LiveData<Map<String, Object>> getTransactionStream() { return transactionStream; }
     public LiveData<Map<String, Object>> getGoalStream() { return goalStream; }
     public LiveData<Map<String, Object>> getDebtStream() { return debtStream; }

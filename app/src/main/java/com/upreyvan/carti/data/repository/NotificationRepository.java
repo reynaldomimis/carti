@@ -23,6 +23,9 @@ public class NotificationRepository {
 
     private static NotificationRepository instance;
     private final RealtimeRepository realtimeRepo;
+    private MediatorLiveData<List<Bill>> billsLiveData;
+    private final List<Bill> currentBills = new ArrayList<>();
+    private String lastFamilyId = "";
 
     private NotificationRepository(Context context) {
         this.realtimeRepo = RealtimeRepository.getInstance(context);
@@ -44,57 +47,74 @@ public class NotificationRepository {
     }
 
     public LiveData<List<Bill>> getBills(String familyId) {
-        MediatorLiveData<List<Bill>> billsLiveData = new MediatorLiveData<>();
-        List<Bill> currentBills = new ArrayList<>();
+        if (billsLiveData == null || !familyId.equals(lastFamilyId)) {
+            lastFamilyId = familyId;
+            billsLiveData = new MediatorLiveData<>();
+            currentBills.clear();
 
-        // Initial fetch
-        new ApiHelper(realtimeRepo.getContext()).getNotifications(familyId, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                    Bill bill = mapToBill(doc.getId(), doc.getData());
-                    if (bill != null) currentBills.add(bill);
-                }
-                billsLiveData.postValue(new ArrayList<>(currentBills));
-            }
-
-            @Override
-            public void onError(Throwable error) {}
-        });
-
-        // Observe realtime stream
-        billsLiveData.addSource(realtimeRepo.getNotificationStream(), payload -> {
-            if (payload != null && familyId.equals(payload.get("familyId"))) {
-                String id = (String) payload.get("$id");
-                Bill bill = mapToBill(id, payload);
-                if (bill != null) {
-                    // Update or Add
-                    boolean found = false;
-                    for (int i = 0; i < currentBills.size(); i++) {
-                        if (currentBills.get(i).getId().equals(id)) {
-                            currentBills.set(i, bill);
-                            found = true;
-                            break;
+            // Initial fetch - Ensure this always posts a value
+            new ApiHelper(realtimeRepo.getContext()).getNotifications(familyId, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
+                @Override
+                public void onSuccess(DocumentList<Map<String, Object>> result) {
+                    currentBills.clear();
+                    if (result != null && result.getDocuments() != null) {
+                        for (Document<Map<String, Object>> doc : result.getDocuments()) {
+                            Bill bill = mapToBill(doc.getId(), doc.getData());
+                            if (bill != null) currentBills.add(bill);
                         }
                     }
-                    if (!found) currentBills.add(0, bill);
-                    billsLiveData.setValue(new ArrayList<>(currentBills));
+                    billsLiveData.postValue(new ArrayList<>(currentBills));
                 }
-            }
-        });
 
+                @Override
+                public void onError(Throwable error) {
+                    android.util.Log.e("NotificationRepository", "Fetch error: " + error.getMessage());
+                    billsLiveData.postValue(new ArrayList<>(currentBills)); // Post empty to stop loading
+                }
+            });
+
+            // Observe realtime stream
+            billsLiveData.addSource(realtimeRepo.getNotificationStream(), payload -> {
+                if (payload != null && familyId.equals(payload.get("familyId"))) {
+                    String id = (String) payload.get("$id");
+                    Bill bill = mapToBill(id, payload);
+                    if (bill != null) {
+                        boolean found = false;
+                        for (int i = 0; i < currentBills.size(); i++) {
+                            if (currentBills.get(i).getId().equals(id)) {
+                                currentBills.set(i, bill);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) currentBills.add(0, bill);
+                        billsLiveData.setValue(new ArrayList<>(currentBills));
+                    }
+                }
+            });
+        }
         return billsLiveData;
     }
 
     private Bill mapToBill(String id, Map<String, Object> data) {
+        if (data == null) return null;
+        
         String title = (String) data.get("title");
-        if (title != null && title.startsWith("BILL: ")) {
-            String name = title.substring(6);
+        if (title != null && title.toUpperCase().startsWith("BILL: ")) {
+            String name = title.substring(6).trim();
             String content = (String) data.get("content");
             String date = "";
-            if (content != null && content.contains("due on ")) {
-                date = content.substring(content.lastIndexOf("due on ") + 7);
+            
+            // Mas flexible na date extraction
+            if (content != null && content.toLowerCase().contains("due on ")) {
+                int index = content.toLowerCase().lastIndexOf("due on ");
+                date = content.substring(index + 7).trim();
+            } else {
+                // Fallback sa $createdAt kung walang date sa content
+                Object createdAt = data.get("$createdAt");
+                if (createdAt != null) date = Utils.formatTimestamp(createdAt.toString());
             }
+
             return new Bill(
                     id,
                     (String) data.get("familyId"),
