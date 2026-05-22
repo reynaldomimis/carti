@@ -53,8 +53,7 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
     private List<TransactionWithUser> fullTrackList = new ArrayList<>();
     private final List<BudgetCategoryItem> allAllocations = new ArrayList<>();
     private boolean isAllocationExpanded = false;
-    private long currentStartMillis;
-    private long currentEndMillis;
+    private Calendar currentDisplayDate;
 
     @Override
     protected FragmentTrackBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -66,18 +65,37 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(requireContext());
         preferenceManager = new PreferenceManager(requireContext());
+        currentDisplayDate = Calendar.getInstance();
         
         setupDynamicPadding(getBinding().layoutHeader, getBinding().scrollView, 0.3f);
-        setupFilterTabs();
         setupSummaryCards();
         setupChart();
         setupLegend();
         setupBudgetAllocation();
         setupTransactions();
         
-        // Default to "This Month"
-        updateDataForRange(0);
+        loadCurrentMonthData();
         transactionRepository.syncTransactionsIfNeeded();
+    }
+
+    private void loadCurrentMonthData() {
+        transactionRepository.getTransactionsByMonth(
+                currentDisplayDate.get(Calendar.MONTH),
+                currentDisplayDate.get(Calendar.YEAR)
+        ).observe(getViewLifecycleOwner(), transactions -> {
+            if (transactions != null) {
+                updateSummaryData(transactions);
+                updateIncomeVsExpense(transactions);
+                fullTrackList.clear();
+                for (TransactionWithUser t : transactions) {
+                    if ("EXPENSE".equals(t.getTransaction().getType())) {
+                        fullTrackList.add(t);
+                    }
+                }
+                processTransactions(fullTrackList);
+                applyFilters();
+            }
+        });
     }
 
     private void setupSummaryCards() {
@@ -89,10 +107,6 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
         getBinding().layoutSummary.tvSavingsAmount.setText(String.format(Locale.getDefault(), "%s / %s", Utils.formatCurrency(0), Utils.formatCurrency(0)));
         getBinding().layoutSummary.tvSavingsPercent.setText(getString(R.string.zero_percent));
         getBinding().layoutSummary.progressSavings.setProgress(0);
-
-        // Initial setup for labels
-        getBinding().layoutSummary.tvSummaryIncomeLabel.setText(R.string.label_monthly_income);
-        getBinding().layoutSummary.tvSummaryExpenseLabel.setText(R.string.label_monthly_expenses);
 
         // Savings Progress remains tied to goals
         transactionRepository.getGoals().observe(getViewLifecycleOwner(), goals -> {
@@ -114,79 +128,18 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
             getBinding().layoutSummary.progressSavings.setProgress(progress);
         });
 
-        getBinding().layoutSummary.btnViewDetails.setOnClickListener(v -> navigateTo(IncomeContributorsFragment.newInstance(currentStartMillis, currentEndMillis)));
-        getBinding().layoutSummary.cardTotalBalance.setOnClickListener(v -> navigateTo(IncomeContributorsFragment.newInstance(currentStartMillis, currentEndMillis)));
-    }
-
-    private void setupFilterTabs() {
-        if (getBinding().tabFilter.getTabCount() > 0) return;
-        
-        String[] tabs = {"This Month", "Last Month", "This Year"};
-        for (String tab : tabs) {
-            getBinding().tabFilter.addTab(getBinding().tabFilter.newTab().setText(tab));
-        }
-
-        getBinding().tabFilter.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                updateDataForRange(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+        getBinding().layoutSummary.btnViewDetails.setOnClickListener(v -> {
+            navigateTo(IncomeContributorsFragment.newInstance(
+                    currentDisplayDate.get(Calendar.MONTH),
+                    currentDisplayDate.get(Calendar.YEAR)
+            ));
         });
-    }
-
-    private void updateDataForRange(int position) {
-        Calendar cal = Calendar.getInstance();
-
-        // Update Labels based on selection
-        String incomeLabel;
-        String expenseLabel;
-
-        switch (position) {
-            case 1: // Last Month
-                cal.add(Calendar.MONTH, -1);
-                currentStartMillis = Utils.getMonthStartMillis(cal);
-                currentEndMillis = Utils.getMonthEndMillis(cal);
-                incomeLabel = getString(R.string.label_last_month_income);
-                expenseLabel = getString(R.string.label_last_month_expenses);
-                break;
-            case 2: // This Year
-                currentStartMillis = Utils.getYearStartMillis(cal);
-                currentEndMillis = Utils.getYearEndMillis(cal);
-                incomeLabel = getString(R.string.label_total_income);
-                expenseLabel = getString(R.string.label_total_expenses);
-                break;
-            default: // This Month
-                currentStartMillis = Utils.getMonthStartMillis(cal);
-                currentEndMillis = Utils.getMonthEndMillis(cal);
-                incomeLabel = getString(R.string.label_monthly_income);
-                expenseLabel = getString(R.string.label_monthly_expenses);
-                break;
-        }
-
-        getBinding().layoutSummary.tvSummaryIncomeLabel.setText(incomeLabel);
-        getBinding().layoutSummary.tvSummaryExpenseLabel.setText(expenseLabel);
-
-        transactionRepository.getTransactionsInRange(currentStartMillis, currentEndMillis)
-                .observe(getViewLifecycleOwner(), transactions -> {
-                    if (transactions != null) {
-                        updateSummaryData(transactions);
-                        updateIncomeVsExpense(transactions);
-                        fullTrackList.clear();
-                        for (TransactionWithUser t : transactions) {
-                            if ("EXPENSE".equals(t.getTransaction().getType())) {
-                                fullTrackList.add(t);
-                            }
-                        }
-                        processTransactions(fullTrackList);
-                        applyFilters();
-                    }
-                });
+        getBinding().layoutSummary.cardTotalBalance.setOnClickListener(v -> {
+            navigateTo(IncomeContributorsFragment.newInstance(
+                    currentDisplayDate.get(Calendar.MONTH),
+                    currentDisplayDate.get(Calendar.YEAR)
+            ));
+        });
     }
 
     private void updateSummaryData(List<TransactionWithUser> transactions) {

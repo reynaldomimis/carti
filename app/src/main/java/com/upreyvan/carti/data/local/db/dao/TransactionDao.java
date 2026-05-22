@@ -55,6 +55,12 @@ public interface TransactionDao {
     @Query("SELECT SUM(amount) FROM transactions WHERE familyId = :familyId AND type = 'INCOME'")
     LiveData<Double> getTotalIncome(String familyId);
 
+    @Query("SELECT SUM(amount) FROM transactions WHERE familyId = :familyId AND type = 'INCOME' AND timestampMillis >= :start AND timestampMillis <= :end")
+    LiveData<Double> getTotalIncomeInRange(String familyId, long start, long end);
+
+    @Query("SELECT SUM(amount) FROM transactions WHERE familyId = :familyId AND type = 'EXPENSE' AND timestampMillis >= :start AND timestampMillis <= :end")
+    LiveData<Double> getTotalExpenseInRange(String familyId, long start, long end);
+
     @Query("SELECT * FROM transactions WHERE familyId = :familyId")
     List<Transaction> getAllTransactionsList(String familyId);
 

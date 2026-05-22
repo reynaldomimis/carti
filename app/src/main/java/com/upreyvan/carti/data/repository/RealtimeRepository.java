@@ -36,6 +36,10 @@ public class RealtimeRepository {
         this.pref = new PreferenceManager(context);
     }
 
+    public Context getContext() {
+        return realtimeHelper.getContext();
+    }
+
     public static synchronized RealtimeRepository getInstance(Context context) {
         if (instance == null) {
             instance = new RealtimeRepository(context.getApplicationContext());

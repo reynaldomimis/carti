@@ -27,19 +27,19 @@ import java.util.Map;
 
 public class IncomeContributorsFragment extends BaseFragment<FragmentIncomeContributorsBinding> {
 
-    private static final String ARG_START_MILLIS = "start_millis";
-    private static final String ARG_END_MILLIS = "end_millis";
+    private static final String ARG_MONTH = "arg_month";
+    private static final String ARG_YEAR = "arg_year";
 
     private TransactionRepository transactionRepository;
     private GenericAdapter<Contributor, ItemMemberContributionBinding> adapter;
-    private long startMillis;
-    private long endMillis;
+    private int selectedMonth;
+    private int selectedYear;
 
-    public static IncomeContributorsFragment newInstance(long startMillis, long endMillis) {
+    public static IncomeContributorsFragment newInstance(int month, int year) {
         IncomeContributorsFragment fragment = new IncomeContributorsFragment();
         Bundle args = new Bundle();
-        args.putLong(ARG_START_MILLIS, startMillis);
-        args.putLong(ARG_END_MILLIS, endMillis);
+        args.putInt(ARG_MONTH, month);
+        args.putInt(ARG_YEAR, year);
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,8 +48,8 @@ public class IncomeContributorsFragment extends BaseFragment<FragmentIncomeContr
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            startMillis = getArguments().getLong(ARG_START_MILLIS);
-            endMillis = getArguments().getLong(ARG_END_MILLIS);
+            selectedMonth = getArguments().getInt(ARG_MONTH);
+            selectedYear = getArguments().getInt(ARG_YEAR);
         }
     }
 
@@ -86,7 +86,7 @@ public class IncomeContributorsFragment extends BaseFragment<FragmentIncomeContr
                     }
 
                     binding.tvBtnViewExpenses.setOnClickListener(v -> 
-                        navigateTo(BreakdownExpenseFragment.newInstance(startMillis, endMillis))
+                        navigateTo(BreakdownExpenseFragment.newInstance(selectedMonth, selectedYear))
                     );
                     
                     binding.getRoot().setOnClickListener(v -> 
@@ -99,7 +99,7 @@ public class IncomeContributorsFragment extends BaseFragment<FragmentIncomeContr
     }
 
     private void observeContributions() {
-        transactionRepository.getTransactionsInRange(startMillis, endMillis).observe(getViewLifecycleOwner(), transactions -> {
+        transactionRepository.getTransactionsByMonth(selectedMonth, selectedYear).observe(getViewLifecycleOwner(), transactions -> {
             if (transactions != null) {
                 Map<String, Contributor> contributorMap = new HashMap<>();
                 double totalIncome = 0;

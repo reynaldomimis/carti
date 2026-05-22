@@ -27,6 +27,10 @@ public class RealtimeHelper {
         realtime = new Realtime(AppwriteManager.getInstance(context).getClient());
     }
 
+    public Context getContext() {
+        return context;
+    }
+
     public interface RealtimeEventCallback {
         void onEvent(RealtimeResponseEvent<?> event);
         default void onError(Throwable error) {

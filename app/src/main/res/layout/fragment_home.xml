@@ -116,6 +116,14 @@
                 layout="@layout/view_ai_insight" />
 
             <include
+                android:id="@+id/viewBillNotification"
+                layout="@layout/view_bill_notification_card" />
+
+            <include
+                android:id="@+id/viewFamilyNotification"
+                layout="@layout/view_bill_notification_card" />
+
+            <include
                 android:id="@+id/viewHomeDashboard"
                 layout="@layout/view_home_dashboard" />
 
@@ -141,16 +149,22 @@
                 android:id="@+id/viewHeaderQuickLog"
                 layout="@layout/view_section_header" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvQuickLog"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xs"
-                android:nestedScrollingEnabled="false"
-                android:scrollbars="none"
-                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                app:spanCount="4"
-                tools:listitem="@layout/item_quick_log" />
+                android:layout_height="wrap_content">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvQuickLog"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:nestedScrollingEnabled="false"
+                    android:scrollbars="none"
+                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                    app:spanCount="4"
+                    tools:listitem="@layout/item_quick_log" />
+
+            </FrameLayout>
 
             <include
                 android:id="@+id/viewAiSuggestions"

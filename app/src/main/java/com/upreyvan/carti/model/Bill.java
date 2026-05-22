@@ -10,16 +10,14 @@ public class Bill {
     private final String familyId;
     private final String name;
     private final String date;
-    private final String amount;
     private final String status;
     private final int iconResId;
 
-    public Bill(String id, String familyId, String name, String date, String amount, String status, int iconResId) {
+    public Bill(String id, String familyId, String name, String date, String status, int iconResId) {
         this.id = id;
         this.familyId = familyId;
         this.name = name;
         this.date = date;
-        this.amount = amount;
         this.status = status;
         this.iconResId = iconResId;
     }
@@ -28,7 +26,6 @@ public class Bill {
     public String getFamilyId() { return familyId; }
     public String getName() { return name; }
     public String getDate() { return date; }
-    public String getAmount() { return amount; }
     public String getStatus() { return status; }
     public int getIconResId() { return iconResId; }
 
@@ -42,7 +39,6 @@ public class Bill {
         public boolean areContentsTheSame(@NonNull Bill oldItem, @NonNull Bill newItem) {
             return Objects.equals(oldItem.name, newItem.name) &&
                     Objects.equals(oldItem.date, newItem.date) &&
-                    Objects.equals(oldItem.amount, newItem.amount) &&
                     Objects.equals(oldItem.status, newItem.status) &&
                     oldItem.iconResId == newItem.iconResId;
         }

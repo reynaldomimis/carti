@@ -42,28 +42,6 @@
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/spacing_medium">
 
-            <!-- Filter Tabs -->
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tabFilter"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:background="@android:color/transparent"
-                app:tabBackground="@drawable/sl_tab_pill"
-                app:tabIndicatorAnimationMode="linear"
-                app:tabIndicator="@drawable/bg_pill_green"
-                app:tabIndicatorGravity="center"
-                app:tabIndicatorHeight="32dp"
-                app:tabIndicatorFullWidth="true"
-                app:tabMode="scrollable"
-                app:tabMinWidth="0dp"
-                app:tabPaddingStart="@dimen/spacing_medium"
-                app:tabPaddingEnd="@dimen/spacing_medium"
-                app:tabRippleColor="@null"
-                app:tabSelectedTextColor="@color/white"
-                app:tabTextColor="@color/text_secondary"
-                app:tabTextAppearance="@style/CartiHeaderSmall" />
-
             <!-- Track Summary Section -->
             <include
                 android:id="@+id/layoutSummary"

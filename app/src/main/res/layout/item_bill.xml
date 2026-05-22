@@ -30,7 +30,7 @@
             android:layout_marginStart="@dimen/spacing_medium"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/layout_amount"
+            app:layout_constraintEnd_toStartOf="@id/tv_bill_status"
             app:layout_constraintStart_toEndOf="@id/iv_bill_icon"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -49,37 +49,19 @@
                 tools:text="May 20, 2025" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/layout_amount"
+        <TextView
+            android:id="@+id/tv_bill_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="vertical"
+            android:background="@drawable/bg_status_unpaid"
+            android:paddingHorizontal="@dimen/spacing_small"
+            android:paddingVertical="2dp"
+            android:textColor="@color/status_red"
+            android:textSize="@dimen/text_size_xxs"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:id="@+id/tv_bill_amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_size_header_small"
-                tools:text="P1,200" />
-
-            <TextView
-                android:id="@+id/tv_bill_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xs"
-                android:background="@drawable/bg_status_unpaid"
-                android:paddingHorizontal="@dimen/spacing_small"
-                android:paddingVertical="2dp"
-                android:textColor="@color/status_red"
-                android:textSize="@dimen/text_size_xxs"
-                tools:text="Unpaid" />
-        </LinearLayout>
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Unpaid" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

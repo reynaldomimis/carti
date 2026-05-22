@@ -497,6 +497,8 @@
     <string name="empty_notifications">You have no notifications yet.</string>
     <string name="notif_join_request_title">New Join Request</string>
     <string name="notif_join_request_desc">%s wants to join your family.</string>
+    <string name="pending_requests_title">Pending Requests (%d)</string>
+    <string name="pending_requests_desc">You have new members waiting for your approval.</string>
     <string name="msg_member_approved">Member approved successfully!</string>
     <string name="msg_member_rejected">Join request rejected.</string>
     <string name="notif_send_family_title">Send Family Notification</string>
@@ -635,6 +637,7 @@
     <string name="desc_prev_month">Previous Month</string>
     <string name="desc_next_month">Next Month</string>
     <string name="view_all_bills">View All Bills</string>
+    <string name="no_upcoming_bills">No upcoming bills</string>
 
     <!-- Dashboard Strings -->
     <string name="label_total_balance">Total Balance</string>
@@ -676,6 +679,7 @@
     <string name="days_to_go">%d days to go</string>
     <string name="payday_date_format">%s</string>
     <string name="no_transactions_yet">No expenses recorded yet.</string>
+    <string name="no_quick_logs_yet">No budget categories found. Create a budget plan to start logging.</string>
     <string name="hint_search_transactions">Search transactions...</string>
     <string name="quick_actions_title">Shortcuts</string>
     <string name="action_add_expense">Add Expense</string>

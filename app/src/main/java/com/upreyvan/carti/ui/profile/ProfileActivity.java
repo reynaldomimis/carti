@@ -125,7 +125,6 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
         String membersSubtitle = getString(R.string.menu_family_sub); 
         
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_myplaces, R.string.menu_family, membersSubtitle, new MembersFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_add, R.string.menu_invite, getString(R.string.menu_invite_sub), null));
         menuItems.add(new ProfileMenuItem(android.R.drawable.stat_notify_chat, R.string.menu_chat, getString(R.string.menu_chat_sub), new FamilyChatFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_compass, R.string.menu_goals, getString(R.string.menu_goals_sub), new GoalFragment()));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_edit, R.string.menu_debt, getString(R.string.menu_debt_sub), new DebtTrackerFragment()));
@@ -136,9 +135,7 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_info_details, R.string.menu_about, getString(R.string.menu_about_sub), new AboutFragment(), false));
 
         adapter = new ProfileMenuAdapter(item -> {
-            if (item.getTitleResId() == R.string.menu_invite) {
-                startActivity(new Intent(this, InviteFamilyActivity.class));
-            } else if (item.getFragment() != null) {
+            if (item.getFragment() != null) {
                 navigateTo(item.getFragment());
             }
         });

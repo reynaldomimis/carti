@@ -8,20 +8,20 @@ import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.upreyvan.carti.databinding.ItemCustomizeCategoryBinding;
-import com.upreyvan.carti.model.Category;
+import com.upreyvan.carti.model.BudgetCategoryItem;
 
 import java.util.Collections;
 import java.util.List;
 
 public class CustomizeCategoryAdapter extends RecyclerView.Adapter<CustomizeCategoryAdapter.ViewHolder> {
 
-    private final List<Category> categories;
+    private final List<BudgetCategoryItem> categories;
 
-    public CustomizeCategoryAdapter(List<Category> categories) {
+    public CustomizeCategoryAdapter(List<BudgetCategoryItem> categories) {
         this.categories = categories;
     }
 
-    public List<Category> getCategories() {
+    public List<BudgetCategoryItem> getCategories() {
         return categories;
     }
 
@@ -38,8 +38,8 @@ public class CustomizeCategoryAdapter extends RecyclerView.Adapter<CustomizeCate
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Category category = categories.get(position);
-        holder.binding.tvCategoryName.setText(category.getName());
+        BudgetCategoryItem category = categories.get(position);
+        holder.binding.tvCategoryName.setText(category.getCategoryName());
         holder.binding.ivIcon.setImageResource(category.getIconRes());
         
         int iconColor = holder.itemView.getContext().getColor(category.getIconColor());

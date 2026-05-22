@@ -135,8 +135,6 @@ public class TransactionRepository {
         // Migration: Debts are now unified into Transactions collection
     }
 
-    // --- FETCH-ONLY DATA (Room) ---
-
     public LiveData<List<TransactionWithUser>> getAllTransactions() {
         return transactionDao.getAllTransactions(pref.getFamilyId());
     }
@@ -156,6 +154,14 @@ public class TransactionRepository {
 
     public LiveData<Double> getTotalIncome() {
         return transactionDao.getTotalIncome(pref.getFamilyId());
+    }
+
+    public LiveData<Double> getTotalIncomeInRange(long start, long end) {
+        return transactionDao.getTotalIncomeInRange(pref.getFamilyId(), start, end);
+    }
+
+    public LiveData<Double> getTotalExpenseInRange(long start, long end) {
+        return transactionDao.getTotalExpenseInRange(pref.getFamilyId(), start, end);
     }
 
     public LiveData<Double> getTodayTotalSpent() {

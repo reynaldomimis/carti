@@ -27,19 +27,19 @@ import java.util.List;
 
 public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpenseBinding> {
 
-    private static final String ARG_START_MILLIS = "start_millis";
-    private static final String ARG_END_MILLIS = "end_millis";
+    private static final String ARG_MONTH = "arg_month";
+    private static final String ARG_YEAR = "arg_year";
 
     private TransactionRepository transactionRepository;
     private GenericAdapter<TransactionWithUser, ItemCategoryBreakdownBinding> adapter;
-    private long startMillis;
-    private long endMillis;
+    private int selectedMonth;
+    private int selectedYear;
 
-    public static BreakdownExpenseFragment newInstance(long startMillis, long endMillis) {
+    public static BreakdownExpenseFragment newInstance(int month, int year) {
         BreakdownExpenseFragment fragment = new BreakdownExpenseFragment();
         Bundle args = new Bundle();
-        args.putLong(ARG_START_MILLIS, startMillis);
-        args.putLong(ARG_END_MILLIS, endMillis);
+        args.putInt(ARG_MONTH, month);
+        args.putInt(ARG_YEAR, year);
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,8 +48,8 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            startMillis = getArguments().getLong(ARG_START_MILLIS);
-            endMillis = getArguments().getLong(ARG_END_MILLIS);
+            selectedMonth = getArguments().getInt(ARG_MONTH);
+            selectedYear = getArguments().getInt(ARG_YEAR);
         }
     }
 
@@ -107,7 +107,7 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
     }
 
     private void observeBreakdown() {
-        transactionRepository.getTransactionsInRange(startMillis, endMillis).observe(getViewLifecycleOwner(), transactions -> {
+        transactionRepository.getTransactionsByMonth(selectedMonth, selectedYear).observe(getViewLifecycleOwner(), transactions -> {
             if (transactions != null) {
                 List<TransactionWithUser> expenseList = new ArrayList<>();
                 for (TransactionWithUser tWithU : transactions) {

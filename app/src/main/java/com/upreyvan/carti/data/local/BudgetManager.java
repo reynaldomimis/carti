@@ -32,6 +32,7 @@ public class BudgetManager {
     public void saveBudgetPlan(List<BudgetCategoryItem> items) {
         String json = gson.toJson(items);
         prefs.edit().putString("key_budget_plan_items", json).apply();
+        notifyListeners();
     }
 
     public List<BudgetCategoryItem> getBudgetPlan() {
@@ -39,5 +40,27 @@ public class BudgetManager {
         if (json == null) return new ArrayList<>();
         Type type = new TypeToken<ArrayList<BudgetCategoryItem>>() {}.getType();
         return gson.fromJson(json, type);
+    }
+
+    // Senior Level Reactive Implementation
+    public interface OnBudgetChangeListener {
+        void onBudgetChanged(List<BudgetCategoryItem> items);
+    }
+
+    private final List<OnBudgetChangeListener> listeners = new ArrayList<>();
+
+    public void addListener(OnBudgetChangeListener listener) {
+        if (!listeners.contains(listener)) listeners.add(listener);
+    }
+
+    public void removeListener(OnBudgetChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    private void notifyListeners() {
+        List<BudgetCategoryItem> current = getBudgetPlan();
+        for (OnBudgetChangeListener listener : listeners) {
+            listener.onBudgetChanged(current);
+        }
     }
 }

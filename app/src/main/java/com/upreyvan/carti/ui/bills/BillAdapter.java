@@ -24,7 +24,6 @@ public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
 
         binding.tvBillName.setText(item.getName());
         binding.tvBillDate.setText(item.getDate());
-        binding.tvBillAmount.setText(item.getAmount());
         binding.tvBillStatus.setText(item.getStatus());
         
         if (item.getIconResId() != 0) {

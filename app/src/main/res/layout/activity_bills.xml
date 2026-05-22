@@ -112,30 +112,68 @@
                 app:strokeColor="@color/border_subtle"
                 app:strokeWidth="@dimen/stroke_width_thin">
 
-                <LinearLayout
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_height="wrap_content">
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rv_bills"
+                    <LinearLayout
+                        android:id="@+id/layout_bills_content"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        tools:listitem="@layout/item_bill" />
+                        android:orientation="vertical">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_view_all_bills"
-                        style="@style/Widget.Material3.Button.TextButton"
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_bills"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            tools:listitem="@layout/item_bill" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_view_all_bills"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/view_all_bills"
+                            android:textColor="@color/carti_primary_green"
+                            android:textAllCaps="false"
+                            app:icon="@drawable/ic_chevron_right"
+                            app:iconGravity="textEnd"
+                            app:iconTint="@color/carti_primary_green" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layout_empty_bills"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/view_all_bills"
-                        android:textColor="@color/carti_primary_green"
-                        android:textAllCaps="false"
-                        app:icon="@drawable/ic_chevron_right"
-                        app:iconGravity="textEnd"
-                        app:iconTint="@color/carti_primary_green" />
-                </LinearLayout>
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_large"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/ic_calendar"
+                            app:tint="@color/text_secondary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_small"
+                            android:text="@string/no_upcoming_bills"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/pb_bills"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="@dimen/spacing_large"
+                        android:visibility="gone" />
+
+                </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>

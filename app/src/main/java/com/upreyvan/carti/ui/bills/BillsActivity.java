@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.data.repository.NotificationRepository;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityBillsBinding;
@@ -24,13 +26,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
 
     private BillAdapter billAdapter;
     private GenericAdapter<CalendarDay, ItemCalendarDayBinding> calendarAdapter;
-    private TransactionRepository transactionRepository;
-    private RealtimeRepository realtimeRepository;
+    private NotificationRepository notificationRepository;
+    private PreferenceManager pref;
     private final Calendar currentDisplayMonth = Calendar.getInstance();
     private String selectedDate = "";
     private boolean showingAllBills = false;
@@ -44,8 +47,8 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        transactionRepository = TransactionRepository.getInstance(getApplication());
-        realtimeRepository = RealtimeRepository.getInstance(getApplication());
+        notificationRepository = NotificationRepository.getInstance(getApplication());
+        pref = new PreferenceManager(this);
         
         setupToolbar();
         setupDynamicPadding();
@@ -55,40 +58,28 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
         
         updateCalendarDisplay();
         observeBills();
-        observeRealtimeUpdates();
-    }
-
-    private void observeRealtimeUpdates() {
-        realtimeRepository.getTransactionStream().observe(this, payload -> {
-            transactionRepository.refreshTransactions();
-        });
     }
 
     private void observeBills() {
-        transactionRepository.getTransactionsByType("EXPENSE").observe(this, transactions -> {
-            List<Bill> bills = mapTransactionsToBills(transactions);
-            updateBillList(bills);
-            loadCalendarDays(bills);
+        getBinding().pbBills.setVisibility(View.VISIBLE);
+        getBinding().layoutBillsContent.setVisibility(View.GONE);
+        getBinding().layoutEmptyBills.setVisibility(View.GONE);
+
+        notificationRepository.getBills(pref.getFamilyId()).observe(this, bills -> {
+            getBinding().pbBills.setVisibility(View.GONE);
+            if (bills == null || bills.isEmpty()) {
+                getBinding().layoutBillsContent.setVisibility(View.GONE);
+                getBinding().layoutEmptyBills.setVisibility(View.VISIBLE);
+            } else {
+                getBinding().layoutBillsContent.setVisibility(View.VISIBLE);
+                getBinding().layoutEmptyBills.setVisibility(View.GONE);
+                updateBillList(bills);
+            }
+            loadCalendarDays(bills != null ? bills : new ArrayList<>());
         });
     }
 
-    private List<Bill> mapTransactionsToBills(List<com.upreyvan.carti.model.TransactionWithUser> transactions) {
-        List<Bill> bills = new ArrayList<>();
-        if (transactions == null) return bills;
-        for (com.upreyvan.carti.model.TransactionWithUser twu : transactions) {
-            com.upreyvan.carti.model.Transaction t = twu.getTransaction();
-            bills.add(new Bill(
-                t.getId(),
-                t.getFamilyId(),
-                t.getTitle(),
-                t.getCreatedAt(),
-                "₱" + String.format(Locale.getDefault(), "%.2f", t.getAmount()),
-                t.isPaid() ? "Paid" : "Unpaid",
-                R.drawable.ic_calendar
-            ));
-        }
-        return bills;
-    }
+
 
     private void updateBillList(List<Bill> bills) {
         if (bills == null) return;
@@ -175,11 +166,7 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
     private void setupBillsRecyclerView() {
         billAdapter = new BillAdapter();
         billAdapter.setOnItemClickListener(item -> {
-            BillDetailsBottomSheet bottomSheet = BillDetailsBottomSheet.newInstance(
-                    item.getId(),
-                    item.getName(),
-                    item.getAmount()
-            );
+            BillDetailsBottomSheet bottomSheet = BillDetailsBottomSheet.newInstance(item.getId(), item.getName());
             bottomSheet.show(getSupportFragmentManager(), "BillDetailsBottomSheet");
         });
         getBinding().rvBills.setLayoutManager(new LinearLayoutManager(this));
@@ -199,7 +186,11 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
         
         getBinding().btnViewAllBills.setOnClickListener(v -> {
             showingAllBills = true;
-            // Note: In real app we might want to refresh from repository here if not observing
+            notificationRepository.getBills(pref.getFamilyId()).getValue(); // Force refresh if needed, but mediator should handle it
+            List<Bill> currentBills = notificationRepository.getBills(pref.getFamilyId()).getValue();
+            if (currentBills != null) {
+                updateBillList(currentBills);
+            }
         });
     }
 

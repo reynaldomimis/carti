@@ -13,8 +13,7 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.databinding.LayoutBottomSheetAddBillBinding;
 import com.upreyvan.carti.util.ToastHelper;
 import java.util.Map;
@@ -22,7 +21,7 @@ import java.util.Map;
 public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomSheetAddBillBinding> {
 
     private static final String ARG_DATE = "arg_date";
-    private TransactionRepository transactionRepository;
+    private ApiHelper apiHelper;
     private PreferenceManager pref;
     private String formattedDate;
 
@@ -42,7 +41,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        transactionRepository = TransactionRepository.getInstance(requireContext());
+        apiHelper = new ApiHelper(requireContext());
         pref = new PreferenceManager(requireContext());
 
         formattedDate = getArguments().getString(ARG_DATE);
@@ -51,32 +50,20 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
         setupCategoryDropdown();
 
         getBinding().btnSave.setOnClickListener(v -> {
-            String amountStr = getBinding().etBillAmount.getText().toString().trim();
             String category = getBinding().actCategory.getText().toString();
 
-            if (amountStr.isEmpty() || category.isEmpty()) {
+            if (category.isEmpty()) {
                 ToastHelper.show(requireContext(), R.string.msg_fill_all_fields, ToastHelper.Status.ERROR);
                 return;
             }
 
-            double amount = Double.parseDouble(amountStr);
-            String familyId = pref.getFamilyId();
-            String userId = pref.getUserId();
+            String title = "BILL: " + category;
+            String content = "A new bill for " + category + " is due on " + formattedDate;
 
-            Transaction transaction = new Transaction();
-            transaction.setTitle(category);
-            transaction.setAmount(amount);
-            transaction.setType("EXPENSE");
-            transaction.setCategory(category);
-            transaction.setFamilyId(familyId);
-            transaction.setUserId(userId);
-            transaction.setCreatedAt(formattedDate);
-            transaction.setPaid(false);
-
-            transactionRepository.addTransaction(transaction, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            apiHelper.sendAnnouncement(title, content, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                 @Override
                 public void onSuccess(Map<String, Object> result) {
-                    // Success is handled by Repository's sync logic
+                    // Handled by realtime updates
                 }
 
                 @Override

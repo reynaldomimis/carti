@@ -102,6 +102,7 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                 horizontalList.add(new Member("invite", "", getString(R.string.label_invite), "", "", android.R.drawable.ic_menu_add, 0));
                 horizontalAdapter.submitList(horizontalList);
                 contributionAdapter.submitList(members);
+                getBinding().toolbar.btnAction.setVisibility(View.GONE);
             }
         });
     }
@@ -119,9 +120,14 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                         binding.tvRole.setVisibility(View.GONE);
                         binding.ivAvatar.setImageResource(member.getAvatarRes());
                         binding.cvAvatar.setStrokeColor(getResources().getColor(R.color.gray, null));
-                        binding.getRoot().setOnClickListener(v -> {
+
+                        View.OnClickListener inviteClick = v -> {
                             startActivity(new Intent(requireContext(), InviteFamilyActivity.class));
-                        });
+                        };
+                        binding.cvAvatar.setOnClickListener(inviteClick);
+                        binding.ivAvatar.setOnClickListener(inviteClick);
+                        binding.tvName.setOnClickListener(inviteClick);
+                        binding.getRoot().setOnClickListener(inviteClick);
                     } else {
                         binding.tvName.setText(isMe ? getString(R.string.placeholder_juan_you) : member.getTitle());
                         binding.tvRole.setVisibility(View.VISIBLE);
@@ -140,6 +146,13 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                     }
                 }
         );
+
+        horizontalAdapter.setOnItemClickListener(item -> {
+            if ("invite".equals(item.getId())) {
+                startActivity(new Intent(requireContext(), InviteFamilyActivity.class));
+            }
+        });
+
         getBinding().rvMembersHorizontal.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         getBinding().rvMembersHorizontal.setAdapter(horizontalAdapter);
 
@@ -160,11 +173,14 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                     } else {
                         binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
                     }
-                    
                     binding.tvBtnViewExpenses.setOnClickListener(v -> navigateTo(new com.upreyvan.carti.ui.track.BreakdownExpenseFragment()));
-                    binding.getRoot().setOnClickListener(v -> navigateTo(new com.upreyvan.carti.ui.track.BreakdownExpenseFragment()));
                 }
         );
+
+        contributionAdapter.setOnItemClickListener(item -> {
+            navigateTo(new com.upreyvan.carti.ui.track.BreakdownExpenseFragment());
+        });
+
         getBinding().rvContributions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvContributions.setAdapter(contributionAdapter);
     }

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.local.CategoryManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
@@ -30,6 +31,7 @@ import com.upreyvan.carti.model.AiSuggestion;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment;
+import com.upreyvan.carti.ui.bills.BillDetailsBottomSheet;
 import com.upreyvan.carti.ui.track.AllTransactionsFragment;
 import com.upreyvan.carti.ui.notifications.NotificationsFragment;
 import com.upreyvan.carti.util.Constants;
@@ -90,6 +92,13 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupAiInsightCard();
         setupAiSuggestions();
         fetchFamilyData();
+
+        // Senior Implementation: Reactive Budget Updates
+        BudgetManager.getInstance(requireContext()).addListener(items -> {
+            if (isAdded()) {
+                requireActivity().runOnUiThread(this::updateQuickLogData);
+            }
+        });
     }
 
     /**
@@ -132,29 +141,66 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         // 4. Realtime Notification Badge
         realtimeRepo.getNotificationStream().observe(getViewLifecycleOwner(), payload -> {
             checkNotifications(new ApiHelper(requireContext()), new PreferenceManager(requireContext()), null);
+            checkBillNotifications();
+        });
+
+        checkBillNotifications();
+    }
+
+    private void checkBillNotifications() {
+        new ApiHelper(requireContext()).getNotifications(new PreferenceManager(requireContext()).getFamilyId(), new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
+            @Override
+            public void onSuccess(DocumentList<Map<String, Object>> result) {
+                if (!isAdded()) return;
+                
+                Document<Map<String, Object>> latestBill = null;
+                for (Document<Map<String, Object>> doc : result.getDocuments()) {
+                    String title = (String) doc.getData().get("title");
+                    if (title != null && title.startsWith("BILL: ")) {
+                        latestBill = doc;
+                        break;
+                    }
+                }
+
+                if (latestBill != null) {
+                    Document<Map<String, Object>> finalBill = latestBill;
+                    requireActivity().runOnUiThread(() -> {
+                        getBinding().viewBillNotification.cardNotification.setVisibility(View.VISIBLE);
+                        getBinding().viewBillNotification.tvTitle.setText((String) finalBill.getData().get("title"));
+                        getBinding().viewBillNotification.tvContent.setText((String) finalBill.getData().get("content"));
+                        getBinding().viewBillNotification.btnClose.setOnClickListener(v -> 
+                            getBinding().viewBillNotification.cardNotification.setVisibility(View.GONE)
+                        );
+                        getBinding().viewBillNotification.getRoot().setOnClickListener(v -> {
+                            String title = (String) finalBill.getData().get("title");
+                            String billName = title.substring(6);
+                            BillDetailsBottomSheet bottomSheet = BillDetailsBottomSheet.newInstance(finalBill.getId(), billName);
+                            bottomSheet.show(getChildFragmentManager(), "BillDetailsBottomSheet");
+                        });
+                    });
+                } else {
+                    requireActivity().runOnUiThread(() -> 
+                        getBinding().viewBillNotification.cardNotification.setVisibility(View.GONE)
+                    );
+                }
+            }
+
+            @Override
+            public void onError(Throwable error) {}
         });
     }
 
     private void updateQuickLogData() {
-        List<Category> categories = CategoryManager.getInstance(requireContext()).getCategories();
+        List<com.upreyvan.carti.model.BudgetCategoryItem> budgetPlan = BudgetManager.getInstance(requireContext()).getBudgetPlan();
         List<QuickLogItem> items = new ArrayList<>();
-        
-        int limit = isExpanded ? categories.size() : 7;
-        int i = 0;
-        while (i < Math.min(categories.size(), limit)) {
-            Category cat = categories.get(i);
-            items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor()));
-            i++;
+
+        for (com.upreyvan.carti.model.BudgetCategoryItem item : budgetPlan) {
+            items.add(new QuickLogItem(item.getCategoryName(), item.getIconRes(), item.getBgColor(), item.getIconColor()));
         }
 
-        String othersLabel = getString(R.string.label_others);
-        String seeLessLabel = getString(R.string.see_less);
+        boolean isEmpty = items.isEmpty();
 
-        if (categories.size() > 7 && !isExpanded) {
-            items.add(new QuickLogItem(othersLabel, android.R.drawable.ic_menu_more, R.color.log_others, R.color.icon_others));
-        } else if (isExpanded) {
-            items.add(new QuickLogItem(seeLessLabel, android.R.drawable.ic_menu_close_clear_cancel, R.color.log_others, R.color.icon_others));
-        }
+        getBinding().viewHeaderQuickLog.getRoot().setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
         quickLogAdapter.submitList(items);
     }
@@ -176,26 +222,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 }
         );
         quickLogAdapter.setOnItemClickListener(item -> {
-            String othersLabel = getString(R.string.label_others);
-            String seeLessLabel = getString(R.string.see_less);
-            if (Objects.equals(item.getTitle(), othersLabel)) {
-                isExpanded = true;
-                updateQuickLogData();
-            } else if (Objects.equals(item.getTitle(), seeLessLabel)) {
-                isExpanded = false;
-                updateQuickLogData();
-            } else {
-                showQuickLogDialog(item);
-            }
+            showQuickLogDialog(item);
         });
         quickLogAdapter.setOnItemLongClickListener(item -> {
-            String othersLabel = getString(R.string.label_others);
-            String seeLessLabel = getString(R.string.see_less);
-            if (!Objects.equals(item.getTitle(), othersLabel) && !Objects.equals(item.getTitle(), seeLessLabel)) {
-                showDeleteCategoryDialog(item);
-                return true;
-            }
-            return false;
+            // Long click can be used for secondary actions or customization shortcut
+            startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class));
+            return true;
         });
 
         quickActionsAdapter = new GenericAdapter<>(
@@ -347,7 +379,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 
                 pref.saveFamilySummary(balance, income, expense);
                 
-                // Save and check notifications using the adminId from the family data
                 String adminId = String.valueOf(data.get("adminId"));
                 pref.setAdminId(adminId);
                 checkNotifications(apiHelper, pref, adminId);
@@ -360,7 +391,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
             @Override
             public void onError(Throwable error) {
-                // Fallback to role-based check if family summary fails
                 checkNotifications(apiHelper, pref, null);
             }
         });
@@ -371,10 +401,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         String currentUserId = pref.getUserId();
 
         if (adminId != null && !adminId.isEmpty() && !"null".equals(adminId)) {
-            // High Security: Check if current user is the admin recorded in DB
             isAdmin = currentUserId.equals(adminId);
         } else {
-            // Fallback for old data: Check role
             String role = pref.getUserRole();
             for (String r : Constants.Roles.PARENTS) {
                 if (r.equalsIgnoreCase(role)) {
@@ -389,19 +417,23 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 @Override
                 public void onSuccess(DocumentList<Map<String, Object>> result) {
                     if (!isAdded()) return;
-                    boolean hasPending = false;
+                    int pendingCount = 0;
                     for (Document<Map<String, Object>> doc : result.getDocuments()) {
                         Object status = doc.getData().get("status");
                         if (Objects.equals("pending", status)) {
-                            hasPending = true;
-                            break;
+                            pendingCount++;
                         }
                     }
-                    if (hasPending) {
-                        pref.setHasNotifications(true);
-                    }
-                    final boolean finalHasPending = pref.hasNotifications();
-                    requireActivity().runOnUiThread(() -> updateNotificationBadge(finalHasPending));
+                    
+                    final int finalCount = pendingCount;
+                    requireActivity().runOnUiThread(() -> {
+                        updateNotificationBadge(finalCount > 0);
+                        if (finalCount > 0) {
+                            showFamilyNotificationCard(finalCount);
+                        } else {
+                            getBinding().viewFamilyNotification.cardNotification.setVisibility(View.GONE);
+                        }
+                    });
                 }
 
                 @Override
@@ -411,29 +443,92 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             });
         } else {
             updateNotificationBadge(false);
+            requireActivity().runOnUiThread(() -> getBinding().viewFamilyNotification.cardNotification.setVisibility(View.GONE));
         }
     }
 
-    private void setupDashboard() {
-        PreferenceManager pref = new PreferenceManager(requireContext());
-        
-        double totalBalance = pref.getTotalIncome() - pref.getTotalExpense();
-        double totalIncome = pref.getTotalIncome();
-        double totalExpense = pref.getTotalExpense();
-        
-        // Monthly Income
-        getBinding().viewHomeDashboard.tvIncomeAmount.setText(getString(R.string.format_currency_no_decimal, totalIncome));
-        getBinding().viewHomeDashboard.tvIncomeTrend.setText("8.5%");
-        
-        // Monthly Expenses
-        getBinding().viewHomeDashboard.tvExpensesAmount.setText(getString(R.string.format_currency_no_decimal, totalExpense));
-        getBinding().viewHomeDashboard.tvExpensesTrend.setText("3.2%");
-        
-        // Total Savings
-        getBinding().viewHomeDashboard.tvTotalSavings.setText(getString(R.string.format_currency, totalBalance));
-        getBinding().viewHomeDashboard.tvSavingsTrend.setText("12.5%");
+    private void showFamilyNotificationCard(int count) {
+        getBinding().viewFamilyNotification.cardNotification.setVisibility(View.VISIBLE);
+        getBinding().viewFamilyNotification.tvTitle.setText(getString(R.string.pending_requests_title, count));
+        getBinding().viewFamilyNotification.tvContent.setText(R.string.pending_requests_desc);
+        getBinding().viewFamilyNotification.ivIcon.setImageResource(R.drawable.ic_person);
+        getBinding().viewFamilyNotification.getRoot().setOnClickListener(v -> {
+             if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).navigateTo(4); // Profile/Members
+        });
+        getBinding().viewFamilyNotification.btnClose.setOnClickListener(v -> 
+            getBinding().viewFamilyNotification.cardNotification.setVisibility(View.GONE)
+        );
+    }
 
-        getBinding().viewHomeDashboard.tvOverviewDate.setText(Utils.formatMonthYear(Calendar.getInstance()));
+    private void setupDashboard() {
+        Calendar current = Calendar.getInstance();
+        Calendar lastMonth = Calendar.getInstance();
+        lastMonth.add(Calendar.MONTH, -1);
+
+        long currentStart = Utils.getMonthStartMillis(current);
+        long currentEnd = Utils.getMonthEndMillis(current);
+        long lastStart = Utils.getMonthStartMillis(lastMonth);
+        long lastEnd = Utils.getMonthEndMillis(lastMonth);
+
+        // Current Month Data
+        transactionRepository.getTotalIncomeInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), totalIncome -> {
+            double income = totalIncome != null ? totalIncome : 0.0;
+            getBinding().viewHomeDashboard.tvIncomeAmount.setText(getString(R.string.format_currency_no_decimal, income));
+            
+            // Calculate Trend vs Last Month
+            transactionRepository.getTotalIncomeInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastIncome -> {
+                double prevIncome = lastIncome != null ? lastIncome : 0.0;
+                updateTrend(getBinding().viewHomeDashboard.tvIncomeTrend, income, prevIncome);
+            });
+        });
+
+        transactionRepository.getTotalExpenseInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), totalExpense -> {
+            double expense = totalExpense != null ? totalExpense : 0.0;
+            getBinding().viewHomeDashboard.tvExpensesAmount.setText(getString(R.string.format_currency_no_decimal, expense));
+            
+            // Calculate Trend vs Last Month
+            transactionRepository.getTotalExpenseInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastExpense -> {
+                double prevExpense = lastExpense != null ? lastExpense : 0.0;
+                updateTrend(getBinding().viewHomeDashboard.tvExpensesTrend, expense, prevExpense);
+            });
+            
+            // Savings (Income - Expense for current month)
+            transactionRepository.getTotalIncomeInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), totalIncome -> {
+                double income = totalIncome != null ? totalIncome : 0.0;
+                double savings = income - expense;
+                getBinding().viewHomeDashboard.tvTotalSavings.setText(getString(R.string.format_currency, savings));
+                
+                // Savings Trend
+                transactionRepository.getTotalIncomeInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastIncome -> {
+                    double prevIncome = lastIncome != null ? lastIncome : 0.0;
+                    transactionRepository.getTotalExpenseInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastExpense -> {
+                        double prevExpense = lastExpense != null ? lastExpense : 0.0;
+                        updateTrend(getBinding().viewHomeDashboard.tvSavingsTrend, savings, prevIncome - prevExpense);
+                    });
+                });
+            });
+        });
+
+        getBinding().viewHomeDashboard.tvOverviewDate.setText(Utils.formatMonthYear(current));
+    }
+
+    private void updateTrend(android.widget.TextView textView, double current, double previous) {
+        if (previous == 0) {
+            textView.setText("0%");
+            textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary));
+            return;
+        }
+        double percentage = ((current - previous) / previous) * 100;
+        String sign = percentage >= 0 ? "+" : "";
+        textView.setText(String.format(Locale.getDefault(), "%s%.1f%%", sign, percentage));
+        
+        int color = percentage >= 0 ? R.color.status_green : R.color.status_red;
+        // Logic inversion for expenses: +% is bad (red), -% is good (green)
+        if (textView.getId() == getBinding().viewHomeDashboard.tvExpensesTrend.getId()) {
+            color = percentage <= 0 ? R.color.status_green : R.color.status_red;
+        }
+        
+        textView.setTextColor(ContextCompat.getColor(requireContext(), color));
     }
 
     private void setupPaydayCard() {
@@ -549,34 +644,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().rvQuickActions.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         getBinding().rvQuickActions.setAdapter(quickActionsAdapter);
         quickActionsAdapter.submitList(actions);
-    }
-
-    private void showDeleteCategoryDialog(QuickLogItem item) {
-        DialogHelper.showConfirmation(
-                requireContext(),
-                getString(R.string.add_options_category),
-                getString(R.string.btn_delete_account) + " \"" + item.getTitle() + "?\"",
-                getString(R.string.btn_delete_account),
-                () -> deleteCategory(item.getTitle())
-        );
-    }
-
-    private void deleteCategory(String categoryName) {
-        CategoryManager manager = CategoryManager.getInstance(requireContext());
-        List<Category> categories = manager.getCategories();
-        Category toRemove = null;
-        for (Category cat : categories) {
-            if (cat.getName().equalsIgnoreCase(categoryName)) {
-                toRemove = cat;
-                break;
-            }
-        }
-        if (toRemove != null) {
-            categories.remove(toRemove);
-            manager.updateCategories(categories);
-            setupQuickLog();
-            showToast(categoryName + " deleted", ToastHelper.Status.SUCCESS);
-        }
     }
 
     private void showQuickLogDialog(QuickLogItem item) {

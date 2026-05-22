@@ -51,7 +51,7 @@ public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQui
     }
 
     private void setupRecyclerView() {
-        adapter = new CustomizeCategoryAdapter(CategoryManager.getInstance(this).getCategories());
+        adapter = new CustomizeCategoryAdapter(com.upreyvan.carti.data.local.BudgetManager.getInstance(this).getBudgetPlan());
         getBinding().rvCustomize.setLayoutManager(new LinearLayoutManager(this));
         getBinding().rvCustomize.setAdapter(adapter);
 
@@ -64,7 +64,6 @@ public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQui
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                // No swipe to delete for now
             }
         });
         itemTouchHelper.attachToRecyclerView(getBinding().rvCustomize);
@@ -72,8 +71,8 @@ public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQui
 
     private void setupListeners() {
         getBinding().btnSaveOrder.setOnClickListener(v -> {
-            CategoryManager.getInstance(this).updateCategories(adapter.getCategories());
-            Toast.makeText(this, "Order Saved!", Toast.LENGTH_SHORT).show();
+            com.upreyvan.carti.data.local.BudgetManager.getInstance(this).saveBudgetPlan(adapter.getCategories());
+            com.upreyvan.carti.util.ToastHelper.show(this, "Quick Log order updated!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
             finish();
         });
     }
