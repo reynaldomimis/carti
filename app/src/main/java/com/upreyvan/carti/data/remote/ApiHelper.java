@@ -79,7 +79,6 @@ public class ApiHelper {
     }
 
     // ─── AUTH ────────────────────────────────────────────────────────────────
-
     public void register(String email, String password, String username, boolean isEmployed, String role, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("email", email);
@@ -104,21 +103,21 @@ public class ApiHelper {
 
     public void joinFamily(String inviteCode, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("inviteCode", inviteCode);
+        params.put("inviteCode", inviteCode.toUpperCase()); // Para laging uppercase
         callAction(Constants.Actions.JOIN_FAMILY, params, callback);
     }
 
     public void approveJoinRequest(String applicantId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("applicantId", applicantId); // ✅ fixed: was "targetUserId"
-        params.put("accept", true);             // ✅ required
+        params.put("applicantId", applicantId);
+        params.put("accept", true);
         callAction(Constants.Actions.APPROVE_JOIN, params, callback);
     }
 
     public void rejectJoinRequest(String applicantId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("applicantId", applicantId);
-        params.put("accept", false); // ✅ reject
+        params.put("accept", false);
         callAction(Constants.Actions.APPROVE_JOIN, params, callback);
     }
 
@@ -133,7 +132,7 @@ public class ApiHelper {
     // ─── TRANSACTIONS ────────────────────────────────────────────────────────
     public void addTransaction(double amount, String type, String category, String note, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("username", pref.getUserName());
+        params.put("username", pref.getUsername());
         params.put("amount", amount);
         params.put("type", type);
         params.put("category", category);
@@ -176,6 +175,56 @@ public class ApiHelper {
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
+    // ─── SOCIAL INTERACTIONS ─────────────────────────────────────────────────
+    public void addLike(String transactionId, String emojiType, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("transactionId", transactionId);
+        params.put("emojiType", emojiType);
+        callAction(Constants.Actions.ADD_LIKE, params, callback);
+    }
+
+    public void removeLike(String likeId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("likeId", likeId);
+        callAction(Constants.Actions.REMOVE_LIKE, params, callback);
+    }
+
+    public void addComment(String transactionId, String text, String parentId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("transactionId", transactionId);
+        params.put("text", text);
+        if (parentId != null) {
+            params.put(Constants.Keys.KEY_PARENT_ID, parentId);
+        }
+        callAction(Constants.Actions.ADD_COMMENT, params, callback);
+    }
+
+    public void updateComment(String commentId, String text, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("commentId", commentId);
+        params.put("text", text);
+        callAction(Constants.Actions.UPDATE_COMMENT, params, callback);
+    }
+
+    public void deleteComment(String commentId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("commentId", commentId);
+        callAction(Constants.Actions.DELETE_COMMENT, params, callback);
+    }
+
+    public void getComments(String transactionId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("transactionId", transactionId));
+        queries.add(Query.Companion.orderAsc("$createdAt"));
+        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_COMMENTS, queries, callback);
+    }
+
+    public void getLikes(String transactionId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("transactionId", transactionId));
+        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_LIKES, queries, callback);
+    }
+
     // ─── MEMBERS ─────────────────────────────────────────────────────────────
 
     public void getMembers(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
@@ -200,7 +249,7 @@ public class ApiHelper {
 
     public void addGoal(String name, double targetAmount, String targetDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("username", pref.getUserName());
+        params.put("username", pref.getUsername());
         params.put("title", name);
         params.put("type", "GOAL");
         params.put("targetAmount", targetAmount);
@@ -240,14 +289,13 @@ public class ApiHelper {
     }
 
     // ─── DEBTS ───────────────────────────────────────────────────────────────
-
     public void addDebt(String personName, double amount, String type, String category, String targetDate, String reminder, String notes, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("personName", personName);
         params.put("title", personName);
         params.put("amount", amount);
         params.put("type", "DEBT");
-        params.put("debtType", type); // borrow or lend
+        params.put("debtType", type); 
         params.put("category", category);
         params.put("targetDate", targetDate);
         params.put("startDate", Utils.getCurrentTimestamp());
@@ -298,7 +346,7 @@ public class ApiHelper {
 
     public void addIncome(String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("username", pref.getUserName());
+        params.put("username", pref.getUsername());
         params.put("title", source);
         params.put("source", source);
         params.put("amount", amount);
@@ -359,12 +407,12 @@ public class ApiHelper {
     public void sendMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         String userId = pref.getUserId();
-        String userName = pref.getUserName();
+        String username = pref.getUsername();
 
         Map<String, Object> data = new HashMap<>();
         data.put("text", text);
         data.put("senderId", userId);
-        data.put("senderName", userName);
+        data.put("senderName", username);
         data.put("familyId", familyId);
         data.put("timestamp", System.currentTimeMillis());
 

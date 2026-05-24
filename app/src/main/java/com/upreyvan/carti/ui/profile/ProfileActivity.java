@@ -60,7 +60,7 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
 
     private void setupUserInfo() {
         PreferenceManager pref = new PreferenceManager(this);
-        getBinding().tvUserName.setText(pref.getUserName());
+        getBinding().tvUserName.setText(pref.getUsername());
         getBinding().tvUserEmail.setText(pref.getUserEmail());
         getBinding().btnLogout.setOnClickListener(v -> performLogout());
     }

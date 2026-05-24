@@ -196,6 +196,70 @@ public class TransactionRepository {
         executor.execute(() -> transactionDao.deleteById(id));
     }
 
+    // ─── SOCIAL INTERACTIONS ─────────────────────────────────────────────────
+
+    public void likeTransaction(String transactionId, String emoji, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        apiHelper.addLike(transactionId, emoji, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                syncCurrentMonth(); // Refresh to update counters locally
+                if (callback != null) callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
+        });
+    }
+
+    public void unlikeTransaction(String likeId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        apiHelper.removeLike(likeId, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                syncCurrentMonth();
+                if (callback != null) callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
+        });
+    }
+
+    public void postComment(String transactionId, String text, String parentId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        apiHelper.addComment(transactionId, text, parentId, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                syncCurrentMonth();
+                if (callback != null) callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
+        });
+    }
+
+    public void removeComment(String commentId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        apiHelper.deleteComment(commentId, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                syncCurrentMonth();
+                if (callback != null) callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+
     public void addTransaction(Transaction transaction, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> data = new HashMap<>();
         data.put("amount", transaction.getAmount());
@@ -284,6 +348,9 @@ public class TransactionRepository {
             if (data.get("members") instanceof List) {
                 for (Object item : (List<?>) data.get("members")) members.add(String.valueOf(item));
             }
+
+            int likesCount = data.containsKey("likesCount") ? ((Number) data.get("likesCount")).intValue() : 0;
+            int commentCount = data.containsKey("commentCount") ? ((Number) data.get("commentCount")).intValue() : 0;
             
             int iconRes = R.drawable.ic_person;
             int iconColor = ContextCompat.getColor(apiHelper.getContext(), R.color.carti_primary_green);
@@ -297,7 +364,8 @@ public class TransactionRepository {
             return new Transaction(
                 id, type, amount, title, description, categoryName, familyId, userId,
                 createdAt, updatedAt, targetAmount, null, "completed", isPaid, members,
-                null, iconRes, bgColor, iconColor, Utils.getMillisFromIso(createdAt)
+                null, iconRes, bgColor, iconColor, Utils.getMillisFromIso(createdAt),
+                likesCount, commentCount
             );
         } catch (Exception e) {
             return null;

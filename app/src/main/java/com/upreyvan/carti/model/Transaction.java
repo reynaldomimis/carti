@@ -42,6 +42,9 @@ public class Transaction {
     private int iconColor;
     private long timestampMillis;
 
+    private int likesCount;
+    private int commentCount;
+
     @Ignore
     public Transaction() {
         this.id = "";
@@ -51,7 +54,7 @@ public class Transaction {
         this.members = new ArrayList<>();
     }
 
-    public Transaction(@NonNull String id, String type, double amount, String title, String description, String category, String familyId, String userId, String createdAt, String updatedAt, double targetAmount, String dueDate, String status, boolean isPaid, List<String> members, String reminder, int iconRes, int iconBgColor, int iconColor, long timestampMillis) {
+    public Transaction(@NonNull String id, String type, double amount, String title, String description, String category, String familyId, String userId, String createdAt, String updatedAt, double targetAmount, String dueDate, String status, boolean isPaid, List<String> members, String reminder, int iconRes, int iconBgColor, int iconColor, long timestampMillis, int likesCount, int commentCount) {
         this.id = id;
         this.type = type;
         this.amount = amount;
@@ -72,6 +75,8 @@ public class Transaction {
         this.iconBgColor = iconBgColor;
         this.iconColor = iconColor;
         this.timestampMillis = timestampMillis;
+        this.likesCount = likesCount;
+        this.commentCount = commentCount;
     }
 
     @NonNull
@@ -150,6 +155,12 @@ public class Transaction {
     public long getTimestampMillis() { return timestampMillis; }
     public void setTimestampMillis(long timestampMillis) { this.timestampMillis = timestampMillis; }
 
+    public int getLikesCount() { return likesCount; }
+    public void setLikesCount(int likesCount) { this.likesCount = likesCount; }
+
+    public int getCommentCount() { return commentCount; }
+    public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
+
     @Ignore
     public int getProgress() {
         if (targetAmount <= 0) return 0;
@@ -170,6 +181,8 @@ public class Transaction {
                 Double.compare(that.targetAmount, targetAmount) == 0 &&
                 isPaid == that.isPaid &&
                 timestampMillis == that.timestampMillis &&
+                likesCount == that.likesCount &&
+                commentCount == that.commentCount &&
                 Objects.equals(id, that.id) &&
                 Objects.equals(type, that.type) &&
                 Objects.equals(title, that.title) &&

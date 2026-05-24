@@ -13,6 +13,7 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.ui.home.TransactionAdapter;
+import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentAllTransactionsBinding;
 import com.upreyvan.carti.model.Transaction;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class AllTransactionsFragment extends BaseFragment<FragmentAllTransactionsBinding> {
 
@@ -215,6 +217,48 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
 
     private void setupRecyclerView() {
         adapter = new TransactionAdapter();
+        adapter.setOnTransactionInteractionListener(new TransactionAdapter.OnTransactionInteractionListener() {
+            @Override
+            public void onLikeClick(Transaction transaction) {
+                transactionRepository.likeTransaction(transaction.getId(), "👍", new AppwriteCallback<Map<String, Object>>() {
+                    @Override
+                    public void onSuccess(Map<String, Object> result) {
+                        // Success handled by repo sync
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        showToast("Failed to like", Status.ERROR);
+                    }
+                });
+            }
+
+            @Override
+            public void onReactionClick(Transaction transaction, String emoji) {
+                transactionRepository.likeTransaction(transaction.getId(), emoji, new AppwriteCallback<Map<String, Object>>() {
+                    @Override
+                    public void onSuccess(Map<String, Object> result) {
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        showToast("Failed to react", Status.ERROR);
+                    }
+                });
+            }
+
+            @Override
+            public void onCommentClick(Transaction transaction) {
+                CommentsBottomSheetFragment fragment = CommentsBottomSheetFragment.newInstance(transaction.getId());
+                fragment.show(getChildFragmentManager(), "CommentsBottomSheet");
+            }
+
+            @Override
+            public void onMoreClick(Transaction transaction, View view) {
+                // Handle more menu
+            }
+        });
+
         getBinding().rvAllTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvAllTransactions.setAdapter(adapter);
 

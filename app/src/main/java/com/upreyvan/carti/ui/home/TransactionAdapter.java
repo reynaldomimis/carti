@@ -54,11 +54,20 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
         binding.shimmerView.getRoot().setVisibility(View.GONE);
         binding.layoutContent.setVisibility(View.VISIBLE);
 
-        binding.tvTitle.setText(itemWithUser.getUserName() != null ? itemWithUser.getUserName() : item.getName());
-        binding.tvDescription.setText(item.getNote());
+    
+        String username = itemWithUser.getUsername() != null ? itemWithUser.getUsername() : "Someone";
+        String actionText;
+        if ("EXPENSE".equalsIgnoreCase(item.getType())) {
+            actionText = binding.getRoot().getContext().getString(R.string.action_added_expense, username);
+        } else {
+            actionText = binding.getRoot().getContext().getString(R.string.action_added_income, username);
+        }
+        binding.tvUserAction.setText(actionText);
         binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
 
-        binding.divider.setVisibility(position == getItemCount() - 1 ? View.GONE : View.VISIBLE);
+        // Body: Transaction Details
+        binding.tvTitle.setText(item.getTitle());
+        binding.tvDescription.setText(item.getNote());
         
         String formattedAmount = Utils.formatCurrency(item.getAmount());
         if ("EXPENSE".equalsIgnoreCase(item.getType())) {
@@ -69,27 +78,79 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
             binding.tvAmount.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.green_primary));
         }
 
-        binding.ivIcon.setColorFilter(null);
+        // Avatar Binding
         if (itemWithUser.getUserAvatarUrl() != null && !itemWithUser.getUserAvatarUrl().isEmpty()) {
             Glide.with(binding.getRoot().getContext())
                     .load(itemWithUser.getUserAvatarUrl())
                     .placeholder(R.drawable.ai_holder)
                     .error(R.drawable.ai_holder)
-                    .into(binding.ivIcon);
-            binding.cvIconBg.setCardBackgroundColor(ContextCompat.getColor(binding.getRoot().getContext(), android.R.color.transparent));
+                    .into(binding.ivAvatar);
         } else if (itemWithUser.getUserAvatarRes() != 0) {
-            binding.ivIcon.setImageResource(itemWithUser.getUserAvatarRes());
-            binding.cvIconBg.setCardBackgroundColor(ContextCompat.getColor(binding.getRoot().getContext(), android.R.color.transparent));
+            binding.ivAvatar.setImageResource(itemWithUser.getUserAvatarRes());
         } else {
-            binding.ivIcon.setImageResource(item.getIconRes());
-            if (item.getIconColor() != 0) {
-                int iconColor = item.getIconColor();
-                binding.ivIcon.setColorFilter(iconColor);
-                int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
-                binding.cvIconBg.setCardBackgroundColor(bgColor);
-            } else {
-                binding.cvIconBg.setCardBackgroundColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.surface_variant));
-            }
+            binding.ivAvatar.setImageResource(R.drawable.ai_holder);
         }
+
+        // Footer: Likes and Comments
+        binding.tvLikesCount.setText(String.valueOf(item.getLikesCount()));
+        int commentCount = item.getCommentCount();
+        binding.tvCommentsCount.setText(commentCount > 0 ? String.valueOf(commentCount) : "Comment");
+
+        // Click Listeners (to be implemented in Fragment/Activity)
+        binding.layoutLikes.setOnClickListener(v -> {
+            if (interactionListener != null) interactionListener.onLikeClick(item);
+        });
+        binding.layoutLikes.setOnLongClickListener(v -> {
+            if (interactionListener != null) {
+                showReactionPopup(v, item);
+                return true;
+            }
+            return false;
+        });
+        binding.btnComment.setOnClickListener(v -> {
+            if (interactionListener != null) interactionListener.onCommentClick(item);
+        });
+        binding.btnMore.setOnClickListener(v -> {
+            if (interactionListener != null) interactionListener.onMoreClick(item, v);
+        });
+    }
+
+    private void showReactionPopup(View anchor, Transaction transaction) {
+        View popupView = android.view.LayoutInflater.from(anchor.getContext()).inflate(R.layout.layout_reaction_selector, null);
+        android.widget.PopupWindow popupWindow = new android.widget.PopupWindow(popupView, 
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        
+        popupWindow.setElevation(20);
+        
+        int[] location = new int[2];
+        anchor.getLocationOnScreen(location);
+        popupWindow.showAtLocation(anchor, android.view.Gravity.NO_GRAVITY, 
+                location[0], location[1] - 150);
+
+        View.OnClickListener listener = v -> {
+            if (interactionListener != null && v instanceof android.widget.TextView) {
+                interactionListener.onReactionClick(transaction, ((android.widget.TextView) v).getText().toString());
+            }
+            popupWindow.dismiss();
+        };
+
+        popupView.findViewById(R.id.reac_like).setOnClickListener(listener);
+        popupView.findViewById(R.id.reac_love).setOnClickListener(listener);
+        popupView.findViewById(R.id.reac_haha).setOnClickListener(listener);
+        popupView.findViewById(R.id.reac_wow).setOnClickListener(listener);
+        popupView.findViewById(R.id.reac_sad).setOnClickListener(listener);
+        popupView.findViewById(R.id.reac_angry).setOnClickListener(listener);
+    }
+
+    private OnTransactionInteractionListener interactionListener;
+    public void setOnTransactionInteractionListener(OnTransactionInteractionListener listener) {
+        this.interactionListener = listener;
+    }
+
+    public interface OnTransactionInteractionListener {
+        void onLikeClick(Transaction transaction);
+        void onReactionClick(Transaction transaction, String emoji);
+        void onCommentClick(Transaction transaction);
+        void onMoreClick(Transaction transaction, View view);
     }
 }

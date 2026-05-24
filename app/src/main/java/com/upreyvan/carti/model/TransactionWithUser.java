@@ -10,7 +10,7 @@ public class TransactionWithUser {
     @Embedded
     private Transaction transaction;
 
-    private String userName;
+    private String username;
     private String userRole;
     private int userAvatarRes;
     private String userAvatarUrl;
@@ -23,12 +23,12 @@ public class TransactionWithUser {
         this.transaction = transaction;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getUserRole() {
@@ -61,14 +61,14 @@ public class TransactionWithUser {
         if (o == null || getClass() != o.getClass()) return false;
         TransactionWithUser that = (TransactionWithUser) o;
         return Objects.equals(transaction, that.transaction) &&
-                Objects.equals(userName, that.userName) &&
+                Objects.equals(username, that.username) &&
                 Objects.equals(userRole, that.userRole) &&
                 Objects.equals(userAvatarUrl, that.userAvatarUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(transaction, userName, userRole, userAvatarUrl);
+        return Objects.hash(transaction, username, userRole, userAvatarUrl);
     }
 
     public static final DiffUtil.ItemCallback<TransactionWithUser> DIFF_CALLBACK = new DiffUtil.ItemCallback<TransactionWithUser>() {

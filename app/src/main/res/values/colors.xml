@@ -12,6 +12,7 @@
     <color name="text_primary">#1D1D1D</color>
     <color name="text_secondary">#757575</color>
     <color name="surface_variant">#F5F5F5</color>
+    <color name="bg_surface_variant">#F5F5F5</color>
     <color name="white_80">#CCFFFFFF</color>
     <color name="white_70">#B3FFFFFF</color>
     <color name="white_60">#99FFFFFF</color>
@@ -24,6 +25,7 @@
     <color name="green_darker">#063D2E</color>
     <color name="green_primary">#008955</color>
     <color name="surface">#FFFFFF</color>
+    <color name="bg_surface">#FFFFFF</color>
     <color name="text_tertiary">#9E9E9E</color>
     <color name="text_on_dark">#E0E0E0</color>
     <color name="green_budget_status">#2E7D32</color>

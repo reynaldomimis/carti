@@ -11,7 +11,7 @@ import com.upreyvan.carti.data.local.db.dao.TransactionDao;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.model.Transaction;
 
-@Database(entities = {Member.class, Transaction.class}, version = 19, exportSchema = false)
+@Database(entities = {Member.class, Transaction.class}, version = 21, exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 

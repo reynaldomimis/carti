@@ -206,6 +206,25 @@ public class Utils {
         }
     }
 
+    public static void showKeyboard(Context context, View view) {
+        if (context != null && view != null) {
+            view.requestFocus();
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(view, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+            }
+        }
+    }
+
+    public static void hideKeyboard(Context context, View view) {
+        if (context != null && view != null) {
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
+    }
+
     public static boolean isNetworkAvailable(Context context) {
         if (context == null) return false;
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

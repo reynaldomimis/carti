@@ -24,7 +24,9 @@ public class Constants {
         public static final String COL_FAMILIES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_FAMILIES;
         public static final String COL_MESSAGES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_MESSAGES;
         public static final String COL_INCOMES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_INCOMES;
-        public static final String COL_NOTIFICATIONS = "notifications";
+        public static final String COL_NOTIFICATIONS = com.upreyvan.carti.BuildConfig.APPWRITE_COL_NOTIFICATIONS;
+        public static final String COL_LIKES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_LIKES;
+        public static final String COL_COMMENTS = com.upreyvan.carti.BuildConfig.APPWRITE_COL_COMMENTS;
     }
 
     public static final class Actions {
@@ -50,6 +52,11 @@ public class Constants {
         public static final String UPDATE_FAMILY_TOTALS = "update_family_totals";
         public static final String GET_MEMBERS = "get_members";
         public static final String SEND_ANNOUNCEMENT = "send_announcement";
+        public static final String ADD_LIKE = "add_like";
+        public static final String REMOVE_LIKE = "remove_like";
+        public static final String ADD_COMMENT = "add_comment";
+        public static final String UPDATE_COMMENT = "update_comment";
+        public static final String DELETE_COMMENT = "delete_comment";
     }
 
     public static final class Keys {
@@ -69,7 +76,7 @@ public class Constants {
 
         // Main Preference Keys
         public static final String KEY_ONBOARDING_FINISHED = "onboarding_finished";
-        public static final String KEY_USER_NAME = "user_name";
+        public static final String KEY_USER_NAME = "username";
         public static final String KEY_USER_ID_PREF = "user_id";
         public static final String KEY_USER_EMAIL = "user_email";
         public static final String KEY_USER_ROLE = "user_role";
@@ -101,6 +108,13 @@ public class Constants {
         public static final String KEY_DEBT_ID = "debt_id";
         public static final String KEY_TRANSACTION_ID = "transaction_id";
         public static final String KEY_INCOME_ID = "income_id";
+        public static final String KEY_LIKE_ID = "like_id";
+        public static final String KEY_COMMENT_ID = "comment_id";
+        public static final String KEY_PARENT_ID = "parentId";
+        public static final String KEY_EMOJI_TYPE = "emojiType";
+        public static final String KEY_COMMENT_TEXT = "text";
+        public static final String KEY_LIKES_COUNT = "likesCount";
+        public static final String KEY_COMMENTS_COUNT = "commentCount";
     }
 
     public static final class ErrorCodes {

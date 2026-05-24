@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="@dimen/spacing_medium"
+    android:paddingVertical="@dimen/spacing_small">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ivAvatar"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle"
+        tools:src="@tools:sample/avatars" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardComment"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_small"
+        app:cardBackgroundColor="@color/bg_surface_variant"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/ivAvatar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_medium"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:id="@+id/tvUserName"
+                style="@style/CartiTextTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_xxs"
+                tools:text="Juana Change" />
+
+            <TextView
+                android:id="@+id/tvCommentText"
+                style="@style/CartiTextBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="@dimen/text_size_small"
+                tools:text="This is a sample comment for the transaction." />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tvTime"
+        style="@style/CartiTextDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_medium"
+        android:layout_marginTop="4dp"
+        android:textSize="10sp"
+        app:layout_constraintStart_toStartOf="@id/cardComment"
+        app:layout_constraintTop_toBottomOf="@id/cardComment"
+        tools:text="12m" />
+
+    <TextView
+        android:id="@+id/btnDelete"
+        style="@style/CartiTextDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_large"
+        android:text="Delete"
+        android:textSize="10sp"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/tvTime"
+        app:layout_constraintTop_toTopOf="@id/tvTime"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

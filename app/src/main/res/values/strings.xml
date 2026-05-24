@@ -227,6 +227,8 @@
     <string name="label_contribution_amount">Contribution:</string>
     <string name="label_breakdown">BreakDown</string>
     <string name="label_user_expenses">%s expenses</string>
+    <string name="action_added_expense">%s added an expense</string>
+    <string name="action_added_income">%s added an income</string>
     <string name="btn_save_expense">Save Track</string>
     <string name="label_income_vs_expense">Income vs Expense</string>
     <string name="label_income">Income</string>

@@ -201,6 +201,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         boolean isEmpty = items.isEmpty();
 
         getBinding().viewHeaderQuickLog.getRoot().setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        getBinding().rvQuickLog.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
         quickLogAdapter.submitList(items);
     }
@@ -355,6 +356,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 transactionAdapter.submitList(transactions);
                 
                 boolean isEmpty = transactions == null || transactions.isEmpty();
+                getBinding().viewHeaderRecent.getRoot().setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                getBinding().cardRecentTransactions.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
                 getBinding().rvTransactions.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
                 getBinding().tvNoTransactions.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
                 getBinding().viewHeaderRecent.btnSectionAction.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
@@ -538,7 +541,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         int daysLeft = salaryManager.getDaysUntilNextPayday();
          Calendar nextPayday = salaryManager.getNextPayday();
 
-        String name = pref.getUserName();
+        String name = pref.getUsername();
         getBinding().viewHomeDashboard.tvDaysRemaining.setText(getString(R.string.days_to_go, daysLeft));
         getBinding().viewHomeDashboard.tvPaydayFor.setText(getString(R.string.next_payday_for, name));
 
@@ -600,7 +603,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private void setupHeaders() {
         PreferenceManager pref = new PreferenceManager(requireContext());
-        String name = pref.getUserName();
+        String name = pref.getUsername();
         String greeting = Utils.getGreeting();
         getBinding().tvGreetingMain.setText(getString(R.string.format_greeting, greeting));
         getBinding().tvUsernameMain.setText(getString(R.string.format_username, name));
@@ -654,6 +657,47 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private void setupRecentTransactions() {
         transactionAdapter = new TransactionAdapter();
+        transactionAdapter.setOnTransactionInteractionListener(new TransactionAdapter.OnTransactionInteractionListener() {
+            @Override
+            public void onLikeClick(com.upreyvan.carti.model.Transaction transaction) {
+                transactionRepository.likeTransaction(transaction.getId(), "👍", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                    @Override
+                    public void onSuccess(Map<String, Object> result) {
+                        // Success handled by repo sync
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        ToastHelper.show(requireContext(), "Failed to like", ToastHelper.Status.ERROR);
+                    }
+                });
+            }
+
+            @Override
+            public void onReactionClick(com.upreyvan.carti.model.Transaction transaction, String emoji) {
+                transactionRepository.likeTransaction(transaction.getId(), emoji, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+                    @Override
+                    public void onSuccess(Map<String, Object> result) {
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        ToastHelper.show(requireContext(), "Failed to react", ToastHelper.Status.ERROR);
+                    }
+                });
+            }
+
+            @Override
+            public void onCommentClick(com.upreyvan.carti.model.Transaction transaction) {
+                CommentsBottomSheetFragment fragment = CommentsBottomSheetFragment.newInstance(transaction.getId());
+                fragment.show(getChildFragmentManager(), "CommentsBottomSheet");
+            }
+
+            @Override
+            public void onMoreClick(com.upreyvan.carti.model.Transaction transaction, View view) {
+                // Implement more logic
+            }
+        });
         getBinding().rvTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvTransactions.setAdapter(transactionAdapter);
     }

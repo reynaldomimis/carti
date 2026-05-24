@@ -40,6 +40,9 @@ android {
         buildConfigField("String", "APPWRITE_COL_FAMILIES", "\"${secrets.getProperty("APPWRITE_COL_FAMILIES", "")}\"")
         buildConfigField("String", "APPWRITE_COL_MESSAGES", "\"${secrets.getProperty("APPWRITE_COL_MESSAGES", "")}\"")
         buildConfigField("String", "APPWRITE_COL_INCOMES", "\"${secrets.getProperty("APPWRITE_COL_INCOMES", "")}\"")
+        buildConfigField("String", "APPWRITE_COL_NOTIFICATIONS", "\"${secrets.getProperty("APPWRITE_COL_NOTIFICATIONS", "")}\"")
+        buildConfigField("String", "APPWRITE_COL_LIKES", "\"${secrets.getProperty("APPWRITE_COL_LIKES", "")}\"")
+        buildConfigField("String", "APPWRITE_COL_COMMENTS", "\"${secrets.getProperty("APPWRITE_COL_COMMENTS", "")}\"")
     }
 
     buildTypes {

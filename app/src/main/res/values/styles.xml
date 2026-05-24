@@ -58,6 +58,12 @@
         <item name="android:textSize">@dimen/text_size_body_small</item>
     </style>
 
+    <style name="CartiTextBody">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/text_size_body</item>
+    </style>
+
     <style name="CartiTextAmount">
         <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
         <item name="android:textColor">@color/text_primary</item>

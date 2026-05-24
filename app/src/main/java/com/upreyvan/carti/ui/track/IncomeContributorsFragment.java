@@ -111,13 +111,13 @@ public class IncomeContributorsFragment extends BaseFragment<FragmentIncomeContr
                         totalIncome += amount;
                         
                         String userId = tWithU.getTransaction().getUserId();
-                        String userName = ValueHelper.toStr(tWithU.getUserName() != null ? tWithU.getUserName() : tWithU.getTransaction().getTitle());
+                        String username = ValueHelper.toStr(tWithU.getUsername() != null ? tWithU.getUsername() : tWithU.getTransaction().getTitle());
                         String avatarUrl = tWithU.getUserAvatarUrl();
 
                         if (contributorMap.containsKey(userId)) {
                             contributorMap.get(userId).amount += amount;
                         } else {
-                            contributorMap.put(userId, new Contributor(userId, userName, avatarUrl, amount));
+                            contributorMap.put(userId, new Contributor(userId, username, avatarUrl, amount));
                         }
                     } else if ("EXPENSE".equals(tWithU.getTransaction().getType())) {
                         totalExpense += amount;

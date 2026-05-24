@@ -30,7 +30,8 @@ public class PreferenceManager {
     }
 
     public String getUserId() {
-        return sharedPreferences.getString(Constants.Keys.KEY_USER_ID_PREF, "");
+        String id = sharedPreferences.getString(Constants.Keys.KEY_USER_ID_PREF, "");
+        return (id == null || id.equalsIgnoreCase("null")) ? "" : id.trim();
     }
 
     public String getFamilyId() {
@@ -58,7 +59,7 @@ public class PreferenceManager {
         return sharedPreferences.getBoolean(Constants.Keys.KEY_IS_EMPLOYED, false);
     }
 
-    public String getUserName() {
+    public String getUsername() {
         return sharedPreferences.getString(Constants.Keys.KEY_USER_NAME, "User");
     }
 
@@ -166,14 +167,17 @@ public class PreferenceManager {
         String adminId = getAdminId();
         String currentUserId = getUserId();
 
+        // 1. Check if user is the designated family admin
         if (!adminId.isEmpty() && !"null".equals(adminId)) {
-            return currentUserId.equals(adminId);
+            if (currentUserId.equalsIgnoreCase(adminId.trim())) return true;
         }
 
-        // Fallback to role
+        // 2. Always fallback to checking roles (Parents are always admins)
         String role = getUserRole();
-        for (String r : Constants.Roles.PARENTS) {
-            if (r.equalsIgnoreCase(role)) return true;
+        if (role != null && !"null".equals(role)) {
+            for (String r : Constants.Roles.PARENTS) {
+                if (r.equalsIgnoreCase(role.trim())) return true;
+            }
         }
         return false;
     }

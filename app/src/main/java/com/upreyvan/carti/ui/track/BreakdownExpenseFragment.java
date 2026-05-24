@@ -91,7 +91,7 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
                         binding.cvIcon.setCardBackgroundColor(getResources().getColor(R.color.surface_variant, null));
                     }
 
-                    binding.getRoot().setOnClickListener(v -> navigateTo(AllTransactionsFragment.newInstance("EXPENSE", item.getUserId(), itemWithUser.getUserName())));
+                    binding.getRoot().setOnClickListener(v -> navigateTo(AllTransactionsFragment.newInstance("EXPENSE", item.getUserId(), itemWithUser.getUsername())));
                 }
         );
         getBinding().rvContributors.setLayoutManager(new LinearLayoutManager(requireContext()));

@@ -7,6 +7,7 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.model.Bill;
+import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
