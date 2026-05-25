@@ -237,6 +237,15 @@ public class Utils {
         return false;
     }
 
+    public static void setOptionalText(android.widget.TextView textView, String text) {
+        if (text == null || text.trim().isEmpty()) {
+            textView.setVisibility(View.GONE);
+        } else {
+            textView.setText(text);
+            textView.setVisibility(View.VISIBLE);
+        }
+    }
+
     public static String formatCurrency(double amount) {
         return String.format(Locale.getDefault(), "₱%,.2f", amount);
     }

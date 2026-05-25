@@ -15,39 +15,57 @@ import java.util.List;
 
 @Dao
 public interface TransactionDao {
-    @Query("SELECT transactions.*, members.title as userName, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl " +
+    @Query("SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl, " +
+           "my_likes.emojiType as myReaction, " +
+           "(SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames " +
            "FROM transactions " +
            "LEFT JOIN members ON transactions.userId = members.id " +
+           "LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId " +
            "WHERE transactions.familyId = :familyId ORDER BY timestampMillis DESC")
-    LiveData<List<TransactionWithUser>> getAllTransactions(String familyId);
+    LiveData<List<TransactionWithUser>> getAllTransactions(String familyId, String currentUserId);
 
-    @Query("SELECT transactions.*, members.title as userName, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl " +
+    @Query("SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl, " +
+           "my_likes.emojiType as myReaction, " +
+           "(SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames " +
            "FROM transactions " +
            "LEFT JOIN members ON transactions.userId = members.id " +
+           "LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId " +
            "WHERE transactions.familyId = :familyId AND transactions.type = :type ORDER BY timestampMillis DESC")
-    LiveData<List<TransactionWithUser>> getTransactionsByType(String familyId, String type);
+    LiveData<List<TransactionWithUser>> getTransactionsByType(String familyId, String type, String currentUserId);
 
-    @Query("SELECT transactions.*, members.title as userName, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl " +
+    @Query("SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl, " +
+           "my_likes.emojiType as myReaction, " +
+           "(SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames " +
            "FROM transactions " +
            "LEFT JOIN members ON transactions.userId = members.id " +
+           "LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId " +
            "WHERE transactions.familyId = :familyId AND timestampMillis >= :start AND timestampMillis <= :end " +
            "ORDER BY timestampMillis DESC")
-    LiveData<List<TransactionWithUser>> getTransactionsInRange(String familyId, long start, long end);
+    LiveData<List<TransactionWithUser>> getTransactionsInRange(String familyId, long start, long end, String currentUserId);
 
-    @Query("SELECT transactions.*, members.title as userName, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl " +
+    @Query("SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl, " +
+           "my_likes.emojiType as myReaction, " +
+           "(SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames " +
            "FROM transactions " +
            "LEFT JOIN members ON transactions.userId = members.id " +
+           "LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId " +
            "WHERE transactions.familyId = :familyId ORDER BY timestampMillis DESC LIMIT :limit")
-    LiveData<List<TransactionWithUser>> getRecentTransactions(String familyId, int limit);
+    LiveData<List<TransactionWithUser>> getRecentTransactions(String familyId, int limit, String currentUserId);
 
-    @Query("SELECT transactions.*, members.title as userName, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl " +
+    @Query("SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl, " +
+           "my_likes.emojiType as myReaction, " +
+           "(SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames " +
            "FROM transactions " +
            "LEFT JOIN members ON transactions.userId = members.id " +
+           "LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId " +
            "WHERE transactions.id = :id")
-    LiveData<TransactionWithUser> getTransactionById(String id);
+    LiveData<TransactionWithUser> getTransactionById(String id, String currentUserId);
 
     @Query("SELECT * FROM transactions WHERE id = :id")
     LiveData<Transaction> getTransactionByIdRaw(String id);
+
+    @Query("SELECT * FROM transactions WHERE id = :id")
+    Transaction getTransactionByIdRawSync(String id);
 
     @Query("SELECT SUM(amount) FROM transactions WHERE familyId = :familyId AND timestampMillis >= :startOfDay AND type = 'EXPENSE'")
     LiveData<Double> getTodayTotalSpent(String familyId, long startOfDay);

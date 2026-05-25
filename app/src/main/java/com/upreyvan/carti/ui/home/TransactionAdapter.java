@@ -54,29 +54,66 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
         binding.shimmerView.getRoot().setVisibility(View.GONE);
         binding.layoutContent.setVisibility(View.VISIBLE);
 
-    
-        String username = itemWithUser.getUsername() != null ? itemWithUser.getUsername() : "Someone";
-        String actionText;
-        if ("EXPENSE".equalsIgnoreCase(item.getType())) {
-            actionText = binding.getRoot().getContext().getString(R.string.action_added_expense, username);
-        } else {
-            actionText = binding.getRoot().getContext().getString(R.string.action_added_income, username);
+        String username = itemWithUser.getUsername();
+        if (username == null || username.isEmpty()) {
+            username = "Someone";
         }
-        binding.tvUserAction.setText(actionText);
-        binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
+        
+        String type = item.getType() != null ? item.getType().toUpperCase() : "EXPENSE";
+        int amountColor;
+        int amountFormatRes;
+        String actionLabel;
 
-        // Body: Transaction Details
-        binding.tvTitle.setText(item.getTitle());
-        binding.tvDescription.setText(item.getNote());
+        switch (type) {
+            case "INCOME":
+                actionLabel = "Received income";
+                amountColor = R.color.green_primary;
+                amountFormatRes = R.string.format_income;
+                break;
+            case "DEBT":
+                actionLabel = "Recorded a debt";
+                amountColor = R.color.status_red;
+                amountFormatRes = R.string.format_expense;
+                break;
+            case "GOAL":
+                actionLabel = "Started a goal";
+                amountColor = R.color.carti_primary_green;
+                amountFormatRes = R.string.format_income;
+                break;
+            case "GOAL_FUNDS":
+                actionLabel = "Added funds to goal";
+                amountColor = R.color.carti_primary_green;
+                amountFormatRes = R.string.format_income;
+                break;
+            case "BILL":
+                actionLabel = "Settled a bill";
+                amountColor = R.color.status_red;
+                amountFormatRes = R.string.format_expense;
+                break;
+            case "EXPENSE":
+            default:
+                actionLabel = "Added an expense";
+                amountColor = R.color.status_red;
+                amountFormatRes = R.string.format_expense;
+                break;
+        }
+
+        binding.tvUserAction.setText(username);
+        binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
+        
+        binding.tvTitle.setText(item.getCategory()); 
+
+        String note = item.getNote();
+        if (note != null && !note.isEmpty()) {
+            binding.tvDescription.setText(String.format("%s: %s", actionLabel, note));
+        } else {
+            binding.tvDescription.setText(actionLabel);
+        }
+        binding.tvDescription.setVisibility(View.VISIBLE);
         
         String formattedAmount = Utils.formatCurrency(item.getAmount());
-        if ("EXPENSE".equalsIgnoreCase(item.getType())) {
-            binding.tvAmount.setText(binding.getRoot().getContext().getString(R.string.format_expense, formattedAmount));
-            binding.tvAmount.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_red));
-        } else {
-            binding.tvAmount.setText(binding.getRoot().getContext().getString(R.string.format_income, formattedAmount));
-            binding.tvAmount.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.green_primary));
-        }
+        binding.tvAmount.setText(binding.getRoot().getContext().getString(amountFormatRes, formattedAmount));
+        binding.tvAmount.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), amountColor));
 
         // Avatar Binding
         if (itemWithUser.getUserAvatarUrl() != null && !itemWithUser.getUserAvatarUrl().isEmpty()) {
@@ -91,14 +128,23 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
             binding.ivAvatar.setImageResource(R.drawable.ai_holder);
         }
 
-        // Footer: Likes and Comments
+        String myReaction = itemWithUser.getMyReaction();
+        String lastEmoji = item.getLastEmoji();
+
+        binding.tvReactionEmoji.setText(myReaction != null && !myReaction.isEmpty() ? myReaction : (lastEmoji != null && !lastEmoji.isEmpty() ? lastEmoji : "👍"));
         binding.tvLikesCount.setText(String.valueOf(item.getLikesCount()));
+
+        String rNames = itemWithUser.getReactorNames();
+        binding.layoutLikes.setTooltipText(rNames != null && !rNames.isEmpty() ? rNames : null);
+
         int commentCount = item.getCommentCount();
         binding.tvCommentsCount.setText(commentCount > 0 ? String.valueOf(commentCount) : "Comment");
 
-        // Click Listeners (to be implemented in Fragment/Activity)
         binding.layoutLikes.setOnClickListener(v -> {
             if (interactionListener != null) interactionListener.onLikeClick(item);
+        });
+        binding.tvLikesCount.setOnClickListener(v -> {
+            if (interactionListener != null) interactionListener.onViewLikesClick(item, itemWithUser.getReactorNames());
         });
         binding.layoutLikes.setOnLongClickListener(v -> {
             if (interactionListener != null) {
@@ -109,9 +155,6 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
         });
         binding.btnComment.setOnClickListener(v -> {
             if (interactionListener != null) interactionListener.onCommentClick(item);
-        });
-        binding.btnMore.setOnClickListener(v -> {
-            if (interactionListener != null) interactionListener.onMoreClick(item, v);
         });
     }
 
@@ -151,6 +194,6 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
         void onLikeClick(Transaction transaction);
         void onReactionClick(Transaction transaction, String emoji);
         void onCommentClick(Transaction transaction);
-        void onMoreClick(Transaction transaction, View view);
+        void onViewLikesClick(Transaction transaction, String reactorNames);
     }
 }

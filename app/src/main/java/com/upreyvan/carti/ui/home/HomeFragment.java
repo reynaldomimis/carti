@@ -144,6 +144,13 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             checkBillNotifications();
         });
 
+        // 5. Realtime Likes (Emoji Updates)
+        realtimeRepo.getLikeStream().observe(getViewLifecycleOwner(), payload -> {
+            if (transactionRepository != null) {
+                transactionRepository.refreshTransactions();
+            }
+        });
+
         checkBillNotifications();
     }
 
@@ -572,8 +579,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     @Override
     public void onDestroyView() {
-        if (transactionRepository != null) transactionRepository.onDestroy();
-        if (memberRepository != null) memberRepository.onDestroy();
         super.onDestroyView();
     }
 
@@ -590,7 +595,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private void updateNotificationBadge(boolean hasNotifications) {
         if (hasNotifications) {
             getBinding().notifBadge.setVisibility(View.VISIBLE);
-            // Using mint_green or status_green for the "new data" look
             getBinding().notifBadge.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.mint_green));
         } else {
             getBinding().notifBadge.setVisibility(View.GONE);
@@ -694,8 +698,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             }
 
             @Override
-            public void onMoreClick(com.upreyvan.carti.model.Transaction transaction, View view) {
-                // Implement more logic
+            public void onViewLikesClick(com.upreyvan.carti.model.Transaction transaction, String reactorNames) {
+                ReactionsBottomSheetFragment fragment = ReactionsBottomSheetFragment.newInstance(transaction.getId());
+                fragment.show(getChildFragmentManager(), "ReactionsBottomSheet");
             }
         });
         getBinding().rvTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));

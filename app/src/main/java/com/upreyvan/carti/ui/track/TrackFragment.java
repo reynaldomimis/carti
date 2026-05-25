@@ -381,13 +381,9 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
         getBinding().tvIncomeAmountComp.setText(Utils.formatCurrency(totalIncome));
         getBinding().tvExpenseAmountComp.setText(Utils.formatCurrency(totalExpense));
 
-        // Update Bar heights dynamically
-        // Income is the reference (100% height of the container)
-        // Expense is relative to Income. If Expense > Income, it caps at container height.
         float max = (float) Math.max(totalIncome, totalExpense);
         if (max == 0) max = 1;
 
-        // Container height is fixed at 120dp in XML
         int maxHeightPx = Utils.dpToPx(requireContext(), 120);
         
         ViewGroup.LayoutParams incomeParams = getBinding().barIncome.getLayoutParams();
@@ -443,8 +439,5 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (transactionRepository != null) {
-            transactionRepository.onDestroy();
-        }
     }
 }

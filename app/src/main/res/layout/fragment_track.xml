@@ -41,18 +41,17 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/spacing_medium">
-
-            <!-- Track Summary Section -->
+            
             <include
                 android:id="@+id/layoutSummary"
                 layout="@layout/view_track_summary" />
 
-            <!-- Track Summary Card -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium">
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -95,7 +94,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Income vs Expense Card -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/DashCard"
                 android:layout_width="match_parent"
@@ -221,7 +219,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Budget Allocation Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardBudgetAllocation"
                 style="@style/DashCard"
@@ -291,7 +288,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Transactions Section -->
             <include
                 android:id="@+id/viewHeaderTransactions"
                 layout="@layout/view_section_header"
@@ -304,9 +300,10 @@
                 style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginTop="@dimen/spacing_xs"
                 android:layout_marginBottom="16dp"
                 app:cardElevation="0dp"
+                app:strokeWidth="0dp"
                 app:contentPaddingBottom="12dp">
 
                 <FrameLayout

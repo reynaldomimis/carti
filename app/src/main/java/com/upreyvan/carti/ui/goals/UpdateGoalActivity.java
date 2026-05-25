@@ -99,6 +99,5 @@ public class UpdateGoalActivity extends BaseGoalActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (transactionRepository != null) transactionRepository.onDestroy();
     }
 }

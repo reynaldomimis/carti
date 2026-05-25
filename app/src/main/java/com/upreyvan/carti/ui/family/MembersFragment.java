@@ -188,8 +188,5 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (repository != null) {
-            repository.onDestroy();
-        }
     }
 }

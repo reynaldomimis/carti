@@ -182,11 +182,12 @@
                 android:layout_marginTop="@dimen/spacing_small"
                 android:layout_marginBottom="16dp"
                 app:cardElevation="0dp"
-                app:contentPaddingBottom="12dp">
+                app:strokeWidth="0dp">
 
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="12dp">
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvTransactions"

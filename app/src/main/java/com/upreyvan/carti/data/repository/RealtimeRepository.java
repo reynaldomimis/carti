@@ -4,24 +4,33 @@ import android.content.Context;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.data.local.db.AppDatabase;
+import com.upreyvan.carti.data.local.db.dao.LikeDao;
+import com.upreyvan.carti.data.local.db.dao.TransactionDao;
 import com.upreyvan.carti.data.remote.RealtimeHelper;
+import com.upreyvan.carti.model.Like;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Constants;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import io.appwrite.models.RealtimeSubscription;
 
 /**
- * ELITE ARCHITECTURE: The Central Realtime Hub.
- * This repository manages a SINGLE websocket connection for the entire app,
- * routing data updates for Transactions, Goals, Debts, Notifications, and Family state.
+ * RealtimeRepository handles live updates from Appwrite Realtime.
+ * It synchronizes remote changes with the local Room database and notifies UI via LiveData streams.
  */
 public class RealtimeRepository {
 
     private static RealtimeRepository instance;
     private final RealtimeHelper realtimeHelper;
     private final PreferenceManager pref;
+    private final LikeDao likeDao;
+    private final TransactionDao transactionDao;
+    private final Executor executor = Executors.newSingleThreadExecutor();
     private RealtimeSubscription subscription;
 
-    // Specialized streams for different modules
     private final MutableLiveData<Map<String, Object>> transactionStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> goalStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> debtStream = new MutableLiveData<>();
@@ -30,10 +39,15 @@ public class RealtimeRepository {
     private final MutableLiveData<Map<String, Object>> familyStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> chatStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> incomeStream = new MutableLiveData<>();
+    private final MutableLiveData<Map<String, Object>> commentStream = new MutableLiveData<>();
+    private final MutableLiveData<Map<String, Object>> likeStream = new MutableLiveData<>();
 
     private RealtimeRepository(Context context) {
         this.realtimeHelper = new RealtimeHelper(context);
         this.pref = new PreferenceManager(context);
+        AppDatabase db = AppDatabase.getInstance(context);
+        this.likeDao = db.likeDao();
+        this.transactionDao = db.transactionDao();
     }
 
     public Context getContext() {
@@ -51,7 +65,6 @@ public class RealtimeRepository {
         String familyId = pref.getFamilyId();
         if (familyId == null || familyId.isEmpty() || subscription != null) return;
 
-        // One connection to rule them all
         String[] channels = {
             getCollectionChannel(Constants.Appwrite.COL_TRANSACTIONS),
             getCollectionChannel(Constants.Appwrite.COL_GOALS),
@@ -60,52 +73,104 @@ public class RealtimeRepository {
             getCollectionChannel(Constants.Appwrite.COL_USERS),
             getCollectionChannel(Constants.Appwrite.COL_MESSAGES),
             getCollectionChannel(Constants.Appwrite.COL_INCOMES),
+            getCollectionChannel(Constants.Appwrite.COL_COMMENTS),
+            getCollectionChannel(Constants.Appwrite.COL_LIKES),
             getDocumentChannel(Constants.Appwrite.COL_FAMILIES, familyId)
         };
 
         subscription = realtimeHelper.subscribe(channels, event -> {
             Map<String, Object> payload = RealtimeHelper.getPayload(event);
-            if (payload == null) return;
+            if (payload == null || event.getEvents().isEmpty()) return;
 
-            String eventPath = "";
-            if (!event.getEvents().isEmpty()) {
-                eventPath = event.getEvents().iterator().next();
-            }
-
-            if (eventPath.contains(Constants.Appwrite.COL_TRANSACTIONS)) {
+            String eventPath = event.getEvents().iterator().next();
+            
+            // Dispatch based on collection
+            if (eventPath.contains(Constants.Appwrite.COL_LIKES)) {
+                handleLikeEvent(eventPath, payload);
+            } else if (isTransactionCollection(eventPath)) {
                 if (familyId.equals(payload.get("familyId"))) {
+                    handleTransactionEvent(eventPath, payload);
                     transactionStream.postValue(payload);
-                    
-                    // Unified collection mapping
-                    String type = (String) payload.get("type");
-                    if ("INCOME".equals(type)) incomeStream.postValue(payload);
-                    else if ("GOAL".equals(type)) goalStream.postValue(payload);
-                    else if ("DEBT".equals(type)) debtStream.postValue(payload);
+                    dispatchTypedStream(payload);
                 }
-            } 
-            else if (eventPath.contains(Constants.Appwrite.COL_GOALS)) {
-                if (familyId.equals(payload.get("familyId"))) goalStream.postValue(payload);
-            } 
-            else if (eventPath.contains(Constants.Appwrite.COL_DEBTS)) {
-                if (familyId.equals(payload.get("familyId"))) debtStream.postValue(payload);
-            } 
-            else if (eventPath.contains(Constants.Appwrite.COL_NOTIFICATIONS)) {
+            } else if (eventPath.contains(Constants.Appwrite.COL_NOTIFICATIONS)) {
                 if (familyId.equals(payload.get("familyId"))) {
-                    android.util.Log.d("RealtimeRepository", "Notification received: " + payload.get("title"));
+                    android.util.Log.d("RealtimeRepository", "Notification: " + payload.get("title"));
                     notificationStream.postValue(payload);
                 }
-            } 
-            else if (eventPath.contains(Constants.Appwrite.COL_USERS)) {
-                userUpdateStream.postValue(payload);
-            }
-            else if (eventPath.contains(Constants.Appwrite.COL_FAMILIES)) {
-                familyStream.postValue(payload);
-            }
-            else if (eventPath.contains(Constants.Appwrite.COL_MESSAGES)) {
+            } else if (eventPath.contains(Constants.Appwrite.COL_MESSAGES)) {
                 if (familyId.equals(payload.get("familyId"))) chatStream.postValue(payload);
+            } else if (eventPath.contains(Constants.Appwrite.COL_USERS)) {
+                userUpdateStream.postValue(payload);
+            } else if (eventPath.contains(Constants.Appwrite.COL_FAMILIES)) {
+                familyStream.postValue(payload);
+            } else if (eventPath.contains(Constants.Appwrite.COL_COMMENTS)) {
+                commentStream.postValue(payload);
             }
-            else if (eventPath.contains(Constants.Appwrite.COL_INCOMES)) {
-                if (familyId.equals(payload.get("familyId"))) incomeStream.postValue(payload);
+        });
+    }
+
+    private boolean isTransactionCollection(String path) {
+        return path.contains(Constants.Appwrite.COL_TRANSACTIONS) ||
+               path.contains(Constants.Appwrite.COL_GOALS) ||
+               path.contains(Constants.Appwrite.COL_DEBTS) ||
+               path.contains(Constants.Appwrite.COL_INCOMES);
+    }
+
+    private void dispatchTypedStream(Map<String, Object> payload) {
+        String type = (String) payload.get("type");
+        if ("INCOME".equals(type)) incomeStream.postValue(payload);
+        else if ("GOAL".equals(type)) goalStream.postValue(payload);
+        else if ("DEBT".equals(type)) debtStream.postValue(payload);
+    }
+
+    private void handleTransactionEvent(String eventPath, Map<String, Object> payload) {
+        executor.execute(() -> {
+            try {
+                if (eventPath.contains(".delete")) {
+                    String id = String.valueOf(payload.get("$id"));
+                    transactionDao.deleteById(id);
+                } else {
+                    Transaction transaction = Transaction.fromPayload(payload, pref.getFamilyId(), getContext(), pref.getUserId());
+                    if (transaction != null) {
+                        transactionDao.insert(transaction);
+                    }
+                }
+            } catch (Exception e) {
+                android.util.Log.e("RealtimeRepository", "Error handling transaction event", e);
+            }
+        });
+    }
+
+    private void handleLikeEvent(String eventPath, Map<String, Object> payload) {
+        // We move everything inside the executor to ensure DB is updated before stream notifies
+        executor.execute(() -> {
+            try {
+                String id = (String) payload.get("$id");
+                String txnId = (String) payload.get("transactionId");
+                String userId = (String) payload.get("userId");
+                
+                // Use 'username' (lowercase) consistently as per project requirement
+                String username = (String) payload.get("username");
+                if (username == null) username = (String) payload.get("userName");
+                if (username != null) username = username.toLowerCase();
+                
+                String emoji = (String) payload.get("emojiType");
+
+                if (id == null || txnId == null) return;
+
+                if (eventPath.contains(".delete")) {
+                    likeDao.deleteById(id);
+                } else {
+                    // This handles both .create and .update (upsert)
+                    likeDao.insert(new Like(id, txnId, userId, username, emoji));
+                }
+                
+                // CRITICAL: Post to stream AFTER Room DB update. 
+                // This ensures UI components observing the stream get notified when data is ready in Room.
+                likeStream.postValue(payload);
+            } catch (Exception e) {
+                android.util.Log.e("RealtimeRepository", "Error handling like event", e);
             }
         });
     }
@@ -126,6 +191,8 @@ public class RealtimeRepository {
     public LiveData<Map<String, Object>> getFamilyStream() { return familyStream; }
     public LiveData<Map<String, Object>> getChatStream() { return chatStream; }
     public LiveData<Map<String, Object>> getIncomeStream() { return incomeStream; }
+    public LiveData<Map<String, Object>> getCommentStream() { return commentStream; }
+    public LiveData<Map<String, Object>> getLikeStream() { return likeStream; }
 
     public void stopListening() {
         if (subscription != null) {

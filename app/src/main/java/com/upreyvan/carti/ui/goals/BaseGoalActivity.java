@@ -146,7 +146,5 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (transactionRepository != null) transactionRepository.onDestroy();
-        if (memberRepository != null) memberRepository.onDestroy();
     }
 }

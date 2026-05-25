@@ -55,6 +55,7 @@
         android:id="@+id/layout_search_container"
         android:layout_width="0dp"
         android:layout_height="48dp"
+        android:layout_marginStart="@dimen/spacing_medium"
         android:layout_marginEnd="@dimen/spacing_small"
         android:background="@drawable/bg_search_bar_outlined"
         android:gravity="center_vertical"

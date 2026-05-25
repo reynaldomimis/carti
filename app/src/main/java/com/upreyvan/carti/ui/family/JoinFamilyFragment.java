@@ -28,6 +28,8 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
         return FragmentJoinFamilyBinding.inflate(inflater, container, false);
     }
 
+    private boolean isJoining = false;
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -37,6 +39,8 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
         getBinding().tvUserRole.setText(pref.getUserRole());
 
         getBinding().btnJoin.setOnClickListener(v -> {
+            if (isJoining) return;
+            
             String inviteCode = getBinding().etFamilyId.getText().toString().trim();
             if (inviteCode.isEmpty()) {
                 showToast(R.string.error_empty_invite_code, com.upreyvan.carti.util.ToastHelper.Status.WARNING);
@@ -47,10 +51,12 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
     }
 
     private void joinFamily(String inviteCode) {
+        isJoining = true;
         setLoading(true);
         new ApiHelper(requireContext()).joinFamily(inviteCode, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
+                    isJoining = false;
                     android.util.Log.d("CARTI_DEBUG", "JoinFamily Success Result: " + result);
 
                     if (!isAdded() || getActivity() == null) {
@@ -83,6 +89,7 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
 
             @Override
             public void onError(Throwable error) {
+                isJoining = false;
                 if (isAdded()) {
                     setLoading(false);
                     showToast(error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);

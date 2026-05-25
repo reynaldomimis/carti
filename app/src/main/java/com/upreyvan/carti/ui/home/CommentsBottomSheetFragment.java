@@ -14,6 +14,7 @@ import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.FragmentCommentsBottomSheetBinding;
 import com.upreyvan.carti.model.Comment;
@@ -67,6 +68,16 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
 
         setupUI();
         loadComments();
+        setupRealtime();
+    }
+
+    private void setupRealtime() {
+        RealtimeRepository.getInstance(requireContext()).getCommentStream().observe(getViewLifecycleOwner(), payload -> {
+            String txnId = String.valueOf(payload.get("transactionId"));
+            if (transactionId.equals(txnId)) {
+                loadComments(); // Refresh list on any change to comments for this transaction
+            }
+        });
     }
 
     private void setupUI() {

@@ -12,6 +12,7 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.ui.home.ReactionsBottomSheetFragment;
 import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
 import com.upreyvan.carti.base.BaseFragment;
@@ -26,10 +27,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
+import android.widget.TextView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class AllTransactionsFragment extends BaseFragment<FragmentAllTransactionsBinding> {
@@ -83,7 +85,6 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         
         setupToolbar();
         setupSearchBar();
-        setupMonthNavigation();
         setupRecyclerView();
         observeTransactions();
     }
@@ -144,10 +145,18 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         for (TransactionWithUser t : fullList) {
             boolean matchesType = filterType == null || filterType.equals(t.getTransaction().getType());
             boolean matchesUser = filterUserId == null || filterUserId.equals(t.getTransaction().getUserId());
-            boolean matchesSearch = currentQuery.isEmpty() || 
-                                   (t.getTransaction().getTitle() != null && t.getTransaction().getTitle().toLowerCase().contains(currentQuery)) ||
-                                   (t.getTransaction().getCategory() != null && t.getTransaction().getCategory().toLowerCase().contains(currentQuery));
-            
+
+            String username = t.getUsername() != null ? t.getUsername().toLowerCase() : "";
+            String category = t.getTransaction().getCategory() != null ? t.getTransaction().getCategory().toLowerCase() : "";
+            String description = t.getTransaction().getDescription() != null ? t.getTransaction().getDescription().toLowerCase() : "";
+            String amount = String.valueOf(t.getTransaction().getAmount());
+
+            boolean matchesSearch = currentQuery.isEmpty() ||
+                                   username.contains(currentQuery) ||
+                                   category.contains(currentQuery) ||
+                                   description.contains(currentQuery) ||
+                                   amount.contains(currentQuery);
+
             if (matchesType && matchesUser && matchesSearch) {
                 filteredList.add(t);
             }
@@ -155,29 +164,6 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         adapter.submitList(filteredList);
         getBinding().rvAllTransactions.setVisibility(filteredList.isEmpty() ? View.GONE : View.VISIBLE);
         getBinding().layoutEmptyState.setVisibility(filteredList.isEmpty() ? View.VISIBLE : View.GONE);
-    }
-
-    private void setupMonthNavigation() {
-        updateMonthDisplay();
-        
-        getBinding().btnPrevMonth.setOnClickListener(v -> {
-            currentDisplayDate.add(Calendar.MONTH, -1);
-            updateMonthAndRefresh();
-        });
-
-        getBinding().btnNextMonth.setOnClickListener(v -> {
-            currentDisplayDate.add(Calendar.MONTH, 1);
-            updateMonthAndRefresh();
-        });
-    }
-
-    private void updateMonthDisplay() {
-        getBinding().tvCurrentMonth.setText(Utils.formatMonthYear(currentDisplayDate));
-    }
-
-    private void updateMonthAndRefresh() {
-        updateMonthDisplay();
-        observeTransactions();
     }
 
     private androidx.lifecycle.Observer<List<TransactionWithUser>> transactionObserver = transactions -> {
@@ -193,26 +179,27 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
             currentLiveData.removeObserver(transactionObserver);
         }
         
-        currentLiveData = transactionRepository.getTransactionsByMonth(
-                currentDisplayDate.get(Calendar.MONTH),
-                currentDisplayDate.get(Calendar.YEAR)
-        );
+        currentLiveData = transactionRepository.getAllTransactions();
         currentLiveData.observe(getViewLifecycleOwner(), transactionObserver);
 
         transactionRepository.syncTransactionsIfNeeded();
     }
 
     private void setupToolbar() {
+        getBinding().layoutToolbar.backButtonContainer.setVisibility(View.GONE);
+        TextView title = getBinding().layoutToolbar.tvToolbarTitle;
+        ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) title.getLayoutParams();
+        lp.horizontalBias = 0.0f;
+        lp.setMarginStart((int) getResources().getDimension(R.dimen.spacing_xs));
+        title.setLayoutParams(lp);
+
         if (filterUserName != null) {
-            getBinding().layoutToolbar.tvToolbarTitle.setText(getString(R.string.label_user_expenses, filterUserName));
+            title.setText(getString(R.string.label_user_expenses, filterUserName));
         } else if ("EXPENSE".equals(filterType)) {
-            getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.nav_track);
+            title.setText(R.string.nav_track);
         } else {
-            getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.all_transactions_title);
+            title.setText(R.string.all_transactions_title);
         }
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
-        });
     }
 
     private void setupRecyclerView() {
@@ -254,8 +241,9 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
             }
 
             @Override
-            public void onMoreClick(Transaction transaction, View view) {
-                // Handle more menu
+            public void onViewLikesClick(Transaction transaction, String reactorNames) {
+                ReactionsBottomSheetFragment fragment = ReactionsBottomSheetFragment.newInstance(transaction.getId());
+                fragment.show(getChildFragmentManager(), "ReactionsBottomSheet");
             }
         });
 
@@ -295,8 +283,5 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (transactionRepository != null) {
-            transactionRepository.onDestroy();
-        }
     }
 }

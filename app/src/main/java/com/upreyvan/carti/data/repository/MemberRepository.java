@@ -33,13 +33,6 @@ public class MemberRepository {
         pref = new PreferenceManager(context);
     }
 
-
-    public void onDestroy() {
-        if (executor != null && !executor.isShutdown()) {
-            executor.shutdown();
-        }
-    }
-
     public LiveData<List<Member>> getMembers() {
         return memberDao.getAllMembers(pref.getFamilyId());
     }

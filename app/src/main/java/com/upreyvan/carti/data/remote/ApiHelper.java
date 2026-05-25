@@ -225,6 +225,12 @@ public class ApiHelper {
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_LIKES, queries, callback);
     }
 
+    public void listAllLikes(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.limit(100)); // Adjust limit as needed
+        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_LIKES, queries, callback);
+    }
+
     // ─── MEMBERS ─────────────────────────────────────────────────────────────
 
     public void getMembers(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {

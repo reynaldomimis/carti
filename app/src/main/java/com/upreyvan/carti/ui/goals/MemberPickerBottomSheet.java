@@ -207,6 +207,5 @@ public class MemberPickerBottomSheet extends BaseBottomSheetFragment<LayoutBotto
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (memberRepository != null) memberRepository.onDestroy();
     }
 }

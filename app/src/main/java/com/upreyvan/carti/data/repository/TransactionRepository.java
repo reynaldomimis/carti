@@ -9,6 +9,7 @@ import com.upreyvan.carti.data.local.db.AppDatabase;
 import com.upreyvan.carti.data.local.db.dao.TransactionDao;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.model.Like;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.Utils;
@@ -47,18 +48,42 @@ public class TransactionRepository {
         return instance;
     }
 
-
-    public void onDestroy() {
-        if (executor != null && !executor.isShutdown()) {
-            executor.shutdown();
-        }
-    }
-
     public void syncTransactionsIfNeeded() {
         syncCurrentMonth();
         syncIncomes();
         syncGoals();
         syncDebts();
+        syncLikes();
+    }
+
+    public void syncLikes() {
+        apiHelper.listAllLikes(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
+            @Override
+            public void onSuccess(DocumentList<Map<String, Object>> result) {
+                executor.execute(() -> {
+                    List<Like> likes = new ArrayList<>();
+                    for (Document<Map<String, Object>> doc : result.getDocuments()) {
+                        Map<String, Object> data = doc.getData();
+                        String username = (String) data.get("username");
+                        if (username == null) username = (String) data.get("userName");
+
+                        likes.add(new Like(
+                            doc.getId(),
+                            String.valueOf(data.get("transactionId")),
+                            String.valueOf(data.get("userId")),
+                            username,
+                            String.valueOf(data.get("emojiType"))
+                        ));
+                    }
+                    AppDatabase.getInstance(apiHelper.getContext()).likeDao().insertAll(likes);
+                });
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                Log.e(TAG, "Likes sync failed: " + error.getMessage());
+            }
+        });
     }
 
     public void refreshTransactions() {
@@ -77,11 +102,11 @@ public class TransactionRepository {
         apiHelper.getTransactionsRange(start, end, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
             @Override
             public void onSuccess(DocumentList<Map<String, Object>> result) {
-                if (executor.isShutdown()) return;
                 executor.execute(() -> {
                     List<Transaction> transactions = new ArrayList<>();
                     for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                        transactions.add(mapPayloadToTransaction(doc.getData(), pref.getFamilyId()));
+                        Transaction t = Transaction.fromPayload(doc.getData(), pref.getFamilyId(), apiHelper.getContext(), pref.getUserId());
+                        if (t != null) transactions.add(t);
                     }
                     transactionDao.insertAll(transactions);
                     Log.d(TAG, "Synced current month items: " + transactions.size());
@@ -95,9 +120,6 @@ public class TransactionRepository {
         });
     }
 
-    /**
-     * Sync a specific month for report comparison (Last Month vs Now).
-     */
     public void syncMonthForReport(int month, int year, AppwriteManager.AppwriteCallback<Void> callback) {
         String start = Utils.getMonthStart(month, year);
         String end = Utils.getMonthEnd(month, year);
@@ -105,11 +127,11 @@ public class TransactionRepository {
         apiHelper.getTransactionsRange(start, end, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
             @Override
             public void onSuccess(DocumentList<Map<String, Object>> result) {
-                if (executor.isShutdown()) return;
                 executor.execute(() -> {
                     List<Transaction> transactions = new ArrayList<>();
                     for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                        transactions.add(mapPayloadToTransaction(doc.getData(), pref.getFamilyId()));
+                        Transaction t = Transaction.fromPayload(doc.getData(), pref.getFamilyId(), apiHelper.getContext(), pref.getUserId());
+                        if (t != null) transactions.add(t);
                     }
                     transactionDao.insertAll(transactions);
                     if (callback != null) callback.onSuccess(null);
@@ -136,11 +158,11 @@ public class TransactionRepository {
     }
 
     public LiveData<List<TransactionWithUser>> getAllTransactions() {
-        return transactionDao.getAllTransactions(pref.getFamilyId());
+        return transactionDao.getAllTransactions(pref.getFamilyId(), pref.getUserId());
     }
 
     public LiveData<List<TransactionWithUser>> getTransactionsByType(String type) {
-        return transactionDao.getTransactionsByType(pref.getFamilyId(), type);
+        return transactionDao.getTransactionsByType(pref.getFamilyId(), type, pref.getUserId());
     }
 
     public LiveData<List<TransactionWithUser>> getTransactionsByMonth(int month, int year) {
@@ -149,7 +171,7 @@ public class TransactionRepository {
         long start = cal.getTimeInMillis();
         cal.add(Calendar.MONTH, 1);
         long end = cal.getTimeInMillis() - 1;
-        return transactionDao.getTransactionsInRange(pref.getFamilyId(), start, end);
+        return transactionDao.getTransactionsInRange(pref.getFamilyId(), start, end, pref.getUserId());
     }
 
     public LiveData<Double> getTotalIncome() {
@@ -181,15 +203,15 @@ public class TransactionRepository {
     }
 
     public LiveData<List<TransactionWithUser>> getRecentTransactions(int limit) {
-        return transactionDao.getRecentTransactions(pref.getFamilyId(), limit);
+        return transactionDao.getRecentTransactions(pref.getFamilyId(), limit, pref.getUserId());
     }
 
     public LiveData<List<TransactionWithUser>> getTransactionsInRange(long start, long end) {
-        return transactionDao.getTransactionsInRange(pref.getFamilyId(), start, end);
+        return transactionDao.getTransactionsInRange(pref.getFamilyId(), start, end, pref.getUserId());
     }
 
     public LiveData<TransactionWithUser> getTransactionById(String id) {
-        return transactionDao.getTransactionById(id);
+        return transactionDao.getTransactionById(id, pref.getUserId());
     }
 
     public void deleteLocally(String id) {
@@ -199,15 +221,41 @@ public class TransactionRepository {
     // ─── SOCIAL INTERACTIONS ─────────────────────────────────────────────────
 
     public void likeTransaction(String transactionId, String emoji, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        // Optimistic UI: Update local database immediately
+        executor.execute(() -> {
+            String myId = pref.getUserId();
+            String myUsername = pref.getUsername();
+            if (myUsername != null) myUsername = myUsername.toLowerCase(); // Ensure lowercase as per project rule
+            
+            String tempId = "temp_" + System.currentTimeMillis();
+
+            // 1. Update Likes table
+            AppDatabase.getInstance(apiHelper.getContext()).likeDao().deleteUserLike(transactionId, myId);
+            AppDatabase.getInstance(apiHelper.getContext()).likeDao().insert(
+                    new Like(tempId, transactionId, myId, myUsername, emoji)
+            );
+
+            // 2. Optimistically update Transaction table counters/last emoji
+            Transaction t = transactionDao.getTransactionByIdRawSync(transactionId);
+            if (t != null) {
+                t.setLastEmoji(emoji);
+                // We don't know the exact new count without fetching all, but we can increment/decrement
+                // For simplicity, just update the emoji for now as that's the user's main concern
+                transactionDao.insert(t); 
+            }
+        });
+
         apiHelper.addLike(transactionId, emoji, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
-                syncCurrentMonth(); // Refresh to update counters locally
+                // Final sync will be handled by Realtime stream which updates both tables
                 if (callback != null) callback.onSuccess(result);
             }
 
             @Override
             public void onError(Throwable error) {
+                // Rollback on error
+                syncCurrentMonth();
                 if (callback != null) callback.onError(error);
             }
         });
@@ -314,61 +362,4 @@ public class TransactionRepository {
         });
     }
 
-    private Transaction mapPayloadToTransaction(Map<String, Object> data, String familyId) {
-        try {
-            String id = String.valueOf(data.get("$id"));
-            String createdAt = data.containsKey("startDate") ? String.valueOf(data.get("startDate")) : String.valueOf(data.get("$createdAt"));
-            String updatedAt = String.valueOf(data.get("$updatedAt"));
-            
-            String type = "EXPENSE";
-            if (data.containsKey("type")) type = String.valueOf(data.get("type"));
-            else if (data.containsKey("source")) type = "INCOME";
-            else if (data.containsKey("targetAmount")) type = "GOAL";
-            else if (data.containsKey("personName")) type = "DEBT";
-
-            double amount = Utils.getDouble(data.get("amount"));
-            double targetAmount = Utils.getDouble(data.get("targetAmount"));
-            String categoryName = data.containsKey("category") ? String.valueOf(data.get("category")) : type;
-            
-            // Fix: Get userId from payload or fallback to current user if it's a local creation
-            String userId = data.containsKey("userId") ? String.valueOf(data.get("userId")) : pref.getUserId();
-            
-            String title = data.containsKey("title") ? String.valueOf(data.get("title")) : 
-                         (data.containsKey("username") ? String.valueOf(data.get("username")) : 
-                         (data.containsKey("name") ? String.valueOf(data.get("name")) : 
-                         (data.containsKey("source") ? String.valueOf(data.get("source")) : categoryName)));
-            
-            String description = data.containsKey("description") ? String.valueOf(data.get("description")) : 
-                               (data.containsKey("note") ? String.valueOf(data.get("note")) : "");
-            
-            boolean isPaid = false;
-            if (data.containsKey("isPaid")) isPaid = (Boolean) data.get("isPaid");
-
-            List<String> members = new ArrayList<>();
-            if (data.get("members") instanceof List) {
-                for (Object item : (List<?>) data.get("members")) members.add(String.valueOf(item));
-            }
-
-            int likesCount = data.containsKey("likesCount") ? ((Number) data.get("likesCount")).intValue() : 0;
-            int commentCount = data.containsKey("commentCount") ? ((Number) data.get("commentCount")).intValue() : 0;
-            
-            int iconRes = R.drawable.ic_person;
-            int iconColor = ContextCompat.getColor(apiHelper.getContext(), R.color.carti_primary_green);
-
-            if ("INCOME".equals(type)) { iconRes = R.drawable.ic_arrow_up; iconColor = ContextCompat.getColor(apiHelper.getContext(), R.color.dash_green); }
-            else if ("GOAL".equals(type)) { iconRes = R.drawable.ic_trophy; iconColor = ContextCompat.getColor(apiHelper.getContext(), R.color.mint_green); }
-            else if ("DEBT".equals(type)) { iconRes = R.drawable.ic_lock; iconColor = ContextCompat.getColor(apiHelper.getContext(), R.color.status_red); }
-
-            int bgColor = androidx.core.graphics.ColorUtils.setAlphaComponent(iconColor, 25);
-            
-            return new Transaction(
-                id, type, amount, title, description, categoryName, familyId, userId,
-                createdAt, updatedAt, targetAmount, null, "completed", isPaid, members,
-                null, iconRes, bgColor, iconColor, Utils.getMillisFromIso(createdAt),
-                likesCount, commentCount
-            );
-        } catch (Exception e) {
-            return null;
-        }
-    }
 }

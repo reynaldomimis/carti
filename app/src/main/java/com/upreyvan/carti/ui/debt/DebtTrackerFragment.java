@@ -241,8 +241,5 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (transactionRepository != null) {
-            transactionRepository.onDestroy();
-        }
     }
 }

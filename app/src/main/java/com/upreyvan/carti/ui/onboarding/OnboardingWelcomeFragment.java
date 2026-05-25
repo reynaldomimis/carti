@@ -54,6 +54,10 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
 
                 String familyId = String.valueOf(userDoc.get("familyId"));
                 if (familyId == null || "null".equals(familyId)) familyId = "";
+                
+                String pendingFamilyId = String.valueOf(userDoc.get("pendingFamilyId"));
+                if (pendingFamilyId == null || "null".equals(pendingFamilyId)) pendingFamilyId = "";
+                
                 String userId = String.valueOf(userDoc.getOrDefault("$id", ""));
 
                 // Update preferences to match remote user data
@@ -68,9 +72,17 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
                     userId
                 );
 
-                Toast.makeText(requireContext(), getString(R.string.debug_live_is_employed, isEmployed), Toast.LENGTH_SHORT).show();
-
-                if (isEmployed) {
+                if (!familyId.isEmpty()) {
+                    // Already in a family
+                    pref.setOnboardingFinished(true);
+                    com.upreyvan.carti.util.Utils.showToast(requireContext(), "Welcome back!");
+                    android.content.Intent intent = new android.content.Intent(requireActivity(), com.upreyvan.carti.MainActivity.class);
+                    startActivity(intent);
+                    requireActivity().finish();
+                } else if (!pendingFamilyId.isEmpty()) {
+                    // Already requested to join
+                    navigateTo(OnboardingStatusFragment.newInstanceForWaiting());
+                } else if (isEmployed) {
                     navigateTo(new OnboardingOptionsFragment());
                 } else {
                     navigateTo(new com.upreyvan.carti.ui.family.JoinFamilyFragment());

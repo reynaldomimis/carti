@@ -229,8 +229,5 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (transactionRepository != null) {
-            transactionRepository.onDestroy();
-        }
     }
 }

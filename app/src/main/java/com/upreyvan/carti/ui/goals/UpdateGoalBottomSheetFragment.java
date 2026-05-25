@@ -203,7 +203,5 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (transactionRepository != null) transactionRepository.onDestroy();
-        if (memberRepository != null) memberRepository.onDestroy();
     }
 }
