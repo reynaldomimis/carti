@@ -1,45 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp">
+    android:paddingHorizontal="@dimen/spacing_medium"
+    android:paddingVertical="@dimen/spacing_small">
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="wrap_content"
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ivThinkingAvatar"
+        android:layout_width="@dimen/spacing_xl"
+        android:layout_height="@dimen/spacing_xl"
+        android:scaleType="fitXY"
+        android:src="@drawable/ai_holder"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
+
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="0dp"
-        app:cardBackgroundColor="@color/carti_light_gray">
+        android:layout_marginStart="@dimen/radius_medium"
+        android:orientation="vertical"
+        app:layout_constraintStart_toEndOf="@id/ivThinkingAvatar"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvSenderName"
+            style="@style/CartiHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp"
-            android:gravity="center_vertical">
+            android:text="@string/chat_sender_ai"
+            android:textSize="@dimen/text_size_small" />
 
-            <TextView
-                android:id="@+id/tvThinkingStatus"
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            app:cardBackgroundColor="@color/tonal_button_bg"
+            app:cardCornerRadius="@dimen/radius_large"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Carti is thinking"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                android:fontFamily="@font/plus_jakarta_sans_medium" />
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/radius_medium"
+                android:paddingVertical="@dimen/spacing_small"
+                android:gravity="center_vertical">
 
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:layout_width="20dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:indeterminate="true"
-                app:indicatorColor="@color/carti_primary_blue"
-                app:trackThickness="2dp"
-                app:trackCornerRadius="2dp" />
+                <TextView
+                    android:id="@+id/tvThinkingStatus"
+                    style="@style/CartiSubHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Carti is thinking"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
 
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-</LinearLayout>
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:layout_width="20dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:indeterminate="true"
+                    app:indicatorColor="@color/carti_primary_blue"
+                    app:trackThickness="2dp"
+                    app:trackCornerRadius="2dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

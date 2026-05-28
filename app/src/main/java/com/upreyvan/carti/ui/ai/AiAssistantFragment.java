@@ -168,9 +168,6 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
         getBinding().scrollView.setVisibility(View.GONE);
         getBinding().rvChat.setVisibility(View.VISIBLE);
 
-        // =========================
-        // USER MESSAGE (WITH ICON)
-        // =========================
         chatMessages.add(new ChatMessage(
                 getString(R.string.chat_sender_me),
                 text,
@@ -179,6 +176,10 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
                 R.drawable.ic_person
         ));
 
+        // Add Thinking Indicator
+        ChatMessage thinkingMsg = new ChatMessage(true, false);
+        chatMessages.add(thinkingMsg);
+        
         chatAdapter.submitList(new ArrayList<>(chatMessages));
         scrollToBottom();
 
@@ -188,6 +189,7 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
             public void onSuccess(String response) {
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
+                    chatMessages.remove(thinkingMsg);
                     chatMessages.add(new ChatMessage(
                             getString(R.string.chat_sender_ai),
                             response,
@@ -205,6 +207,7 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
             public void onError(Throwable t) {
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
+                    chatMessages.remove(thinkingMsg);
                     AiResult result = CartiAiManager.getInstance(requireContext()).processMessage(text);
                     chatMessages.add(new ChatMessage(
                             getString(R.string.chat_sender_ai),

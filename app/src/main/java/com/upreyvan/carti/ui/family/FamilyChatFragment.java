@@ -73,8 +73,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             realtimeRepo = RealtimeRepository.getInstance(context);
             aiRepository = new AiRepository(context);
         }
-
-        // Initialize adapter immediately to avoid null reference if realtime triggers early
+        
         chatAdapter = new ChatAdapter();
 
         setupDynamicPadding();
@@ -110,29 +109,48 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             if (payload != null && isAdded()) {
                 ChatMessage msg = mapToChatMessage(payload);
                 List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
-                
-                // Check if already in list to avoid duplicates from Realtime vs Local optimistics
+
                 boolean exists = false;
-                for (ChatMessage m : currentList) {
+                int tempOptimisticIndex = -1;
+                
+                for (int i = 0; i < currentList.size(); i++) {
+                    ChatMessage m = currentList.get(i);
+                    // 1. Exact ID match (Best case)
                     if (m.getId() != null && m.getId().equals(msg.getId())) {
                         exists = true;
                         break;
                     }
+                    // 2. Optimistic match (No ID, but same content, sender and very recent)
+                    if (m.getId() == null && m.isMe() && msg.isMe() 
+                            && m.getMessage().equals(msg.getMessage())
+                            && Math.abs(m.getTimestamp() - msg.getTimestamp()) < 30000) {
+                        tempOptimisticIndex = i;
+                        break;
+                    }
                 }
                 
-                if (!exists) {
-                    currentList.add(msg);
-                    chatAdapter.submitList(currentList, () -> {
-                        if (getBinding() == null) return;
-                        getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
-                    });
+                if (exists) return;
 
-                    // AI logic starts AFTER message is displayed
-                    processAiForMessage(msg);
+                final int finalOptimisticIndex = tempOptimisticIndex;
+                if (finalOptimisticIndex != -1) {
+                    currentList.set(finalOptimisticIndex, msg);
+                } else {
+                    currentList.add(msg);
                 }
+
+                chatAdapter.submitList(currentList, () -> {
+                    if (getBinding() == null) return;
+                    if (finalOptimisticIndex == -1) {
+                        getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
+                    }
+                });
+
+                processAiForMessage(msg);
             }
         });
     }
+
+
 
 
     private void processAiForMessage(ChatMessage msg) {
@@ -141,8 +159,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             boolean isSender = msg.getSenderId().equals(pref.getUserId());
 
             boolean isExplicit = messageText.startsWith("@") || messageText.contains("@carti");
-
-            // State Check: Session active for 3 minutes
+            
             boolean isAiActive = false;
             long SESSION_TIMEOUT_MS = 3 * 60 * 1000;
             List<ChatMessage> currentChat = chatAdapter.getCurrentList();

@@ -58,10 +58,9 @@ public class AiRepository {
                 }
             }
         }
-        String extraContext = "INTRO_DONE:" + introFound;
+        String extraContext = "family_id:" + pref.getFamilyId() + "|INTRO_DONE:" + introFound;
 
         if (!needsDb) {
-            // SPEED BOOST: Skip DB fetch for casual talk
             callGemini(message, "CASUAL_MODE: " + pref.getUsername() + "|" + extraContext, isForce, callback);
             return;
         }
@@ -122,6 +121,7 @@ public class AiRepository {
         }
 
         StringBuilder sb = new StringBuilder();
+        sb.append("family_id:").append(pref.getFamilyId()).append("\n");
         sb.append(String.format(Locale.US, "FINANCIAL_SUMMARY:\nIncome:%.0f|Expense:%.0f|Savings:%.0f|Balance:%.0f\n", 
             income, expense, savings, balance));
         sb.append("Top Spending: ").append(topCategory).append("\n");
