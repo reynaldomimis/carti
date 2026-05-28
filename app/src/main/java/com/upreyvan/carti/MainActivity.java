@@ -53,7 +53,6 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         setupTabs();
         setTabSelected(getBinding().tabHome);
 
-        // Start Elite Realtime Hub
         com.upreyvan.carti.data.repository.RealtimeRepository.getInstance(this).startListening();
 
         if (savedInstanceState == null) {

@@ -90,10 +90,6 @@ public class TransactionRepository {
         syncTransactionsIfNeeded();
     }
 
-    /**
-     * SYNC STRATEGY: Only fetch the current month's data to save bandwidth.
-     * If it's a new month, previous data stays in Room (for reports) but sync focus is now.
-     */
     public void syncCurrentMonth() {
         Calendar cal = Calendar.getInstance();
         String start = Utils.getMonthStart(cal.get(Calendar.MONTH), cal.get(Calendar.YEAR));

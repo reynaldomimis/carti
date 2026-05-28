@@ -43,6 +43,7 @@ android {
         buildConfigField("String", "APPWRITE_COL_NOTIFICATIONS", "\"${secrets.getProperty("APPWRITE_COL_NOTIFICATIONS", "")}\"")
         buildConfigField("String", "APPWRITE_COL_LIKES", "\"${secrets.getProperty("APPWRITE_COL_LIKES", "")}\"")
         buildConfigField("String", "APPWRITE_COL_COMMENTS", "\"${secrets.getProperty("APPWRITE_COL_COMMENTS", "")}\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"${secrets.getProperty("GEMINI_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -59,9 +60,17 @@ android {
         buildConfig = true
     }
 
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/DEPENDENCIES"
+        }
+    }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -77,8 +86,7 @@ dependencies {
     implementation(libs.shimmer)
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
-
-    // Navigation
+    implementation(libs.googlegenai)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
 
@@ -86,6 +94,8 @@ dependencies {
     implementation(libs.room.runtime)
     annotationProcessor(libs.room.compiler)
     implementation(libs.room.ktx)
+    implementation(libs.guava)
+    implementation(libs.security.crypto)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

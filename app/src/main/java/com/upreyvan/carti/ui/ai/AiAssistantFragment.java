@@ -36,9 +36,10 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import com.upreyvan.carti.ui.family.ChatAdapter;
 import com.upreyvan.carti.model.ChatMessage;
+import com.upreyvan.carti.data.ai.GeminiManager;
+import com.upreyvan.carti.data.repository.AiRepository;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
 import com.upreyvan.carti.data.ai.CartiAiManager;
 
 public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding> {
@@ -46,6 +47,7 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
     private AiSuggestionAdapter suggestionAdapter;
     private ChatAdapter chatAdapter;
     private final List<ChatMessage> chatMessages = new ArrayList<>();
+    private AiRepository aiRepository;
 
     private final ActivityResultLauncher<Intent> speechResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -74,6 +76,7 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        aiRepository = new AiRepository(requireContext());
         setupDynamicPadding();
         setupChat();
         setupToolbar();
@@ -179,26 +182,43 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
         chatAdapter.submitList(new ArrayList<>(chatMessages));
         scrollToBottom();
 
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
 
-            if (!isAdded()) return;
+        aiRepository.processChat(text, getString(R.string.chat_sender_me), chatMessages, true, new GeminiManager.AiCallback() {
+            @Override
+            public void onSuccess(String response) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    chatMessages.add(new ChatMessage(
+                            getString(R.string.chat_sender_ai),
+                            response,
+                            getCurrentSystemTime(),
+                            false,
+                            R.drawable.ai_holder,
+                            IntentType.UNKNOWN
+                    ));
+                    chatAdapter.submitList(new ArrayList<>(chatMessages));
+                    scrollToBottom();
+                });
+            }
 
-            AiResult result = CartiAiManager.getInstance(requireContext())
-                    .processMessage(text);
-
-            chatMessages.add(new ChatMessage(
-                    getString(R.string.chat_sender_ai),
-                    result.getMessage(),
-                    getCurrentSystemTime(),
-                    false,
-                    R.drawable.ai_holder,
-                    result.getIntent()
-            ));
-
-            chatAdapter.submitList(new ArrayList<>(chatMessages));
-            scrollToBottom();
-
-        }, 1000);
+            @Override
+            public void onError(Throwable t) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    AiResult result = CartiAiManager.getInstance(requireContext()).processMessage(text);
+                    chatMessages.add(new ChatMessage(
+                            getString(R.string.chat_sender_ai),
+                            result.getMessage(),
+                            getCurrentSystemTime(),
+                            false,
+                            R.drawable.ai_holder,
+                            result.getIntent()
+                    ));
+                    chatAdapter.submitList(new ArrayList<>(chatMessages));
+                    scrollToBottom();
+                });
+            }
+        });
     }
 
     private String getCurrentSystemTime() {

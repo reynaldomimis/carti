@@ -14,11 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.data.ai.GeminiManager;
 import com.upreyvan.carti.data.local.BudgetManager;
-import com.upreyvan.carti.data.local.CategoryManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.repository.AiRepository;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.base.GenericAdapter;
@@ -28,7 +29,6 @@ import com.upreyvan.carti.databinding.ItemAiSuggestionCardBinding;
 import com.upreyvan.carti.databinding.ItemQuickActionBinding;
 import com.upreyvan.carti.databinding.ItemQuickLogBinding;
 import com.upreyvan.carti.model.AiSuggestion;
-import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment;
 import com.upreyvan.carti.ui.bills.BillDetailsBottomSheet;
@@ -50,7 +50,6 @@ import io.appwrite.models.DocumentList;
 import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.ui.budget.AddBudgetPlanActivity;
 import com.upreyvan.carti.util.ToastHelper;
-import com.upreyvan.carti.util.DialogHelper;
 import androidx.core.graphics.ColorUtils;
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
@@ -63,6 +62,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private RealtimeRepository realtimeRepo;
     private TransactionRepository transactionRepository;
     private MemberRepository memberRepository;
+    private AiRepository aiRepository;
 
     @Override
     protected FragmentHomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -92,8 +92,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupAiInsightCard();
         setupAiSuggestions();
         fetchFamilyData();
+        loadHomeAiInsights();
 
-        // Senior Implementation: Reactive Budget Updates
         BudgetManager.getInstance(requireContext()).addListener(items -> {
             if (isAdded()) {
                 requireActivity().runOnUiThread(this::updateQuickLogData);
@@ -101,12 +101,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         });
     }
 
-    /**
-     * Senior Implementation: Centralized data observation.
-     * All UI updates are now reactive and triggered by a single websocket connection.
-     */
+
     private void observeRealtimeData() {
-        // 1. Transaction Updates
         realtimeRepo.getTransactionStream().observe(getViewLifecycleOwner(), payload -> {
             if (transactionRepository != null) {
                 transactionRepository.refreshTransactions();
@@ -356,6 +352,50 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         });
     }
 
+    private void loadHomeAiInsights() {
+        if (aiRepository == null) {
+            aiRepository = new AiRepository(requireContext());
+        }
+
+        PreferenceManager pref = new PreferenceManager(requireContext());
+        String cachedInsight = pref.getDailyAiInsightText();
+        String cachedDate = pref.getDailyAiInsightDate();
+        String today = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new java.util.Date());
+
+        if (today.equals(cachedDate) && !cachedInsight.isEmpty()) {
+            getBinding().viewAiInsight.tvAiMessage.setText(cachedInsight);
+            getBinding().viewAiInsight.tvAiMessage.setAlpha(1.0f);
+            return;
+        }
+
+        // Only show loading if we don't have a cached one from today
+        getBinding().viewAiInsight.tvAiMessage.setText(R.string.ai_insight_loading);
+        getBinding().viewAiInsight.tvAiMessage.setAlpha(0.6f);
+
+        aiRepository.getDailyInsights(new GeminiManager.AiCallback() {
+            @Override
+            public void onSuccess(String response) {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        getBinding().viewAiInsight.tvAiMessage.setText(response);
+                        getBinding().viewAiInsight.tvAiMessage.setAlpha(1.0f);
+                    });
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        if (getBinding().viewAiInsight.tvAiMessage.getText().toString().equals(getString(R.string.ai_insight_loading))) {
+                            getBinding().viewAiInsight.tvAiMessage.setText(R.string.ai_insight_error);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     private void observeTransactions() {
         transactionRepository.getRecentTransactions(5).observe(getViewLifecycleOwner(), transactions -> {
             if (transactionAdapter != null) {
@@ -481,39 +521,35 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         long lastEnd = Utils.getMonthEndMillis(lastMonth);
 
         // Current Month Data
-        transactionRepository.getTotalIncomeInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), totalIncome -> {
-            double income = totalIncome != null ? totalIncome : 0.0;
-            getBinding().viewHomeDashboard.tvIncomeAmount.setText(getString(R.string.format_currency_no_decimal, income));
+        transactionRepository.getTotalIncomeInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), income -> {
+            double currentIncome = income != null ? income : 0.0;
+            getBinding().viewHomeDashboard.tvIncomeAmount.setText(getString(R.string.format_currency_no_decimal, currentIncome));
             
-            // Calculate Trend vs Last Month
             transactionRepository.getTotalIncomeInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastIncome -> {
-                double prevIncome = lastIncome != null ? lastIncome : 0.0;
-                updateTrend(getBinding().viewHomeDashboard.tvIncomeTrend, income, prevIncome);
+                updateTrend(getBinding().viewHomeDashboard.tvIncomeTrend, currentIncome, lastIncome != null ? lastIncome : 0.0);
             });
         });
 
-        transactionRepository.getTotalExpenseInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), totalExpense -> {
-            double expense = totalExpense != null ? totalExpense : 0.0;
-            getBinding().viewHomeDashboard.tvExpensesAmount.setText(getString(R.string.format_currency_no_decimal, expense));
+        transactionRepository.getTotalExpenseInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), expense -> {
+            double currentExpense = expense != null ? expense : 0.0;
+            getBinding().viewHomeDashboard.tvExpensesAmount.setText(getString(R.string.format_currency_no_decimal, currentExpense));
             
-            // Calculate Trend vs Last Month
             transactionRepository.getTotalExpenseInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastExpense -> {
-                double prevExpense = lastExpense != null ? lastExpense : 0.0;
-                updateTrend(getBinding().viewHomeDashboard.tvExpensesTrend, expense, prevExpense);
+                updateTrend(getBinding().viewHomeDashboard.tvExpensesTrend, currentExpense, lastExpense != null ? lastExpense : 0.0);
             });
-            
-            // Savings (Income - Expense for current month)
-            transactionRepository.getTotalIncomeInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), totalIncome -> {
-                double income = totalIncome != null ? totalIncome : 0.0;
-                double savings = income - expense;
+        });
+
+        transactionRepository.getTotalIncomeInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), income -> {
+            transactionRepository.getTotalExpenseInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), expense -> {
+                double currentIncome = income != null ? income : 0.0;
+                double currentExpense = expense != null ? expense : 0.0;
+                double savings = currentIncome - currentExpense;
                 getBinding().viewHomeDashboard.tvTotalSavings.setText(getString(R.string.format_currency, savings));
-                
-                // Savings Trend
+
                 transactionRepository.getTotalIncomeInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastIncome -> {
-                    double prevIncome = lastIncome != null ? lastIncome : 0.0;
                     transactionRepository.getTotalExpenseInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastExpense -> {
-                        double prevExpense = lastExpense != null ? lastExpense : 0.0;
-                        updateTrend(getBinding().viewHomeDashboard.tvSavingsTrend, savings, prevIncome - prevExpense);
+                        double prevSavings = (lastIncome != null ? lastIncome : 0.0) - (lastExpense != null ? lastExpense : 0.0);
+                        updateTrend(getBinding().viewHomeDashboard.tvSavingsTrend, savings, prevSavings);
                     });
                 });
             });
@@ -603,6 +639,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private void setupNotifications() {
         getBinding().btnNotif.setOnClickListener(v -> navigateTo(new NotificationsFragment()));
+        getBinding().btnAiTest.setOnClickListener(v -> {
+            startActivity(new Intent(requireContext(), com.upreyvan.carti.data.ai.AiTestActivity.class));
+        });
     }
 
     private void setupHeaders() {
@@ -660,7 +699,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void setupRecentTransactions() {
-        transactionAdapter = new TransactionAdapter();
+        if (transactionAdapter == null) {
+            transactionAdapter = new TransactionAdapter();
+        }
         transactionAdapter.setOnTransactionInteractionListener(new TransactionAdapter.OnTransactionInteractionListener() {
             @Override
             public void onLikeClick(com.upreyvan.carti.model.Transaction transaction) {

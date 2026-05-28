@@ -124,19 +124,23 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
         // Initial default (will be updated by fetchMemberCount)
         String membersSubtitle = getString(R.string.menu_family_sub); 
         
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_myplaces, R.string.menu_family, membersSubtitle, new MembersFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.stat_notify_chat, R.string.menu_chat, getString(R.string.menu_chat_sub), new FamilyChatFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_compass, R.string.menu_goals, getString(R.string.menu_goals_sub), new GoalFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_edit, R.string.menu_debt, getString(R.string.menu_debt_sub), new DebtTrackerFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_today, R.string.menu_salary, getString(R.string.menu_salary_sub), new IncomeModeFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_lock_idle_lock, R.string.menu_security, getString(R.string.menu_security_sub), new SecurityFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_manage, R.string.menu_settings, getString(R.string.menu_settings_sub), new SettingsFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_help, R.string.menu_help, getString(R.string.menu_help_sub), new HelpFragment()));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_info_details, R.string.menu_about, getString(R.string.menu_about_sub), new AboutFragment(), false));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_myplaces, R.string.menu_family, membersSubtitle, MembersFragment.class));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.stat_notify_chat, R.string.menu_chat, getString(R.string.menu_chat_sub), FamilyChatFragment.class));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_compass, R.string.menu_goals, getString(R.string.menu_goals_sub), GoalFragment.class));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_edit, R.string.menu_debt, getString(R.string.menu_debt_sub), DebtTrackerFragment.class));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_today, R.string.menu_salary, getString(R.string.menu_salary_sub), IncomeModeFragment.class));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_lock_idle_lock, R.string.menu_security, getString(R.string.menu_security_sub), SecurityFragment.class));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_manage, R.string.menu_settings, getString(R.string.menu_settings_sub), SettingsFragment.class));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_help, R.string.menu_help, getString(R.string.menu_help_sub), HelpFragment.class));
+        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_info_details, R.string.menu_about, getString(R.string.menu_about_sub), AboutFragment.class, false));
 
         adapter = new ProfileMenuAdapter(item -> {
-            if (item.getFragment() != null) {
-                navigateTo(item.getFragment());
+            if (item.getFragmentClass() != null) {
+                try {
+                    navigateTo(item.getFragmentClass().getDeclaredConstructor().newInstance());
+                } catch (Exception e) {
+                    android.util.Log.e("CARTI_DEBUG", "Fragment instantiation failed", e);
+                }
             }
         });
         adapter.submitList(menuItems);
@@ -170,7 +174,7 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
                 oldItem.getIconResId(),
                 oldItem.getTitleResId(),
                 getString(R.string.menu_family_sub_format, count),
-                oldItem.getFragment()
+                oldItem.getFragmentClass()
         );
 
         menuItems.set(0, newItem);
@@ -179,7 +183,8 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
 
     private void navigateTo(androidx.fragment.app.Fragment fragment) {
         getSupportFragmentManager().beginTransaction()
-                .replace(android.R.id.content, fragment)
+                .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right)
+                .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
     }

@@ -16,8 +16,8 @@ public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter
 
     private final BiFunction<LayoutInflater, ViewGroup, VB> bindingInflater;
     private final BiConsumer<VB, T> binder;
-    private OnItemClickListener<T> listener;
-    private OnItemLongClickListener<T> longClickListener;
+    protected OnItemClickListener<T> listener;
+    protected OnItemLongClickListener<T> longClickListener;
 
     protected BaseAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback,
                         BiFunction<LayoutInflater, ViewGroup, VB> bindingInflater,

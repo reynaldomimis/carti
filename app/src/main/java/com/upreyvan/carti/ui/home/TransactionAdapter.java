@@ -131,22 +131,57 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
         String myReaction = itemWithUser.getMyReaction();
         String lastEmoji = item.getLastEmoji();
 
+        if (myReaction != null && !myReaction.isEmpty()) {
+            binding.tvBtnLikeIcon.setText(myReaction);
+            binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.carti_primary_green));
+        } else {
+            binding.tvBtnLikeIcon.setText("👍");
+            binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.text_secondary));
+        }
+
         binding.tvReactionEmoji.setText(myReaction != null && !myReaction.isEmpty() ? myReaction : (lastEmoji != null && !lastEmoji.isEmpty() ? lastEmoji : "👍"));
-        binding.tvLikesCount.setText(String.valueOf(item.getLikesCount()));
-
-        String rNames = itemWithUser.getReactorNames();
-        binding.layoutLikes.setTooltipText(rNames != null && !rNames.isEmpty() ? rNames : null);
-
+        
+        int likesCount = item.getLikesCount();
         int commentCount = item.getCommentCount();
-        binding.tvCommentsCount.setText(commentCount > 0 ? String.valueOf(commentCount) : "Comment");
+        String rNames = itemWithUser.getReactorNames();
 
-        binding.layoutLikes.setOnClickListener(v -> {
+        if (likesCount > 0 || commentCount > 0) {
+            binding.layoutReactionsSummary.setVisibility(View.VISIBLE);
+            
+            // Likes summary
+            if (likesCount > 0) {
+                binding.tvReactionEmoji.setVisibility(View.VISIBLE);
+                binding.tvLikesCount.setVisibility(View.VISIBLE);
+                if (rNames != null && !rNames.isEmpty()) {
+                    binding.tvLikesCount.setText(rNames);
+                } else {
+                    binding.tvLikesCount.setText(String.valueOf(likesCount));
+                }
+            } else {
+                binding.tvReactionEmoji.setVisibility(View.GONE);
+                binding.tvLikesCount.setVisibility(View.GONE);
+            }
+
+            // Comments summary
+            if (commentCount > 0) {
+                binding.tvCommentsCountSummary.setText(String.format("%d comments", commentCount));
+                binding.tvCommentsCountSummary.setVisibility(View.VISIBLE);
+            } else {
+                binding.tvCommentsCountSummary.setVisibility(View.GONE);
+            }
+        } else {
+            binding.layoutReactionsSummary.setVisibility(View.GONE);
+        }
+
+        binding.tvCommentsCount.setText("Comment");
+
+        binding.btnLike.setOnClickListener(v -> {
             if (interactionListener != null) interactionListener.onLikeClick(item);
         });
         binding.tvLikesCount.setOnClickListener(v -> {
             if (interactionListener != null) interactionListener.onViewLikesClick(item, itemWithUser.getReactorNames());
         });
-        binding.layoutLikes.setOnLongClickListener(v -> {
+        binding.btnLike.setOnLongClickListener(v -> {
             if (interactionListener != null) {
                 showReactionPopup(v, item);
                 return true;
@@ -155,6 +190,10 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
         });
         binding.btnComment.setOnClickListener(v -> {
             if (interactionListener != null) interactionListener.onCommentClick(item);
+        });
+
+        binding.getRoot().setOnClickListener(v -> {
+            if (listener != null) listener.onItemClick(itemWithUser);
         });
     }
 

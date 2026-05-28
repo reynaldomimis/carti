@@ -167,13 +167,12 @@ public class PreferenceManager {
         String adminId = getAdminId();
         String currentUserId = getUserId();
 
-        // 1. Check if user is the designated family admin
+
         if (!adminId.isEmpty() && !"null".equals(adminId)) {
             if (currentUserId.equalsIgnoreCase(adminId.trim())) return true;
         }
 
-        // 2. Always fallback to checking roles (Parents are always admins)
-        String role = getUserRole();
+       String role = getUserRole();
         if (role != null && !"null".equals(role)) {
             for (String r : Constants.Roles.PARENTS) {
                 if (r.equalsIgnoreCase(role.trim())) return true;
@@ -188,6 +187,21 @@ public class PreferenceManager {
 
     public String getLastNotifCheck() {
         return sharedPreferences.getString(Constants.Keys.KEY_LAST_NOTIF_CHECK, "1970-01-01T00:00:00.000Z");
+    }
+
+    public void saveDailyAiInsight(String date, String insight) {
+        sharedPreferences.edit()
+                .putString("daily_ai_insight_date", date)
+                .putString("daily_ai_insight_text", insight)
+                .apply();
+    }
+
+    public String getDailyAiInsightText() {
+        return sharedPreferences.getString("daily_ai_insight_text", "");
+    }
+
+    public String getDailyAiInsightDate() {
+        return sharedPreferences.getString("daily_ai_insight_date", "");
     }
 
     public void clear() {

@@ -15,6 +15,10 @@ shimmer = "0.5.0"
 room = "2.6.1"
 glide = "4.16.0"
 navigation = "2.8.5"
+generativeai = "0.9.0"
+google-genai = "1.55.0"
+guava = "33.2.1-android"
+security-crypto = "1.1.0-alpha06"
 
 [libraries]
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigation" }
@@ -36,6 +40,10 @@ ucrop = { group = "com.github.yalantis", name = "ucrop", version.ref = "ucrop" }
 shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
+generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+googlegenai = { group = "com.google.genai", name = "google-genai", version.ref = "google-genai" }
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

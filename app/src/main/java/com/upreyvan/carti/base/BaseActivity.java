@@ -66,7 +66,6 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
     private void observeNotifications() {
         RealtimeRepository repo = RealtimeRepository.getInstance(this);
 
-        // Global Announcement Toast
         repo.getNotificationStream().observe(this, payload -> {
             if (payload != null) {
                 String title = String.valueOf(payload.get("title"));
@@ -76,7 +75,6 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
             }
         });
 
-        // Global Join Request Toast (for Admins)
         repo.getUserUpdateStream().observe(this, payload -> {
             if (payload != null) {
                 String userName = String.valueOf(payload.get("username"));
@@ -84,7 +82,6 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
             }
         });
 
-        // Optional: Global Transaction Alerts (Senior Touch: Show toast for large expenses)
         repo.getTransactionStream().observe(this, payload -> {
             if (payload != null) {
                 try {

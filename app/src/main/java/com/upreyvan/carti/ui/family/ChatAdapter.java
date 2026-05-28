@@ -1,30 +1,29 @@
 package com.upreyvan.carti.ui.family;
 
+import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemChatLeftBinding;
 import com.upreyvan.carti.databinding.ItemChatRightBinding;
+import com.upreyvan.carti.databinding.ItemChatShimmerLeftBinding;
+import com.upreyvan.carti.databinding.ItemChatShimmerRightBinding;
 import com.upreyvan.carti.model.ChatMessage;
 
-import android.os.CountDownTimer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHolder> {
+public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
 
     private static final int VIEW_TYPE_ME = 1;
     private static final int VIEW_TYPE_OTHER = 2;
-    private static final int VIEW_TYPE_SHIMMER_ME = 3;
-    private static final int VIEW_TYPE_SHIMMER_OTHER = 4;
+    private static final int VIEW_TYPE_THINKING = 5;
     private static final int TIMER_DURATION = 5000;
 
     private OnCancelListener cancelListener;
@@ -39,66 +38,56 @@ public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHo
     }
 
     public ChatAdapter() {
-        super(new DiffUtil.ItemCallback<ChatMessage>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
-                if (oldItem.isShimmer() || newItem.isShimmer()) return false;
-                if (oldItem.getId() != null && newItem.getId() != null) {
-                    return oldItem.getId().equals(newItem.getId());
-                }
-                return oldItem.getMessage().equals(newItem.getMessage()) && oldItem.getTime().equals(newItem.getTime());
-            }
-
-            @Override
-            public boolean areContentsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
-                return oldItem.getMessage().equals(newItem.getMessage()) 
-                        && oldItem.isCanceled() == newItem.isCanceled();
-            }
-        });
+        super(ChatMessage.DIFF_CALLBACK,
+                (inflater, parent) -> {
+                  return ItemChatLeftBinding.inflate(inflater, parent, false);
+                },
+                (binding, item) -> {
+              });
     }
 
     @Override
     public int getItemViewType(int position) {
         ChatMessage message = getItem(position);
         if (message.isShimmer()) {
-            return message.isMe() ? VIEW_TYPE_SHIMMER_ME : VIEW_TYPE_SHIMMER_OTHER;
+            return VIEW_TYPE_THINKING;
         }
         return message.isMe() ? VIEW_TYPE_ME : VIEW_TYPE_OTHER;
     }
 
     @NonNull
     @Override
-    public ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder<ViewBinding> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        ViewBinding binding;
         switch (viewType) {
             case VIEW_TYPE_ME:
-                return new ChatViewHolder(ItemChatRightBinding.inflate(inflater, parent, false));
-            case VIEW_TYPE_SHIMMER_ME:
-                return new ChatViewHolder(com.upreyvan.carti.databinding.ItemChatShimmerRightBinding.inflate(inflater, parent, false));
-            case VIEW_TYPE_SHIMMER_OTHER:
-                return new ChatViewHolder(com.upreyvan.carti.databinding.ItemChatShimmerLeftBinding.inflate(inflater, parent, false));
+                binding = ItemChatRightBinding.inflate(inflater, parent, false);
+                break;
+            case VIEW_TYPE_THINKING:
+                binding = com.upreyvan.carti.databinding.ItemChatThinkingBinding.inflate(inflater, parent, false);
+                break;
             default:
-                return new ChatViewHolder(ItemChatLeftBinding.inflate(inflater, parent, false));
+                binding = ItemChatLeftBinding.inflate(inflater, parent, false);
+                break;
         }
+        return new ViewHolder<>(binding);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder<ViewBinding> holder, int position) {
         ChatMessage message = getItem(position);
         if (message.isShimmer()) {
-            try {
-                java.lang.reflect.Method startShimmer = holder.binding.getRoot().getClass().getMethod("startShimmer");
-                startShimmer.invoke(holder.binding.getRoot());
-            } catch (Exception ignored) {}
+            // Thinking view uses indeterminate progress indicator, no binding needed
             return;
         }
 
         if (holder.binding instanceof ItemChatRightBinding) {
             ItemChatRightBinding b = (ItemChatRightBinding) holder.binding;
-            b.tvSenderName.setText(message.getSenderName());
+            b.tvSenderName.setText(b.getRoot().getContext().getString(R.string.chat_sender_me));
             b.tvMessage.setText(message.getMessage());
             b.tvTime.setText(message.getTime());
-        } else {
+        } else if (holder.binding instanceof ItemChatLeftBinding) {
             ItemChatLeftBinding b = (ItemChatLeftBinding) holder.binding;
             b.tvSenderName.setText(message.getSenderName());
             
@@ -161,17 +150,8 @@ public class ChatAdapter extends ListAdapter<ChatMessage, ChatAdapter.ChatViewHo
     }
 
     @Override
-    public void onViewRecycled(@NonNull ChatViewHolder holder) {
+    public void onViewRecycled(@NonNull ViewHolder<ViewBinding> holder) {
         super.onViewRecycled(holder);
         cancelTimer(holder.getAdapterPosition());
-    }
-
-    public static class ChatViewHolder extends RecyclerView.ViewHolder {
-        public final ViewBinding binding;
-
-        public ChatViewHolder(ViewBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-        }
     }
 }

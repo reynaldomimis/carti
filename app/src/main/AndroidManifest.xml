@@ -114,6 +114,10 @@
             android:theme="@style/Theme.Carti"
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
+            android:name=".data.ai.AiTestActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Carti" />
+        <activity
             android:name=".ui.goals.UpdateGoalActivity"
             android:exported="false"
             android:theme="@style/Theme.Carti"

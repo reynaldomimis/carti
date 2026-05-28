@@ -53,6 +53,8 @@
     <string name="hint_ask_me">Ask me anything...</string>
     <string name="ai_insight_title">AI Insight</string>
     <string name="ai_insight_message">You\'re doing great! 🙌\nYou saved 18% more this month.\nTry increasing your emergency fund.</string>
+    <string name="ai_insight_loading">Analyzing budget…</string>
+    <string name="ai_insight_error">Failed to load insights.</string>
     <string name="btn_view_report">View Insight</string>
     <string name="btn_ask_ai">Ask AI</string>
     <string name="ai_suggestions_title">AI Suggestions</string>

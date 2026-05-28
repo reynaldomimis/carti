@@ -1,6 +1,11 @@
 package com.upreyvan.carti.model;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+
 import com.upreyvan.carti.data.ai.IntentType;
+
+import java.util.Objects;
 
 public class ChatMessage {
 
@@ -113,12 +118,29 @@ public class ChatMessage {
         return timestamp == that.timestamp &&
                 isMe == that.isMe &&
                 isCanceled == that.isCanceled &&
-                java.util.Objects.equals(id, that.id) &&
-                java.util.Objects.equals(message, that.message);
+                Objects.equals(id, that.id) &&
+                Objects.equals(message, that.message);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(id, message, timestamp, isMe, isCanceled);
+        return Objects.hash(id, message, timestamp, isMe, isCanceled);
     }
+
+    public static final DiffUtil.ItemCallback<ChatMessage> DIFF_CALLBACK = new DiffUtil.ItemCallback<ChatMessage>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
+            if (oldItem.isShimmer() || newItem.isShimmer()) return false;
+            if (oldItem.id != null && newItem.id != null) {
+                return oldItem.id.equals(newItem.id);
+            }
+            return oldItem.message.equals(newItem.message) && oldItem.time.equals(newItem.time);
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
+            return oldItem.message.equals(newItem.message)
+                    && oldItem.isCanceled == newItem.isCanceled;
+        }
+    };
 }

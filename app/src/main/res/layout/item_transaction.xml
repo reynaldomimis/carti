@@ -19,12 +19,13 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_medium">
+            android:paddingTop="@dimen/spacing_medium">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/ivAvatar"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginStart="@dimen/spacing_medium"
                 android:scaleType="centerCrop"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -54,14 +55,13 @@
                 app:layout_constraintTop_toBottomOf="@id/tvUserAction"
                 tools:text="2h ago" />
 
-
-
             <TextView
                 android:id="@+id/tvTitle"
                 style="@style/CartiTextTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_large"
+                android:layout_marginHorizontal="@dimen/spacing_medium"
                 android:textSize="@dimen/text_size_header"
                 app:layout_constraintEnd_toStartOf="@+id/tvAmount"
                 app:layout_constraintStart_toStartOf="parent"
@@ -74,6 +74,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
+                android:layout_marginHorizontal="@dimen/spacing_medium"
                 app:layout_constraintEnd_toEndOf="@id/tvTitle"
                 app:layout_constraintStart_toStartOf="@id/tvTitle"
                 app:layout_constraintTop_toBottomOf="@id/tvTitle"
@@ -85,6 +86,7 @@
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/spacing_medium"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="@+id/tvTitle"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -92,78 +94,111 @@
                 tools:text="₱2,350"
                 tools:textColor="@color/status_red" />
 
-            <View
-                android:id="@+id/divider"
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:background="@color/border_subtle"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvDescription" />
-
-
+            <!-- Reactions Summary Row -->
             <LinearLayout
-                android:id="@+id/layoutFooter"
+                android:id="@+id/layoutReactionsSummary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginTop="@dimen/spacing_large"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/divider">
+                android:paddingHorizontal="@dimen/spacing_medium"
+                android:paddingBottom="@dimen/spacing_small"
+                app:layout_constraintTop_toBottomOf="@id/tvDescription">
 
-                <FrameLayout
-                    android:id="@+id/layoutLikes"
+                <TextView
+                    android:id="@+id/tvReactionEmoji"
                     android:layout_width="wrap_content"
-                    android:layout_height="48dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingStart="@dimen/spacing_small"
-                    android:paddingEnd="2dp">
+                    android:layout_height="wrap_content"
+                    android:text="👍"
+                    android:textSize="14sp" />
 
-                    <TextView
-                        android:id="@+id/tvReactionEmoji"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="👍"
-                        android:textSize="22sp" />
-                </FrameLayout>
-
-                <!-- Clickable Count Area (To View Reactors) - Large Touch Target -->
                 <TextView
                     android:id="@+id/tvLikesCount"
                     style="@style/CartiTextDescription"
                     android:layout_width="wrap_content"
-                    android:layout_height="48dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:textAlignment="textEnd"
-                    android:paddingStart="2dp"
-                    android:paddingEnd="@dimen/spacing_medium"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
                     android:textColor="@color/text_primary"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/plus_jakarta_sans_bold"
-                    tools:text="3" />
+                    android:textSize="13sp"
+                    android:fontFamily="@font/plus_jakarta_sans_medium"
+                    tools:text="3 others" />
 
-                <!-- Spacer to push comment to the right -->
                 <View
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:layout_weight="1" />
 
+                <TextView
+                    android:id="@+id/tvCommentsCountSummary"
+                    style="@style/CartiTextDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    tools:text="2 comments" />
+            </LinearLayout>
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="@dimen/spacing_medium"
+                android:background="@color/border_subtle"
+                app:layout_constraintTop_toBottomOf="@id/layoutReactionsSummary" />
+
+            <!-- Action Buttons Row -->
+            <LinearLayout
+                android:id="@+id/layoutFooter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@id/divider"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <!-- Like Button -->
+                <LinearLayout
+                    android:id="@+id/btnLike"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvBtnLikeIcon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="👍"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/tvBtnLikeText"
+                        style="@style/CartiTextDescription"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Like"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/plus_jakarta_sans_semibold" />
+                </LinearLayout>
+
+                <!-- Comment Button -->
                 <LinearLayout
                     android:id="@+id/btnComment"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="48dp"
+                    android:layout_weight="1"
                     android:background="?attr/selectableItemBackground"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="@dimen/spacing_small">
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
                     <ImageView
                         android:layout_width="18dp"
@@ -177,9 +212,11 @@
                         style="@style/CartiTextDescription"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
+                        android:layout_marginStart="8dp"
                         android:text="Comment"
-                        android:textSize="@dimen/text_size_small" />
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/plus_jakarta_sans_semibold" />
                 </LinearLayout>
 
             </LinearLayout>

@@ -9,6 +9,10 @@ public class Constants {
         public static final String BROTHER = "Brother";
         public static final String SISTER = "Sister";
         public static final String CHILD = "Child";
+        public static final String AI = "Carti AI";
+
+        public static final String AI_ID = "CARTI_AI_SYSTEM";
+        public static final String AI_NAME = "Carti AI";
 
         public static final String[] PARENTS = {FATHER, MOTHER};
         public static final String[] CHILDREN = {BROTHER, SISTER, CHILD};
