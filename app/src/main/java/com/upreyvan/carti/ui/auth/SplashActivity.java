@@ -60,8 +60,20 @@ public class SplashActivity extends BaseActivity<ActivitySplashBinding> {
             @Override
             public void onError(Throwable error) {
                 PreferenceManager pref = new PreferenceManager(SplashActivity.this);
-                if (pref.isOnboardingFinished() && !pref.getFamilyId().isEmpty()) {
-                 navigateToHome();
+                
+                String message = error.getMessage();
+                boolean isUnauthorized = message != null && (
+                        message.contains("Unauthorized") || 
+                        message.contains("login") || 
+                        message.contains("session")
+                );
+
+                if (isUnauthorized) {
+                    pref.clear(); // Wipe everything if we are definitely not logged in
+                    navigateToLogin();
+                } else if (pref.isOnboardingFinished() && !pref.getFamilyId().isEmpty()) {
+                    // Likely a network error, allow offline mode if we have data
+                    navigateToHome();
                 } else {
                     navigateToLogin();
                 }

@@ -38,17 +38,23 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
     }
 
     protected void showLoading(boolean isLoading, String message) {
+        if (isFinishing() || isDestroyed()) return;
+
         if (isLoading) {
             if (loadingDialog == null) {
                 loadingDialog = new LoadingDialog(this);
             }
             loadingDialog.setMessage(message);
             if (!loadingDialog.isShowing()) {
-                loadingDialog.show();
+                try {
+                    loadingDialog.show();
+                } catch (Exception ignored) {}
             }
         } else {
             if (loadingDialog != null && loadingDialog.isShowing()) {
-                loadingDialog.dismiss();
+                try {
+                    loadingDialog.dismiss();
+                } catch (Exception ignored) {}
             }
         }
     }
@@ -97,6 +103,11 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
 
     @Override
     protected void onDestroy() {
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            try {
+                loadingDialog.dismiss();
+            } catch (Exception ignored) {}
+        }
         super.onDestroy();
     }
 

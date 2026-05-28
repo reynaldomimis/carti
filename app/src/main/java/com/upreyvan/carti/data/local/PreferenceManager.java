@@ -9,9 +9,11 @@ public class PreferenceManager {
     public static final String KEY_ADMIN_ID = "admin_id";
 
     private SharedPreferences sharedPreferences;
+    private final Context context;
 
     public PreferenceManager(Context context) {
-        sharedPreferences = SecurityManager.getEncryptedPrefs(context, Constants.Keys.PREF_NAME);
+        this.context = context.getApplicationContext();
+        sharedPreferences = SecurityManager.getEncryptedPrefs(this.context, Constants.Keys.PREF_NAME);
     }
 
     public static PreferenceManager getInstance(Context context) {
@@ -221,6 +223,38 @@ public class PreferenceManager {
     }
 
     public void clear() {
-        sharedPreferences.edit().clear().apply();
+        // List of all preference files used in the app
+        String[] prefFiles = {
+                Constants.Keys.PREF_NAME,
+                "pref_budget_plan",
+                "io.appwrite.auth",
+                Constants.Keys.PREF_EXPENSE,
+                Constants.Keys.PREF_GOAL,
+                Constants.Keys.PREF_SALARY,
+                Constants.Keys.PREF_CATEGORY,
+                Constants.Keys.PREF_DEBT
+        };
+
+        for (String fileName : prefFiles) {
+            try {
+                // Try clearing via editor first (standard way)
+                context.getSharedPreferences(fileName, Context.MODE_PRIVATE).edit().clear().apply();
+            } catch (Exception e) {
+                android.util.Log.e("PreferenceManager", "Error clearing " + fileName, e);
+            }
+
+            // Physically delete the file to be 100% sure and recover from any encryption corruption
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                try {
+                    context.deleteSharedPreferences(fileName);
+                } catch (Exception e) {
+                    android.util.Log.e("PreferenceManager", "Error deleting " + fileName, e);
+                }
+            }
+        }
+
+        // Re-initialize the current sharedPreferences instance to a blank plain one
+        // to prevent any further 'decryption failed' crashes in the current session
+        sharedPreferences = context.getSharedPreferences(Constants.Keys.PREF_NAME, Context.MODE_PRIVATE);
     }
 }

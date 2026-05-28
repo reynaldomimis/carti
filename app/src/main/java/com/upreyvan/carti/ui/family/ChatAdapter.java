@@ -12,9 +12,8 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemChatLeftBinding;
 import com.upreyvan.carti.databinding.ItemChatRightBinding;
-import com.upreyvan.carti.databinding.ItemChatShimmerLeftBinding;
-import com.upreyvan.carti.databinding.ItemChatShimmerRightBinding;
 import com.upreyvan.carti.model.ChatMessage;
+import com.upreyvan.carti.util.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -101,13 +100,23 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
 
             b.tvTime.setText(message.getTime());
             
-            if (message.getImageResId() != 0) {
-                b.ivAvatar.setImageResource(message.getImageResId());
+            boolean isAi = Constants.Roles.AI_NAME.equalsIgnoreCase(message.getSenderName()) 
+                    || Constants.Roles.AI_ID.equals(message.getSenderId());
+
+            if (isAi) {
+                b.ivAvatar.setImageResource(R.drawable.ai_holder);
+                b.ivAvatar.setImageTintList(null);
             } else {
-                b.ivAvatar.setImageResource(R.drawable.ic_person);
+                b.ivAvatar.setImageTintList(android.content.res.ColorStateList.valueOf(
+                        androidx.core.content.ContextCompat.getColor(b.getRoot().getContext(), R.color.gray)));
+                if (message.getImageResId() != 0) {
+                    b.ivAvatar.setImageResource(message.getImageResId());
+                } else {
+                    b.ivAvatar.setImageResource(R.drawable.ic_person);
+                }
             }
 
-            // Handle Cancel Button and Timer
+
             if (message.isCancelable() && !message.isCanceled()) {
                 b.layoutCancel.setVisibility(View.VISIBLE);
                 startTimer(b, message, holder.getAdapterPosition());

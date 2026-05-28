@@ -66,25 +66,25 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
     }
 
     private void performLogout() {
-        setLoading(true);
+        showLoading(true, "Logging out...");
+
         AppwriteManager.getInstance(this).logout(new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(Object result) {
-                new PreferenceManager(ProfileActivity.this).clear();
-                navigateToLogin();
+                finishLogout();
             }
 
             @Override
             public void onError(Throwable error) {
-                setLoading(false);
-                Toast.makeText(ProfileActivity.this, "Logout failed: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                finishLogout();
             }
         });
     }
 
-    private void setLoading(boolean loading) {
-        getBinding().btnLogout.setEnabled(!loading);
-        getBinding().btnLogout.setAlpha(loading ? 0.5f : 1.0f);
+    private void finishLogout() {
+        new PreferenceManager(this).clear();
+        showLoading(false);
+        navigateToLogin();
     }
 
     private void navigateToLogin() {

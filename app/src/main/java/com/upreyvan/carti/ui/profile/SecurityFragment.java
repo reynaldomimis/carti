@@ -130,23 +130,28 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
     }
 
     private void signOutAllDevices() {
+        showLoading(true, "Signing out all devices...");
         getBinding().btnSignOutAll.setEnabled(false);
+
         appwriteManager.logoutAll(new AppwriteManager.AppwriteCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
-                if (!isAdded()) return;
-                pref.clear();
-                Toast.makeText(requireContext(), R.string.msg_sign_out_all_success, Toast.LENGTH_SHORT).show();
-                navigateToLogin();
+                finishSignOutAll();
             }
 
             @Override
             public void onError(Throwable error) {
-                if (!isAdded()) return;
-                getBinding().btnSignOutAll.setEnabled(true);
-                Toast.makeText(requireContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                finishSignOutAll();
             }
         });
+    }
+
+    private void finishSignOutAll() {
+        if (!isAdded()) return;
+        pref.clear();
+        showLoading(false);
+        Toast.makeText(requireContext(), R.string.msg_sign_out_all_success, Toast.LENGTH_SHORT).show();
+        navigateToLogin();
     }
 
     private void showDeleteConfirmation() {

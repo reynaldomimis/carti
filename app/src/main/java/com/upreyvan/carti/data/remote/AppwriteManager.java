@@ -174,8 +174,16 @@ public class AppwriteManager {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
                 Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
-                    try { return account.deleteSession("current", (kotlin.coroutines.Continuation<Object>) c2); }
-                    catch (Exception e) { throw new RuntimeException(e); }
+                    try {
+                        return account.deleteSession("current", (kotlin.coroutines.Continuation<Object>) c2);
+                    } catch (Exception e) {
+                        if (e instanceof io.appwrite.exceptions.AppwriteException) {
+                            io.appwrite.exceptions.AppwriteException ae = (io.appwrite.exceptions.AppwriteException) e;
+                            if (ae.getCode() == 401) return new Object(); 
+                            throw new RuntimeException(ae);
+                        }
+                        throw new RuntimeException(e);
+                    }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
@@ -189,8 +197,16 @@ public class AppwriteManager {
         BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
                 Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
-                    try { return account.deleteSessions((kotlin.coroutines.Continuation<Object>) c2); }
-                    catch (Exception e) { throw new RuntimeException(e); }
+                    try {
+                        return account.deleteSessions((kotlin.coroutines.Continuation<Object>) c2);
+                    } catch (Exception e) {
+                        if (e instanceof io.appwrite.exceptions.AppwriteException) {
+                            io.appwrite.exceptions.AppwriteException ae = (io.appwrite.exceptions.AppwriteException) e;
+                            if (ae.getCode() == 401) return new Object(); // Already logged out
+                            throw new RuntimeException(ae);
+                        }
+                        throw new RuntimeException(e);
+                    }
                 });
                 postSuccess(callback, result);
             } catch (Exception e) {
