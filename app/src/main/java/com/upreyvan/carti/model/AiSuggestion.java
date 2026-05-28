@@ -6,13 +6,15 @@ public class AiSuggestion {
     private final int iconResId;
     private final int themeColor;
     private final String actionText;
+    private final String type;
 
-    public AiSuggestion(String title, String description, int iconResId, int themeColor, String actionText) {
+    public AiSuggestion(String title, String description, int iconResId, int themeColor, String actionText, String type) {
         this.title = title;
         this.description = description;
         this.iconResId = iconResId;
         this.themeColor = themeColor;
         this.actionText = actionText;
+        this.type = type;
     }
 
     public String getTitle() {
@@ -33,5 +35,9 @@ public class AiSuggestion {
 
     public String getActionText() {
         return actionText;
+    }
+
+    public String getType() {
+        return type;
     }
 }

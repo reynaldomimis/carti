@@ -10,12 +10,14 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.ui.common.AddOptionsActivity;
 import com.upreyvan.carti.ui.profile.ProfileActivity;
@@ -40,6 +42,9 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // ELITE SECURITY: Check if app has been tampered with or re-signed
+        com.upreyvan.carti.util.SecurityGuard.checkIntegrity(this);
+
         super.onCreate(savedInstanceState);
 
         new PreferenceManager(this).setOnboardingFinished(true);
@@ -54,6 +59,8 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         setTabSelected(getBinding().tabHome);
 
         com.upreyvan.carti.data.repository.RealtimeRepository.getInstance(this).startListening();
+
+        setupBackPress();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -70,6 +77,21 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             setTabSelected(getBinding().tabHome);
             navigateTo(1);
         }
+    }
+
+    private void setupBackPress() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                new MaterialAlertDialogBuilder(MainActivity.this)
+                        .setTitle("Exit Application")
+                        .setMessage("Are you sure you want to exit Carti?")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes, Exit", (dialog, which) -> finishAffinity())
+                        .setNegativeButton("No", null)
+                        .show();
+            }
+        });
     }
 
     private void setupBottomNavInsets() {

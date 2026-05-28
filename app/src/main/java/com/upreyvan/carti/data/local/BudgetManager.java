@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.SecurityManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class BudgetManager {
     private final Gson gson;
 
     private BudgetManager(Context context) {
-        prefs = context.getSharedPreferences("pref_budget_plan", Context.MODE_PRIVATE);
+        prefs = SecurityManager.getEncryptedPrefs(context, "pref_budget_plan");
         gson = new Gson();
     }
 
@@ -42,7 +43,6 @@ public class BudgetManager {
         return gson.fromJson(json, type);
     }
 
-    // Senior Level Reactive Implementation
     public interface OnBudgetChangeListener {
         void onBudgetChanged(List<BudgetCategoryItem> items);
     }

@@ -1,437 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardOverview"
+    style="@style/DashCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingVertical="@dimen/spacing_small">
+    android:layout_marginTop="@dimen/spacing_small"
+    app:cardBackgroundColor="@color/tonal_button_bg"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/border_subtle"
+    app:strokeWidth="@dimen/stroke_width_thin">
 
-    <!-- Next Payday Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardNextPayday"
-        style="@style/DashCard"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/spacing_medium"
-        app:cardCornerRadius="@dimen/radius_medium">
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_medium">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <TextView
+            android:id="@+id/tvOverviewTitle"
+            style="@style/DashLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_total_balance"
+            android:textAllCaps="true"
+            android:letterSpacing="0.05"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tvBalanceAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
+            tools:text="₱ 150,000.00" />
+
+        <TextView
+            android:id="@+id/tvOverviewDate"
+            style="@style/DashLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/placeholder_month_year"
+            android:textSize="11sp" />
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="@dimen/spacing_medium"
+            app:dividerColor="@color/border_subtle" />
+
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_medium">
+            android:scrollbars="none">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/ivPaydayIllustration"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <TextView
-                    android:id="@+id/tvPaydayTitle"
-                    style="@style/DashLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/next_payday_title"
-                    android:textColor="@color/carti_primary_green"
-                    android:textAllCaps="true"
-                    android:letterSpacing="0.1"
-                    android:textSize="@dimen/text_size_xxs" />
-
-                <TextView
-                    android:id="@+id/tvDaysRemaining"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:fontFamily="@font/plus_jakarta_sans_bold"
-                    android:textColor="@color/text_primary"
-                    android:textSize="24sp"
-                    tools:text="8 days to go" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/tvPaydayFor"
-                        style="@style/DashLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/plus_jakarta_sans_semibold"
-                        android:textColor="@color/text_secondary"
-                        tools:text="Payday for Reynaldo" />
-
-                    <View
-                        android:layout_width="4dp"
-                        android:layout_height="4dp"
-                        android:layout_marginHorizontal="8dp"
-                        android:background="@drawable/bg_pill_white_10"
-                        android:backgroundTint="@color/border_subtle" />
-
-                    <TextView
-                        android:id="@+id/tvPaydayDate"
-                        style="@style/DashLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/text_tertiary"
-                        tools:text="May 30, 2024" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/ivPaydayIllustration"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:src="@drawable/ic_calendar"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:contentDescription="@null" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardOverview"
-        style="@style/DashCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/spacing_medium">
-
-            <!-- Header: Title and Eye Icon -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/tvOverviewTitle"
-                    style="@style/CartiHeader"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/financial_overview"
-                    android:textSize="@dimen/text_size_body"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvOverviewDate"
-                    style="@style/DashLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/placeholder_month_year"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tvOverviewTitle" />
-
-                <ImageButton
-                    android:id="@+id/btnToggleVisibility"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_close"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="@color/text_secondary" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Cards Row -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:scrollbars="none">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingBottom="4dp">
-
-                    <!-- Total Income -->
-                    <com.google.android.material.card.MaterialCardView
-                        style="@style/DashCard"
-                        android:layout_width="140dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/spacing_small"
-                        app:cardCornerRadius="@dimen/radius_medium">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="@dimen/spacing_small">
-
-                            <TextView
-                                style="@style/DashLabel"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/label_monthly_income" />
-
-                            <TextView
-                                android:id="@+id/tvIncomeAmount"
-                                style="@style/DashAmountSmall"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xxs"
-                                android:textSize="@dimen/text_size_body"
-                                tools:text="PHP 120,000" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xs"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/tvIncomeTrend"
-                                    style="@style/DashPercentage"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:background="@drawable/bg_pill_white_10"
-                                    android:paddingHorizontal="4dp"
-                                    android:textColor="@color/dash_green"
-                                    tools:text="+8%" />
-
-                                <TextView
-                                    style="@style/DashLabel"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="4dp"
-                                    android:text="@string/vs_last_month"
-                                    android:textSize="@dimen/text_size_xxs" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Total Expenses -->
-                    <com.google.android.material.card.MaterialCardView
-                        style="@style/DashCard"
-                        android:layout_width="140dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/spacing_small"
-                        app:cardCornerRadius="@dimen/radius_medium">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="@dimen/spacing_small">
-
-                            <TextView
-                                style="@style/DashLabel"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/label_monthly_expenses" />
-
-                            <TextView
-                                android:id="@+id/tvExpensesAmount"
-                                style="@style/DashAmountSmall"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xxs"
-                                android:textSize="@dimen/text_size_body"
-                                tools:text="PHP 76,100" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xs"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/tvExpensesTrend"
-                                    style="@style/DashPercentage"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:background="@color/status_red_tonal"
-                                    android:paddingHorizontal="4dp"
-                                    android:textColor="@color/dash_red"
-                                    tools:text="-12%" />
-
-                                <TextView
-                                    style="@style/DashLabel"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="4dp"
-                                    android:text="@string/vs_last_month"
-                                    android:textSize="@dimen/text_size_xxs" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Net Savings -->
-                    <com.google.android.material.card.MaterialCardView
-                        style="@style/DashCard"
-                        android:layout_width="140dp"
-                        android:layout_height="wrap_content"
-                        app:cardCornerRadius="@dimen/radius_medium">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="@dimen/spacing_small">
-
-                            <TextView
-                                style="@style/DashLabel"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/label_total_savings" />
-
-                            <TextView
-                                android:id="@+id/tvTotalSavings"
-                                style="@style/DashAmountSmall"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xxs"
-                                android:textSize="@dimen/text_size_body"
-                                tools:text="PHP 43,900" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xs"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/tvSavingsTrend"
-                                    style="@style/DashPercentage"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:background="@drawable/bg_pill_white_10"
-                                    android:paddingHorizontal="4dp"
-                                    android:textColor="@color/carti_primary_green"
-                                    tools:text="+15%" />
-
-                                <TextView
-                                    style="@style/DashLabel"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="4dp"
-                                    android:text="@string/vs_last_month"
-                                    android:textSize="@dimen/text_size_xxs" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
-            </HorizontalScrollView>
-
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- Budget Plan Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardBudgetPlan"
-        style="@style/DashCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:visibility="gone"
-        tools:visibility="visible">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/spacing_medium">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    style="@style/DashLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/title_set_budget_plan"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageButton
-                    android:id="@+id/btnCloseBudgetPlan"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_close"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="@color/text_secondary"
-                    android:contentDescription="@string/btn_cancel" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:background="@drawable/bg_pill_white_10"
-                android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="@dimen/spacing_small">
+                android:paddingBottom="4dp">
 
-                <ImageView
-                    android:layout_width="@dimen/icon_size_medium"
-                    android:layout_height="@dimen/icon_size_medium"
-                    android:src="@drawable/ic_calendar"
-                    app:tint="@color/carti_primary_green"
-                    android:contentDescription="@null" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
+                <!-- Monthly Income -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="140dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_small"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:layout_marginEnd="@dimen/spacing_small"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="@dimen/radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/border_subtle"
+                    app:strokeWidth="@dimen/stroke_width_thin">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/plus_jakarta_sans_bold"
-                        android:text="@string/add_options_budget_plan"
-                        android:textColor="@color/text_primary"
-                        android:textSize="@dimen/text_size_body_small" />
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_small">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:text="@string/desc_set_budget_plan"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="@dimen/text_size_xxs" />
-                </LinearLayout>
+                        <TextView
+                            style="@style/DashLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_monthly_income"
+                            android:textSize="10sp" />
 
-                <TextView
-                    android:id="@+id/btnSetNow"
-                    android:layout_width="wrap_content"
+                        <TextView
+                            android:id="@+id/tvIncomeAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/plus_jakarta_sans_bold"
+                            android:textColor="@color/green_primary"
+                            android:textSize="@dimen/text_size_body_small"
+                            tools:text="₱ 120,000" />
+
+                        <TextView
+                            android:id="@+id/tvIncomeTrend"
+                            style="@style/DashPercentage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dash_green"
+                            android:textSize="9sp"
+                            tools:text="+8% vs last month" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Monthly Expenses -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="140dp"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/plus_jakarta_sans_bold"
-                    android:text="@string/btn_set_now"
-                    android:textColor="@color/carti_primary_green"
-                    android:textSize="@dimen/text_size_body"
-                    android:background="?attr/selectableItemBackground"
-                    android:paddingHorizontal="@dimen/spacing_small"
-                    android:paddingVertical="@dimen/spacing_xs" />
+                    android:layout_marginEnd="@dimen/spacing_small"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="@dimen/radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/border_subtle"
+                    app:strokeWidth="@dimen/stroke_width_thin">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_small">
+
+                        <TextView
+                            style="@style/DashLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_monthly_expenses"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/tvExpensesAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/plus_jakarta_sans_bold"
+                            android:textColor="@color/status_red"
+                            android:textSize="@dimen/text_size_body_small"
+                            tools:text="₱ 76,100" />
+
+                        <TextView
+                            android:id="@+id/tvExpensesTrend"
+                            style="@style/DashPercentage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dash_red"
+                            android:textSize="9sp"
+                            tools:text="-12% vs last month" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Net Savings -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="140dp"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="@dimen/radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/border_subtle"
+                    app:strokeWidth="@dimen/stroke_width_thin">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_small">
+
+                        <TextView
+                            style="@style/DashLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_total_savings"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/tvTotalSavings"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/plus_jakarta_sans_bold"
+                            android:textColor="@color/carti_primary_blue"
+                            android:textSize="@dimen/text_size_body_small"
+                            tools:text="₱ 43,900" />
+
+                        <TextView
+                            android:id="@+id/tvSavingsTrend"
+                            style="@style/DashPercentage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/carti_primary_green"
+                            android:textSize="9sp"
+                            tools:text="+15% vs last month" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
+        </HorizontalScrollView>
 
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-</LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

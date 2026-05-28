@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.SecurityManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class CategoryManager {
 
     private CategoryManager(Context context) {
         this.context = context.getApplicationContext();
-        prefs = context.getSharedPreferences(Constants.Keys.PREF_CATEGORY, Context.MODE_PRIVATE);
+        prefs = SecurityManager.getEncryptedPrefs(context, Constants.Keys.PREF_CATEGORY);
         gson = new Gson();
     }
 

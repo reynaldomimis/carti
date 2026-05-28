@@ -29,6 +29,9 @@ public class SplashActivity extends BaseActivity<ActivitySplashBinding> {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        // ELITE SECURITY: Check if app has been tampered with or re-signed
+        com.upreyvan.carti.util.SecurityGuard.checkIntegrity(this);
+
         super.onCreate(savedInstanceState);
         
         checkSession();
@@ -58,8 +61,7 @@ public class SplashActivity extends BaseActivity<ActivitySplashBinding> {
             public void onError(Throwable error) {
                 PreferenceManager pref = new PreferenceManager(SplashActivity.this);
                 if (pref.isOnboardingFinished() && !pref.getFamilyId().isEmpty()) {
-                    // May existing session/data naman, tuloy lang kahit offline
-                    navigateToHome();
+                 navigateToHome();
                 } else {
                     navigateToLogin();
                 }

@@ -147,6 +147,7 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Delete Comment")
                 .setMessage("Are you sure you want to delete this comment?")
+                .setCancelable(false)
                 .setPositiveButton("Delete", (dialog, which) -> {
                     repository.removeComment(comment.getId(), new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                         @Override

@@ -496,6 +496,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Auto Delete Messages")
+                .setCancelable(false)
                 .setSingleChoiceItems(options, checkedItem, (dialog, which) -> {
                     pref.setChatAutoDeleteDays(daysValues[which]);
                     Utils.showToast(requireContext(), "Auto delete set to " + options[which]);

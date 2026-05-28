@@ -105,7 +105,15 @@ public class TransactionAdapter extends BaseAdapter<TransactionWithUser, ItemTra
 
         String note = item.getNote();
         if (note != null && !note.isEmpty()) {
-            binding.tvDescription.setText(String.format("%s: %s", actionLabel, note));
+            String filteredNote = note.replace("Logged by Carti AI", "")
+                                     .replace("Logged by AI", "")
+                                     .trim();
+            
+            if (filteredNote.isEmpty()) {
+                binding.tvDescription.setText(actionLabel);
+            } else {
+                binding.tvDescription.setText(String.format("%s: %s", actionLabel, filteredNote));
+            }
         } else {
             binding.tvDescription.setText(actionLabel);
         }

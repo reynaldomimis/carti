@@ -12,6 +12,7 @@ import com.upreyvan.carti.model.ChatMessage;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
 import org.json.JSONObject;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -171,6 +172,47 @@ public class AiRepository {
                     public void onError(Throwable t) { callback.onError(t); }
                 });
             }
+            @Override
+            public void onError(Throwable error) { callback.onError(error); }
+        });
+    }
+
+    public void getSmartSuggestions(GeminiManager.AiCallback callback) {
+        Calendar cal = Calendar.getInstance();
+        String weekKey = cal.get(Calendar.WEEK_OF_YEAR) + "-" + cal.get(Calendar.YEAR);
+        
+        String cachedJson = pref.getDailyAiSuggestionsJson();
+        String cachedWeek = pref.getDailyAiSuggestionsDate();
+
+        if (weekKey.equals(cachedWeek) && !cachedJson.isEmpty()) {
+            callback.onSuccess(cachedJson);
+            return;
+        }
+
+        cal.add(Calendar.DAY_OF_YEAR, -30);
+        String thirtyDaysAgo = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(cal.getTime());
+
+        apiHelper.getTransactionsSince(thirtyDaysAgo, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
+            @Override
+            public void onSuccess(DocumentList<Map<String, Object>> result) {
+                String context = buildCompressedContext(result.getDocuments(), null);
+                String prompt = "TASK: Based on the financial context of the PAST 4 WEEKS, generate EXACTLY 4 actionable coaching suggestions. " +
+                        "Format: JSON Array of objects with keys: title, description, type (SAVINGS|EXPENSE|GOAL|BILL), actionText. " +
+                        "Constraints: Keep titles extremely short (max 2-3 words). " +
+                        "Focus on trends and patterns observed in the data. " +
+                        "OUTPUT ONLY THE JSON ARRAY.\n\n[CONTEXT]:\n" + context;
+
+                geminiManager.generateResponse(prompt, new GeminiManager.AiCallback() {
+                    @Override
+                    public void onSuccess(String response) {
+                        pref.saveDailyAiSuggestions(weekKey, response);
+                        callback.onSuccess(response);
+                    }
+                    @Override
+                    public void onError(Throwable t) { callback.onError(t); }
+                });
+            }
+
             @Override
             public void onError(Throwable error) { callback.onError(error); }
         });

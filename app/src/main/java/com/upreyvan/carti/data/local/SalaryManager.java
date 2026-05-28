@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.SecurityManager;
 
 import java.util.Calendar;
 
@@ -12,7 +13,7 @@ public class SalaryManager {
     private final SharedPreferences prefs;
 
     private SalaryManager(Context context) {
-        prefs = context.getSharedPreferences(Constants.Keys.PREF_SALARY, Context.MODE_PRIVATE);
+        prefs = SecurityManager.getEncryptedPrefs(context, Constants.Keys.PREF_SALARY);
     }
 
     public static synchronized SalaryManager getInstance(Context context) {
@@ -27,7 +28,7 @@ public class SalaryManager {
     }
 
     public int getFirstPayday() {
-        return prefs.getInt(Constants.Keys.KEY_FIRST_PAYDAY, 15); // Default 15th
+        return prefs.getInt(Constants.Keys.KEY_FIRST_PAYDAY, 15);
     }
 
     public void setSecondPayday(int day) {
@@ -35,7 +36,7 @@ public class SalaryManager {
     }
 
     public int getSecondPayday() {
-        return prefs.getInt(Constants.Keys.KEY_SECOND_PAYDAY, 30); // Default 30th
+        return prefs.getInt(Constants.Keys.KEY_SECOND_PAYDAY, 30);
     }
 
     public void setIsMonthly(boolean isMonthly) {

@@ -153,6 +153,7 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.section_delete_account)
                 .setMessage(R.string.msg_delete_account_confirm)
+                .setCancelable(false)
                 .setPositiveButton(R.string.btn_confirm_delete, (dialog, which) -> performDeleteAccount())
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();

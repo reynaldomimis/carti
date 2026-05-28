@@ -108,6 +108,7 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Reset Password")
                 .setMessage("Send password reset link to " + email + "?")
+                .setCancelable(false)
                 .setPositiveButton("Send", (dialog, which) -> {
                     setLoading(true);
                     AppwriteManager.getInstance(requireContext()).createPasswordRecovery(

@@ -34,8 +34,8 @@ public class AiActionHandler {
                         data.getDouble("amount"),
                         "EXPENSE",
                         data.getString("category"),
-                        data.optString("note", "Logged by Carti AI"),
-                        new SimpleCallback("Expense added by AI")
+                        data.optString("note", ""),
+                        new SimpleCallback("Expense added")
                     );
                     break;
 
@@ -43,7 +43,7 @@ public class AiActionHandler {
                     apiHelper.addIncome(
                         data.getString("source"),
                         data.getDouble("amount"),
-                        new SimpleCallback("Income added by AI")
+                        new SimpleCallback("Income added")
                     );
                     break;
 
@@ -52,7 +52,7 @@ public class AiActionHandler {
                         data.getString("title"),
                         data.getDouble("targetAmount"),
                         data.optString("targetDate", ""),
-                        new SimpleCallback("Goal set by AI")
+                        new SimpleCallback("Goal set")
                     );
                     break;
 
@@ -64,8 +64,8 @@ public class AiActionHandler {
                         data.optString("category", "General"),
                         data.optString("targetDate", ""),
                         "NO_REMINDER",
-                        data.optString("notes", "Logged by AI"),
-                        new SimpleCallback("Debt logged by AI")
+                        data.optString("notes", ""),
+                        new SimpleCallback("Debt logged")
                     );
                     break;
 

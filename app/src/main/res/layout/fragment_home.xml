@@ -23,7 +23,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/spacing_medium"
-            android:orientation="vertical"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             app:layout_constraintEnd_toStartOf="@id/btn_container_top"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -31,7 +32,7 @@
             <TextView
                 android:id="@+id/tv_greeting_main"
                 style="@style/CartiSubHeader"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_secondary"
                 android:textSize="@dimen/text_size_header_small"
@@ -40,32 +41,29 @@
             <TextView
                 android:id="@+id/tv_username_main"
                 style="@style/CartiHeader"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="-2dp"
+                android:layout_marginStart="@dimen/spacing_xxs"
+                android:layout_weight="1"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_size_h2"
+                android:textSize="@dimen/text_size_header"
                 tools:text="@string/user" />
 
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="70dp"
-                android:layout_height="@dimen/divider_thickness"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:layout_marginBottom="6dp"
-                app:dividerColor="@color/border_subtle" />
-
-            <TextView
-                android:id="@+id/tv_greeting_sub"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xxs"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
-                android:textColor="@color/text_tertiary"
-                android:textSize="@dimen/text_size_body"
-                tools:text="@string/family_label" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_greeting_sub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/plus_jakarta_sans_medium"
+            android:textColor="@color/green_primary"
+            android:textSize="11sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/llGreeting"
+            tools:text="Pay day 8 days to go • May 30" />
 
         <LinearLayout
             android:id="@+id/btn_container_top"
@@ -74,17 +72,8 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageButton
-                android:id="@+id/btn_ai_test"
-                android:layout_width="@dimen/icon_size_xl"
-                android:layout_height="@dimen/icon_size_xl"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="AI Test"
-                android:src="@drawable/ic_sync"
-                android:layout_marginEnd="@dimen/spacing_small"
-                app:tint="@color/carti_primary_blue" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/llGreeting">
 
             <FrameLayout
                 android:id="@+id/btn_notif_container"
@@ -131,25 +120,31 @@
 
             <include
                 android:id="@+id/viewAiInsight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
                 layout="@layout/view_ai_insight" />
-
-            <include
-                android:id="@+id/viewBillNotification"
-                layout="@layout/view_bill_notification_card" />
-
-            <include
-                android:id="@+id/viewFamilyNotification"
-                layout="@layout/view_bill_notification_card" />
 
             <include
                 android:id="@+id/viewHomeDashboard"
                 layout="@layout/view_home_dashboard" />
 
             <include
+                android:id="@+id/viewBudgetPlanPrompt"
+                layout="@layout/view_budget_plan_prompt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
+            <include
+                android:id="@+id/viewDueDateBills"
+                layout="@layout/view_due_date_bills" />
+
+            <include
                 android:id="@+id/viewHeaderQuickActions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
+                android:layout_marginTop="@dimen/spacing_large"
                 layout="@layout/view_section_header" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -163,33 +158,47 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_quick_action" />
 
+            <!-- 5. Action (Quick Log) -->
             <include
                 android:id="@+id/viewHeaderQuickLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
                 layout="@layout/view_section_header" />
 
-            <FrameLayout
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvQuickLog"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:nestedScrollingEnabled="false"
+                android:scrollbars="none"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="4"
+                tools:listitem="@layout/item_quick_log" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvQuickLog"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_xs"
-                    android:nestedScrollingEnabled="false"
-                    android:scrollbars="none"
-                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                    app:spanCount="4"
-                    tools:listitem="@layout/item_quick_log" />
-
-            </FrameLayout>
-
+            <!-- 8. Future Goals (AI Suggestions) -->
             <include
                 android:id="@+id/viewAiSuggestions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
                 layout="@layout/view_ai_suggestions" />
 
+            <!-- Notifications / Family Messages -->
+            <include
+                android:id="@+id/viewFamilyNotification"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                layout="@layout/view_bill_notification_card" />
+
+            <!-- 9. History (Recent Activity) -->
             <include
                 android:id="@+id/viewHeaderRecent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
                 layout="@layout/view_section_header" />
 
             <com.google.android.material.card.MaterialCardView

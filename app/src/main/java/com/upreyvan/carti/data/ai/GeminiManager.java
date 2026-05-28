@@ -64,6 +64,10 @@ public class GeminiManager {
             "3. No extra text, no emojis, no explanations. " +
             "JSON ACTION FORMAT: " +
             "{\"action\": \"ADD_EXPENSE|ADD_INCOME|ADD_GOAL|ADD_DEBT\", \"data\": {...}} " +
+            "NOTE RULES: " +
+            "1. NEVER include 'Logged by AI', 'Carti AI', or any system identifier in the 'note' field. " +
+            "2. Keep notes strictly about the transaction details (e.g., 'Coffee', 'Rent payment'). " +
+            "3. If no specific note is provided by user, leave 'note' field empty or use a brief context. " +
             "EXAMPLES: " +
             "Expense Example: " +
             "{\"action\": \"ADD_EXPENSE\", \"data\": {\"amount\": 100, \"category\": \"Food\", \"note\": \"Coffee\"}} " +

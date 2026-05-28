@@ -28,6 +28,8 @@ import com.upreyvan.carti.databinding.FragmentHomeBinding;
 import com.upreyvan.carti.databinding.ItemAiSuggestionCardBinding;
 import com.upreyvan.carti.databinding.ItemQuickActionBinding;
 import com.upreyvan.carti.databinding.ItemQuickLogBinding;
+import com.upreyvan.carti.model.Bill;
+import com.upreyvan.carti.databinding.ItemBillDueCardBinding;
 import com.upreyvan.carti.model.AiSuggestion;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment;
@@ -47,6 +49,8 @@ import java.util.Map;
 import java.util.Objects;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.ui.budget.AddBudgetPlanActivity;
 import com.upreyvan.carti.util.ToastHelper;
@@ -57,6 +61,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private GenericAdapter<QuickLogItem, ItemQuickLogBinding> quickLogAdapter;
     private GenericAdapter<QuickLogItem, ItemQuickActionBinding> quickActionsAdapter;
     private GenericAdapter<AiSuggestion, ItemAiSuggestionCardBinding> aiSuggestionsAdapter;
+    private GenericAdapter<Bill, ItemBillDueCardBinding> dueBillsAdapter;
     private TransactionAdapter transactionAdapter;
     private boolean isExpanded = false;
     private RealtimeRepository realtimeRepo;
@@ -87,7 +92,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         observeTransactions();
         observeRealtimeData();
         setupDashboard();
-        setupPaydayCard();
         setupBudgetPlanPrompt();
         setupAiInsightCard();
         setupAiSuggestions();
@@ -96,7 +100,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
         BudgetManager.getInstance(requireContext()).addListener(items -> {
             if (isAdded()) {
-                requireActivity().runOnUiThread(this::updateQuickLogData);
+                requireActivity().runOnUiThread(() -> {
+                    updateQuickLogData();
+                    updateVisibilityBasedOnBudget();
+                });
             }
         });
     }
@@ -109,7 +116,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             }
         });
 
-        // 2. User/Member Updates
         realtimeRepo.getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> {
             checkNotifications(new ApiHelper(requireContext()), new PreferenceManager(requireContext()), null);
             if (memberRepository != null) {
@@ -137,7 +143,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         // 4. Realtime Notification Badge
         realtimeRepo.getNotificationStream().observe(getViewLifecycleOwner(), payload -> {
             checkNotifications(new ApiHelper(requireContext()), new PreferenceManager(requireContext()), null);
-            checkBillNotifications();
+            setupDueBills();
         });
 
         // 5. Realtime Likes (Emoji Updates)
@@ -147,49 +153,41 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             }
         });
 
-        checkBillNotifications();
+        setupDueBills();
     }
 
-    private void checkBillNotifications() {
+    private void setupDueBills() {
         new ApiHelper(requireContext()).getNotifications(new PreferenceManager(requireContext()).getFamilyId(), new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
             @Override
             public void onSuccess(DocumentList<Map<String, Object>> result) {
                 if (!isAdded()) return;
                 
-                Document<Map<String, Object>> latestBill = null;
+                List<Bill> dueBills = new ArrayList<>();
                 for (Document<Map<String, Object>> doc : result.getDocuments()) {
                     String title = (String) doc.getData().get("title");
                     if (title != null && title.startsWith("BILL: ")) {
-                        latestBill = doc;
-                        break;
+                        String billName = title.substring(6);
+                        String content = (String) doc.getData().get("content");
+                        dueBills.add(new Bill(doc.getId(), "", billName, content, "Unpaid", R.drawable.ic_calendar));
                     }
                 }
 
-                if (latestBill != null) {
-                    Document<Map<String, Object>> finalBill = latestBill;
-                    requireActivity().runOnUiThread(() -> {
-                        getBinding().viewBillNotification.cardNotification.setVisibility(View.VISIBLE);
-                        getBinding().viewBillNotification.tvTitle.setText((String) finalBill.getData().get("title"));
-                        getBinding().viewBillNotification.tvContent.setText((String) finalBill.getData().get("content"));
-                        getBinding().viewBillNotification.btnClose.setOnClickListener(v -> 
-                            getBinding().viewBillNotification.cardNotification.setVisibility(View.GONE)
-                        );
-                        getBinding().viewBillNotification.getRoot().setOnClickListener(v -> {
-                            String title = (String) finalBill.getData().get("title");
-                            String billName = title.substring(6);
-                            BillDetailsBottomSheet bottomSheet = BillDetailsBottomSheet.newInstance(finalBill.getId(), billName);
-                            bottomSheet.show(getChildFragmentManager(), "BillDetailsBottomSheet");
-                        });
-                    });
-                } else {
-                    requireActivity().runOnUiThread(() -> 
-                        getBinding().viewBillNotification.cardNotification.setVisibility(View.GONE)
-                    );
-                }
+                requireActivity().runOnUiThread(() -> {
+                    if (dueBills.isEmpty()) {
+                        getBinding().viewDueDateBills.getRoot().setVisibility(View.GONE);
+                    } else {
+                        getBinding().viewDueDateBills.getRoot().setVisibility(View.VISIBLE);
+                        dueBillsAdapter.submitList(dueBills);
+                    }
+                });
             }
 
             @Override
-            public void onError(Throwable error) {}
+            public void onError(Throwable error) {
+                requireActivity().runOnUiThread(() -> 
+                    getBinding().viewDueDateBills.getRoot().setVisibility(View.GONE)
+                );
+            }
         });
     }
 
@@ -259,6 +257,22 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         });
 
         transactionAdapter = new TransactionAdapter();
+        
+        dueBillsAdapter = new GenericAdapter<>(
+                Bill.DIFF_CALLBACK,
+                (inflater, parent) -> ItemBillDueCardBinding.inflate(inflater, parent, false),
+                (binding, item) -> {
+                    binding.tvBillName.setText(item.getName());
+                    binding.tvDueDate.setText(item.getDate());
+                    binding.ivIcon.setImageResource(item.getIconResId());
+                    binding.tvStatus.setText(item.getStatus());
+                    
+                    binding.getRoot().setOnClickListener(v -> {
+                        BillDetailsBottomSheet bottomSheet = BillDetailsBottomSheet.newInstance(item.getId(), item.getName());
+                        bottomSheet.show(getChildFragmentManager(), "BillDetailsBottomSheet");
+                    });
+                }
+        );
     }
 
     private void setupAiSuggestions() {
@@ -291,9 +305,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                         aiSuggestionsAdapter.submitList(currentList);
                     });
 
-                    binding.getRoot().setOnClickListener(v -> {
-                        // Handle card click
-                    });
+                    binding.btnAction.setOnClickListener(v -> handleAiSuggestionAction(item));
+                    binding.getRoot().setOnClickListener(v -> handleAiSuggestionAction(item));
                 }
         );
 
@@ -305,49 +318,92 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         loadAiSuggestions();
     }
 
+    private void handleAiSuggestionAction(AiSuggestion item) {
+        if (!(getActivity() instanceof MainActivity)) return;
+        MainActivity main = (MainActivity) getActivity();
+        String type = item.getType();
+
+        if ("SAVINGS".equalsIgnoreCase(type) || "EXPENSE".equalsIgnoreCase(type)) {
+            main.navigateTo(2);
+        } else if ("GOAL".equalsIgnoreCase(type)) {
+            main.navigateTo(6);
+        } else if ("BILL".equalsIgnoreCase(type)) {
+            main.navigateTo(2);
+        } else {
+            main.navigateTo(6);
+        }
+    }
+
     private void loadAiSuggestions() {
-        List<AiSuggestion> suggestions = new ArrayList<>();
-        suggestions.add(new AiSuggestion(
-                getString(R.string.suggestion_predictive_alert),
-                getString(R.string.desc_predictive_alert),
-                R.drawable.ic_bell,
-                R.color.status_red,
-                getString(R.string.label_view)
-        ));
-        suggestions.add(new AiSuggestion(
-                getString(R.string.suggestion_savings_tip),
-                getString(R.string.desc_savings_tip),
-                R.drawable.ic_trophy,
-                R.color.status_green,
-                getString(R.string.label_apply)
-        ));
-        suggestions.add(new AiSuggestion(
-                getString(R.string.suggestion_bill_reminder),
-                getString(R.string.desc_bill_reminder),
-                R.drawable.ic_calendar,
-                R.color.carti_primary_blue,
-                getString(R.string.label_pay_now)
-        ));
-        suggestions.add(new AiSuggestion(
-                getString(R.string.suggestion_goal_progress),
-                getString(R.string.desc_goal_progress),
-                R.drawable.ic_chart,
-                R.color.mint_green,
-                getString(R.string.label_view)
-        ));
-        aiSuggestionsAdapter.submitList(suggestions);
+        if (aiRepository == null) aiRepository = new AiRepository(requireContext());
+
+        aiRepository.getSmartSuggestions(new GeminiManager.AiCallback() {
+            @Override
+            public void onSuccess(String response) {
+                if (!isAdded()) return;
+                try {
+                    Gson gson = new Gson();
+                    java.lang.reflect.Type listType = new TypeToken<ArrayList<Map<String, String>>>() {}.getType();
+                    List<Map<String, String>> rawList = gson.fromJson(response, listType);
+                    
+                    List<AiSuggestion> suggestions = new ArrayList<>();
+                    for (Map<String, String> raw : rawList) {
+                        String type = raw.get("type");
+                        int icon = R.drawable.ic_chart;
+                        int color = R.color.carti_primary_blue;
+
+                        if ("SAVINGS".equalsIgnoreCase(type)) {
+                            icon = R.drawable.ic_trophy;
+                            color = R.color.status_green;
+                        } else if ("EXPENSE".equalsIgnoreCase(type)) {
+                            icon = R.drawable.ic_chart;
+                            color = R.color.status_red;
+                        } else if ("BILL".equalsIgnoreCase(type)) {
+                            icon = R.drawable.ic_calendar;
+                            color = R.color.carti_primary_blue;
+                        } else if ("GOAL".equalsIgnoreCase(type)) {
+                            icon = R.drawable.ic_sync;
+                            color = R.color.mint_green;
+                        }
+
+                        suggestions.add(new AiSuggestion(
+                                raw.get("title"),
+                                raw.get("description"),
+                                icon,
+                                color,
+                                raw.get("actionText"),
+                                type
+                        ));
+                    }
+
+                    requireActivity().runOnUiThread(() -> {
+                        if (suggestions.isEmpty()) {
+                            getBinding().viewAiSuggestions.getRoot().setVisibility(View.GONE);
+                        } else {
+                            getBinding().viewAiSuggestions.getRoot().setVisibility(View.VISIBLE);
+                            aiSuggestionsAdapter.submitList(suggestions);
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> 
+                        getBinding().viewAiSuggestions.getRoot().setVisibility(View.GONE)
+                    );
+                }
+            }
+        });
     }
 
     private void setupAiInsightCard() {
         getBinding().viewAiInsight.btnAskAi.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).navigateTo(6);
-            }
-        });
-
-        getBinding().viewAiInsight.btnViewReport.setOnClickListener(v -> {
-            if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).navigateTo(2);
             }
         });
     }
@@ -368,7 +424,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             return;
         }
 
-        // Only show loading if we don't have a cached one from today
         getBinding().viewAiInsight.tvAiMessage.setText(R.string.ai_insight_loading);
         getBinding().viewAiInsight.tvAiMessage.setAlpha(0.6f);
 
@@ -511,6 +566,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void setupDashboard() {
+        PreferenceManager pref = new PreferenceManager(requireContext());
+        getBinding().viewHomeDashboard.tvBalanceAmount.setText(Utils.formatCurrency(pref.getBalance()));
+        getBinding().viewHomeDashboard.tvOverviewDate.setText(Utils.formatMonthQuery(Calendar.getInstance()));
+
         Calendar current = Calendar.getInstance();
         Calendar lastMonth = Calendar.getInstance();
         lastMonth.add(Calendar.MONTH, -1);
@@ -519,8 +578,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         long currentEnd = Utils.getMonthEndMillis(current);
         long lastStart = Utils.getMonthStartMillis(lastMonth);
         long lastEnd = Utils.getMonthEndMillis(lastMonth);
-
-        // Current Month Data
+        
         transactionRepository.getTotalIncomeInRange(currentStart, currentEnd).observe(getViewLifecycleOwner(), income -> {
             double currentIncome = income != null ? income : 0.0;
             getBinding().viewHomeDashboard.tvIncomeAmount.setText(getString(R.string.format_currency_no_decimal, currentIncome));
@@ -544,7 +602,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 double currentIncome = income != null ? income : 0.0;
                 double currentExpense = expense != null ? expense : 0.0;
                 double savings = currentIncome - currentExpense;
-                getBinding().viewHomeDashboard.tvTotalSavings.setText(getString(R.string.format_currency, savings));
+                getBinding().viewHomeDashboard.tvTotalSavings.setText(getString(R.string.format_currency_no_decimal, savings));
 
                 transactionRepository.getTotalIncomeInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastIncome -> {
                     transactionRepository.getTotalExpenseInRange(lastStart, lastEnd).observe(getViewLifecycleOwner(), lastExpense -> {
@@ -569,7 +627,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         textView.setText(String.format(Locale.getDefault(), "%s%.1f%%", sign, percentage));
         
         int color = percentage >= 0 ? R.color.status_green : R.color.status_red;
-        // Logic inversion for expenses: +% is bad (red), -% is good (green)
         if (textView.getId() == getBinding().viewHomeDashboard.tvExpensesTrend.getId()) {
             color = percentage <= 0 ? R.color.status_green : R.color.status_red;
         }
@@ -578,39 +635,36 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
 
     private void setupPaydayCard() {
-        SalaryManager salaryManager = SalaryManager.getInstance(requireContext());
-        PreferenceManager pref = new PreferenceManager(requireContext());
-
-        int daysLeft = salaryManager.getDaysUntilNextPayday();
-         Calendar nextPayday = salaryManager.getNextPayday();
-
-        String name = pref.getUsername();
-        getBinding().viewHomeDashboard.tvDaysRemaining.setText(getString(R.string.days_to_go, daysLeft));
-        getBinding().viewHomeDashboard.tvPaydayFor.setText(getString(R.string.next_payday_for, name));
-
-        getBinding().viewHomeDashboard.tvPaydayDate.setText(Utils.formatDateFull(nextPayday));
+        // Payday info is now in the header subtitle
     }
 
     private void setupBudgetPlanPrompt() {
-        PreferenceManager pref = new PreferenceManager(requireContext());
-        String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
-        String dismissedMonth = pref.getBudgetPlanDismissedMonth();
+        updateVisibilityBasedOnBudget();
 
-        if (currentMonth.equals(dismissedMonth)) {
-            getBinding().viewHomeDashboard.cardBudgetPlan.setVisibility(View.GONE);
-            return;
-        }
-
-        getBinding().viewHomeDashboard.cardBudgetPlan.setVisibility(View.VISIBLE);
-        
-        getBinding().viewHomeDashboard.btnCloseBudgetPlan.setOnClickListener(v -> {
-            getBinding().viewHomeDashboard.cardBudgetPlan.setVisibility(View.GONE);
-            pref.setBudgetPlanDismissedMonth(currentMonth);
-        });
-
-        getBinding().viewHomeDashboard.btnSetNow.setOnClickListener(v -> {
+        getBinding().viewBudgetPlanPrompt.btnSetNow.setOnClickListener(v -> {
             startActivity(new Intent(requireContext(), AddBudgetPlanActivity.class));
         });
+    }
+
+    private void updateVisibilityBasedOnBudget() {
+        boolean hasBudgetPlan = !BudgetManager.getInstance(requireContext()).getBudgetPlan().isEmpty();
+
+        int visibility = hasBudgetPlan ? View.VISIBLE : View.GONE;
+        int promptVisibility = hasBudgetPlan ? View.GONE : View.VISIBLE;
+
+        getBinding().viewBudgetPlanPrompt.cardBudgetPlan.setVisibility(promptVisibility);
+        
+        getBinding().viewHomeDashboard.getRoot().setVisibility(visibility);
+        getBinding().viewAiInsight.getRoot().setVisibility(visibility);
+        getBinding().viewDueDateBills.getRoot().setVisibility(visibility);
+        getBinding().viewAiSuggestions.getRoot().setVisibility(visibility);
+        getBinding().tvGreetingSub.setVisibility(visibility);
+
+        // Hide Shortcuts/Quick Log sections
+        getBinding().viewHeaderQuickActions.getRoot().setVisibility(visibility);
+        getBinding().rvQuickActions.setVisibility(visibility);
+        getBinding().viewHeaderQuickLog.getRoot().setVisibility(visibility);
+        getBinding().rvQuickLog.setVisibility(visibility);
     }
 
     @Override
@@ -639,9 +693,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     private void setupNotifications() {
         getBinding().btnNotif.setOnClickListener(v -> navigateTo(new NotificationsFragment()));
-        getBinding().btnAiTest.setOnClickListener(v -> {
-            startActivity(new Intent(requireContext(), com.upreyvan.carti.data.ai.AiTestActivity.class));
-        });
     }
 
     private void setupHeaders() {
@@ -651,10 +702,13 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().tvGreetingMain.setText(getString(R.string.format_greeting, greeting));
         getBinding().tvUsernameMain.setText(getString(R.string.format_username, name));
 
-        double income = pref.getTotalIncome();
-        double expense = pref.getTotalExpense();
-        double net = income - expense;
-        getBinding().tvGreetingSub.setText(getString(R.string.family_label, String.format(Locale.getDefault(), "₱%,.0f", net)));
+        com.upreyvan.carti.data.local.SalaryManager salaryManager = com.upreyvan.carti.data.local.SalaryManager.getInstance(requireContext());
+        int daysLeft = salaryManager.getDaysUntilNextPayday();
+        Calendar nextPayday = salaryManager.getNextPayday();
+        String paydayInfo = getString(R.string.days_to_go, daysLeft) + " • " + Utils.formatDateShort(nextPayday);
+        
+        getBinding().tvGreetingSub.setText(paydayInfo);
+        getBinding().tvGreetingSub.setTextColor(ContextCompat.getColor(requireContext(), R.color.green_primary));
 
         getBinding().viewHeaderQuickActions.tvSectionTitle.setText(R.string.quick_actions_title);
         getBinding().viewHeaderQuickActions.btnSectionAction.setVisibility(View.GONE);
@@ -746,6 +800,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         });
         getBinding().rvTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvTransactions.setAdapter(transactionAdapter);
-    }
 
+        getBinding().viewDueDateBills.rvDueBills.setAdapter(dueBillsAdapter);
+        getBinding().viewDueDateBills.headerDueBills.tvSectionTitle.setText(R.string.due_bills_header);
+        getBinding().viewDueDateBills.headerDueBills.tvSectionSubTitle.setVisibility(View.GONE);
+        getBinding().viewDueDateBills.headerDueBills.btnSectionAction.setVisibility(View.GONE);
+    }
 }

@@ -3,14 +3,15 @@ package com.upreyvan.carti.data.local;
 import android.content.Context;
 import android.content.SharedPreferences;
 import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.SecurityManager;
 
 public class PreferenceManager {
     public static final String KEY_ADMIN_ID = "admin_id";
 
-    private final SharedPreferences sharedPreferences;
+    private SharedPreferences sharedPreferences;
 
     public PreferenceManager(Context context) {
-        sharedPreferences = context.getSharedPreferences(Constants.Keys.PREF_NAME, Context.MODE_PRIVATE);
+        sharedPreferences = SecurityManager.getEncryptedPrefs(context, Constants.Keys.PREF_NAME);
     }
 
     public static PreferenceManager getInstance(Context context) {
@@ -194,6 +195,21 @@ public class PreferenceManager {
                 .putString("daily_ai_insight_date", date)
                 .putString("daily_ai_insight_text", insight)
                 .apply();
+    }
+
+    public void saveDailyAiSuggestions(String date, String json) {
+        sharedPreferences.edit()
+                .putString("daily_ai_suggestions_date", date)
+                .putString("daily_ai_suggestions_json", json)
+                .apply();
+    }
+
+    public String getDailyAiSuggestionsJson() {
+        return sharedPreferences.getString("daily_ai_suggestions_json", "");
+    }
+
+    public String getDailyAiSuggestionsDate() {
+        return sharedPreferences.getString("daily_ai_suggestions_date", "");
     }
 
     public String getDailyAiInsightText() {

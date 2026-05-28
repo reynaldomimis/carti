@@ -44,11 +44,13 @@ android {
         buildConfigField("String", "APPWRITE_COL_LIKES", "\"${secrets.getProperty("APPWRITE_COL_LIKES", "")}\"")
         buildConfigField("String", "APPWRITE_COL_COMMENTS", "\"${secrets.getProperty("APPWRITE_COL_COMMENTS", "")}\"")
         buildConfigField("String", "GEMINI_API_KEY", "\"${secrets.getProperty("GEMINI_API_KEY", "")}\"")
+        buildConfigField("String", "APP_SIGNATURE_HASH", "\"${secrets.getProperty("APP_SIGNATURE_HASH", "")}\"")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
