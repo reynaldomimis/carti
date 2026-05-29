@@ -1,79 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_medium"
-    android:layout_marginBottom="@dimen/spacing_small"
-    app:cardBackgroundColor="@color/white"
-    app:cardCornerRadius="@dimen/radius_medium"
-    app:cardElevation="0dp"
-    app:strokeColor="@color/border_subtle"
-    app:strokeWidth="1dp">
+    android:background="?attr/selectableItemBackground">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ivAvatar"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_margin="12dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+        tools:src="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/tvName"
+        style="@style/CartiTextTitle"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="@dimen/spacing_medium">
+        android:layout_marginStart="12dp"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="@+id/tvBtnViewExpenses"
+        app:layout_constraintStart_toEndOf="@id/ivAvatar"
+        app:layout_constraintTop_toTopOf="@id/ivAvatar"
+        tools:text="Reynaldo Mimis" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cvAvatar"
-            android:layout_width="@dimen/icon_size_xl"
-            android:layout_height="@dimen/icon_size_xl"
-            app:cardBackgroundColor="@color/surface_variant"
-            app:cardCornerRadius="@dimen/pill_corner_radius"
-            app:cardElevation="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:strokeWidth="0dp">
+    <TextView
+        android:id="@+id/tvContributionLabel"
+        style="@style/CartiTextDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toStartOf="@+id/tvBtnViewExpenses"
+        app:layout_constraintStart_toStartOf="@id/tvName"
+        app:layout_constraintTop_toBottomOf="@id/tvName"
+        tools:text="Profile Contribution: ₱25,600.00" />
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivAvatar"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
-        </com.google.android.material.card.MaterialCardView>
+    <TextView
+        android:id="@+id/tvBtnViewExpenses"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:fontFamily="@font/plus_jakarta_sans_bold"
+        android:text="@string/label_view_expense"
+        android:textColor="@color/carti_primary_green"
+        android:textSize="11sp"
+        android:background="?attr/selectableItemBackground"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/tvName"
-            style="@style/CartiTextTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_medium"
-            android:textSize="@dimen/text_size_body"
-            app:layout_constraintEnd_toStartOf="@+id/tvBtnViewExpenses"
-            app:layout_constraintStart_toEndOf="@id/cvAvatar"
-            app:layout_constraintTop_toTopOf="@id/cvAvatar"
-            tools:text="Reynaldo Mimis" />
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:background="@color/surface_variant"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <TextView
-            android:id="@+id/tvContributionLabel"
-            style="@style/CartiTextDescription"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_secondary"
-            android:textSize="@dimen/text_size_xxs"
-            app:layout_constraintEnd_toStartOf="@+id/tvBtnViewExpenses"
-            app:layout_constraintStart_toStartOf="@id/tvName"
-            app:layout_constraintTop_toBottomOf="@id/tvName"
-            tools:text="Profile Contribution: ₱25,600.00" />
-
-        <TextView
-            android:id="@+id/tvBtnViewExpenses"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
-            android:text="View Expenses"
-            android:textColor="@color/carti_primary_green"
-            android:textSize="@dimen/text_size_xxs"
-            android:background="?attr/selectableItemBackground"
-            android:padding="@dimen/spacing_xs"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</com.google.android.material.card.MaterialCardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

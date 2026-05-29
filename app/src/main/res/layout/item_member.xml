@@ -40,7 +40,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/chipRole"
                 app:layout_constraintStart_toEndOf="@+id/ivAvatar"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="@string/placeholder_juan" />
+                tools:text="Reynaldo Mimis" />
 
             <TextView
                 android:id="@+id/tvDescription"
@@ -51,7 +51,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/chipRole"
                 app:layout_constraintStart_toStartOf="@+id/tvTitle"
                 app:layout_constraintTop_toBottomOf="@+id/tvTitle"
-                tools:text="@string/placeholder_employed" />
+                tools:text="Employed" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipRole"

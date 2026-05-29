@@ -41,6 +41,28 @@
                 android:layout_height="wrap_content"
                 tools:text="6 Members" />
 
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmerMembersHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:shimmer_auto_start="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <include layout="@layout/item_member_horizontal_shimmer" />
+
+                    <include layout="@layout/item_member_horizontal_shimmer" />
+
+                    <include layout="@layout/item_member_horizontal_shimmer" />
+
+                    <include layout="@layout/item_member_horizontal_shimmer" />
+                </LinearLayout>
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvMembersHorizontal"
                 android:layout_width="match_parent"
@@ -48,22 +70,24 @@
                 android:layout_marginTop="@dimen/spacing_medium"
                 android:clipToPadding="false"
                 android:orientation="horizontal"
+                android:visibility="gone"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_member_horizontal" />
+                tools:listitem="@layout/item_member_horizontal"
+                tools:visibility="visible" />
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardBudget"
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_large"
+                app:cardBackgroundColor="@color/tonal_button_bg"
                 app:cardCornerRadius="@dimen/radius_xl"
-                app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_header_gradient"
                     android:padding="@dimen/spacing_large">
 
                     <TextView
@@ -72,7 +96,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_shared_budget"
-                        android:textColor="@color/white_80"
+                        android:textColor="@color/text_secondary"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -80,10 +104,10 @@
                         android:id="@+id/tvUsedPercentage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_pill_white_10"
+                        android:background="@drawable/bg_pill_white"
                         android:paddingHorizontal="@dimen/spacing_small"
                         android:paddingVertical="@dimen/spacing_xxs"
-                        android:textColor="@color/mint_green"
+                        android:textColor="@color/carti_primary_green"
                         android:textSize="@dimen/text_size_caption"
                         android:textStyle="bold"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -105,7 +129,7 @@
                             style="@style/CartiTextAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/white"
+                            android:textColor="@color/text_primary"
                             tools:text="₱150,000" />
 
                         <TextView
@@ -115,7 +139,7 @@
                             android:layout_marginStart="@dimen/spacing_xs"
                             android:layout_marginBottom="4dp"
                             android:text="@string/label_per_month"
-                            android:textColor="@color/white_80"
+                            android:textColor="@color/text_secondary"
                             android:textSize="@dimen/text_size_caption" />
                     </LinearLayout>
 
@@ -124,9 +148,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_medium"
-                        app:indicatorColor="@color/mint_green"
+                        app:indicatorColor="@color/carti_primary_green"
                         app:layout_constraintTop_toBottomOf="@id/layoutAmount"
-                        app:trackColor="@color/white_20"
+                        app:trackColor="@color/border_subtle"
                         app:trackCornerRadius="@dimen/radius_full"
                         app:trackThickness="10dp"
                         tools:progress="75" />
@@ -137,7 +161,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_xs"
-                        android:textColor="@color/white_80"
+                        android:textColor="@color/text_secondary"
                         android:textSize="@dimen/text_size_xxs"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/progressBudget"
@@ -172,19 +196,47 @@
             </RelativeLayout>
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardContributions"
                 style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium">
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardBackgroundColor="@color/white">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvContributions"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingVertical="@dimen/spacing_small"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:itemCount="4"
-                    tools:listitem="@layout/item_member_contribution" />
+                    android:layout_height="wrap_content">
+
+                    <com.facebook.shimmer.ShimmerFrameLayout
+                        android:id="@+id/shimmerContributions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:shimmer_auto_start="true">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <include layout="@layout/item_member_contribution_shimmer" />
+
+                            <include layout="@layout/item_member_contribution_shimmer" />
+
+                            <include layout="@layout/item_member_contribution_shimmer" />
+                        </LinearLayout>
+                    </com.facebook.shimmer.ShimmerFrameLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvContributions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:itemCount="4"
+                        tools:listitem="@layout/item_member_contribution"
+                        tools:visibility="visible" />
+
+                </FrameLayout>
 
             </com.google.android.material.card.MaterialCardView>
 

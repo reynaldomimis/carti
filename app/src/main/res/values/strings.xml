@@ -276,7 +276,10 @@
     <string name="step_1">Step 1: Copy Code</string>
     <string name="step_2">Step 2: Share it</string>
     <string name="step_3">Step 3: Join</string>
-    <string name="validity_format">Valid until: %s</string>
+    <string name="validity_format">Valid hanggang: %s</string>
+    <string name="label_never">Never</string>
+    <string name="msg_share_invite">Join my family on Carti! Use this Family ID: %s</string>
+    <string name="msg_invite_copied">Family ID copied to clipboard!</string>
     <string name="error_empty_invite_code">Please enter an invite code</string>
     <string name="err_invalid_family_id">Invalid Family ID</string>
     <string name="msg_join_success">Joined family successfully!</string>
@@ -291,7 +294,7 @@
     <string name="label_monthly_budget">Monthly Budget</string>
     <string name="label_member_contributions">Member Contributions</string>
     <string name="label_used">%d%% used</string>
-    <string name="label_this_month">This Month ></string>
+    <string name="label_this_month">This Month</string>
     <string name="label_shared_budget">Shared Budget</string>
     <string name="label_per_month">/ month</string>
     <string name="label_used_percentage">%d%%</string>
@@ -569,6 +572,10 @@
     <string name="placeholder_time">9:00 AM</string>
     <string name="placeholder_sender">Sender</string>
     <string name="placeholder_message">Message...</string>
+    <string name="label_you_format">%s (You)</string>
+    <string name="label_you">You</string>
+    <string name="label_profile_contribution_format">Contribution: %s</string>
+    <string name="label_view_expense">View Expense</string>
     <string name="placeholder_juan">Juan</string>
     <string name="placeholder_employed">Employed • ₱50,000.00</string>
     <string name="placeholder_member">Member</string>

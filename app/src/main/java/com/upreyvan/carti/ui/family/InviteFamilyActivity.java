@@ -105,7 +105,7 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
 
         String finalInviteCode = inviteCode != null ? inviteCode : "";
         getBinding().tvFamilyId.setText(finalInviteCode);
-        getBinding().tvValidity.setText(getString(R.string.validity_format, "Never"));
+        getBinding().tvValidity.setText(getString(R.string.validity_format, getString(R.string.label_never)));
 
         getBinding().btnCopy.setOnClickListener(v -> {
             copyToClipboard(finalInviteCode);
@@ -118,17 +118,17 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
 
     private void copyToClipboard(String text) {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("Family ID", text);
+        ClipData clip = ClipData.newPlainText(getString(R.string.label_family_id), text);
         if (clipboard != null) {
             clipboard.setPrimaryClip(clip);
-            Toast.makeText(this, "Family ID Copied!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_invite_copied, Toast.LENGTH_SHORT).show();
         }
     }
 
     private void shareInviteCode(String code) {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, "Join my family on Carti! Use this Family ID: " + code);
-        startActivity(Intent.createChooser(intent, "Share Family ID"));
+        intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.msg_share_invite, code));
+        startActivity(Intent.createChooser(intent, getString(R.string.menu_invite)));
     }
 }

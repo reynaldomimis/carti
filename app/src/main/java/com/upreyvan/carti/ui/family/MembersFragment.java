@@ -47,6 +47,7 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
         super.onViewCreated(view, savedInstanceState);
         repository = new MemberRepository(requireContext());
         pref = PreferenceManager.getInstance(requireContext());
+        currentUserId = pref.getUserId();
         
         setupToolbar(getBinding().toolbar, R.string.family_members_title);
         setupRecyclerViews();
@@ -64,10 +65,10 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
             public void onSuccess(User<Map<String, Object>> result) {
                 currentUserId = result.getId();
                 if (horizontalAdapter != null) {
-                    horizontalAdapter.submitList(new ArrayList<>(horizontalAdapter.getCurrentList()));
+                    horizontalAdapter.notifyDataSetChanged();
                 }
                 if (contributionAdapter != null) {
-                    contributionAdapter.submitList(new ArrayList<>(contributionAdapter.getCurrentList()));
+                    contributionAdapter.notifyDataSetChanged();
                 }
             }
 
@@ -98,13 +99,27 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
         repository.getMembers().observe(getViewLifecycleOwner(), members -> {
             if (members != null) {
                 getBinding().tvMemberCount.setText(getString(R.string.menu_family_sub_format, members.size()));
+                
                 List<Member> horizontalList = new ArrayList<>(members);
                 horizontalList.add(new Member("invite", "", getString(R.string.label_invite), "", "", android.R.drawable.ic_menu_add, 0));
                 horizontalAdapter.submitList(horizontalList);
                 contributionAdapter.submitList(members);
+                
+                stopShimmers();
+                getBinding().rvMembersHorizontal.setVisibility(View.VISIBLE);
+                getBinding().rvContributions.setVisibility(View.VISIBLE);
+                getBinding().cardContributions.setVisibility(View.VISIBLE);
                 getBinding().toolbar.btnAction.setVisibility(View.GONE);
             }
         });
+    }
+
+    private void stopShimmers() {
+        if (getBinding() == null) return;
+        getBinding().shimmerMembersHorizontal.stopShimmer();
+        getBinding().shimmerMembersHorizontal.setVisibility(View.GONE);
+        getBinding().shimmerContributions.stopShimmer();
+        getBinding().shimmerContributions.setVisibility(View.GONE);
     }
 
     private void setupRecyclerViews() {
@@ -129,7 +144,8 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                         binding.tvName.setOnClickListener(inviteClick);
                         binding.getRoot().setOnClickListener(inviteClick);
                     } else {
-                        binding.tvName.setText(isMe ? getString(R.string.placeholder_juan_you) : member.getTitle());
+                        String displayName = isMe ? getString(R.string.label_you) : member.getTitle();
+                        binding.tvName.setText(displayName);
                         binding.tvRole.setVisibility(View.VISIBLE);
                         binding.tvRole.setText(member.getDescription());
                         
@@ -161,8 +177,9 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                 (inflater, parent) -> ItemMemberContributionBinding.inflate(inflater, parent, false),
                 (binding, member) -> {
                     boolean isMe = member.getId().equals(currentUserId);
-                    binding.tvName.setText(isMe ? getString(R.string.placeholder_juan_you) : member.getTitle());
-                    binding.tvContributionLabel.setText(String.format("Profile Contribution: %s", Utils.formatCurrency(member.getAmount())));
+                    String displayName = isMe ? getString(R.string.label_you) : member.getTitle();
+                    binding.tvName.setText(displayName);
+                    binding.tvContributionLabel.setText(getString(R.string.label_profile_contribution_format, Utils.formatCurrency(member.getAmount())));
                     
                     if (member.getAvatarUrl() != null && !member.getAvatarUrl().isEmpty()) {
                         com.bumptech.glide.Glide.with(requireContext())
