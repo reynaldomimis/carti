@@ -34,6 +34,13 @@ public class SecurityGuard {
     };
 
     public static void checkIntegrity(Context context) {
+        // ELITE SENIOR FIX: Bypassing integrity check during development (DEBUG mode)
+        // This prevents the app from crashing while you are coding.
+        if (BuildConfig.DEBUG) {
+            Log.d("SecurityGuard", "Debug build detected. Skipping integrity check for development.");
+            return;
+        }
+
         // 1. Signature Check
         if (!isValidSignature(context)) {
             Log.e("SecurityGuard", "TAMPERING DETECTED: App signature mismatch.");

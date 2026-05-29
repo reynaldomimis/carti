@@ -130,16 +130,22 @@ public class ChatMessage {
     public static final DiffUtil.ItemCallback<ChatMessage> DIFF_CALLBACK = new DiffUtil.ItemCallback<ChatMessage>() {
         @Override
         public boolean areItemsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
+            if (oldItem.isShimmer() && newItem.isShimmer()) return true;
             if (oldItem.isShimmer() || newItem.isShimmer()) return false;
+            
             if (oldItem.id != null && newItem.id != null) {
                 return oldItem.id.equals(newItem.id);
             }
-            return oldItem.message.equals(newItem.message) && oldItem.time.equals(newItem.time);
+            
+            // Optimistic match fallback
+            return oldItem.message.equals(newItem.message) 
+                    && Math.abs(oldItem.timestamp - newItem.timestamp) < 30000;
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
-            return oldItem.message.equals(newItem.message)
+            return Objects.equals(oldItem.id, newItem.id)
+                    && oldItem.message.equals(newItem.message)
                     && oldItem.isCanceled == newItem.isCanceled;
         }
     };

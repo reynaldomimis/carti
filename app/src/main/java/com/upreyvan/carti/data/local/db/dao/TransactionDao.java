@@ -82,6 +82,15 @@ public interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE familyId = :familyId")
     List<Transaction> getAllTransactionsList(String familyId);
 
+    // ELITE OPTIMIZATION: Get category breakdown directly from SQL
+    @Query("SELECT category, SUM(amount) as total FROM transactions WHERE familyId = :familyId AND type = 'EXPENSE' GROUP BY category ORDER BY total DESC")
+    List<CategorySum> getExpenseBreakdown(String familyId);
+
+    class CategorySum {
+        public String category;
+        public double total;
+    }
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Transaction transaction);
 

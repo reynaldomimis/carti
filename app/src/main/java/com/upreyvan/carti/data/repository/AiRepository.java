@@ -27,9 +27,11 @@ public class AiRepository {
     private final PreferenceManager pref;
     private final BudgetManager budgetManager;
     private final AiActionHandler actionHandler;
+    private final com.upreyvan.carti.data.local.db.dao.TransactionDao transactionDao;
     
     private long lastCallTime = 0;
-    private static final long RATE_LIMIT_MS = 2000;
+    // ELITE SAFETY: Increased to 5000ms (12 RPM) to avoid Google's 15 RPM Free Tier limit
+    private static final long RATE_LIMIT_MS = 5000;
 
     public AiRepository(Context context) {
         this.geminiManager = GeminiManager.getInstance(context);
@@ -37,17 +39,17 @@ public class AiRepository {
         this.pref = new PreferenceManager(context);
         this.budgetManager = BudgetManager.getInstance(context);
         this.actionHandler = new AiActionHandler(context);
+        this.transactionDao = com.upreyvan.carti.data.local.db.AppDatabase.getInstance(context).transactionDao();
     }
 
     public void processChat(String message, String senderName, List<ChatMessage> chatHistory, boolean isForce, GeminiManager.AiCallback callback) {
         // LAYER 1: Immediate Exit for spam
         long now = System.currentTimeMillis();
-        if (!isForce && now - lastCallTime < RATE_LIMIT_MS) return;
+        if (!isForce && now - lastCallTime < RATE_LIMIT_MS) {
+            callback.onSuccess(""); // Notify caller that we're skipping due to rate limit
+            return;
+        }
         lastCallTime = now;
-
-        // LAYER 2: Context Necessity Check (Is it financial?)
-        String msgLower = message.toLowerCase();
-        boolean needsDb = msgLower.matches(".*[₱$0-9].*|.*(gastos|balance|income|report|history|log|expense).*");
 
         // Intro check
         boolean introFound = false;
@@ -61,22 +63,18 @@ public class AiRepository {
         }
         String extraContext = "family_id:" + pref.getFamilyId() + "|INTRO_DONE:" + introFound;
 
-        if (!needsDb) {
-            callGemini(message, "CASUAL_MODE: " + pref.getUsername() + "|" + extraContext, isForce, callback);
-            return;
-        }
-
-        apiHelper.getTransactionsSince("2024-01-01T00:00:00.000Z", new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                callGemini(message, buildCompressedContext(result.getDocuments(), chatHistory) + "|" + extraContext, isForce, callback);
-            }
-
-            @Override
-            public void onError(Throwable error) {
+        // ELITE FIX: Always fetch local context to make Carti "Smart" again
+        new Thread(() -> {
+            try {
+                List<com.upreyvan.carti.model.Transaction> transactions = transactionDao.getAllTransactionsList(pref.getFamilyId());
+                String context = buildCompressedContextFromRoom(transactions, chatHistory) + "|" + extraContext;
+                
+                // If it's a very simple greeting, we still use Gemini but with the context
+                callGemini(message, context, isForce, callback);
+            } catch (Exception e) {
                 callGemini(message, "B:" + pref.getBalance() + "|" + extraContext, isForce, callback);
             }
-        });
+        }).start();
     }
 
     private void callGemini(String message, String context, boolean force, GeminiManager.AiCallback uiCallback) {
@@ -93,44 +91,25 @@ public class AiRepository {
         });
     }
 
-    private String buildCompressedContext(List<Document<Map<String, Object>>> docs, List<ChatMessage> chatHistory) {
+    private String buildCompressedContextFromRoom(List<com.upreyvan.carti.model.Transaction> transactions, List<ChatMessage> chatHistory) {
         double income = pref.getTotalIncome();
         double expense = pref.getTotalExpense();
         double savings = income - expense;
         double balance = pref.getBalance();
 
-        Map<String, Double> breakdown = new java.util.HashMap<>();
-        if (docs != null) {
-            for (Document<Map<String, Object>> doc : docs) {
-                Map<String, Object> d = doc.getData();
-                String type = String.valueOf(d.get("type"));
-                if ("EXPENSE".equalsIgnoreCase(type)) {
-                    String cat = String.valueOf(d.get("category"));
-                    double amt = com.upreyvan.carti.util.Utils.getDouble(d.get("amount"));
-                    breakdown.put(cat, breakdown.getOrDefault(cat, 0.0) + amt);
-                }
-            }
-        }
-
-        String topCategory = "None";
-        double maxAmt = 0;
-        for (Map.Entry<String, Double> entry : breakdown.entrySet()) {
-            if (entry.getValue() > maxAmt) {
-                maxAmt = entry.getValue();
-                topCategory = entry.getKey();
-            }
-        }
+        // ELITE OPTIMIZATION: Get pre-aggregated breakdown from SQL
+        List<com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum> breakdown = transactionDao.getExpenseBreakdown(pref.getFamilyId());
 
         StringBuilder sb = new StringBuilder();
         sb.append("family_id:").append(pref.getFamilyId()).append("\n");
         sb.append(String.format(Locale.US, "FINANCIAL_SUMMARY:\nIncome:%.0f|Expense:%.0f|Savings:%.0f|Balance:%.0f\n", 
             income, expense, savings, balance));
-        sb.append("Top Spending: ").append(topCategory).append("\n");
-        
-        if (!breakdown.isEmpty()) {
+
+        if (breakdown != null && !breakdown.isEmpty()) {
+            sb.append("Top Spending: ").append(breakdown.get(0).category).append("\n");
             sb.append("Breakdown: ");
-            for (Map.Entry<String, Double> entry : breakdown.entrySet()) {
-                sb.append(entry.getKey()).append(":").append(String.format(Locale.US, "%.0f", entry.getValue())).append(";");
+            for (com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum item : breakdown) {
+                sb.append(item.category).append(":").append(String.format(Locale.US, "%.0f", item.total)).append(";");
             }
             sb.append("\n");
         }
@@ -144,9 +123,20 @@ public class AiRepository {
             }
             sb.append("\n");
         }
-        
+
+        // TOKEN SAVER: Only include the very last message for minimal context
+        if (chatHistory != null && !chatHistory.isEmpty()) {
+            sb.append("CHAT_HISTORY:\n");
+            int start = Math.max(0, chatHistory.size() - 1);
+            for (int i = start; i < chatHistory.size(); i++) {
+                ChatMessage m = chatHistory.get(i);
+                sb.append(m.isMe() ? "User: " : "Carti: ").append(m.getMessage()).append("\n");
+            }
+        }
+
         return sb.toString();
     }
+
 
 
     public void getDailyInsights(GeminiManager.AiCallback callback) {
@@ -159,10 +149,11 @@ public class AiRepository {
             return;
         }
 
-        apiHelper.getTransactionsSince("2024-01-01T00:00:00.000Z", new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                geminiManager.getInsights(buildCompressedContext(result.getDocuments(), null), new GeminiManager.AiCallback() {
+        new Thread(() -> {
+            try {
+                List<com.upreyvan.carti.model.Transaction> transactions = transactionDao.getAllTransactionsList(pref.getFamilyId());
+                String context = buildCompressedContextFromRoom(transactions, null);
+                geminiManager.getInsights(context, new GeminiManager.AiCallback() {
                     @Override
                     public void onSuccess(String response) {
                         pref.saveDailyAiInsight(today, response);
@@ -171,10 +162,10 @@ public class AiRepository {
                     @Override
                     public void onError(Throwable t) { callback.onError(t); }
                 });
+            } catch (Exception e) {
+                callback.onError(e);
             }
-            @Override
-            public void onError(Throwable error) { callback.onError(error); }
-        });
+        }).start();
     }
 
     public void getSmartSuggestions(GeminiManager.AiCallback callback) {
@@ -189,20 +180,18 @@ public class AiRepository {
             return;
         }
 
-        cal.add(Calendar.DAY_OF_YEAR, -30);
-        String thirtyDaysAgo = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(cal.getTime());
-
-        apiHelper.getTransactionsSince(thirtyDaysAgo, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                String context = buildCompressedContext(result.getDocuments(), null);
+        new Thread(() -> {
+            try {
+                List<com.upreyvan.carti.model.Transaction> transactions = transactionDao.getAllTransactionsList(pref.getFamilyId());
+                String context = buildCompressedContextFromRoom(transactions, null);
                 String prompt = "TASK: Based on the financial context of the PAST 4 WEEKS, generate EXACTLY 4 actionable coaching suggestions. " +
                         "Format: JSON Array of objects with keys: title, description, type (SAVINGS|EXPENSE|GOAL|BILL), actionText. " +
                         "Constraints: Keep titles extremely short (max 2-3 words). " +
                         "Focus on trends and patterns observed in the data. " +
                         "OUTPUT ONLY THE JSON ARRAY.\n\n[CONTEXT]:\n" + context;
 
-                geminiManager.generateResponse(prompt, new GeminiManager.AiCallback() {
+                // Use 3.5 Flash for more intelligent suggestions
+                geminiManager.generateResponse(GeminiManager.MODEL_FLASH_3_5, prompt, new GeminiManager.AiCallback() {
                     @Override
                     public void onSuccess(String response) {
                         pref.saveDailyAiSuggestions(weekKey, response);
@@ -211,11 +200,10 @@ public class AiRepository {
                     @Override
                     public void onError(Throwable t) { callback.onError(t); }
                 });
+            } catch (Exception e) {
+                callback.onError(e);
             }
-
-            @Override
-            public void onError(Throwable error) { callback.onError(error); }
-        });
+        }).start();
     }
 
 }

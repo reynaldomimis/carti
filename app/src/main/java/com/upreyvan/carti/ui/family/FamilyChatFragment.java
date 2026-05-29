@@ -9,6 +9,7 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -25,6 +26,7 @@ import com.upreyvan.carti.databinding.FragmentFamilyChatBinding;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.data.ai.GeminiManager;
 import com.upreyvan.carti.data.repository.AiRepository;
+import com.upreyvan.carti.data.ai.VoiceToTextHelper;
 import com.upreyvan.carti.model.ChatMessage;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
@@ -45,6 +47,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     private PreferenceManager pref;
     private RealtimeRepository realtimeRepo;
     private AiRepository aiRepository;
+    private VoiceToTextHelper voiceToTextHelper;
     private boolean isAiThinking = false;
     
     private boolean isLoading = false;
@@ -72,6 +75,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             pref = new PreferenceManager(context);
             realtimeRepo = RealtimeRepository.getInstance(context);
             aiRepository = new AiRepository(context);
+            setupVoiceInput();
         }
         
         chatAdapter = new ChatAdapter();
@@ -112,6 +116,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
                 boolean exists = false;
                 int tempOptimisticIndex = -1;
+                int shimmerIndex = -1;
                 
                 for (int i = 0; i < currentList.size(); i++) {
                     ChatMessage m = currentList.get(i);
@@ -120,16 +125,35 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                         exists = true;
                         break;
                     }
+                    
                     // 2. Optimistic match (No ID, but same content, sender and very recent)
-                    if (m.getId() == null && m.isMe() && msg.isMe() 
+                    // ELITE FIX: Supports both User and AI optimistic messages
+                    boolean isSameSender = false;
+                    if (m.getSenderId() != null && msg.getSenderId() != null) {
+                        isSameSender = m.getSenderId().equals(msg.getSenderId());
+                    } else if (m.isMe() && msg.isMe()) {
+                        isSameSender = true;
+                    }
+
+                    if (m.getId() == null && !m.isShimmer() && isSameSender 
                             && m.getMessage().equals(msg.getMessage())
                             && Math.abs(m.getTimestamp() - msg.getTimestamp()) < 30000) {
                         tempOptimisticIndex = i;
                         break;
                     }
+                    
+                    if (m.isShimmer()) {
+                        shimmerIndex = i;
+                    }
                 }
                 
                 if (exists) return;
+
+                // Handle AI response and remove shimmer
+                if (msg.getSenderId().equals(Constants.Roles.AI_ID) && shimmerIndex != -1) {
+                    currentList.remove(shimmerIndex);
+                    android.util.Log.d("FamilyChatFragment", "Removed AI shimmer for incoming AI message");
+                }
 
                 final int finalOptimisticIndex = tempOptimisticIndex;
                 if (finalOptimisticIndex != -1) {
@@ -143,9 +167,9 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                     if (finalOptimisticIndex == -1) {
                         getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
                     }
+                    // ELITE FIX: Process AI AFTER list is updated to ensure context is fresh
+                    processAiForMessage(msg);
                 });
-
-                processAiForMessage(msg);
             }
         });
     }
@@ -168,6 +192,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                 int index = currentChat.size() - 1;
                 while (index >= 0) {
                     ChatMessage m = currentChat.get(index);
+                    // Skip the current message and the shimmer/typing message
                     if (m.getId() != null && !m.getId().equals(msg.getId())) {
                         boolean isAiAuthor = m.getSenderId().equals(Constants.Roles.AI_ID);
                         boolean isRecent = (System.currentTimeMillis() - m.getTimestamp()) < SESSION_TIMEOUT_MS;
@@ -179,13 +204,24 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             }
 
             if (aiRepository != null && (isExplicit || isAiActive)) {
-                final ChatMessage[] typingRef = {null};
-                if (isSender) {
-                    isAiThinking = true;
-                    updateInputState();
-                    typingRef[0] = new ChatMessage(true, false);
+                // ELITE FIX: Only the sender should trigger the AI processing to avoid redundant calls and race conditions
+                if (!isSender) return;
+
+                isAiThinking = true;
+                updateInputState();
+                
+                // Only add shimmer if it's not already there
+                boolean hasShimmer = false;
+                for (ChatMessage m : chatAdapter.getCurrentList()) {
+                    if (m.isShimmer()) {
+                        hasShimmer = true;
+                        break;
+                    }
+                }
+
+                if (!hasShimmer) {
                     List<ChatMessage> listWithTyping = new ArrayList<>(chatAdapter.getCurrentList());
-                    listWithTyping.add(typingRef[0]);
+                    listWithTyping.add(new ChatMessage(true, false));
                     chatAdapter.submitList(listWithTyping, () -> {
                         if (getBinding() != null) getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
                     });
@@ -194,43 +230,71 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                 aiRepository.processChat(msg.getMessage(), msg.getSenderName(), chatAdapter.getCurrentList(), isExplicit, new GeminiManager.AiCallback() {
                     @Override
                     public void onSuccess(String response) {
-                        if (isAdded() && getActivity() != null && isSender) {
+                        if (isAdded() && getActivity() != null) {
                             getActivity().runOnUiThread(() -> {
                                 isAiThinking = false;
                                 updateInputState();
-                                if (typingRef[0] != null) {
-                                    List<ChatMessage> listAfterResponse = new ArrayList<>(chatAdapter.getCurrentList());
-                                    listAfterResponse.remove(typingRef[0]);
-                                    chatAdapter.submitList(listAfterResponse);
+                                
+                                if (response != null && !response.trim().isEmpty()) {
+                                    // ELITE OPTIMISTIC UI: Show AI response immediately locally
+                                    ChatMessage aiOptimistic = new ChatMessage(null, Constants.Roles.AI_ID, pref.getFamilyId(), 
+                                            Constants.Roles.AI_NAME, response, System.currentTimeMillis(), false);
+                                    
+                                    List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
+                                    // Remove shimmer and add AI response
+                                    for (int i = currentList.size() - 1; i >= 0; i--) {
+                                        if (currentList.get(i).isShimmer()) {
+                                            currentList.remove(i);
+                                            break;
+                                        }
+                                    }
+                                    currentList.add(aiOptimistic);
+                                    chatAdapter.submitList(currentList, () -> {
+                                        if (getBinding() != null) getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
+                                    });
+
+                                    sendAiResponse(response);
+                                } else {
+                                    // AI ignored or rate limited - clean up shimmer
+                                    removeShimmerLocally();
                                 }
-                                sendAiResponse(response);
                             });
                         }
                     }
 
                     @Override
                     public void onActionDetected(org.json.JSONObject action) {
-                        if (isSender) {
-                            android.util.Log.d("FamilyChatFragment", "AI Action: " + action.optString("action"));
-                        }
+                        android.util.Log.d("FamilyChatFragment", "AI Action: " + action.optString("action"));
                     }
 
                     @Override
                     public void onError(Throwable t) {
-                        if (isAdded() && getActivity() != null && isSender) {
+                        if (isAdded() && getActivity() != null) {
                             getActivity().runOnUiThread(() -> {
                                 isAiThinking = false;
                                 updateInputState();
-                                if (typingRef[0] != null) {
-                                    List<ChatMessage> listAfterError = new ArrayList<>(chatAdapter.getCurrentList());
-                                    listAfterError.remove(typingRef[0]);
-                                    chatAdapter.submitList(listAfterError);
-                                }
+                                removeShimmerLocally();
+                                Utils.showToast(getContext(), "Carti is offline: " + t.getMessage());
                             });
                         }
                     }
                 });
             }
+        }
+    }
+
+    private void removeShimmerLocally() {
+        List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
+        boolean removed = false;
+        for (int i = currentList.size() - 1; i >= 0; i--) {
+            if (currentList.get(i).isShimmer()) {
+                currentList.remove(i);
+                removed = true;
+                break;
+            }
+        }
+        if (removed) {
+            chatAdapter.submitList(currentList);
         }
     }
 
@@ -386,6 +450,73 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         return new ChatMessage(id, senderId, familyId, senderName, text, timestamp, isMe);
     }
 
+    private void setupVoiceInput() {
+        voiceToTextHelper = VoiceToTextHelper.getInstance(requireContext());
+        voiceToTextHelper.setCallback(new VoiceToTextHelper.VoiceCallback() {
+            @Override
+            public void onReadyForSpeech() {
+                if (getBinding() != null) {
+                    getBinding().layoutInput.btnVoice.setColorFilter(ContextCompat.getColor(requireContext(), R.color.carti_primary_green));
+                    getBinding().layoutInput.etInput.setHint("Listening...");
+                }
+            }
+
+            @Override
+            public void onBeginningOfSpeech() {}
+
+            @Override
+            public void onRmsChanged(float rmsdB) {}
+
+            @Override
+            public void onBufferReceived(byte[] buffer) {}
+
+            @Override
+            public void onEndOfSpeech() {
+                resetVoiceUi();
+            }
+
+            @Override
+            public void onError(String error) {
+                resetVoiceUi();
+                if (!error.equals("No match found")) {
+                    Utils.showToast(getContext(), error);
+                }
+            }
+
+            @Override
+            public void onResults(String text) {
+                if (getBinding() != null && text != null) {
+                    getBinding().layoutInput.etInput.setText(text);
+                    getBinding().layoutInput.etInput.setSelection(text.length());
+                }
+                resetVoiceUi();
+            }
+
+            @Override
+            public void onPartialResults(String partialText) {
+                if (getBinding() != null && partialText != null) {
+                    getBinding().layoutInput.etInput.setText(partialText);
+                    getBinding().layoutInput.etInput.setSelection(partialText.length());
+                }
+            }
+        });
+    }
+
+    private void resetVoiceUi() {
+        if (getBinding() != null) {
+            getBinding().layoutInput.btnVoice.clearColorFilter();
+            getBinding().layoutInput.etInput.setHint(R.string.hint_ask_me);
+        }
+    }
+
+    private void startVoiceRecognition() {
+        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 100);
+        } else {
+            voiceToTextHelper.startListening();
+        }
+    }
+
     private void setupInput() {
         if (getBinding() == null) return;
 
@@ -457,13 +588,16 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         });
 
         getBinding().layoutInput.btnVoice.setOnClickListener(v -> {
-            // Handle voice record
+            startVoiceRecognition();
         });
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (voiceToTextHelper != null) {
+            voiceToTextHelper.stopListening();
+        }
         if (getActivity() != null) {
             getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
