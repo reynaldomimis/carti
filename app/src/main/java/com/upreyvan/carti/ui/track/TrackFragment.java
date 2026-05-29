@@ -210,11 +210,13 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
 
         List<BudgetCategoryItem> displayList;
         if (isAllocationExpanded) {
-            displayList = sortedList.subList(0, Math.min(sortedList.size(), 10));
-            getBinding().btnViewAllAllocation.setText(R.string.see_less);
+            displayList = sortedList;
+            getBinding().tvViewAllAllocationLabel.setText(R.string.see_less);
+            getBinding().ivAllocationArrow.animate().rotation(90f).setDuration(300).start();
         } else {
             displayList = sortedList.subList(0, Math.min(sortedList.size(), 3));
-            getBinding().btnViewAllAllocation.setText(R.string.see_all);
+            getBinding().tvViewAllAllocationLabel.setText(R.string.see_all);
+            getBinding().ivAllocationArrow.animate().rotation(0f).setDuration(300).start();
         }
         
         getBinding().btnViewAllAllocation.setVisibility(sortedList.size() > 3 ? View.VISIBLE : View.GONE);
@@ -222,7 +224,8 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
     }
 
     private void applyFilters() {
-        transactionAdapter.submitList(new ArrayList<>(fullTrackList));
+        List<TransactionWithUser> limitedList = fullTrackList.subList(0, Math.min(fullTrackList.size(), 12));
+        transactionAdapter.submitList(new ArrayList<>(limitedList));
         boolean isEmpty = fullTrackList.isEmpty();
         getBinding().rvTransactions.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
         getBinding().tvNoTransactions.setVisibility(isEmpty ? View.VISIBLE : View.GONE);

@@ -46,7 +46,13 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     private String filterUserId;
     private String filterUserName;
     private List<TransactionWithUser> fullList = new ArrayList<>();
+    private List<TransactionWithUser> displayList = new ArrayList<>();
     private String currentQuery = "";
+    
+    private int currentPage = 0;
+    private static final int PAGE_SIZE = 12;
+    private boolean isLoading = false;
+    private boolean isLastPage = false;
 
     public static AllTransactionsFragment newInstance(String type) {
         return newInstance(type, null, null);
@@ -137,6 +143,9 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
 
     private void filterBySearch(String query) {
         currentQuery = query.toLowerCase().trim();
+        currentPage = 0;
+        isLastPage = false;
+        displayList.clear();
         applyFilters();
     }
 
@@ -161,14 +170,59 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
                 filteredList.add(t);
             }
         }
-        adapter.submitList(filteredList);
-        getBinding().rvAllTransactions.setVisibility(filteredList.isEmpty() ? View.GONE : View.VISIBLE);
-        getBinding().layoutEmptyState.setVisibility(filteredList.isEmpty() ? View.VISIBLE : View.GONE);
+
+        if (filteredList.isEmpty()) {
+            getBinding().rvAllTransactions.setVisibility(View.GONE);
+            getBinding().layoutEmptyState.setVisibility(View.VISIBLE);
+        } else {
+            getBinding().layoutEmptyState.setVisibility(View.GONE);
+            getBinding().rvAllTransactions.setVisibility(View.VISIBLE);
+            loadNextPage(filteredList);
+        }
+    }
+
+    private void loadNextPage(List<TransactionWithUser> sourceList) {
+        if (isLoading || isLastPage) return;
+
+        isLoading = true;
+        getBinding().pbLoading.setVisibility(View.VISIBLE);
+        
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (!isAdded() || getBinding() == null) return;
+
+            int start = currentPage * PAGE_SIZE;
+            int end = Math.min(start + PAGE_SIZE, sourceList.size());
+
+            if (start >= sourceList.size()) {
+                isLastPage = true;
+                isLoading = false;
+                getBinding().pbLoading.setVisibility(View.GONE);
+                return;
+            }
+
+            List<TransactionWithUser> pageItems = sourceList.subList(start, end);
+            displayList.addAll(pageItems);
+            adapter.submitList(new ArrayList<>(displayList));
+
+            // Sync visibility after loading data
+            getBinding().rvAllTransactions.setVisibility(displayList.isEmpty() ? View.GONE : View.VISIBLE);
+            getBinding().layoutEmptyState.setVisibility(displayList.isEmpty() ? View.VISIBLE : View.GONE);
+
+            currentPage++;
+            if (end >= sourceList.size()) {
+                isLastPage = true;
+            }
+            isLoading = false;
+            getBinding().pbLoading.setVisibility(View.GONE);
+        }, 800);
     }
 
     private androidx.lifecycle.Observer<List<TransactionWithUser>> transactionObserver = transactions -> {
         if (transactions != null) {
             fullList = transactions;
+            currentPage = 0;
+            isLastPage = false;
+            displayList.clear();
             applyFilters();
         }
     };
@@ -196,7 +250,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         if (filterUserName != null) {
             title.setText(getString(R.string.label_user_expenses, filterUserName));
         } else if ("EXPENSE".equals(filterType)) {
-            title.setText(R.string.nav_track);
+            title.setText(R.string.expenses_title);
         } else {
             title.setText(R.string.all_transactions_title);
         }
@@ -204,13 +258,13 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
 
     private void setupRecyclerView() {
         adapter = new TransactionAdapter();
+        // ... (existing adapter listener code remains same)
         adapter.setOnTransactionInteractionListener(new TransactionAdapter.OnTransactionInteractionListener() {
             @Override
             public void onLikeClick(Transaction transaction) {
                 transactionRepository.likeTransaction(transaction.getId(), "👍", new AppwriteCallback<Map<String, Object>>() {
                     @Override
                     public void onSuccess(Map<String, Object> result) {
-                        // Success handled by repo sync
                     }
 
                     @Override
@@ -247,8 +301,51 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
             }
         });
 
-        getBinding().rvAllTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
+        getBinding().rvAllTransactions.setLayoutManager(layoutManager);
         getBinding().rvAllTransactions.setAdapter(adapter);
+
+        getBinding().rvAllTransactions.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0) {
+                    int visibleItemCount = layoutManager.getChildCount();
+                    int totalItemCount = layoutManager.getItemCount();
+                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                    if (!isLoading && !isLastPage) {
+                        if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                                && firstVisibleItemPosition >= 0
+                                && totalItemCount >= PAGE_SIZE) {
+                            
+                            // Re-filter to get the list to slice from
+                            List<TransactionWithUser> filteredList = new ArrayList<>();
+                            for (TransactionWithUser t : fullList) {
+                                boolean matchesType = filterType == null || filterType.equals(t.getTransaction().getType());
+                                boolean matchesUser = filterUserId == null || filterUserId.equals(t.getTransaction().getUserId());
+
+                                String username = t.getUsername() != null ? t.getUsername().toLowerCase() : "";
+                                String category = t.getTransaction().getCategory() != null ? t.getTransaction().getCategory().toLowerCase() : "";
+                                String description = t.getTransaction().getDescription() != null ? t.getTransaction().getDescription().toLowerCase() : "";
+                                String amount = String.valueOf(t.getTransaction().getAmount());
+
+                                boolean matchesSearch = currentQuery.isEmpty() ||
+                                                       username.contains(currentQuery) ||
+                                                       category.contains(currentQuery) ||
+                                                       description.contains(currentQuery) ||
+                                                       amount.contains(currentQuery);
+
+                                if (matchesType && matchesUser && matchesSearch) {
+                                    filteredList.add(t);
+                                }
+                            }
+                            loadNextPage(filteredList);
+                        }
+                    }
+                }
+            }
+        });
 
         adapter.setOnItemClickListener(itemWithUser -> {
             Transaction item = itemWithUser.getTransaction();

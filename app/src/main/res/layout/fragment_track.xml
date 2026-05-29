@@ -257,22 +257,35 @@
                             app:layout_constraintTop_toBottomOf="@id/tvAllocationTitle"
                             tools:text="Total: PHP 120,000" />
 
-                        <TextView
+                        <LinearLayout
                             android:id="@+id/btnViewAllAllocation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:background="?attr/selectableItemBackground"
-                            android:drawablePadding="4dp"
-                            android:fontFamily="@font/plus_jakarta_sans_bold"
                             android:gravity="center_vertical"
-                            android:text="@string/see_all"
-                            android:textColor="@color/carti_primary_green"
-                            android:textSize="@dimen/text_size_xxs"
-                            app:drawableEndCompat="@drawable/ic_chevron_right"
-                            app:drawableTint="@color/carti_primary_green"
+                            android:orientation="horizontal"
+                            android:padding="4dp"
                             app:layout_constraintBottom_toBottomOf="@id/tvAllocationTitle"
                             app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="@id/tvAllocationTitle" />
+                            app:layout_constraintTop_toTopOf="@id/tvAllocationTitle">
+
+                            <TextView
+                                android:id="@+id/tvViewAllAllocationLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/plus_jakarta_sans_bold"
+                                android:text="@string/see_all"
+                                android:textColor="@color/carti_primary_green"
+                                android:textSize="@dimen/text_size_xxs" />
+
+                            <ImageView
+                                android:id="@+id/ivAllocationArrow"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginStart="4dp"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="@color/carti_primary_green" />
+                        </LinearLayout>
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 

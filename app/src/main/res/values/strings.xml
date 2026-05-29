@@ -238,8 +238,8 @@
     <string name="action_added_funds">%s added funds</string>
     <string name="action_added_bill">%s added a bill</string>
     <string name="btn_save_expense">Save Track</string>
-    <string name="label_income_vs_expense">Income vs Expense</string>
-    <string name="label_income">Income</string>
+    <string name="label_income_vs_expense">Budget vs Expense</string>
+    <string name="label_income">Budget</string>
     <string name="label_expense">Expense</string>
     <string name="format_currency_no_decimal_simple">₱%,.0f</string>
     <string name="category_expense_label">%s Allocation</string>
@@ -249,7 +249,7 @@
     <string name="income_mode_title">Income Mode</string>
     <string name="label_next_payday">Next Payday</string>
     <string name="label_days">Days</string>
-    <string name="label_income_amount">Total Income</string>
+    <string name="label_income_amount">Total Budget</string>
     <string name="label_budget_breakdown">Budget Breakdown</string>
     <string name="btn_edit">Edit</string>
     <string name="title_edit_payday">Edit Payday Schedule</string>
@@ -675,7 +675,7 @@
     <!-- Dashboard Strings -->
     <string name="label_total_balance">Total Balance</string>
     <string name="label_live_sync">Live Sync</string>
-    <string name="label_monthly_income">Monthly Income</string>
+    <string name="label_monthly_income">Monthly Budget</string>
     <string name="label_monthly_expenses">Monthly Expenses</string>
     <string name="label_last_month_income">Last Month Income</string>
     <string name="label_last_month_expenses">Last Month Expenses</string>
