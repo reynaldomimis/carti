@@ -17,10 +17,6 @@ import java.util.concurrent.Executors;
 
 import io.appwrite.models.RealtimeSubscription;
 
-/**
- * RealtimeRepository handles live updates from Appwrite Realtime.
- * It synchronizes remote changes with the local Room database and notifies UI via LiveData streams.
- */
 public class RealtimeRepository {
 
     private static RealtimeRepository instance;
@@ -162,12 +158,9 @@ public class RealtimeRepository {
                 if (eventPath.contains(".delete")) {
                     likeDao.deleteById(id);
                 } else {
-                    // This handles both .create and .update (upsert)
                     likeDao.insert(new Like(id, txnId, userId, username, emoji));
                 }
-                
-                // CRITICAL: Post to stream AFTER Room DB update. 
-                // This ensures UI components observing the stream get notified when data is ready in Room.
+
                 likeStream.postValue(payload);
             } catch (Exception e) {
                 android.util.Log.e("RealtimeRepository", "Error handling like event", e);

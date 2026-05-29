@@ -251,7 +251,6 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 showLoading(false);
-                showToast(getString(R.string.msg_debt_saved), Status.SUCCESS);
                 finish();
             }
 

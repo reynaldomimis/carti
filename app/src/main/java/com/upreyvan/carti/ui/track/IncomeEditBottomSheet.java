@@ -163,7 +163,6 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         if (!isAdded()) return;
         requireActivity().runOnUiThread(() -> {
             if (listener != null) listener.onIncomeUpdated();
-            showToast(message, ToastHelper.Status.SUCCESS);
             dismiss();
         });
     }

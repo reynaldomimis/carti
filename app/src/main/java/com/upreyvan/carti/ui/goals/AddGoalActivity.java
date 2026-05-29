@@ -49,7 +49,6 @@ public class AddGoalActivity extends BaseGoalActivity {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 showLoading(false);
-                showToast(getString(R.string.msg_goal_saved_success), Status.SUCCESS);
                 finish();
             }
 

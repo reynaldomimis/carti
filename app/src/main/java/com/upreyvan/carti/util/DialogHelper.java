@@ -22,10 +22,10 @@ public class DialogHelper {
 
     public static void showNoInternetDialog(Context context) {
         new MaterialAlertDialogBuilder(context)
-                .setTitle("No Internet Connection")
-                .setMessage("You cannot add or update transaction. Please check your internet connection and try again.")
+                .setTitle(context.getString(com.upreyvan.carti.R.string.title_no_internet))
+                .setMessage(context.getString(com.upreyvan.carti.R.string.msg_no_internet_transaction))
                 .setCancelable(false)
-                .setPositiveButton("OK", null)
+                .setPositiveButton(context.getString(com.upreyvan.carti.R.string.btn_ok), null)
                 .setIcon(com.upreyvan.carti.R.drawable.ic_chart)
                 .show();
     }

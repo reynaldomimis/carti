@@ -89,18 +89,18 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         
         switch (logType) {
             case DEBT:
-                title = "Quick Debt Log";
-                btnText = "Save Debt";
-                getBinding().layoutForm.tilDescription.setHint("Reason / Note");
-                getBinding().layoutForm.tilSource.setHint("Who borrowed?");
+                title = getString(R.string.title_quick_debt_log);
+                btnText = getString(R.string.btn_save_debt);
+                getBinding().layoutForm.tilDescription.setHint(getString(R.string.label_reason_note_hint));
+                getBinding().layoutForm.tilSource.setHint(getString(R.string.label_who_borrowed_hint));
                 getBinding().layoutForm.cvBalanceInfo.setVisibility(View.GONE);
                 break;
             case GOAL:
-                title = "Quick Goal Log";
-                btnText = "Add Savings";
-                getBinding().layoutForm.tilDescription.setHint("Note");
+                title = getString(R.string.title_quick_goal_log);
+                btnText = getString(R.string.btn_add_savings);
+                getBinding().layoutForm.tilDescription.setHint(getString(R.string.label_note_optional));
                 getBinding().layoutForm.tilSource.setVisibility(View.GONE);
-                getBinding().layoutForm.allocatedHeader.setText("Goal Progress");
+                getBinding().layoutForm.allocatedHeader.setText(getString(R.string.label_goal_progress));
                 break;
             case EXPENSE:
                 title = getString(R.string.quick_log_title);
@@ -151,7 +151,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             if (!checkNetwork()) return;
 
             if (selectedCategory == null) {
-                showToast("No category selected", ToastHelper.Status.WARNING);
+                showToast(getString(R.string.err_no_category_selected), ToastHelper.Status.WARNING);
                 return;
             }
 
@@ -177,19 +177,22 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         TransactionHandler.TransactionCallback callback = new TransactionHandler.TransactionCallback() {
             @Override
             public void onLoading(boolean isLoading) {
-                String msg = "Saving...";
+                String msg = getString(R.string.msg_saving);
                 if (logType == LogType.EXPENSE) msg = getString(R.string.msg_saving_expense);
-                else if (logType == LogType.DEBT) msg = "Saving debt...";
-                else if (logType == LogType.GOAL) msg = "Saving goal...";
+                else if (logType == LogType.DEBT) msg = getString(R.string.msg_saving_debt);
+                else if (logType == LogType.GOAL) msg = getString(R.string.msg_saving_goal);
                 showLoading(isLoading, msg);
+                if (getBinding() != null) {
+                    getBinding().btnSave.setEnabled(!isLoading);
+                }
             }
 
             @Override
             public void onSuccess(Transaction transaction) {
-                String successMsg = "Saved!";
+                String successMsg = getString(R.string.msg_save_success);
                 if (logType == LogType.EXPENSE) successMsg = getString(R.string.msg_expense_saved);
-                else if (logType == LogType.DEBT) successMsg = "Debt saved!";
-                else if (logType == LogType.GOAL) successMsg = "Goal updated!";
+                else if (logType == LogType.DEBT) successMsg = getString(R.string.msg_debt_saved_simple);
+                else if (logType == LogType.GOAL) successMsg = getString(R.string.msg_goal_updated);
                 
                 showToast(successMsg, ToastHelper.Status.SUCCESS);
                 dismiss();

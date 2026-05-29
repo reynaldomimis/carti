@@ -91,7 +91,6 @@ public class AiActionHandler {
         @Override
         public void onSuccess(Map<String, Object> result) {
             Log.d("AiActionHandler", message);
-            ToastHelper.show(context, message, ToastHelper.Status.SUCCESS);
         }
 
         @Override

@@ -78,7 +78,10 @@ public class QuickLogDialog extends BaseBottomSheetFragment<DialogQuickLogAmount
                 com.upreyvan.carti.util.TransactionHandler.saveTrack(requireContext(), amount, item.getTitle(), "Quick Log", "App", new com.upreyvan.carti.util.TransactionHandler.TransactionCallback() {
                     @Override
                     public void onLoading(boolean isLoading) {
-                        // Optional: show progress
+                        if (getBinding() != null) {
+                            getBinding().btnLog.setEnabled(!isLoading);
+                            getBinding().btnLog.setText(isLoading ? getString(R.string.label_logging) : getString(R.string.btn_log_expense));
+                        }
                     }
 
                     @Override

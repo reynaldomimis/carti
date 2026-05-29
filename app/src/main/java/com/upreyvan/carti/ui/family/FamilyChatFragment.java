@@ -91,7 +91,42 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         setupChatList();
         setupInput();
         observeChatRealtime();
-        loadChatHistory();
+        checkConnectionAndLoad();
+    }
+
+    private void checkConnectionAndLoad() {
+        if (getBinding() == null) return;
+        boolean isConnected = Utils.isNetworkAvailable(requireContext());
+
+        if (isConnected) {
+            getBinding().layoutNoInternet.setVisibility(View.GONE);
+            toggleChatContentVisibility(true);
+            
+            // Ensure Realtime is active when we come back online
+            if (realtimeRepo != null) {
+                realtimeRepo.startListening();
+            }
+
+            loadChatHistory();
+        } else {
+            getBinding().layoutNoInternet.setVisibility(View.VISIBLE);
+            toggleChatContentVisibility(false);
+        }
+    }
+
+    private void toggleChatContentVisibility(boolean visible) {
+        if (getBinding() == null) return;
+        int visibility = visible ? View.VISIBLE : View.GONE;
+        getBinding().layoutHeader.setVisibility(visibility);
+        getBinding().layoutInputContainer.setVisibility(visibility);
+        
+        if (!visible) {
+            getBinding().rvChat.setVisibility(View.GONE);
+            getBinding().layoutEmpty.setVisibility(View.GONE);
+            getBinding().layoutShimmer.stopShimmer();
+            getBinding().layoutShimmer.setVisibility(View.GONE);
+            getBinding().pbLoadingMore.hide();
+        }
     }
 
     private void setupSuggestions() {
@@ -177,7 +212,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                 
                 if (exists) return;
 
-                // Handle AI response and remove shimmer
+
                 if (msg.getSenderId().equals(Constants.Roles.AI_ID) && shimmerIndex != -1) {
                     currentList.remove(shimmerIndex);
                     android.util.Log.d("FamilyChatFragment", "Removed AI shimmer for incoming AI message");
@@ -479,11 +514,15 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                                 getBinding().pbLoadingMore.hide();
                                 getBinding().layoutShimmer.stopShimmer();
                                 getBinding().layoutShimmer.setVisibility(View.GONE);
+                                
+                                if (!Utils.isNetworkAvailable(requireContext()) && chatAdapter.getItemCount() == 0) {
+                                    getBinding().layoutNoInternet.setVisibility(View.VISIBLE);
+                                    toggleChatContentVisibility(false);
+                                } else {
+                                    Utils.showToast(requireContext(), "Error loading messages");
+                                }
                             }
                         });
-                        if (getContext() != null) {
-                            Utils.showToast(requireContext(), "Error loading messages");
-                        }
                     }
                 }
             );
@@ -703,6 +742,20 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         getBinding().layoutHeader.setElevation(4f);
 
         getBinding().settingsButtonContainer.setOnClickListener(v -> showAutoDeleteDialog());
+        getBinding().btnRetry.setOnClickListener(v -> {
+            // Visual feedback that retry is happening
+            getBinding().btnRetry.setEnabled(false);
+            getBinding().btnRetry.setText(R.string.msg_checking);
+            
+            // Add a small delay for better UX
+            v.postDelayed(() -> {
+                if (getBinding() != null) {
+                    getBinding().btnRetry.setEnabled(true);
+                    getBinding().btnRetry.setText(R.string.btn_try_again);
+                    checkConnectionAndLoad();
+                }
+            }, 800);
+        });
     }
 
     private void showAutoDeleteDialog() {

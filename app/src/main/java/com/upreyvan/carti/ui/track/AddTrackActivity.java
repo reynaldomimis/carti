@@ -112,7 +112,6 @@ public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
 
                 @Override
                 public void onSuccess(Transaction transaction) {
-                    showToast(getString(R.string.msg_expense_saved), ToastHelper.Status.SUCCESS);
                     Intent intent = new Intent(AddTrackActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);

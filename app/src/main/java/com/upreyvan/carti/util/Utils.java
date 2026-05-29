@@ -201,9 +201,7 @@ public class Utils {
     }
 
     public static void showToast(Context context, String message) {
-        if (context != null && message != null) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-        }
+        ToastHelper.show(context, message, ToastHelper.Status.INFO);
     }
 
     public static void showKeyboard(Context context, View view) {

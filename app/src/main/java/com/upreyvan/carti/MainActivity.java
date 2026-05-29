@@ -78,6 +78,13 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Ensure Realtime is active when returning to the app
+        com.upreyvan.carti.data.repository.RealtimeRepository.getInstance(this).startListening();
+    }
+
     private void setupBackPress() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
