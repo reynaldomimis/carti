@@ -37,7 +37,7 @@
     <string name="nav_ranking">Ranking</string>
     <string name="nav_profile">Profile</string>
     <string name="label_add">Add</string>
-    <string name="menu_ai">AI</string>
+    <string name="menu_ai">Chat</string>
     <string name="notifications">Notifications</string>
 
     <!-- All Transactions Fragment -->
@@ -48,7 +48,7 @@
     <string name="msg_canceled">Operation canceled</string>
     <string name="chat_sender_me">Me</string>
     <string name="chat_sender_ai">Carti AI</string>
-    <string name="timer_format">Wait %d seconds</string>
+    <string name="timer_format">%ds</string>
     <string name="btn_cancel">Cancel</string>
     <string name="hint_ask_me">Ask me anything...</string>
     <string name="ai_insight_title">AI Insight</string>

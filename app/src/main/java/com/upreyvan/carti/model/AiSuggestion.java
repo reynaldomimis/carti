@@ -8,6 +8,10 @@ public class AiSuggestion {
     private final String actionText;
     private final String type;
 
+    public AiSuggestion(String title, String description, int iconResId, int themeColor) {
+        this(title, description, iconResId, themeColor, "", "generic");
+    }
+
     public AiSuggestion(String title, String description, int iconResId, int themeColor, String actionText, String type) {
         this.title = title;
         this.description = description;

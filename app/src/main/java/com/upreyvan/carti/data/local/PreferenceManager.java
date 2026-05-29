@@ -222,6 +222,22 @@ public class PreferenceManager {
         return sharedPreferences.getString("daily_ai_insight_date", "");
     }
 
+    public int getAiUsageCount(String date) {
+        String lastDate = sharedPreferences.getString("ai_usage_date", "");
+        if (!lastDate.equals(date)) {
+            return 0;
+        }
+        return sharedPreferences.getInt("ai_usage_count", 0);
+    }
+
+    public void incrementAiUsageCount(String date) {
+        int currentCount = getAiUsageCount(date);
+        sharedPreferences.edit()
+                .putString("ai_usage_date", date)
+                .putInt("ai_usage_count", currentCount + 1)
+                .apply();
+    }
+
     public void clear() {
         // List of all preference files used in the app
         String[] prefFiles = {

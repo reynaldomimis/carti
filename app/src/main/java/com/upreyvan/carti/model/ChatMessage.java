@@ -14,10 +14,11 @@ public class ChatMessage {
     private final String time;
     private final boolean isMe;
     private final int imageResId;
-    private final IntentType intent;
+    private IntentType intent;
     private boolean isCanceled = false;
     private boolean isShimmer = false;
-    
+    private org.json.JSONObject pendingAction;
+
     // Appwrite Fields
     private String id;
     private String senderId;
@@ -66,9 +67,13 @@ public class ChatMessage {
     }
 
     public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public String getSenderId() { return senderId; }
     public String getFamilyId() { return familyId; }
     public long getTimestamp() { return timestamp; }
+
+    public void setSenderId(String senderId) { this.senderId = senderId; }
+    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
     public String getSenderName() {
         return senderName;
@@ -94,6 +99,10 @@ public class ChatMessage {
         return intent;
     }
 
+    public void setIntent(IntentType intent) {
+        this.intent = intent;
+    }
+
     public boolean isCanceled() {
         return isCanceled;
     }
@@ -102,12 +111,21 @@ public class ChatMessage {
         return isShimmer;
     }
 
+    public org.json.JSONObject getPendingAction() {
+        return pendingAction;
+    }
+
+    public void setPendingAction(org.json.JSONObject pendingAction) {
+        this.pendingAction = pendingAction;
+    }
+
     public void setCanceled(boolean canceled) {
         isCanceled = canceled;
     }
 
     public boolean isCancelable() {
-        return intent == IntentType.EXPENSE_LOG || intent == IntentType.INCOME_LOG;
+        return intent == IntentType.EXPENSE_LOG || intent == IntentType.INCOME_LOG 
+                || intent == IntentType.GOAL_LOG || intent == IntentType.DEBT_LOG;
     }
 
     @Override

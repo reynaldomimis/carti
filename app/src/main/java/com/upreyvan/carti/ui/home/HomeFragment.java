@@ -330,7 +330,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         } else if ("BILL".equalsIgnoreCase(type)) {
             main.navigateTo(2);
         } else {
-            main.navigateTo(6);
+            main.navigateTo(5);
         }
     }
 
@@ -403,7 +403,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private void setupAiInsightCard() {
         getBinding().viewAiInsight.btnAskAi.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).navigateTo(6);
+                ((MainActivity) getActivity()).navigateTo(5);
             }
         });
     }

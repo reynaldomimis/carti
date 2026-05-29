@@ -31,10 +31,14 @@ import com.upreyvan.carti.model.ChatMessage;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
 
+import com.upreyvan.carti.ui.ai.AiSuggestionAdapter;
+import com.upreyvan.carti.model.AiSuggestion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import android.text.Editable;
+import android.text.TextWatcher;
 
 import io.appwrite.Query;
 import io.appwrite.models.Document;
@@ -43,6 +47,7 @@ import io.appwrite.models.DocumentList;
 public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> {
 
     private ChatAdapter chatAdapter;
+    private AiSuggestionAdapter suggestionAdapter;
     private ApiHelper apiHelper;
     private PreferenceManager pref;
     private RealtimeRepository realtimeRepo;
@@ -65,9 +70,9 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         super.onViewCreated(view, savedInstanceState);
 
         // Prevent screenshots in chat room
-        if (getActivity() != null) {
-            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-        }
+//        if (getActivity() != null) {
+//            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+//        }
 
         Context context = getContext();
         if (context != null) {
@@ -82,10 +87,29 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
         setupDynamicPadding();
         setupToolbar();
+        setupSuggestions();
         setupChatList();
         setupInput();
         observeChatRealtime();
         loadChatHistory();
+    }
+
+    private void setupSuggestions() {
+        suggestionAdapter = new AiSuggestionAdapter();
+        getBinding().rvSuggestions.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        getBinding().rvSuggestions.setAdapter(suggestionAdapter);
+
+        suggestionAdapter.setOnItemClickListener(suggestion -> {
+            getBinding().layoutInput.etInput.setText(suggestion.getTitle());
+            getBinding().layoutInput.etInput.setSelection(suggestion.getTitle().length());
+            getBinding().layoutInput.etInput.requestFocus();
+        });
+
+        List<AiSuggestion> suggestions = new ArrayList<>();
+        suggestions.add(new AiSuggestion("@Carti Ano ang lagay ng pamilya ko?", "Family health checkup", R.drawable.ic_home, R.color.carti_primary_green));
+        suggestions.add(new AiSuggestion("@Carti Give me a productivity tip.", "Daily advice", R.drawable.ic_chart, R.color.dash_orange));
+        suggestions.add(new AiSuggestion("@Carti How much did we spend today?", "Expense summary", R.drawable.ic_sync, R.color.status_red));
+        suggestionAdapter.submitList(suggestions);
     }
 
     private void setupChatList() {
@@ -93,6 +117,12 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         layoutManager.setStackFromEnd(true);
         getBinding().rvChat.setLayoutManager(layoutManager);
         getBinding().rvChat.setAdapter(chatAdapter);
+
+        chatAdapter.setOnCancelListener((message, position) -> {
+            message.setCanceled(true);
+            chatAdapter.notifyItemChanged(position);
+            Utils.showToast(getContext(), "Transaction canceled.");
+        });
 
         getBinding().rvChat.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
             @Override
@@ -125,9 +155,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                         exists = true;
                         break;
                     }
-                    
-                    // 2. Optimistic match (No ID, but same content, sender and very recent)
-                    // ELITE FIX: Supports both User and AI optimistic messages
+
                     boolean isSameSender = false;
                     if (m.getSenderId() != null && msg.getSenderId() != null) {
                         isSameSender = m.getSenderId().equals(msg.getSenderId());
@@ -157,6 +185,10 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
                 final int finalOptimisticIndex = tempOptimisticIndex;
                 if (finalOptimisticIndex != -1) {
+                    ChatMessage existing = currentList.get(finalOptimisticIndex);
+                    msg.setIntent(existing.getIntent());
+                    msg.setPendingAction(existing.getPendingAction());
+                    msg.setCanceled(existing.isCanceled());
                     currentList.set(finalOptimisticIndex, msg);
                 } else {
                     currentList.add(msg);
@@ -204,11 +236,33 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             }
 
             if (aiRepository != null && (isExplicit || isAiActive)) {
-                // ELITE FIX: Only the sender should trigger the AI processing to avoid redundant calls and race conditions
+                // ELITE FIX: Only the sender should trigger the AI processing
                 if (!isSender) return;
+
+                // Daily Limit Check
+                String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
+                int usageCount = pref.getAiUsageCount(today);
+                int DAILY_LIMIT = 20; // Set your limit here
+
+                if (usageCount >= DAILY_LIMIT) {
+                    isAiThinking = false;
+                    updateInputState();
+                    
+                    String limitMsg = "You have reached your limit today. Please check the User Manual and see you tomorrow again! \uD83D\uDCAA";
+                    ChatMessage aiLimitResponse = new ChatMessage(null, Constants.Roles.AI_ID, pref.getFamilyId(), 
+                            Constants.Roles.AI_NAME, limitMsg, System.currentTimeMillis(), false);
+                    
+                    List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
+                    currentList.add(aiLimitResponse);
+                    chatAdapter.submitList(currentList, () -> {
+                        if (getBinding() != null) getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
+                    });
+                    return;
+                }
 
                 isAiThinking = true;
                 updateInputState();
+                pref.incrementAiUsageCount(today);
                 
                 // Only add shimmer if it's not already there
                 boolean hasShimmer = false;
@@ -228,6 +282,8 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                 }
 
                 aiRepository.processChat(msg.getMessage(), msg.getSenderName(), chatAdapter.getCurrentList(), isExplicit, new GeminiManager.AiCallback() {
+                    private org.json.JSONObject pendingAction;
+
                     @Override
                     public void onSuccess(String response) {
                         if (isAdded() && getActivity() != null) {
@@ -236,10 +292,26 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                                 updateInputState();
                                 
                                 if (response != null && !response.trim().isEmpty()) {
-                                    // ELITE OPTIMISTIC UI: Show AI response immediately locally
-                                    ChatMessage aiOptimistic = new ChatMessage(null, Constants.Roles.AI_ID, pref.getFamilyId(), 
-                                            Constants.Roles.AI_NAME, response, System.currentTimeMillis(), false);
+                                    com.upreyvan.carti.data.ai.IntentType intent = com.upreyvan.carti.data.ai.IntentType.UNKNOWN;
+                                    if (pendingAction != null) {
+                                        String action = pendingAction.optString("action");
+                                        if ("ADD_EXPENSE".equals(action)) intent = com.upreyvan.carti.data.ai.IntentType.EXPENSE_LOG;
+                                        else if ("ADD_INCOME".equals(action)) intent = com.upreyvan.carti.data.ai.IntentType.INCOME_LOG;
+                                        else if ("ADD_GOAL".equals(action)) intent = com.upreyvan.carti.data.ai.IntentType.GOAL_LOG;
+                                        else if ("ADD_DEBT".equals(action)) intent = com.upreyvan.carti.data.ai.IntentType.DEBT_LOG;
+                                    }
+
+                                    ChatMessage aiOptimistic = new ChatMessage(Constants.Roles.AI_NAME, response, 
+                                            new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault()).format(new java.util.Date()), 
+                                            false, R.drawable.ai_holder, intent);
                                     
+                                    aiOptimistic.setSenderId(Constants.Roles.AI_ID);
+                                    aiOptimistic.setTimestamp(System.currentTimeMillis());
+
+                                    if (pendingAction != null) {
+                                        aiOptimistic.setPendingAction(pendingAction);
+                                    }
+
                                     List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
                                     // Remove shimmer and add AI response
                                     for (int i = currentList.size() - 1; i >= 0; i--) {
@@ -264,7 +336,8 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
                     @Override
                     public void onActionDetected(org.json.JSONObject action) {
-                        android.util.Log.d("FamilyChatFragment", "AI Action: " + action.optString("action"));
+                        this.pendingAction = action;
+                        android.util.Log.d("FamilyChatFragment", "AI Action Detected: " + action.optString("action"));
                     }
 
                     @Override
@@ -318,7 +391,15 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         if (context == null || pref == null) return;
 
         isLoading = true;
-        if (getBinding() != null) getBinding().pbLoadingMore.show();
+        if (getBinding() != null) {
+            getBinding().pbLoadingMore.show();
+            if (!loadMore) {
+                getBinding().layoutShimmer.setVisibility(View.VISIBLE);
+                getBinding().layoutShimmer.startShimmer();
+                getBinding().layoutEmpty.setVisibility(View.GONE);
+                getBinding().rvChat.setVisibility(View.GONE);
+            }
+        }
 
         List<String> queries = new ArrayList<>(Arrays.asList(
             Query.Companion.equal("familyId", pref.getFamilyId()),
@@ -353,6 +434,9 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                         getActivity().runOnUiThread(() -> {
                             if (getBinding() == null) return;
                             getBinding().pbLoadingMore.hide();
+                            getBinding().layoutShimmer.stopShimmer();
+                            getBinding().layoutShimmer.setVisibility(View.GONE);
+
                             List<ChatMessage> currentItems = new ArrayList<>(chatAdapter.getCurrentList());
                             List<ChatMessage> newList;
                             
@@ -371,8 +455,15 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                             isLastPage = result.getDocuments().size() < PAGE_SIZE;
                             
                             chatAdapter.submitList(newList, () -> {
-                                if (getBinding() != null && !loadMore && !newList.isEmpty()) {
-                                    getBinding().rvChat.scrollToPosition(newList.size() - 1);
+                                if (getBinding() != null) {
+                                    if (!loadMore && !newList.isEmpty()) {
+                                        getBinding().rvChat.scrollToPosition(newList.size() - 1);
+                                    }
+                                    
+                                    // Toggle Empty State / Intro UI
+                                    boolean hasMessages = !newList.isEmpty();
+                                    getBinding().rvChat.setVisibility(hasMessages ? View.VISIBLE : View.GONE);
+                                    getBinding().layoutEmpty.setVisibility(hasMessages ? View.GONE : View.VISIBLE);
                                 }
                             });
                             isLoading = false;
@@ -384,7 +475,11 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                         isLoading = false;
                         if (!isAdded() || getActivity() == null) return;
                         getActivity().runOnUiThread(() -> {
-                            if (getBinding() != null) getBinding().pbLoadingMore.hide();
+                            if (getBinding() != null) {
+                                getBinding().pbLoadingMore.hide();
+                                getBinding().layoutShimmer.stopShimmer();
+                                getBinding().layoutShimmer.setVisibility(View.GONE);
+                            }
                         });
                         if (getContext() != null) {
                             Utils.showToast(requireContext(), "Error loading messages");
@@ -607,10 +702,6 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         if (getBinding() == null) return;
         getBinding().layoutHeader.setElevation(4f);
 
-        getBinding().backButtonContainer.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
-        });
-
         getBinding().settingsButtonContainer.setOnClickListener(v -> showAutoDeleteDialog());
     }
 
@@ -643,36 +734,36 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     private void setupDynamicPadding() {
         if (getBinding() == null) return;
         int originalHeaderBottom = getBinding().layoutHeader.getPaddingBottom();
-        int originalInputBottom = getBinding().layoutInputContainer.getPaddingBottom();
+        int bottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium);
+        int keyboardGap = getResources().getDimensionPixelSize(R.dimen.spacing_small);
 
         ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutHeader, (v, insets) -> {
             if (getBinding() == null) return insets;
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-
             int adjustedTop = (int) (systemBars.top * 0.3f);
-
-            v.setPadding(
-                    v.getPaddingLeft(),
-                     adjustedTop,
-                    v.getPaddingRight(),
-                    originalHeaderBottom
-            );
+            v.setPadding(v.getPaddingLeft(), adjustedTop, v.getPaddingRight(), originalHeaderBottom);
             return insets;
         });
-
 
         ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutInputContainer, (v, insets) -> {
             if (getBinding() == null) return insets;
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
 
-            int insetBottom = Math.max(systemBars.bottom, ime.bottom);
+            boolean isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+            int paddingBottom;
+
+            if (isKeyboardVisible) {
+                paddingBottom = ime.bottom + keyboardGap;
+            } else {
+                paddingBottom = systemBars.bottom + bottomNavHeight;
+            }
 
             v.setPadding(
                     v.getPaddingLeft(),
                     v.getPaddingTop(),
                     v.getPaddingRight(),
-                    insetBottom + originalInputBottom
+                    paddingBottom
             );
             return insets;
         });

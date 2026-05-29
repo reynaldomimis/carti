@@ -23,10 +23,10 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
     private static final int VIEW_TYPE_ME = 1;
     private static final int VIEW_TYPE_OTHER = 2;
     private static final int VIEW_TYPE_THINKING = 5;
-    private static final int TIMER_DURATION = 5000;
+    private static final int TIMER_DURATION = 10000;
 
     private OnCancelListener cancelListener;
-    private final Map<Integer, CountDownTimer> activeTimers = new HashMap<>();
+    private final Map<ChatMessage, CountDownTimer> activeTimers = new HashMap<>();
 
     public interface OnCancelListener {
         void onCancel(ChatMessage message, int position);
@@ -77,7 +77,6 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
     public void onBindViewHolder(@NonNull ViewHolder<ViewBinding> holder, int position) {
         ChatMessage message = getItem(position);
         if (message.isShimmer()) {
-            // Thinking view uses indeterminate progress indicator, no binding needed
             return;
         }
 
@@ -119,9 +118,9 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
 
             if (message.isCancelable() && !message.isCanceled()) {
                 b.layoutCancel.setVisibility(View.VISIBLE);
-                startTimer(b, message, holder.getAdapterPosition());
+                startTimer(b, message);
                 b.btnCancel.setOnClickListener(v -> {
-                    cancelTimer(holder.getAdapterPosition());
+                    cancelTimer(message);
                     message.setCanceled(true);
                     notifyItemChanged(holder.getAdapterPosition());
                     if (cancelListener != null) {
@@ -130,13 +129,13 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
                 });
             } else {
                 b.layoutCancel.setVisibility(View.GONE);
-                cancelTimer(holder.getAdapterPosition());
+                cancelTimer(message);
             }
         }
     }
 
-    private void startTimer(ItemChatLeftBinding b, ChatMessage message, int position) {
-        cancelTimer(position);
+    private void startTimer(ItemChatLeftBinding b, ChatMessage message) {
+        cancelTimer(message);
         CountDownTimer timer = new CountDownTimer(TIMER_DURATION, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -146,21 +145,27 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
             @Override
             public void onFinish() {
                 b.layoutCancel.setVisibility(View.GONE);
+                if (!message.isCanceled() && message.getPendingAction() != null) {
+                    com.upreyvan.carti.data.repository.AiRepository.getInstance(b.getRoot().getContext())
+                            .executeAction(message.getPendingAction());
+                }
             }
         }.start();
-        activeTimers.put(position, timer);
+        activeTimers.put(message, timer);
     }
 
-    private void cancelTimer(int position) {
-        if (activeTimers.containsKey(position)) {
-            activeTimers.get(position).cancel();
-            activeTimers.remove(position);
+    private void cancelTimer(ChatMessage message) {
+        if (activeTimers.containsKey(message)) {
+            activeTimers.get(message).cancel();
+            activeTimers.remove(message);
         }
     }
 
     @Override
     public void onViewRecycled(@NonNull ViewHolder<ViewBinding> holder) {
         super.onViewRecycled(holder);
-        cancelTimer(holder.getAdapterPosition());
+        // We don't necessarily want to cancel the timer on recycle, 
+        // but we should clear references if needed. 
+        // Actually, for a 10s timer, it's better to let it run in background if not canceled.
     }
 }

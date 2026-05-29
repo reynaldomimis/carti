@@ -30,8 +30,16 @@ public class AiRepository {
     private final com.upreyvan.carti.data.local.db.dao.TransactionDao transactionDao;
     
     private long lastCallTime = 0;
-    // ELITE SAFETY: Increased to 5000ms (12 RPM) to avoid Google's 15 RPM Free Tier limit
     private static final long RATE_LIMIT_MS = 5000;
+
+    private static AiRepository instance;
+
+    public static AiRepository getInstance(Context context) {
+        if (instance == null) {
+            instance = new AiRepository(context);
+        }
+        return instance;
+    }
 
     public AiRepository(Context context) {
         this.geminiManager = GeminiManager.getInstance(context);
@@ -85,10 +93,14 @@ public class AiRepository {
             public void onError(Throwable t) { uiCallback.onError(t); }
             @Override
             public void onActionDetected(JSONObject action) {
-                actionHandler.executeAction(action);
+                // actionHandler.executeAction(action); // REPLACED: Handled by UI with 10s cancel
                 uiCallback.onActionDetected(action);
             }
         });
+    }
+
+    public void executeAction(JSONObject action) {
+        actionHandler.executeAction(action);
     }
 
     private String buildCompressedContextFromRoom(List<com.upreyvan.carti.model.Transaction> transactions, List<ChatMessage> chatHistory) {
@@ -96,8 +108,7 @@ public class AiRepository {
         double expense = pref.getTotalExpense();
         double savings = income - expense;
         double balance = pref.getBalance();
-
-        // ELITE OPTIMIZATION: Get pre-aggregated breakdown from SQL
+        
         List<com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum> breakdown = transactionDao.getExpenseBreakdown(pref.getFamilyId());
 
         StringBuilder sb = new StringBuilder();
@@ -124,13 +135,19 @@ public class AiRepository {
             sb.append("\n");
         }
 
-        // TOKEN SAVER: Only include the very last message for minimal context
+        // ELITE OPTIMIZATION: Only include summarized user messages to save tokens
         if (chatHistory != null && !chatHistory.isEmpty()) {
-            sb.append("CHAT_HISTORY:\n");
-            int start = Math.max(0, chatHistory.size() - 1);
-            for (int i = start; i < chatHistory.size(); i++) {
+            java.util.List<String> userMsgs = new java.util.ArrayList<>();
+            for (int i = chatHistory.size() - 1; i >= 0 && userMsgs.size() < 10; i--) {
                 ChatMessage m = chatHistory.get(i);
-                sb.append(m.isMe() ? "User: " : "Carti: ").append(m.getMessage()).append("\n");
+                if (m.isMe()) {
+                    // Use the stripper to clean history messages too
+                    userMsgs.add(0, geminiManager.summarizeUserMessage(m.getMessage()));
+                }
+            }
+            if (!userMsgs.isEmpty()) {
+                sb.append("USER_HISTORY:\n");
+                for (String msg : userMsgs) sb.append("> ").append(msg).append("\n");
             }
         }
 

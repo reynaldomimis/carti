@@ -24,7 +24,6 @@ import com.upreyvan.carti.ui.profile.ProfileActivity;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityMainBinding;
 import com.upreyvan.carti.databinding.LayoutNavItemBinding;
-import com.upreyvan.carti.ui.ai.AiAssistantFragment;
 import com.upreyvan.carti.ui.debt.DebtTrackerFragment;
 import com.upreyvan.carti.ui.track.TrackFragment;
 import com.upreyvan.carti.ui.family.FamilyChatFragment;
@@ -109,7 +108,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         getBinding().tabAdd.navIcon.getLayoutParams().width = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
         getBinding().tabAdd.navIcon.getLayoutParams().height = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
         getBinding().tabAdd.navLabel.setTypeface(null, android.graphics.Typeface.BOLD);
-        initTab(getBinding().tabAi, R.drawable.ai_holder, getString(R.string.menu_ai), 6);
+        initTab(getBinding().tabAi, R.drawable.ai_holder, getString(R.string.menu_ai), 5);
         getBinding().tabAi.navIcon.getLayoutParams().width = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
         getBinding().tabAi.navIcon.getLayoutParams().height = getResources().getDimensionPixelSize(R.dimen.icon_size_nav);
         getBinding().tabAi.navIcon.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -213,8 +212,6 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             fragment = new TrackFragment();
         } else if (id == 3) {
             fragment = new DebtTrackerFragment();
-        } else if (id == 6) {
-            fragment = new AiAssistantFragment();
         } else if (id == 5) {
             fragment = new FamilyChatFragment();
         } else if (id == 7) {

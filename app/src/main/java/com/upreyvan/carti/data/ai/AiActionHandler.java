@@ -21,12 +21,19 @@ public class AiActionHandler {
     }
 
     public void executeAction(JSONObject actionJson) {
+        executeAction(actionJson, null);
+    }
+
+    public void executeAction(JSONObject actionJson, AppwriteManager.AppwriteCallback<Map<String, Object>> customCallback) {
         try {
             String actionType = actionJson.optString("action");
             JSONObject data = actionJson.optJSONObject("data");
             if (data == null) return;
 
             Log.d("AiActionHandler", "Executing AI Action: " + actionType);
+
+            AppwriteManager.AppwriteCallback<Map<String, Object>> callback = 
+                (customCallback != null) ? customCallback : new SimpleCallback(actionType + " added");
 
             switch (actionType) {
                 case "ADD_EXPENSE":
@@ -35,7 +42,7 @@ public class AiActionHandler {
                         "EXPENSE",
                         data.getString("category"),
                         data.optString("note", ""),
-                        new SimpleCallback("Expense added")
+                        callback
                     );
                     break;
 
@@ -43,7 +50,7 @@ public class AiActionHandler {
                     apiHelper.addIncome(
                         data.getString("source"),
                         data.getDouble("amount"),
-                        new SimpleCallback("Income added")
+                        callback
                     );
                     break;
 
@@ -52,7 +59,7 @@ public class AiActionHandler {
                         data.getString("title"),
                         data.getDouble("targetAmount"),
                         data.optString("targetDate", ""),
-                        new SimpleCallback("Goal set")
+                        callback
                     );
                     break;
 
@@ -65,7 +72,7 @@ public class AiActionHandler {
                         data.optString("targetDate", ""),
                         "NO_REMINDER",
                         data.optString("notes", ""),
-                        new SimpleCallback("Debt logged")
+                        callback
                     );
                     break;
 

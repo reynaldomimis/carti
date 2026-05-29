@@ -56,8 +56,11 @@ public class GeminiManager {
                     "ACCURACY RULES (NO HALLUCINATION): " +
                     "1. NEVER guess missing values. " +
                     "2. If amount/category/source is unclear → respond with CLARIFICATION_REQUEST only. " +
-                    "3. Only use provided user input data. No assumptions allowed. " +
-                    "4. If conflicting information exists → reject action and ask user for correction. " +
+                    "3. If user provides a single word (e.g., 'Drinks') following your request for clarification, treat it as the missing value for the previous context. " +
+                    "4. CATEGORIZATION: Map items to the most relevant category in the provided [PLAN]. (e.g., 'Drinks' or 'Coffee' → 'Food'). " +
+                    "5. INPUT HANDLING: User input is COMPRESSED (prepositions/fillers removed). Infer intent from keywords. " +
+                    "6. Only use provided user input data. No assumptions allowed. " +
+                    "7. If conflicting information exists → reject action and ask user for correction. " +
 
                     "INTENT DETECTION ENGINE: " +
                     "- EXPENSE: Keywords [bumili, gastos, paid, spent, bayad, nabili, nagastos] → ADD_EXPENSE " +
@@ -141,10 +144,11 @@ public class GeminiManager {
 
     /**
      * TOKEN SAVER: Summarizes/Cleans user input to save tokens.
+     * Removes prepositions and fillers (EN & TL) to save money/quota.
      */
-    private String summarizeUserMessage(String msg) {
-        if (msg == null || msg.length() < 20) return msg;
-        String clean = msg.replaceAll("(?i)\\b(paki|please|po|opo|ah|eh|parang|siguro|yong|yung)\\b", "").trim();
+    public String summarizeUserMessage(String msg) {
+        if (msg == null || msg.isEmpty()) return "";
+        String clean = msg.replaceAll("(?i)\\b(i|paki|please|po|opo|ah|eh|parang|siguro|yong|yung|ng|sa|ang|mga|si|ni|na|ba|ka|of|the|for|a|an|and|with|to|in|at|from|by|para|kay)\\b", "").trim();
         return clean.replaceAll("\\s+", " ");
     }
 
@@ -208,8 +212,9 @@ public class GeminiManager {
                 String message = text.substring(end).trim();
 
                 JSONObject obj = new JSONObject(json);
-                callback.onActionDetected(obj);
+                // callback.onActionDetected(obj); // Will be called after confirmation if needed
 
+                callback.onActionDetected(obj);
                 callback.onSuccess(
                         message.isEmpty()
                                 ? "Recorded successfully."
