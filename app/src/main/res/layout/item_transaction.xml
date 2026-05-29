@@ -19,13 +19,14 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/spacing_medium">
+            android:paddingHorizontal="@dimen/spacing_medium"
+            android:paddingTop="@dimen/spacing_small">
+
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/ivAvatar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="@dimen/spacing_medium"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:scaleType="centerCrop"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -34,12 +35,13 @@
 
             <TextView
                 android:id="@+id/tvUserAction"
-                style="@style/CartiTextTitle"
+                style="@style/CartiTextDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_medium"
+                android:layout_marginStart="@dimen/spacing_small"
                 android:layout_marginEnd="@dimen/spacing_small"
-                android:textSize="@dimen/text_size_body"
+                android:textSize="12sp"
+                android:includeFontPadding="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/ivAvatar"
                 app:layout_constraintTop_toTopOf="@id/ivAvatar"
@@ -50,23 +52,27 @@
                 style="@style/CartiTextDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_xxs"
+                android:textSize="10sp"
+                android:alpha="0.6"
+                android:includeFontPadding="false"
                 app:layout_constraintStart_toStartOf="@id/tvUserAction"
                 app:layout_constraintTop_toBottomOf="@id/tvUserAction"
-                tools:text="2h ago" />
+                tools:text="42mins ago" />
 
             <TextView
                 android:id="@+id/tvTitle"
-                style="@style/CartiTextTitle"
+                style="@style/CartiHeader"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:layout_marginHorizontal="@dimen/spacing_medium"
-                android:textSize="@dimen/text_size_header"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginStart="0dp"
+                android:layout_marginEnd="8dp"
+                android:textSize="16sp"
+                android:includeFontPadding="false"
                 app:layout_constraintEnd_toStartOf="@+id/tvAmount"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/ivAvatar"
-                tools:text="Grocery" />
+                app:layout_constraintTop_toBottomOf="@id/tvTimestamp"
+                tools:text="Food" />
 
             <TextView
                 android:id="@+id/tvDescription"
@@ -74,11 +80,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:layout_marginHorizontal="@dimen/spacing_medium"
-                app:layout_constraintEnd_toEndOf="@id/tvTitle"
-                app:layout_constraintStart_toStartOf="@id/tvTitle"
+                android:layout_marginStart="0dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginBottom="@dimen/spacing_small"
+                android:textSize="13sp"
+                android:includeFontPadding="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvTitle"
-                tools:text="Added an expense: SM Hypermarket"
+                tools:text="Jollibee Dinner"
                 tools:visibility="visible" />
 
             <TextView
@@ -86,8 +96,9 @@
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/spacing_medium"
-                android:textSize="20sp"
+                android:layout_marginEnd="0dp"
+                android:textSize="17sp"
+                android:includeFontPadding="false"
                 app:layout_constraintBottom_toBottomOf="@+id/tvTitle"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tvTitle"
@@ -97,13 +108,14 @@
             <!-- Reactions Summary Row -->
             <LinearLayout
                 android:id="@+id/layoutReactionsSummary"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
+                android:layout_marginTop="4dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="@dimen/spacing_medium"
-                android:paddingBottom="@dimen/spacing_small"
+                android:paddingBottom="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvDescription">
 
                 <TextView
@@ -111,7 +123,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="👍"
-                    android:textSize="14sp" />
+                    android:textSize="10sp" />
 
                 <TextView
                     android:id="@+id/tvLikesCount"
@@ -120,8 +132,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp"
+                    android:textSize="10sp"
                     android:fontFamily="@font/plus_jakarta_sans_medium"
+                    android:includeFontPadding="false"
                     tools:text="3 others" />
 
                 <View
@@ -134,7 +147,8 @@
                     style="@style/CartiTextDescription"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="13sp"
+                    android:textSize="10sp"
+                    android:includeFontPadding="false"
                     android:visibility="gone"
                     tools:visibility="visible"
                     tools:text="2 comments" />
@@ -142,26 +156,30 @@
 
             <View
                 android:id="@+id/divider"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="1dp"
-                android:layout_marginHorizontal="@dimen/spacing_medium"
+                android:layout_marginTop="4dp"
                 android:background="@color/border_subtle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/layoutReactionsSummary" />
 
             <!-- Action Buttons Row -->
             <LinearLayout
                 android:id="@+id/layoutFooter"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/action_button_height"
                 android:orientation="horizontal"
-                app:layout_constraintTop_toBottomOf="@id/divider"
-                app:layout_constraintBottom_toBottomOf="parent">
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider">
 
                 <!-- Like Button -->
                 <LinearLayout
                     android:id="@+id/btnLike"
                     android:layout_width="0dp"
-                    android:layout_height="48dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
@@ -174,25 +192,31 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="👍"
-                        android:textSize="18sp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tvBtnLikeText"
                         style="@style/CartiTextDescription"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="4dp"
                         android:text="Like"
                         android:textColor="@color/text_secondary"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:fontFamily="@font/plus_jakarta_sans_semibold" />
                 </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/border_subtle" />
 
                 <!-- Comment Button -->
                 <LinearLayout
                     android:id="@+id/btnComment"
                     android:layout_width="0dp"
-                    android:layout_height="48dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
@@ -201,8 +225,8 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
                         android:contentDescription="@null"
                         android:src="@android:drawable/ic_menu_send"
                         app:tint="@color/text_tertiary" />
@@ -212,14 +236,15 @@
                         style="@style/CartiTextDescription"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="4dp"
                         android:text="Comment"
                         android:textColor="@color/text_secondary"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:fontFamily="@font/plus_jakarta_sans_semibold" />
                 </LinearLayout>
 
             </LinearLayout>
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
