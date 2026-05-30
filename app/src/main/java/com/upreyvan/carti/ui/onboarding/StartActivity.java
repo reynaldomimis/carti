@@ -1,15 +1,11 @@
 package com.upreyvan.carti.ui.onboarding;
 
-import android.graphics.Color;
-import android.os.Bundle;
-import android.view.View;
-import android.view.Window;
 
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityStartBinding;
-import com.upreyvan.carti.ui.onboarding.OnboardingWelcomeFragment;
 
 public class StartActivity extends BaseActivity<ActivityStartBinding> {
 

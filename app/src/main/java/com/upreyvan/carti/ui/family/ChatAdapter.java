@@ -10,6 +10,7 @@ import androidx.viewbinding.ViewBinding;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseAdapter;
+import com.upreyvan.carti.data.repository.AiRepository;
 import com.upreyvan.carti.databinding.ItemChatLeftBinding;
 import com.upreyvan.carti.databinding.ItemChatRightBinding;
 import com.upreyvan.carti.model.ChatMessage;
@@ -58,18 +59,12 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
     @Override
     public ViewHolder<ViewBinding> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        ViewBinding binding;
-        switch (viewType) {
-            case VIEW_TYPE_ME:
-                binding = ItemChatRightBinding.inflate(inflater, parent, false);
-                break;
-            case VIEW_TYPE_THINKING:
-                binding = com.upreyvan.carti.databinding.ItemChatThinkingBinding.inflate(inflater, parent, false);
-                break;
-            default:
-                binding = ItemChatLeftBinding.inflate(inflater, parent, false);
-                break;
-        }
+        ViewBinding binding = switch (viewType) {
+            case VIEW_TYPE_ME -> ItemChatRightBinding.inflate(inflater, parent, false);
+            case VIEW_TYPE_THINKING ->
+                    com.upreyvan.carti.databinding.ItemChatThinkingBinding.inflate(inflater, parent, false);
+            default -> ItemChatLeftBinding.inflate(inflater, parent, false);
+        };
         return new ViewHolder<>(binding);
     }
 
@@ -87,7 +82,12 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
             b.tvTime.setText(message.getTime());
         } else if (holder.binding instanceof ItemChatLeftBinding) {
             ItemChatLeftBinding b = (ItemChatLeftBinding) holder.binding;
-            b.tvSenderName.setText(message.getSenderName());
+
+            if (message.isMe()) {
+                b.tvSenderName.setText(b.getRoot().getContext().getString(R.string.chat_sender_me));
+            } else {
+                b.tvSenderName.setText(message.getSenderName());
+            }
             
             if (message.isCanceled()) {
                 b.tvMessage.setText(b.getRoot().getContext().getString(R.string.msg_canceled));
@@ -146,7 +146,7 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
             public void onFinish() {
                 b.layoutCancel.setVisibility(View.GONE);
                 if (!message.isCanceled() && message.getPendingAction() != null) {
-                    com.upreyvan.carti.data.repository.AiRepository.getInstance(b.getRoot().getContext())
+                    AiRepository.getInstance(b.getRoot().getContext())
                             .executeAction(message.getPendingAction());
                 }
             }

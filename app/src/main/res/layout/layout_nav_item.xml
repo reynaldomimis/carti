@@ -1,29 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="0dp"
     android:layout_height="match_parent"
     android:layout_weight="1"
     android:clickable="true"
-    android:clipChildren="false"
-    android:clipToPadding="false"
     android:focusable="true"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:paddingTop="26dp">
+    android:gravity="center"
+    android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/nav_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        app:tint="@color/text_tertiary" />
+    <FrameLayout
+        android:id="@+id/nav_icon_container"
+        android:layout_width="44dp"
+        android:layout_height="28dp"
+        android:layout_gravity="center">
+
+        <ImageView
+            android:id="@+id/nav_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:scaleType="centerInside" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/nav_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:fontFamily="@font/plus_jakarta_sans_semibold"
-        android:textColor="@color/text_tertiary"
-        android:textSize="11sp" />
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/plus_jakarta_sans_medium"
+        android:textSize="@dimen/text_size_xxs"
+        android:maxLines="1"
+        android:ellipsize="end" />
 </LinearLayout>

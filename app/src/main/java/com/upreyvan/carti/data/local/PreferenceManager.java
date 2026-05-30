@@ -29,7 +29,7 @@ public class PreferenceManager {
                 .putString(Constants.Keys.KEY_FAMILY_ID, familyId)
                 .putString(Constants.Keys.KEY_INVITE_CODE, inviteCode)
                 .putBoolean(Constants.Keys.KEY_IS_EMPLOYED, isEmployed)
-                .apply();
+                .commit(); // Senior Logic: Use commit to ensure identity data is written before navigation
     }
 
     public String getUserId() {
@@ -39,11 +39,11 @@ public class PreferenceManager {
 
     public String getFamilyId() {
         String id = sharedPreferences.getString(Constants.Keys.KEY_FAMILY_ID, "");
-        return (id == null || id.equals("null")) ? "" : id;
+        return (id == null || id.equalsIgnoreCase("null")) ? "" : id.trim();
     }
 
     public void setFamilyId(String familyId) {
-        sharedPreferences.edit().putString(Constants.Keys.KEY_FAMILY_ID, familyId).apply();
+        sharedPreferences.edit().putString(Constants.Keys.KEY_FAMILY_ID, familyId).commit();
     }
 
     public String getInviteCode() {

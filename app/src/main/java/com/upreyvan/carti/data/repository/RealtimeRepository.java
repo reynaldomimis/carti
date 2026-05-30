@@ -79,8 +79,7 @@ public class RealtimeRepository {
             if (payload == null || event.getEvents().isEmpty()) return;
 
             String eventPath = event.getEvents().iterator().next();
-            
-            // Dispatch based on collection
+
             if (eventPath.contains(Constants.Appwrite.COL_LIKES)) {
                 handleLikeEvent(eventPath, payload);
             } else if (isTransactionCollection(eventPath)) {
@@ -139,14 +138,12 @@ public class RealtimeRepository {
     }
 
     private void handleLikeEvent(String eventPath, Map<String, Object> payload) {
-        // We move everything inside the executor to ensure DB is updated before stream notifies
         executor.execute(() -> {
             try {
                 String id = (String) payload.get("$id");
                 String txnId = (String) payload.get("transactionId");
                 String userId = (String) payload.get("userId");
-                
-                // Use 'username' (lowercase) consistently as per project requirement
+
                 String username = (String) payload.get("username");
                 if (username == null) username = (String) payload.get("userName");
                 if (username != null) username = username.toLowerCase();

@@ -15,8 +15,7 @@ public class SecurityGuard {
 
     private static final String EXPECTED_HASH = BuildConfig.APP_SIGNATURE_HASH;
 
-    // Known harmful package names (Lucky Patcher, GameGuardian, APK Editors, Magisk, etc.)
-    private static final String[] ILLEGAL_PACKAGES = {
+     private static final String[] ILLEGAL_PACKAGES = {
             "com.chelpus.lackypatch",
             "com.dimonvideo.luckypatcher",
             "com.android.vending.billing.InAppBillingService.LUCK",
@@ -34,8 +33,6 @@ public class SecurityGuard {
     };
 
     public static void checkIntegrity(Context context) {
-        // ELITE SENIOR FIX: Bypassing integrity check during development (DEBUG mode)
-        // This prevents the app from crashing while you are coding.
         if (BuildConfig.DEBUG) {
             Log.d("SecurityGuard", "Debug build detected. Skipping integrity check for development.");
             return;

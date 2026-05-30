@@ -408,17 +408,21 @@ public class ApiHelper {
         callAction(Constants.Actions.UPDATE_FAMILY_TOTALS, params, callback);
     }
 
-    // ─── MESSAGES ────────────────────────────────────────────────────────────
-
     public void sendMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
+        sendMessage(text, pref.getUserId(), pref.getUsername(), callback);
+    }
+
+    public void sendAiMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
+        sendMessage(text, Constants.Roles.AI_ID, Constants.Roles.AI_NAME, callback);
+    }
+
+    private void sendMessage(String text, String senderId, String senderName, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
-        String userId = pref.getUserId();
-        String username = pref.getUsername();
 
         Map<String, Object> data = new HashMap<>();
         data.put("text", text);
-        data.put("senderId", userId);
-        data.put("senderName", username);
+        data.put("senderId", senderId);
+        data.put("senderName", senderName);
         data.put("familyId", familyId);
         data.put("timestamp", System.currentTimeMillis());
 

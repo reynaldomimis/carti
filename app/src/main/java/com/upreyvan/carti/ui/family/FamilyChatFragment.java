@@ -5,44 +5,41 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.data.ai.AiManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.databinding.FragmentFamilyChatBinding;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
-import com.upreyvan.carti.data.ai.GeminiManager;
 import com.upreyvan.carti.data.repository.AiRepository;
-import com.upreyvan.carti.data.ai.VoiceToTextHelper;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
+import com.upreyvan.carti.databinding.FragmentFamilyChatBinding;
+import com.upreyvan.carti.model.AiSuggestion;
 import com.upreyvan.carti.model.ChatMessage;
+import com.upreyvan.carti.ui.ai.AiSuggestionAdapter;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.data.ai.VoiceToTextHelper;
 
-import com.upreyvan.carti.ui.ai.AiSuggestionAdapter;
-import com.upreyvan.carti.model.AiSuggestion;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import android.text.Editable;
-import android.text.TextWatcher;
 
 import io.appwrite.Query;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
+import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 
 public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> {
 
@@ -54,7 +51,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     private AiRepository aiRepository;
     private VoiceToTextHelper voiceToTextHelper;
     private boolean isAiThinking = false;
-    
+
     private boolean isLoading = false;
     private boolean isLastPage = false;
     private long oldestTimestamp = Long.MAX_VALUE;
@@ -68,64 +65,43 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiHelper = new ApiHelper(requireContext());
+        pref = new PreferenceManager(requireContext());
+        realtimeRepo = RealtimeRepository.getInstance(requireContext());
+        aiRepository = AiRepository.getInstance(requireContext());
 
-        // Prevent screenshots in chat room
-//        if (getActivity() != null) {
-//            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-//        }
-
-        Context context = getContext();
-        if (context != null) {
-            apiHelper = new ApiHelper(context);
-            pref = new PreferenceManager(context);
-            realtimeRepo = RealtimeRepository.getInstance(context);
-            aiRepository = new AiRepository(context);
-            setupVoiceInput();
-        }
-        
-        chatAdapter = new ChatAdapter();
-
-        setupDynamicPadding();
-        setupToolbar();
-        setupSuggestions();
         setupChatList();
+        setupSuggestions();
         setupInput();
-        observeChatRealtime();
+        setupVoiceInput();
+        setupToolbar();
+        setupDynamicPadding();
+
         checkConnectionAndLoad();
+        observeChatRealtime();
     }
 
     private void checkConnectionAndLoad() {
-        if (getBinding() == null) return;
-        boolean isConnected = Utils.isNetworkAvailable(requireContext());
-
-        if (isConnected) {
+        if (checkNetwork()) {
             getBinding().layoutNoInternet.setVisibility(View.GONE);
             toggleChatContentVisibility(true);
-            
-            // Ensure Realtime is active when we come back online
-            if (realtimeRepo != null) {
-                realtimeRepo.startListening();
-            }
-
             loadChatHistory();
         } else {
             getBinding().layoutNoInternet.setVisibility(View.VISIBLE);
             toggleChatContentVisibility(false);
+            getBinding().btnRetry.setOnClickListener(v -> checkConnectionAndLoad());
         }
     }
 
     private void toggleChatContentVisibility(boolean visible) {
-        if (getBinding() == null) return;
         int visibility = visible ? View.VISIBLE : View.GONE;
         getBinding().layoutHeader.setVisibility(visibility);
         getBinding().layoutInputContainer.setVisibility(visibility);
-        
+
         if (!visible) {
             getBinding().rvChat.setVisibility(View.GONE);
             getBinding().layoutEmpty.setVisibility(View.GONE);
-            getBinding().layoutShimmer.stopShimmer();
             getBinding().layoutShimmer.setVisibility(View.GONE);
-            getBinding().pbLoadingMore.hide();
         }
     }
 
@@ -135,36 +111,32 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         getBinding().rvSuggestions.setAdapter(suggestionAdapter);
 
         suggestionAdapter.setOnItemClickListener(suggestion -> {
-            getBinding().layoutInput.etInput.setText(suggestion.getTitle());
-            getBinding().layoutInput.etInput.setSelection(suggestion.getTitle().length());
-            getBinding().layoutInput.etInput.requestFocus();
+            getBinding().layoutInput.etInput.setText(suggestion.getDescription());
         });
 
         List<AiSuggestion> suggestions = new ArrayList<>();
-        suggestions.add(new AiSuggestion("@Carti Ano ang lagay ng pamilya ko?", "Family health checkup", R.drawable.ic_home, R.color.carti_primary_green));
-        suggestions.add(new AiSuggestion("@Carti Give me a productivity tip.", "Daily advice", R.drawable.ic_chart, R.color.dash_orange));
-        suggestions.add(new AiSuggestion("@Carti How much did we spend today?", "Expense summary", R.drawable.ic_sync, R.color.status_red));
+        suggestions.add(new AiSuggestion("Budget", "How much is our family budget?", R.drawable.ic_chart, R.color.carti_primary_green));
+        suggestions.add(new AiSuggestion("Spending", "Who spent the most this week?", R.drawable.ic_person, R.color.carti_primary_green));
+        suggestions.add(new AiSuggestion("Advice", "Give us a saving tip for today.", R.drawable.ai_holder, R.color.carti_primary_green));
         suggestionAdapter.submitList(suggestions);
     }
 
     private void setupChatList() {
+        chatAdapter = new ChatAdapter();
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
         layoutManager.setStackFromEnd(true);
         getBinding().rvChat.setLayoutManager(layoutManager);
         getBinding().rvChat.setAdapter(chatAdapter);
 
         chatAdapter.setOnCancelListener((message, position) -> {
-            message.setCanceled(true);
-            chatAdapter.notifyItemChanged(position);
-            Utils.showToast(getContext(), "Transaction canceled.");
+            // Optional: handle action cancellation
         });
 
-        getBinding().rvChat.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+        getBinding().rvChat.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                if (dy < 0 && !recyclerView.canScrollVertically(-1)) {
-                    if (!isLoading && !isLastPage) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (dy < 0 && !isLoading && !isLastPage) {
+                    if (layoutManager.findFirstVisibleItemPosition() <= 5) {
                         loadChatHistory(true);
                     }
                 }
@@ -185,7 +157,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                 
                 for (int i = 0; i < currentList.size(); i++) {
                     ChatMessage m = currentList.get(i);
-                    // 1. Exact ID match (Best case)
+
                     if (m.getId() != null && m.getId().equals(msg.getId())) {
                         exists = true;
                         break;
@@ -234,157 +206,29 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                     if (finalOptimisticIndex == -1) {
                         getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
                     }
-                    // ELITE FIX: Process AI AFTER list is updated to ensure context is fresh
                     processAiForMessage(msg);
                 });
             }
         });
     }
 
-
-
-
     private void processAiForMessage(ChatMessage msg) {
-        if (!msg.getSenderId().equals(Constants.Roles.AI_ID)) {
-            String messageText = msg.getMessage().trim().toLowerCase();
-            boolean isSender = msg.getSenderId().equals(pref.getUserId());
-
-            boolean isExplicit = messageText.startsWith("@") || messageText.contains("@carti");
-            
-            boolean isAiActive = false;
-            long SESSION_TIMEOUT_MS = 3 * 60 * 1000;
-            List<ChatMessage> currentChat = chatAdapter.getCurrentList();
-            
-            if (!currentChat.isEmpty()) {
-                int index = currentChat.size() - 1;
-                while (index >= 0) {
-                    ChatMessage m = currentChat.get(index);
-                    // Skip the current message and the shimmer/typing message
-                    if (m.getId() != null && !m.getId().equals(msg.getId())) {
-                        boolean isAiAuthor = m.getSenderId().equals(Constants.Roles.AI_ID);
-                        boolean isRecent = (System.currentTimeMillis() - m.getTimestamp()) < SESSION_TIMEOUT_MS;
-                        isAiActive = isAiAuthor && isRecent;
-                        break;
-                    }
-                    index--;
-                }
-            }
-
-            if (aiRepository != null && (isExplicit || isAiActive)) {
-                // ELITE FIX: Only the sender should trigger the AI processing
-                if (!isSender) return;
-
-                // Daily Limit Check
-                String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
-                int usageCount = pref.getAiUsageCount(today);
-                int DAILY_LIMIT = 20; // Set your limit here
-
-                if (usageCount >= DAILY_LIMIT) {
-                    isAiThinking = false;
-                    updateInputState();
-                    
-                    String limitMsg = "You have reached your limit today. Please check the User Manual and see you tomorrow again! \uD83D\uDCAA";
-                    ChatMessage aiLimitResponse = new ChatMessage(null, Constants.Roles.AI_ID, pref.getFamilyId(), 
-                            Constants.Roles.AI_NAME, limitMsg, System.currentTimeMillis(), false);
-                    
-                    List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
-                    currentList.add(aiLimitResponse);
-                    chatAdapter.submitList(currentList, () -> {
-                        if (getBinding() != null) getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
-                    });
-                    return;
-                }
-
+        if (msg.isMe()) {
+            boolean isAddressedToAi = msg.getMessage().toLowerCase().contains("carti") || msg.getMessage().toLowerCase().contains("ai");
+            if (isAddressedToAi) {
                 isAiThinking = true;
                 updateInputState();
-                pref.incrementAiUsageCount(today);
                 
-                // Only add shimmer if it's not already there
-                boolean hasShimmer = false;
-                for (ChatMessage m : chatAdapter.getCurrentList()) {
-                    if (m.isShimmer()) {
-                        hasShimmer = true;
-                        break;
-                    }
-                }
+                ChatMessage shimmer = new ChatMessage(true, false);
+                List<ChatMessage> list = new ArrayList<>(chatAdapter.getCurrentList());
+                list.add(shimmer);
+                chatAdapter.submitList(list, () -> getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1));
 
-                if (!hasShimmer) {
-                    List<ChatMessage> listWithTyping = new ArrayList<>(chatAdapter.getCurrentList());
-                    listWithTyping.add(new ChatMessage(true, false));
-                    chatAdapter.submitList(listWithTyping, () -> {
-                        if (getBinding() != null) getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
-                    });
-                }
-
-                aiRepository.processChat(msg.getMessage(), msg.getSenderName(), chatAdapter.getCurrentList(), isExplicit, new GeminiManager.AiCallback() {
-                    private org.json.JSONObject pendingAction;
-
-                    @Override
-                    public void onSuccess(String response) {
-                        if (isAdded() && getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                isAiThinking = false;
-                                updateInputState();
-                                
-                                if (response != null && !response.trim().isEmpty()) {
-                                    com.upreyvan.carti.data.ai.IntentType intent = com.upreyvan.carti.data.ai.IntentType.UNKNOWN;
-                                    if (pendingAction != null) {
-                                        String action = pendingAction.optString("action");
-                                        if ("ADD_EXPENSE".equals(action)) intent = com.upreyvan.carti.data.ai.IntentType.EXPENSE_LOG;
-                                        else if ("ADD_INCOME".equals(action)) intent = com.upreyvan.carti.data.ai.IntentType.INCOME_LOG;
-                                        else if ("ADD_GOAL".equals(action)) intent = com.upreyvan.carti.data.ai.IntentType.GOAL_LOG;
-                                        else if ("ADD_DEBT".equals(action)) intent = com.upreyvan.carti.data.ai.IntentType.DEBT_LOG;
-                                    }
-
-                                    ChatMessage aiOptimistic = new ChatMessage(Constants.Roles.AI_NAME, response, 
-                                            new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault()).format(new java.util.Date()), 
-                                            false, R.drawable.ai_holder, intent);
-                                    
-                                    aiOptimistic.setSenderId(Constants.Roles.AI_ID);
-                                    aiOptimistic.setTimestamp(System.currentTimeMillis());
-
-                                    if (pendingAction != null) {
-                                        aiOptimistic.setPendingAction(pendingAction);
-                                    }
-
-                                    List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
-                                    // Remove shimmer and add AI response
-                                    for (int i = currentList.size() - 1; i >= 0; i--) {
-                                        if (currentList.get(i).isShimmer()) {
-                                            currentList.remove(i);
-                                            break;
-                                        }
-                                    }
-                                    currentList.add(aiOptimistic);
-                                    chatAdapter.submitList(currentList, () -> {
-                                        if (getBinding() != null) getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
-                                    });
-
-                                    sendAiResponse(response);
-                                } else {
-                                    // AI ignored or rate limited - clean up shimmer
-                                    removeShimmerLocally();
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onActionDetected(org.json.JSONObject action) {
-                        this.pendingAction = action;
-                        android.util.Log.d("FamilyChatFragment", "AI Action Detected: " + action.optString("action"));
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        if (isAdded() && getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                isAiThinking = false;
-                                updateInputState();
-                                removeShimmerLocally();
-                                Utils.showToast(getContext(), "Carti is offline: " + t.getMessage());
-                            });
-                        }
+                aiRepository.processChat(msg.getMessage(), pref.getUsername(), list, true, new AiManager.AiCallback() {
+                    @Override public void onSuccess(String response) { sendAiResponse(response); }
+                    @Override public void onError(Throwable t) { removeShimmerLocally(); isAiThinking = false; updateInputState(); }
+                    @Override public void onActionDetected(org.json.JSONObject action) {
+                        // Future implementation
                     }
                 });
             }
@@ -392,27 +236,21 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     }
 
     private void removeShimmerLocally() {
-        List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
-        boolean removed = false;
-        for (int i = currentList.size() - 1; i >= 0; i--) {
-            if (currentList.get(i).isShimmer()) {
-                currentList.remove(i);
-                removed = true;
+        if (getBinding() == null) return;
+        List<ChatMessage> list = new ArrayList<>(chatAdapter.getCurrentList());
+        for (int i = list.size() - 1; i >= 0; i--) {
+            if (list.get(i).isShimmer()) {
+                list.remove(i);
+                chatAdapter.submitList(list);
                 break;
             }
-        }
-        if (removed) {
-            chatAdapter.submitList(currentList);
         }
     }
 
     private void updateInputState() {
         if (getBinding() == null) return;
-        if (isAiThinking) {
-            getBinding().layoutInput.btnSend.setImageResource(R.drawable.ic_close); // Change to cancel icon
-        } else {
-            getBinding().layoutInput.btnSend.setImageResource(R.drawable.ic_send); // Revert to send icon
-        }
+        getBinding().layoutInput.btnSend.setImageResource(isAiThinking ? R.drawable.ic_close : R.drawable.ic_send);
+        getBinding().layoutInput.etInput.setHint(isAiThinking ? "Carti is thinking..." : getString(R.string.hint_ask_me));
     }
 
     private void loadChatHistory() {
@@ -420,29 +258,25 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     }
 
     private void loadChatHistory(boolean loadMore) {
-        if (isLoading || !isAdded()) return;
-        
         Context context = getContext();
-        if (context == null || pref == null) return;
-
+        if (context == null || isLoading) return;
         isLoading = true;
-        if (getBinding() != null) {
-            getBinding().pbLoadingMore.show();
-            if (!loadMore) {
-                getBinding().layoutShimmer.setVisibility(View.VISIBLE);
-                getBinding().layoutShimmer.startShimmer();
-                getBinding().layoutEmpty.setVisibility(View.GONE);
-                getBinding().rvChat.setVisibility(View.GONE);
-            }
+
+        if (!loadMore) {
+            getBinding().layoutShimmer.setVisibility(View.VISIBLE);
+            getBinding().layoutShimmer.startShimmer();
+            getBinding().rvChat.setVisibility(View.GONE);
+            getBinding().layoutEmpty.setVisibility(View.GONE);
+        } else {
+            getBinding().pbLoadingMore.setVisibility(View.VISIBLE);
         }
 
-        List<String> queries = new ArrayList<>(Arrays.asList(
-            Query.Companion.equal("familyId", pref.getFamilyId()),
-            Query.Companion.orderDesc("timestamp"),
-            Query.Companion.limit(PAGE_SIZE)
-        ));
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", pref.getFamilyId()));
+        queries.add(Query.Companion.orderDesc("timestamp"));
+        queries.add(Query.Companion.limit(PAGE_SIZE));
 
-        if (loadMore) {
+        if (loadMore && oldestTimestamp != Long.MAX_VALUE) {
             queries.add(Query.Companion.lessThan("timestamp", oldestTimestamp));
         }
 
@@ -464,7 +298,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                             messages.add(mapToChatMessage(doc.getData()));
                         }
 
-                        java.util.Collections.reverse(messages);
+                        Collections.reverse(messages);
 
                         getActivity().runOnUiThread(() -> {
                             if (getBinding() == null) return;
@@ -476,7 +310,6 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                             List<ChatMessage> newList;
                             
                             if (loadMore) {
-                                // Prepend older messages
                                 newList = new ArrayList<>(messages);
                                 newList.addAll(currentItems);
                             } else {
@@ -495,10 +328,13 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                                         getBinding().rvChat.scrollToPosition(newList.size() - 1);
                                     }
                                     
-                                    // Toggle Empty State / Intro UI
-                                    boolean hasMessages = !newList.isEmpty();
-                                    getBinding().rvChat.setVisibility(hasMessages ? View.VISIBLE : View.GONE);
-                                    getBinding().layoutEmpty.setVisibility(hasMessages ? View.GONE : View.VISIBLE);
+                                    if (newList.isEmpty()) {
+                                        getBinding().layoutEmpty.setVisibility(View.VISIBLE);
+                                        getBinding().rvChat.setVisibility(View.GONE);
+                                    } else {
+                                        getBinding().layoutEmpty.setVisibility(View.GONE);
+                                        getBinding().rvChat.setVisibility(View.VISIBLE);
+                                    }
                                 }
                             });
                             isLoading = false;
@@ -507,20 +343,14 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
                     @Override
                     public void onError(Throwable error) {
-                        isLoading = false;
-                        if (!isAdded() || getActivity() == null) return;
-                        getActivity().runOnUiThread(() -> {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            isLoading = false;
                             if (getBinding() != null) {
                                 getBinding().pbLoadingMore.hide();
                                 getBinding().layoutShimmer.stopShimmer();
                                 getBinding().layoutShimmer.setVisibility(View.GONE);
-                                
-                                if (!Utils.isNetworkAvailable(requireContext()) && chatAdapter.getItemCount() == 0) {
-                                    getBinding().layoutNoInternet.setVisibility(View.VISIBLE);
-                                    toggleChatContentVisibility(false);
-                                } else {
-                                    Utils.showToast(requireContext(), "Error loading messages");
-                                }
+                                showError(error);
                             }
                         });
                     }
@@ -529,57 +359,51 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     }
 
     private void sendAiResponse(String text) {
-        if (text == null || text.trim().isEmpty() || !isAdded() || pref == null) return;
-
-        Context context = getContext();
-        if (context == null) return;
-
-        android.util.Log.d("FamilyChatFragment", "Sending AI response to Appwrite: " + text);
-
-        Map<String, Object> data = new java.util.HashMap<>();
-        data.put("text", text);
-        data.put("senderId", Constants.Roles.AI_ID);
-        data.put("senderName", Constants.Roles.AI_NAME);
-        data.put("familyId", pref.getFamilyId());
-        data.put("timestamp", System.currentTimeMillis());
-
-        List<String> permissions = new ArrayList<>();
-        permissions.add(io.appwrite.Permission.Companion.read(io.appwrite.Role.Companion.users("")));
-
-        AppwriteManager.getInstance(context).createDocument(
-                Constants.Appwrite.DATABASE_ID,
-                Constants.Appwrite.COL_MESSAGES,
-                io.appwrite.ID.Companion.unique(0),
-                data,
-                permissions,
-                new AppwriteCallback<Document<Map<String, Object>>>() {
-                    @Override
-                    public void onSuccess(Document<Map<String, Object>> result) {
-                        android.util.Log.d("FamilyChatFragment", "AI response successfully sent to Appwrite");
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        android.util.Log.e("FamilyChatFragment", "Failed to send AI response to Appwrite", error);
-                        if (isAdded() && getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                String errorMsg = error.getMessage() != null ? error.getMessage() : "Unknown Appwrite Error";
-                                Utils.showToast(getContext(), "DB Error: " + errorMsg);
-                            });
-                        }
-                    }
+        if (apiHelper != null) {
+            apiHelper.sendAiMessage(text, new AppwriteCallback<Document<Map<String, Object>>>() {
+                @Override
+                public void onSuccess(Document<Map<String, Object>> result) {
+                    if (isAdded()) requireActivity().runOnUiThread(() -> {
+                        removeShimmerLocally();
+                        isAiThinking = false;
+                        updateInputState();
+                    });
                 }
-        );
+
+                @Override
+                public void onError(Throwable error) {
+                    if (isAdded()) requireActivity().runOnUiThread(() -> {
+                        removeShimmerLocally();
+                        isAiThinking = false;
+                        updateInputState();
+                        String errorMsg = error.getMessage() != null ? error.getMessage() : "Unknown Appwrite Error";
+                        Utils.showToast(getContext(), "DB Error: " + errorMsg);
+                    });
+                }
+            });
+        }
     }
 
     private ChatMessage mapToChatMessage(Map<String, Object> map) {
         String id = String.valueOf(map.get("$id"));
-        String senderId = String.valueOf(map.get("senderId"));
+        String senderId = map.get("senderId") != null ? String.valueOf(map.get("senderId")).trim() : "";
+        String senderName = map.get("senderName") != null ? String.valueOf(map.get("senderName")).trim() : "";
         String familyId = String.valueOf(map.get("familyId"));
-        String senderName = String.valueOf(map.get("senderName"));
         String text = String.valueOf(map.get("text"));
-        long timestamp = ((Number) map.get("timestamp")).longValue();
-        boolean isMe = pref != null && senderId.equals(pref.getUserId());
+        long timestamp = 0;
+        if (map.get("timestamp") != null) {
+            timestamp = ((Number) map.get("timestamp")).longValue();
+        }
+        
+        String myUserId = pref != null ? pref.getUserId().trim() : "";
+        String myUsername = pref != null ? pref.getUsername().trim() : "";
+
+        boolean isMe = false;
+        if (!senderId.isEmpty() && !senderId.equals("null")) {
+            isMe = senderId.equalsIgnoreCase(myUserId);
+        } else if (!senderName.isEmpty()) {
+            isMe = senderName.equalsIgnoreCase(myUsername);
+        }
 
         return new ChatMessage(id, senderId, familyId, senderName, text, timestamp, isMe);
     }
@@ -587,96 +411,44 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     private void setupVoiceInput() {
         voiceToTextHelper = VoiceToTextHelper.getInstance(requireContext());
         voiceToTextHelper.setCallback(new VoiceToTextHelper.VoiceCallback() {
-            @Override
-            public void onReadyForSpeech() {
-                if (getBinding() != null) {
-                    getBinding().layoutInput.btnVoice.setColorFilter(ContextCompat.getColor(requireContext(), R.color.carti_primary_green));
-                    getBinding().layoutInput.etInput.setHint("Listening...");
-                }
-            }
+            @Override public void onReadyForSpeech() { getBinding().layoutInput.btnVoice.setAlpha(1.0f); }
+            @Override public void onBeginningOfSpeech() {}
+            @Override public void onRmsChanged(float rmsdB) {}
+            @Override public void onBufferReceived(byte[] buffer) {}
+            @Override public void onEndOfSpeech() { resetVoiceUi(); }
+            @Override public void onError(String error) { Utils.showToast(requireContext(), error); resetVoiceUi(); }
+            @Override public void onResults(String text) { getBinding().layoutInput.etInput.setText(text); resetVoiceUi(); }
+            @Override public void onPartialResults(String partialText) { getBinding().layoutInput.etInput.setHint(partialText); }
+        });
 
-            @Override
-            public void onBeginningOfSpeech() {}
-
-            @Override
-            public void onRmsChanged(float rmsdB) {}
-
-            @Override
-            public void onBufferReceived(byte[] buffer) {}
-
-            @Override
-            public void onEndOfSpeech() {
-                resetVoiceUi();
-            }
-
-            @Override
-            public void onError(String error) {
-                resetVoiceUi();
-                if (!error.equals("No match found")) {
-                    Utils.showToast(getContext(), error);
-                }
-            }
-
-            @Override
-            public void onResults(String text) {
-                if (getBinding() != null && text != null) {
-                    getBinding().layoutInput.etInput.setText(text);
-                    getBinding().layoutInput.etInput.setSelection(text.length());
-                }
-                resetVoiceUi();
-            }
-
-            @Override
-            public void onPartialResults(String partialText) {
-                if (getBinding() != null && partialText != null) {
-                    getBinding().layoutInput.etInput.setText(partialText);
-                    getBinding().layoutInput.etInput.setSelection(partialText.length());
-                }
-            }
+        getBinding().layoutInput.btnVoice.setOnClickListener(v -> {
+            if (voiceToTextHelper.isListening()) voiceToTextHelper.stopListening();
+            else startVoiceRecognition();
         });
     }
 
     private void resetVoiceUi() {
-        if (getBinding() != null) {
-            getBinding().layoutInput.btnVoice.clearColorFilter();
-            getBinding().layoutInput.etInput.setHint(R.string.hint_ask_me);
-        }
+        if (getBinding() == null) return;
+        getBinding().layoutInput.btnVoice.setAlpha(1.0f);
+        getBinding().layoutInput.etInput.setHint(getString(R.string.hint_ask_me));
     }
 
     private void startVoiceRecognition() {
-        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 100);
+        if (androidx.core.content.ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 101);
         } else {
+            getBinding().layoutInput.btnVoice.setAlpha(0.5f);
+            getBinding().layoutInput.etInput.setHint("Listening...");
             voiceToTextHelper.startListening();
         }
     }
 
     private void setupInput() {
-        if (getBinding() == null) return;
-
-        getBinding().layoutInput.etInput.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                getBinding().rvChat.postDelayed(() -> {
-                    if (isAdded() && getBinding() != null && chatAdapter.getItemCount() > 0) {
-                        getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
-                    }
-                }, 200);
-            }
-        });
-
         getBinding().layoutInput.btnSend.setOnClickListener(v -> {
             if (isAiThinking) {
                 isAiThinking = false;
                 updateInputState();
-                
-                List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
-                for (int i = currentList.size() - 1; i >= 0; i--) {
-                    if (currentList.get(i).isShimmer()) {
-                        currentList.remove(i);
-                        break;
-                    }
-                }
-                chatAdapter.submitList(currentList);
+                removeShimmerLocally();
                 Utils.showToast(requireContext(), "Thinking canceled.");
                 return;
             }
@@ -691,93 +463,41 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                 return;
             }
 
-            // OPTIMISTIC UI: Show user message immediately
             ChatMessage localMsg = new ChatMessage(null, pref.getUserId(), pref.getFamilyId(), pref.getUsername(), text, System.currentTimeMillis(), true);
             List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
             currentList.add(localMsg);
-            chatAdapter.submitList(currentList, () -> {
-                getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
-            });
+            chatAdapter.submitList(currentList, () -> getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1));
 
             getBinding().layoutInput.etInput.setText("");
             if (apiHelper != null) {
                 apiHelper.sendMessage(text, new AppwriteCallback<Document<Map<String, Object>>>() {
-                    @Override
-                    public void onSuccess(Document<Map<String, Object>> result) {
-                        // Realtime will handle the replacement of the local message
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        if (isAdded()) {
-                            // Remove optimistic message on error
-                            List<ChatMessage> listOnError = new ArrayList<>(chatAdapter.getCurrentList());
-                            listOnError.remove(localMsg);
-                            chatAdapter.submitList(listOnError);
-                            Utils.showToast(requireContext(), "Message failed: " + error.getMessage());
-                        }
-                    }
+                    @Override public void onSuccess(Document<Map<String, Object>> result) {}
+                    @Override public void onError(Throwable e) { showError(e); }
                 });
             }
-        });
-
-        getBinding().layoutInput.btnVoice.setOnClickListener(v -> {
-            startVoiceRecognition();
         });
     }
 
     @Override
     public void onDestroyView() {
+        if (voiceToTextHelper != null) voiceToTextHelper.destroy();
         super.onDestroyView();
-        if (voiceToTextHelper != null) {
-            voiceToTextHelper.stopListening();
-        }
-        if (getActivity() != null) {
-            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
-        }
     }
 
     private void setupToolbar() {
-        if (getBinding() == null) return;
-        getBinding().layoutHeader.setElevation(4f);
-
-        getBinding().settingsButtonContainer.setOnClickListener(v -> showAutoDeleteDialog());
-        getBinding().btnRetry.setOnClickListener(v -> {
-            // Visual feedback that retry is happening
-            getBinding().btnRetry.setEnabled(false);
-            getBinding().btnRetry.setText(R.string.msg_checking);
-            
-            // Add a small delay for better UX
-            v.postDelayed(() -> {
-                if (getBinding() != null) {
-                    getBinding().btnRetry.setEnabled(true);
-                    getBinding().btnRetry.setText(R.string.btn_try_again);
-                    checkConnectionAndLoad();
-                }
-            }, 800);
-        });
+        getBinding().btnSettings.setOnClickListener(v -> showAutoDeleteDialog());
     }
 
     private void showAutoDeleteDialog() {
-        if (pref == null) return;
-        String[] options = {"7 Days (Default)", "15 Days", "1 Month"};
-        int[] daysValues = {7, 15, 30};
-        
-        int currentDays = pref.getChatAutoDeleteDays();
-        int checkedItem = 0;
-        for (int i = 0; i < daysValues.length; i++) {
-            if (daysValues[i] == currentDays) {
-                checkedItem = i;
-                break;
-            }
-        }
+        String[] options = {"3 Days", "7 Days", "30 Days", "Never"};
+        int[] values = {3, 7, 30, 0};
+        int current = 1; 
 
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Auto Delete Messages")
-                .setCancelable(false)
-                .setSingleChoiceItems(options, checkedItem, (dialog, which) -> {
-                    pref.setChatAutoDeleteDays(daysValues[which]);
-                    Utils.showToast(requireContext(), "Auto delete set to " + options[which]);
+                .setTitle("Auto-delete Messages")
+                .setSingleChoiceItems(options, current, (dialog, which) -> {
+                    pref.setChatAutoDeleteDays(values[which]);
+                    Utils.showToast(requireContext(), "Updated to " + options[which]);
                     dialog.dismiss();
                 })
                 .setNegativeButton("Cancel", null)

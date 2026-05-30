@@ -78,6 +78,10 @@ public class VoiceToTextHelper {
         }
     }
 
+    public boolean isListening() {
+        return isListening;
+    }
+
     public void destroy() {
         if (speechRecognizer != null) {
             speechRecognizer.destroy();

@@ -6,6 +6,9 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.remote.AppwriteManager;
@@ -34,12 +37,22 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
         secret = getIntent().getStringExtra(EXTRA_SECRET);
 
         if (Validator.isEmpty(userId) || Validator.isEmpty(secret)) {
-            showToast("Invalid reset link", ToastHelper.Status.ERROR);
+            showToast(R.string.err_invalid_reset_link, ToastHelper.Status.ERROR);
             finish();
             return;
         }
 
         setupUI();
+        setupKeyboardHandling();
+    }
+
+    private void setupKeyboardHandling() {
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().getRoot(), (v, insets) -> {
+            int imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+            int systemBarsBottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), imeHeight > 0 ? imeHeight : systemBarsBottom);
+            return insets;
+        });
     }
 
     private void setupUI() {
@@ -68,7 +81,7 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
         }
 
         getBinding().btnReset.setEnabled(false);
-        showToast("Updating password...", ToastHelper.Status.INFO);
+        showToast(R.string.msg_updating_password, ToastHelper.Status.INFO);
 
         AppwriteManager.getInstance(this).updatePasswordRecovery(
                 userId,

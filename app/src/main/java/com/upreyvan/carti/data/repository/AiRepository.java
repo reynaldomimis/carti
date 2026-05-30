@@ -2,7 +2,7 @@ package com.upreyvan.carti.data.repository;
 
 import android.content.Context;
 import com.upreyvan.carti.data.ai.AiActionHandler;
-import com.upreyvan.carti.data.ai.GeminiManager;
+import com.upreyvan.carti.data.ai.AiManager;
 import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
@@ -17,32 +17,24 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * ELITE SENIOR LEVEL: Optimized Performance Repository.
- */
 public class AiRepository {
-
-    private final GeminiManager geminiManager;
+    private final AiManager aiManager;
     private final ApiHelper apiHelper;
     private final PreferenceManager pref;
     private final BudgetManager budgetManager;
     private final AiActionHandler actionHandler;
     private final com.upreyvan.carti.data.local.db.dao.TransactionDao transactionDao;
-    
     private long lastCallTime = 0;
-    private static final long RATE_LIMIT_MS = 5000;
-
+    private static final long RATE_LIMIT_MS = 3000;
     private static AiRepository instance;
 
     public static AiRepository getInstance(Context context) {
-        if (instance == null) {
-            instance = new AiRepository(context);
-        }
+        if (instance == null) instance = new AiRepository(context);
         return instance;
     }
 
     public AiRepository(Context context) {
-        this.geminiManager = GeminiManager.getInstance(context);
+        this.aiManager = AiManager.getInstance(context);
         this.apiHelper = new ApiHelper(context);
         this.pref = new PreferenceManager(context);
         this.budgetManager = BudgetManager.getInstance(context);
@@ -50,52 +42,21 @@ public class AiRepository {
         this.transactionDao = com.upreyvan.carti.data.local.db.AppDatabase.getInstance(context).transactionDao();
     }
 
-    public void processChat(String message, String senderName, List<ChatMessage> chatHistory, boolean isForce, GeminiManager.AiCallback callback) {
-        // LAYER 1: Immediate Exit for spam
+    public void processChat(String msg, String sender, List<ChatMessage> history, boolean force, AiManager.AiCallback cb) {
         long now = System.currentTimeMillis();
-        if (!isForce && now - lastCallTime < RATE_LIMIT_MS) {
-            callback.onSuccess(""); // Notify caller that we're skipping due to rate limit
-            return;
-        }
+        if (!force && (now - lastCallTime < RATE_LIMIT_MS || msg.length() < 2 || msg.toLowerCase().matches("^(ok|okay|salamat|thanks|bye|ty|k|tnx|haha|hehe)$"))) return;
         lastCallTime = now;
-
-        // Intro check
-        boolean introFound = false;
-        if (chatHistory != null && !chatHistory.isEmpty()) {
-            for (ChatMessage m : chatHistory) {
-                if (m.getSenderName() != null && m.getSenderName().toLowerCase().contains("carti")) {
-                    introFound = true;
-                    break;
-                }
-            }
-        }
-        String extraContext = "family_id:" + pref.getFamilyId() + "|INTRO_DONE:" + introFound;
-
-        // ELITE FIX: Always fetch local context to make Carti "Smart" again
-        new Thread(() -> {
-            try {
-                List<com.upreyvan.carti.model.Transaction> transactions = transactionDao.getAllTransactionsList(pref.getFamilyId());
-                String context = buildCompressedContextFromRoom(transactions, chatHistory) + "|" + extraContext;
-                
-                // If it's a very simple greeting, we still use Gemini but with the context
-                callGemini(message, context, isForce, callback);
-            } catch (Exception e) {
-                callGemini(message, "B:" + pref.getBalance() + "|" + extraContext, isForce, callback);
-            }
-        }).start();
+        apiHelper.getTransactionsSince("2024-01-01T00:00:00.000Z", new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
+            @Override public void onSuccess(DocumentList<Map<String, Object>> r) { callAi(msg, buildContext(r.getDocuments(), history), force, cb); }
+            @Override public void onError(Throwable e) { callAi(msg, "B:" + pref.getBalance(), force, cb); }
+        });
     }
 
-    private void callGemini(String message, String context, boolean force, GeminiManager.AiCallback uiCallback) {
-        geminiManager.processChat(message, context, force, new GeminiManager.AiCallback() {
-            @Override
-            public void onSuccess(String response) { uiCallback.onSuccess(response); }
-            @Override
-            public void onError(Throwable t) { uiCallback.onError(t); }
-            @Override
-            public void onActionDetected(JSONObject action) {
-                // actionHandler.executeAction(action); // REPLACED: Handled by UI with 10s cancel
-                uiCallback.onActionDetected(action);
-            }
+    private void callAi(String msg, String ctx, boolean f, AiManager.AiCallback cb) {
+        aiManager.processChat(msg, ctx, f, new AiManager.AiCallback() {
+            @Override public void onSuccess(String r) { cb.onSuccess(r); }
+            @Override public void onError(Throwable t) { cb.onError(t); }
+            @Override public void onActionDetected(JSONObject a) { cb.onActionDetected(a); }
         });
     }
 
@@ -103,124 +64,37 @@ public class AiRepository {
         actionHandler.executeAction(action);
     }
 
-    private String buildCompressedContextFromRoom(List<com.upreyvan.carti.model.Transaction> transactions, List<ChatMessage> chatHistory) {
-        double income = pref.getTotalIncome();
-        double expense = pref.getTotalExpense();
-        double savings = income - expense;
-        double balance = pref.getBalance();
-        
-        List<com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum> breakdown = transactionDao.getExpenseBreakdown(pref.getFamilyId());
-
+    private String buildContext(List<Document<Map<String, Object>>> docs, List<ChatMessage> history) {
         StringBuilder sb = new StringBuilder();
-        sb.append("family_id:").append(pref.getFamilyId()).append("\n");
-        sb.append(String.format(Locale.US, "FINANCIAL_SUMMARY:\nIncome:%.0f|Expense:%.0f|Savings:%.0f|Balance:%.0f\n", 
-            income, expense, savings, balance));
-
-        if (breakdown != null && !breakdown.isEmpty()) {
-            sb.append("Top Spending: ").append(breakdown.get(0).category).append("\n");
-            sb.append("Breakdown: ");
-            for (com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum item : breakdown) {
-                sb.append(item.category).append(":").append(String.format(Locale.US, "%.0f", item.total)).append(";");
-            }
-            sb.append("\n");
-        }
-
-        // Include Budget Plan summary for coaching context
-        List<BudgetCategoryItem> plan = budgetManager.getBudgetPlan();
-        if (plan != null && !plan.isEmpty()) {
-            sb.append("PLAN:");
-            for (BudgetCategoryItem item : plan) {
-                sb.append(item.getCategoryName()).append(":").append(String.format(Locale.US, "%.0f", item.getAmount())).append(";");
-            }
-            sb.append("\n");
-        }
-
-        // ELITE OPTIMIZATION: Only include summarized user messages to save tokens
-        if (chatHistory != null && !chatHistory.isEmpty()) {
-            java.util.List<String> userMsgs = new java.util.ArrayList<>();
-            for (int i = chatHistory.size() - 1; i >= 0 && userMsgs.size() < 10; i--) {
-                ChatMessage m = chatHistory.get(i);
-                if (m.isMe()) {
-                    // Use the stripper to clean history messages too
-                    userMsgs.add(0, geminiManager.summarizeUserMessage(m.getMessage()));
-                }
-            }
-            if (!userMsgs.isEmpty()) {
-                sb.append("USER_HISTORY:\n");
-                for (String msg : userMsgs) sb.append("> ").append(msg).append("\n");
-            }
-        }
-
+        sb.append(String.format(Locale.US, "B:%.0f|I:%.0f|E:%.0f\n", pref.getBalance(), pref.getTotalIncome(), pref.getTotalExpense()));
+        if (docs != null && !docs.isEmpty()) { sb.append("TX:"); int c = 0; for (Document<Map<String, Object>> d : docs) { if (c++ >= 3) break; Map<String, Object> m = d.getData(); sb.append(m.get("amount")).append(",").append(m.get("category")).append(";"); } }
+        if (history != null) { sb.append("\nH:"); int s = Math.max(0, history.size() - 3); for (int i = s; i < history.size(); i++) if (!history.get(i).isShimmer()) sb.append(history.get(i).getSenderName()).append(":").append(history.get(i).getMessage()).append("|"); }
         return sb.toString();
     }
 
-
-
-    public void getDailyInsights(GeminiManager.AiCallback callback) {
-        String today = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new java.util.Date());
-        String cached = pref.getDailyAiInsightText();
-        String cachedDate = pref.getDailyAiInsightDate();
-
-        if (today.equals(cachedDate) && !cached.isEmpty()) {
-            callback.onSuccess(cached);
-            return;
-        }
-
-        new Thread(() -> {
-            try {
-                List<com.upreyvan.carti.model.Transaction> transactions = transactionDao.getAllTransactionsList(pref.getFamilyId());
-                String context = buildCompressedContextFromRoom(transactions, null);
-                geminiManager.getInsights(context, new GeminiManager.AiCallback() {
-                    @Override
-                    public void onSuccess(String response) {
-                        pref.saveDailyAiInsight(today, response);
-                        callback.onSuccess(response);
-                    }
-                    @Override
-                    public void onError(Throwable t) { callback.onError(t); }
-                });
-            } catch (Exception e) {
-                callback.onError(e);
-            }
-        }).start();
+    public void getDailyInsights(AiManager.AiCallback cb) {
+        new Thread(() -> { try { List<com.upreyvan.carti.model.Transaction> txs = transactionDao.getAllTransactionsList(pref.getFamilyId()); aiManager.getInsights(buildContextFromRoom(txs), new AiManager.AiCallback() {
+            @Override public void onSuccess(String r) { cb.onSuccess(r); }
+            @Override public void onError(Throwable t) { cb.onError(t); }
+        }); } catch (Exception e) { cb.onError(e); } }).start();
     }
 
-    public void getSmartSuggestions(GeminiManager.AiCallback callback) {
+    public void getSmartSuggestions(AiManager.AiCallback callback) {
         Calendar cal = Calendar.getInstance();
         String weekKey = cal.get(Calendar.WEEK_OF_YEAR) + "-" + cal.get(Calendar.YEAR);
-        
-        String cachedJson = pref.getDailyAiSuggestionsJson();
-        String cachedWeek = pref.getDailyAiSuggestionsDate();
-
-        if (weekKey.equals(cachedWeek) && !cachedJson.isEmpty()) {
-            callback.onSuccess(cachedJson);
-            return;
-        }
-
         new Thread(() -> {
             try {
-                List<com.upreyvan.carti.model.Transaction> transactions = transactionDao.getAllTransactionsList(pref.getFamilyId());
-                String context = buildCompressedContextFromRoom(transactions, null);
-                String prompt = "TASK: Based on the financial context of the PAST 4 WEEKS, generate EXACTLY 4 actionable coaching suggestions. " +
-                        "Format: JSON Array of objects with keys: title, description, type (SAVINGS|EXPENSE|GOAL|BILL), actionText. " +
-                        "Constraints: Keep titles extremely short (max 2-3 words). " +
-                        "Focus on trends and patterns observed in the data. " +
-                        "OUTPUT ONLY THE JSON ARRAY.\n\n[CONTEXT]:\n" + context;
-
-                // Use 3.5 Flash for more intelligent suggestions
-                geminiManager.generateResponse(GeminiManager.MODEL_FLASH_3_5, prompt, new GeminiManager.AiCallback() {
-                    @Override
-                    public void onSuccess(String response) {
-                        pref.saveDailyAiSuggestions(weekKey, response);
-                        callback.onSuccess(response);
-                    }
-                    @Override
-                    public void onError(Throwable t) { callback.onError(t); }
+                List<com.upreyvan.carti.model.Transaction> txs = transactionDao.getAllTransactionsList(pref.getFamilyId());
+                String ctx = buildContextFromRoom(txs);
+                aiManager.generateResponse("TASK: generate 4 coaching suggestions as JSON Array [{\"title\":\"\",\"description\":\"\",\"type\":\"SAVINGS|EXPENSE|GOAL|BILL\",\"actionText\":\"\"}]. CONTEXT:\n" + ctx, new AiManager.AiCallback() {
+                    @Override public void onSuccess(String r) { pref.saveDailyAiSuggestions(weekKey, r); callback.onSuccess(r); }
+                    @Override public void onError(Throwable t) { callback.onError(t); }
                 });
-            } catch (Exception e) {
-                callback.onError(e);
-            }
+            } catch (Exception e) { callback.onError(e); }
         }).start();
     }
 
+    private String buildContextFromRoom(List<com.upreyvan.carti.model.Transaction> txs) {
+        return String.format(Locale.US, "B:%.0f|I:%.0f|E:%.0f", pref.getBalance(), pref.getTotalIncome(), pref.getTotalExpense());
+    }
 }

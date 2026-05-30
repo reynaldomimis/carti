@@ -36,7 +36,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import com.upreyvan.carti.ui.family.ChatAdapter;
 import com.upreyvan.carti.model.ChatMessage;
-import com.upreyvan.carti.data.ai.GeminiManager;
+import com.upreyvan.carti.data.ai.AiManager;
 import com.upreyvan.carti.data.repository.AiRepository;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -184,7 +184,7 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
         scrollToBottom();
 
 
-        aiRepository.processChat(text, getString(R.string.chat_sender_me), chatMessages, true, new GeminiManager.AiCallback() {
+        aiRepository.processChat(text, getString(R.string.chat_sender_me), chatMessages, true, new AiManager.AiCallback() {
             @Override
             public void onSuccess(String response) {
                 if (!isAdded()) return;

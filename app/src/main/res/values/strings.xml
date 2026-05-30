@@ -36,6 +36,7 @@
     <string name="nav_debt">Debt</string>
     <string name="nav_ranking">Ranking</string>
     <string name="nav_profile">Profile</string>
+    <string name="nav_allocate">Allocate</string>
     <string name="label_add">Add</string>
     <string name="menu_ai">Chat</string>
     <string name="notifications">Notifications</string>
@@ -46,7 +47,7 @@
 
     <!-- AI Assistant -->
     <string name="msg_canceled">Operation canceled</string>
-    <string name="chat_sender_me">Me</string>
+    <string name="chat_sender_me">You</string>
     <string name="chat_sender_ai">Carti AI</string>
     <string name="timer_format">%ds</string>
     <string name="title_no_internet">No Internet Connection</string>
@@ -368,6 +369,8 @@
     <string name="btn_delete_account">Delete Account</string>
     <string name="msg_password_short">Password must be at least 8 characters</string>
     <string name="msg_password_updated">Password updated successfully</string>
+    <string name="msg_updating_password">Updating password...</string>
+    <string name="err_invalid_reset_link">Invalid reset link</string>
     <string name="dialog_update_password_title">Update Password</string>
     <string name="desc_password">Enter your current and new password below.</string>
     <string name="desc_password_recovery">Please enter your new password to regain access to your account.</string>

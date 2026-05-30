@@ -1,6 +1,5 @@
 package com.upreyvan.carti.ui.debt;
 
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,13 +12,11 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.data.local.CategoryManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.databinding.ActivityAddDebtBinding;
 import com.upreyvan.carti.databinding.ItemQuickLogBinding;
@@ -30,7 +27,6 @@ import com.upreyvan.carti.ui.goals.MemberPickerBottomSheet;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
 import com.upreyvan.carti.util.ToastHelper.Status;
-import com.upreyvan.carti.util.ValueHelper;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -39,7 +35,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
-
     private TransactionRepository transactionRepository;
     private String selectedMemberId;
     private String selectedMemberName;
@@ -48,9 +43,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     private Calendar selectedDueDate = Calendar.getInstance();
 
     @Override
-    protected ActivityAddDebtBinding inflateBinding(LayoutInflater inflater) {
-        return ActivityAddDebtBinding.inflate(inflater);
-    }
+    protected ActivityAddDebtBinding inflateBinding(LayoutInflater inflater) { return ActivityAddDebtBinding.inflate(inflater); }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,80 +65,45 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
     private void setupTabs() {
         getBinding().tabType.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                selectedType = tab.getPosition() == 0 ? "OWE" : "OWED_TO_ME";
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+            @Override public void onTabSelected(TabLayout.Tab tab) { selectedType = tab.getPosition() == 0 ? "OWE" : "OWED_TO_ME"; }
+            @Override public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override public void onTabReselected(TabLayout.Tab tab) {}
         });
     }
 
     private void setupAmountField() {
         getBinding().etAmount.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
 
     private void setupCategories() {
         List<Category> categories = CategoryManager.getInstance(this).getCategories();
-        
-        GenericAdapter<QuickLogItem, ItemQuickLogBinding> adapter = new GenericAdapter<>(
-                QuickLogItem.DIFF_CALLBACK,
-                (inflater, parent) -> ItemQuickLogBinding.inflate(inflater, parent, false),
-                (binding, item) -> {
-                    binding.tvLabel.setText(item.getTitle());
-                    binding.ivIcon.setImageResource(item.getIconRes());
-                    binding.cvIconBg.setCardBackgroundColor(ContextCompat.getColor(this, item.getBgColor()));
-                    binding.ivIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, item.getIconColor())));
-                    
-                    binding.getRoot().setStrokeWidth(item.isSelected() ? Utils.dpToPx(this, 2) : 0);
-                    binding.getRoot().setStrokeColor(ContextCompat.getColor(this, R.color.carti_primary_green));
-                }
-        );
-
+        GenericAdapter<QuickLogItem, ItemQuickLogBinding> adapter = new GenericAdapter<>(QuickLogItem.DIFF_CALLBACK, (inflater, parent) -> ItemQuickLogBinding.inflate(inflater, parent, false), (binding, item) -> {
+            binding.tvLabel.setText(item.getTitle());
+            binding.ivIcon.setImageResource(item.getIconRes());
+            binding.cvIconBg.setCardBackgroundColor(ContextCompat.getColor(this, item.getBgColor()));
+            binding.ivIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, item.getIconColor())));
+            binding.getRoot().setStrokeWidth(item.isSelected() ? Utils.dpToPx(this, 2) : 0);
+            binding.getRoot().setStrokeColor(ContextCompat.getColor(this, R.color.carti_primary_green));
+        });
         adapter.setOnItemClickListener(item -> {
             selectedCategoryName = item.getTitle();
             getBinding().tvSelectedCategory.setText(selectedCategoryName);
-            
-            // Map to new list to trigger DiffUtil
-            List<QuickLogItem> currentItems = adapter.getCurrentList();
             List<QuickLogItem> newList = new ArrayList<>();
-            for (QuickLogItem i : currentItems) {
-                newList.add(new QuickLogItem(i.getTitle(), i.getIconRes(), i.getBgColor(), i.getIconColor(), i.getTitle().equals(selectedCategoryName)));
-            }
+            for (QuickLogItem i : adapter.getCurrentList()) newList.add(new QuickLogItem(i.getTitle(), i.getIconRes(), i.getBgColor(), i.getIconColor(), i.getTitle().equals(selectedCategoryName)));
             adapter.submitList(newList);
         });
-
         getBinding().rvCategories.setAdapter(adapter);
-        
-        // Initial list
         List<QuickLogItem> items = new ArrayList<>();
-        for (Category cat : categories) {
-            items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor(), cat.getName().equals(selectedCategoryName)));
-        }
+        for (Category cat : categories) items.add(new QuickLogItem(cat.getName(), cat.getIconRes(), cat.getBackgroundColor(), cat.getIconColor(), cat.getName().equals(selectedCategoryName)));
         adapter.submitList(items);
     }
 
     private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutToolbar.getRoot(),
-                getBinding().btnSave,
-                1f,
-                0
-        );
+        Utils.applySystemBarInsets(getBinding().layoutToolbar.getRoot(), getBinding().btnSave, 1f, 0);
         getBinding().scrollView.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding));
     }
 
@@ -167,45 +125,23 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
             });
             bottomSheet.show(getSupportFragmentManager(), "MEMBER_PICKER");
         });
-
         getBinding().btnPlus100.setOnClickListener(v -> addAmount(100));
         getBinding().btnPlus500.setOnClickListener(v -> addAmount(500));
         getBinding().btnPlus1000.setOnClickListener(v -> addAmount(1000));
         getBinding().btnPlus5000.setOnClickListener(v -> addAmount(5000));
-
         getBinding().btnReminder.setOnClickListener(v -> {
-            MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
-                    .setTimeFormat(TimeFormat.CLOCK_12H)
-                    .setHour(12)
-                    .setMinute(0)
-                    .setTitleText(R.string.label_remind_me)
-                    .build();
-
+            MaterialTimePicker timePicker = new MaterialTimePicker.Builder().setTimeFormat(TimeFormat.CLOCK_12H).setHour(12).setMinute(0).setTitleText(R.string.label_remind_me).build();
             timePicker.addOnPositiveButtonClickListener(v2 -> {
-                String time = String.format(Locale.getDefault(), "%02d:%02d %s",
-                        (timePicker.getHour() == 0 || timePicker.getHour() == 12) ? 12 : timePicker.getHour() % 12,
-                        timePicker.getMinute(),
-                        timePicker.getHour() < 12 ? "AM" : "PM");
+                String time = String.format(Locale.getDefault(), "%02d:%02d %s", (timePicker.getHour() == 0 || timePicker.getHour() == 12) ? 12 : timePicker.getHour() % 12, timePicker.getMinute(), timePicker.getHour() < 12 ? "AM" : "PM");
                 getBinding().tvReminder.setText(time);
             });
-
             timePicker.show(getSupportFragmentManager(), "TIME_PICKER");
         });
-
         getBinding().btnDueDate.setOnClickListener(v -> {
-            MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                    .setTitleText(R.string.label_due_date)
-                    .setSelection(selectedDueDate.getTimeInMillis())
-                    .build();
-
-            datePicker.addOnPositiveButtonClickListener(selection -> {
-                selectedDueDate.setTimeInMillis(selection);
-                updateDateText();
-            });
-
+            MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker().setTitleText(R.string.label_due_date).setSelection(selectedDueDate.getTimeInMillis()).build();
+            datePicker.addOnPositiveButtonClickListener(selection -> { selectedDueDate.setTimeInMillis(selection); updateDateText(); });
             datePicker.show(getSupportFragmentManager(), "DATE_PICKER");
         });
-
         getBinding().btnSave.setOnClickListener(v -> saveDebt());
     }
 
@@ -215,26 +151,20 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         getBinding().etAmount.setText(String.valueOf(val + amount));
     }
 
-    private void updateDateText() {
-        getBinding().tvDueDate.setText(Utils.formatDateShort(selectedDueDate));
-    }
+    private void updateDateText() { getBinding().tvDueDate.setText(Utils.formatDateShort(selectedDueDate)); }
 
     private void saveDebt() {
         if (!checkNetwork()) return;
-
         if (selectedMemberName == null || Validator.isEmpty(getBinding().etAmount)) {
             showToast(getString(R.string.msg_fill_name_amount), Status.WARNING);
             return;
         }
-
         double amount = Double.parseDouble(getBinding().etAmount.getText().toString());
         String purpose = getBinding().etPurpose.getText().toString();
         String notes = getBinding().etNotes.getText().toString();
         String dueDateStr = Utils.formatDateQuery(selectedDueDate);
         String reminder = getBinding().tvReminder.getText().toString();
-
         showLoading(true, getString(R.string.msg_saving_debt));
-
         Transaction transaction = new Transaction();
         transaction.setType("DEBT");
         transaction.setAmount(amount);
@@ -246,19 +176,9 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         transaction.setMembers(selectedMemberId != null ? List.of(selectedMemberId) : new ArrayList<>());
         transaction.setUserId(new PreferenceManager(this).getUserId());
         transaction.setFamilyId(new PreferenceManager(this).getFamilyId());
-
         transactionRepository.addTransaction(transaction, new AppwriteCallback<Map<String, Object>>() {
-            @Override
-            public void onSuccess(Map<String, Object> result) {
-                showLoading(false);
-                finish();
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                showLoading(false);
-                showToast(getString(R.string.err_generic, error.getMessage()), Status.ERROR);
-            }
+            @Override public void onSuccess(Map<String, Object> result) { showLoading(false); finish(); }
+            @Override public void onError(Throwable error) { showLoading(false); showToast(getString(R.string.err_generic, error.getMessage()), Status.ERROR); }
         });
     }
 }

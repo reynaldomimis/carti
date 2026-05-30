@@ -24,7 +24,6 @@ import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
 import com.upreyvan.carti.util.ValueHelper;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Locale;
@@ -32,176 +31,60 @@ import java.util.Map;
 import java.util.Set;
 
 public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBottomSheetUpdateGoalBinding> {
-
     public static final String ARG_GOAL_ID = "arg_goal_id";
-    private String goalId;
-    private Transaction currentGoal;
-    private TransactionRepository transactionRepository;
-    private MemberRepository memberRepository;
-    private GenericAdapter<Member, ItemMemberAvatarSelectBinding> memberAdapter;
-    private final Set<String> selectedMemberIds = new HashSet<>();
+    private String goalId; private Transaction currentGoal; private TransactionRepository transactionRepository; private MemberRepository memberRepository;
+    private GenericAdapter<Member, ItemMemberAvatarSelectBinding> memberAdapter; private final Set<String> selectedMemberIds = new HashSet<>();
 
-    public static UpdateGoalBottomSheetFragment newInstance(String goalId) {
-        UpdateGoalBottomSheetFragment fragment = new UpdateGoalBottomSheetFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_GOAL_ID, goalId);
-        fragment.setArguments(args);
-        return fragment;
+    public static UpdateGoalBottomSheetFragment newInstance(String id) {
+        UpdateGoalBottomSheetFragment f = new UpdateGoalBottomSheetFragment(); Bundle a = new Bundle(); a.putString(ARG_GOAL_ID, id); f.setArguments(a); return f;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            goalId = getArguments().getString(ARG_GOAL_ID);
-        }
-        transactionRepository = TransactionRepository.getInstance(requireContext());
-        memberRepository = new MemberRepository(requireContext());
+    @Override public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState); if (getArguments() != null) goalId = getArguments().getString(ARG_GOAL_ID);
+        transactionRepository = TransactionRepository.getInstance(requireContext()); memberRepository = new MemberRepository(requireContext());
     }
 
-    @Override
-    protected LayoutBottomSheetUpdateGoalBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
-        return LayoutBottomSheetUpdateGoalBinding.inflate(inflater, container, false);
-    }
+    @Override protected LayoutBottomSheetUpdateGoalBinding inflateBinding(@NonNull LayoutInflater i, @Nullable ViewGroup c) { return LayoutBottomSheetUpdateGoalBinding.inflate(i, c, false); }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        setupDatePicker();
-        setupMemberSelection();
-        setupListeners();
-        observeGoal();
-    }
+    @Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) { super.onViewCreated(view, savedInstanceState); setupDatePicker(); setupMemberSelection(); setupListeners(); observeGoal(); }
 
-    private void observeGoal() {
-        transactionRepository.getTransactionById(goalId).observe(getViewLifecycleOwner(), goal -> {
-            if (goal != null) {
-                currentGoal = goal.getTransaction();
-                preFillData();
-            }
-        });
-    }
+    private void observeGoal() { transactionRepository.getTransactionById(goalId).observe(getViewLifecycleOwner(), g -> { if (g != null) { currentGoal = g.getTransaction(); preFillData(); } }); }
 
     private void preFillData() {
-        getBinding().etGoalName.setText(ValueHelper.toStr(currentGoal.getTitle()));
-        getBinding().etTargetAmount.setText(String.valueOf(currentGoal.getTargetAmount()));
-        getBinding().etTargetDate.setText(ValueHelper.toStr(currentGoal.getDueDate()));
-
-        selectedMemberIds.clear();
-        List<String> members = currentGoal.getMembers();
-        if (members != null) {
-            selectedMemberIds.addAll(members);
-        }
-        
-        loadMembers();
+        getBinding().etGoalName.setText(ValueHelper.toStr(currentGoal.getTitle())); getBinding().etTargetAmount.setText(String.valueOf(currentGoal.getTargetAmount())); getBinding().etTargetDate.setText(ValueHelper.toStr(currentGoal.getDueDate()));
+        selectedMemberIds.clear(); List<String> members = currentGoal.getMembers(); if (members != null) selectedMemberIds.addAll(members); loadMembers();
     }
 
-    private void loadMembers() {
-        memberRepository.getMembers().observe(getViewLifecycleOwner(), members -> {
-            if (members != null) {
-                memberAdapter.submitList(members);
-            }
-        });
-    }
+    private void loadMembers() { memberRepository.getMembers().observe(getViewLifecycleOwner(), members -> { if (members != null) memberAdapter.submitList(members); }); }
 
-    private void setupDatePicker() {
-        getBinding().etTargetDate.setOnClickListener(v -> showDatePicker());
-        getBinding().tilTargetDate.setEndIconOnClickListener(v -> showDatePicker());
-    }
+    private void setupDatePicker() { View.OnClickListener show = v -> showDatePicker(); getBinding().etTargetDate.setOnClickListener(show); getBinding().tilTargetDate.setEndIconOnClickListener(show); }
 
     private void showDatePicker() {
-        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText(R.string.label_target_date)
-                .setTheme(R.style.CartiDatePicker)
-                .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
-                .build();
-
-        datePicker.addOnPositiveButtonClickListener(selection -> {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(selection);
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-            getBinding().etTargetDate.setText(sdf.format(calendar.getTime()));
-        });
-
-        datePicker.show(getChildFragmentManager(), "DATE_PICKER");
+        MaterialDatePicker<Long> dp = MaterialDatePicker.Builder.datePicker().setTitleText(R.string.label_target_date).setTheme(R.style.CartiDatePicker).setSelection(MaterialDatePicker.todayInUtcMilliseconds()).build();
+        dp.addOnPositiveButtonClickListener(s -> { Calendar c = Calendar.getInstance(); c.setTimeInMillis(s); getBinding().etTargetDate.setText(new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(c.getTime())); });
+        dp.show(getChildFragmentManager(), "DATE_PICKER");
     }
 
     private void setupMemberSelection() {
-        memberAdapter = new GenericAdapter<>(
-                Member.DIFF_CALLBACK,
-                (inflater, parent) -> ItemMemberAvatarSelectBinding.inflate(inflater, parent, false),
-                (binding, item) -> {
-                    binding.ivAvatar.setImageResource(item.getAvatarRes());
-                    binding.tvName.setText(item.getTitle());
-
-                    boolean isSelected = selectedMemberIds.contains(item.getId());
-                    binding.vOverlay.setVisibility(isSelected ? View.GONE : View.VISIBLE);
-                    binding.ivSelected.setVisibility(isSelected ? View.VISIBLE : View.GONE);
-                    binding.cvAvatar.setStrokeColor(requireContext().getColor(isSelected ? R.color.carti_primary_green : R.color.border_subtle));
-                    binding.cvAvatar.setStrokeWidth(Utils.dpToPx(requireContext(), 2));
-
-                    binding.getRoot().setOnClickListener(v -> {
-                        if (selectedMemberIds.contains(item.getId())) {
-                            selectedMemberIds.remove(item.getId());
-                        } else {
-                            selectedMemberIds.add(item.getId());
-                        }
-                        memberAdapter.notifyItemChanged(memberAdapter.getCurrentList().indexOf(item));
-                    });
-                }
-        );
-
-        getBinding().rvFamilyMembers.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        getBinding().rvFamilyMembers.setAdapter(memberAdapter);
+        memberAdapter = new GenericAdapter<>(Member.DIFF_CALLBACK, (i, p) -> ItemMemberAvatarSelectBinding.inflate(i, p, false), (b, item) -> {
+            b.ivAvatar.setImageResource(item.getAvatarRes()); b.tvName.setText(item.getTitle()); boolean sel = selectedMemberIds.contains(item.getId());
+            b.vOverlay.setVisibility(sel ? View.GONE : View.VISIBLE); b.ivSelected.setVisibility(sel ? View.VISIBLE : View.GONE);
+            b.cvAvatar.setStrokeColor(requireContext().getColor(sel ? R.color.carti_primary_green : R.color.border_subtle)); b.cvAvatar.setStrokeWidth(Utils.dpToPx(requireContext(), 2));
+            b.getRoot().setOnClickListener(v -> { if (selectedMemberIds.contains(item.getId())) selectedMemberIds.remove(item.getId()); else selectedMemberIds.add(item.getId()); memberAdapter.notifyItemChanged(memberAdapter.getCurrentList().indexOf(item)); });
+        });
+        getBinding().rvFamilyMembers.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)); getBinding().rvFamilyMembers.setAdapter(memberAdapter);
     }
 
-    private void setupListeners() {
-        getBinding().btnUpdateGoal.setOnClickListener(v -> onUpdateClicked());
-    }
+    private void setupListeners() { getBinding().btnUpdateGoal.setOnClickListener(v -> onUpdateClicked()); }
 
     private void onUpdateClicked() {
-        if (!checkNetwork()) return;
-        if (currentGoal == null) return;
-
-        if (getBinding().etGoalName.getText() == null || Validator.isEmpty(getBinding().etGoalName) ||
-                getBinding().etTargetAmount.getText() == null || Validator.isEmpty(getBinding().etTargetAmount)) {
-            showToast(R.string.msg_fill_all_fields, ToastHelper.Status.WARNING);
-            return;
-        }
-
-        String name = getBinding().etGoalName.getText().toString().trim();
-        double targetAmount = Double.parseDouble(getBinding().etTargetAmount.getText().toString().trim());
-        String date = getBinding().etTargetDate.getText() != null ? getBinding().etTargetDate.getText().toString().trim() : "";
-
-        showLoading(true, "Updating goal...");
-
-        currentGoal.setTitle(name);
-        currentGoal.setTargetAmount(targetAmount);
-        currentGoal.setDueDate(date);
-        currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
-
+        if (!checkNetwork() || currentGoal == null) return;
+        if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) { showToast(R.string.msg_fill_all_fields, ToastHelper.Status.WARNING); return; }
+        showLoading(true, "Updating goal..."); currentGoal.setTitle(getBinding().etGoalName.getText().toString().trim()); currentGoal.setTargetAmount(Double.parseDouble(getBinding().etTargetAmount.getText().toString().trim()));
+        currentGoal.setDueDate(getBinding().etTargetDate.getText().toString().trim()); currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
         transactionRepository.updateTransaction(currentGoal, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
-            @Override
-            public void onSuccess(Map<String, Object> result) {
-                if (isAdded()) {
-                    showLoading(false);
-                    showToast("Goal updated successfully", ToastHelper.Status.SUCCESS);
-                    dismiss();
-                }
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (isAdded()) {
-                    showLoading(false);
-                    showToast(getString(R.string.err_generic, error.getMessage()), ToastHelper.Status.ERROR);
-                }
-            }
+            @Override public void onSuccess(Map<String, Object> r) { if (isAdded()) { showLoading(false); showToast("Goal updated successfully", ToastHelper.Status.SUCCESS); dismiss(); } }
+            @Override public void onError(Throwable e) { if (isAdded()) { showLoading(false); showToast(getString(R.string.err_generic, e.getMessage()), ToastHelper.Status.ERROR); } }
         });
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
     }
 }

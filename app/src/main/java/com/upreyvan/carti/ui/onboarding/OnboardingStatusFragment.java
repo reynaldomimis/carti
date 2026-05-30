@@ -108,7 +108,7 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
 
             if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
                 checkApprovalStatus(); 
-            } else if ("declined".equals(pendingFamilyId) || pendingFamilyId == null || pendingFamilyId.isEmpty() || "null".equals(pendingFamilyId)) {
+            } else if ("declined".equals(pendingFamilyId)) {
                 handleDeclined();
             }
         });

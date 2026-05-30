@@ -59,10 +59,7 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
             resetIntent.putExtra(ResetPasswordActivity.EXTRA_SECRET, secret);
             startActivity(resetIntent);
         } else {
-            showToast(
-                    getString(R.string.err_generic, "Invalid or missing reset parameters"),
-                    ToastHelper.Status.ERROR
-            );
+            showToast(getString(R.string.err_generic, "Invalid or missing reset parameters"), ToastHelper.Status.ERROR);
         }
     }
 }

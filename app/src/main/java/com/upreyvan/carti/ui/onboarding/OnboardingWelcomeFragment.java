@@ -79,8 +79,11 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
                     android.content.Intent intent = new android.content.Intent(requireActivity(), com.upreyvan.carti.MainActivity.class);
                     startActivity(intent);
                     requireActivity().finish();
+                } else if ("declined".equals(pendingFamilyId)) {
+                    // REJECTED: Show declined screen immediately
+                    navigateTo(OnboardingStatusFragment.newInstanceForWaiting());
                 } else if (!pendingFamilyId.isEmpty()) {
-                    // Already requested to join
+                    // PENDING: Regular waiting screen
                     navigateTo(OnboardingStatusFragment.newInstanceForWaiting());
                 } else if (isEmployed) {
                     navigateTo(new OnboardingOptionsFragment());

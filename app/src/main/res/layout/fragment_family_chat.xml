@@ -21,7 +21,6 @@
             style="@style/CartiHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_medium"
             android:layout_marginEnd="@dimen/spacing_medium"
             android:text="@string/family_chat_title"
             android:textSize="@dimen/text_size_header"

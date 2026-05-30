@@ -4,15 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
-    android:clipChildren="false"
-    android:clipToPadding="false"
+    android:background="@color/surface_variant"
     tools:context=".MainActivity">
 
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -20,67 +18,90 @@
         android:id="@+id/bottom_nav_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clipChildren="false"
-        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="@dimen/spacing_small"
         app:layout_constraintBottom_toBottomOf="parent">
 
-
-        <com.upreyvan.carti.widget.CurvedBottomView
-            android:id="@+id/curved_bg"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/nav_bar_card"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="12dp"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/radius_xl"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="@dimen/stroke_width_thin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tab_add_container"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <include
+                    android:id="@+id/tab_home"
+                    layout="@layout/layout_nav_item"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/tab_expenses"
+                    layout="@layout/layout_nav_item"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/tab_ai"
+                    layout="@layout/layout_nav_item"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/tab_allocate"
+                    layout="@layout/layout_nav_item"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/tab_profile"
+                    layout="@layout/layout_nav_item"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tab_add_container"
+            android:layout_width="@dimen/icon_size_xxl"
+            android:layout_height="@dimen/icon_size_xxl"
+            app:cardBackgroundColor="@color/green_primary"
+            app:cardCornerRadius="@dimen/pill_corner_radius"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/nav_bar_card">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/nav_indicator"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:background="@color/green_primary"
-            android:elevation="8dp"
-            app:layout_constraintBottom_toTopOf="@id/curved_bg"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/curved_bg"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle"
-            app:strokeColor="@color/surface"
-            app:strokeWidth="3dp" />
+            <ImageView
+                android:id="@+id/iv_add_icon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_add"
+                app:tint="@color/white" />
 
-        <LinearLayout
-            android:id="@+id/bottom_nav_inner"
-            android:layout_width="0dp"
-            android:layout_height="80dp"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:elevation="10dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        </com.google.android.material.card.MaterialCardView>
 
-            <include
-                android:id="@+id/tab_home"
-                layout="@layout/layout_nav_item" />
-
-            <include
-                android:id="@+id/tab_expenses"
-                layout="@layout/layout_nav_item" />
-
-            <include
-                android:id="@+id/tab_add"
-                layout="@layout/layout_nav_item" />
-
-            <include
-                android:id="@+id/tab_ai"
-                layout="@layout/layout_nav_item" />
-
-            <include
-                android:id="@+id/tab_profile"
-                layout="@layout/layout_nav_item" />
-
-        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

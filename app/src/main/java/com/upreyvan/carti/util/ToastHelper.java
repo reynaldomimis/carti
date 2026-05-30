@@ -42,8 +42,7 @@ public class ToastHelper {
             }
             lastShownMessages.put(message, now);
             lastGlobalTime = now;
-            
-            // Periodically clean up the map to prevent leaks
+
             if (lastShownMessages.size() > 20) {
                 lastShownMessages.entrySet().removeIf(entry -> now - entry.getValue() > DEBOUNCE_INTERVAL * 2);
             }

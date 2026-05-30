@@ -1,12 +1,10 @@
 package com.upreyvan.carti.base;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
@@ -14,19 +12,17 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewbinding.ViewBinding;
-
+import com.upreyvan.carti.R;
 import com.upreyvan.carti.util.Constants;
-import com.upreyvan.carti.util.DialogHelper;
+import com.upreyvan.carti.util.NetworkMonitor;
+import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
 
 public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
-
     private VB binding;
-
     protected abstract VB inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container);
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = inflateBinding(inflater, container);
         setupStatusBar();
@@ -35,129 +31,54 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
     }
 
     private void setupStatusBar() {
-        if (getActivity() != null) {
-            Window window = getActivity().getWindow();
-            window.setStatusBarColor(Color.WHITE);
-            WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, window.getDecorView());
-            controller.setAppearanceLightStatusBars(true);
-        }
+        // Handled by BaseActivity for true edge-to-edge
     }
 
     private void setupInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
-            int top = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
-            v.setPadding(v.getPaddingLeft(), top, v.getPaddingRight(), v.getPaddingBottom());
-            return windowInsets;
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            int t = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
+            v.setPadding(v.getPaddingLeft(), t, v.getPaddingRight(), v.getPaddingBottom());
+            return insets;
         });
     }
 
-    protected void navigateTo(Fragment fragment) {
+    protected void navigateTo(Fragment f) {
         if (getActivity() != null && isAdded()) {
-            // Senior Tip: The most reliable way to get the container ID is from the current fragment itself.
-            // getId() returns the ID of the container this fragment was added to.
-            int containerId = getId();
-
-            // Fallback only if getId() is invalid
-            if (containerId <= 0) {
-                if (getActivity().findViewById(com.upreyvan.carti.R.id.start_fragment_container) != null) {
-                    containerId = com.upreyvan.carti.R.id.start_fragment_container;
-                } else {
-                    containerId = com.upreyvan.carti.R.id.fragment_container;
-                }
-            }
-
-            try {
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(
-                                android.R.anim.fade_in,
-                                android.R.anim.fade_out,
-                                android.R.anim.fade_in,
-                                android.R.anim.fade_out
-                        )
-                        .replace(containerId, fragment)
-                        .addToBackStack(null)
-                        .commitAllowingStateLoss();
-            } catch (Exception e) {
-                android.util.Log.e("CARTI_DEBUG", "Navigation failed", e);
-            }
+            int id = getId() > 0 ? getId() : (getActivity().findViewById(R.id.start_fragment_container) != null ? R.id.start_fragment_container : R.id.fragment_container);
+            getActivity().getSupportFragmentManager().beginTransaction().setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.fade_in, android.R.anim.fade_out).replace(id, f).addToBackStack(null).commitAllowingStateLoss();
         }
     }
 
-    protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding toolbarBinding, String title) {
-        toolbarBinding.tvToolbarTitle.setText(title);
-        toolbarBinding.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
-        });
+    protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding b, String t) {
+        b.tvToolbarTitle.setText(t);
+        b.btnBack.setOnClickListener(v -> { if (getActivity() != null) getActivity().onBackPressed(); });
     }
 
-    protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding toolbarBinding, int titleRes) {
-        setupToolbar(toolbarBinding, getString(titleRes));
-    }
+    protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding b, int res) { setupToolbar(b, getString(res)); }
 
-    protected void setupDynamicPadding(View header, View scrollable, float ratio) {
-        com.upreyvan.carti.util.Utils.applySystemBarInsets(
-                header,
-                scrollable,
-                ratio,
-                getResources().getDimensionPixelSize(com.upreyvan.carti.R.dimen.bottom_nav_medium)
-        );
-    }
+    protected void setupDynamicPadding(View h, View s, float r) { Utils.applySystemBarInsets(h, s, r, getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium)); }
 
-    protected VB getBinding() {
-        return binding;
-    }
+    protected VB getBinding() { return binding; }
 
-    protected void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
-        com.upreyvan.carti.util.ToastHelper.show(getContext(), message, status);
-    }
+    protected void showToast(String m, ToastHelper.Status s) { ToastHelper.show(getContext(), m, s); }
 
-    protected void showToast(int resId, com.upreyvan.carti.util.ToastHelper.Status status) {
-        com.upreyvan.carti.util.ToastHelper.show(getContext(), resId, status);
-    }
+    protected void showToast(int res, ToastHelper.Status s) { ToastHelper.show(getContext(), res, s); }
 
-    protected void showLoading(boolean isLoading) {
-        if (getActivity() instanceof BaseActivity) {
-            ((BaseActivity<?>) getActivity()).showLoading(isLoading);
-        }
-    }
+    protected void showLoading(boolean l) { if (getActivity() instanceof BaseActivity) ((BaseActivity<?>) getActivity()).showLoading(l); }
 
-    protected void showLoading(boolean isLoading, String message) {
-        if (getActivity() instanceof BaseActivity) {
-            ((BaseActivity<?>) getActivity()).showLoading(isLoading, message);
-        }
-    }
+    protected void showLoading(boolean l, String m) { if (getActivity() instanceof BaseActivity) ((BaseActivity<?>) getActivity()).showLoading(l, m); }
 
-    protected boolean checkNetwork() {
-        if (!Utils.isNetworkAvailable(requireContext())) {
-            DialogHelper.showNoInternetDialog(requireContext());
-            return false;
-        }
-        return true;
-    }
-
-    protected void executeWithNetwork(Runnable action) {
-        if (checkNetwork()) {
-            action.run();
-        }
-    }
+    protected boolean checkNetwork() { return NetworkMonitor.getInstance(requireContext()).isOnline(); }
 
     protected void showError(Throwable t) {
-        String message = Constants.ErrorCodes.GENERIC_ERROR;
+        String m = Constants.ErrorCodes.GENERIC_ERROR;
         if (t != null && t.getMessage() != null) {
             String msg = t.getMessage();
-            if (msg.contains("UNAUTHORIZED") || msg.contains("401")) {
-                message = "Session expired. Please login again.";
-            } else if (msg.contains("NETWORK") || msg.contains("Unable to resolve host")) {
-                message = "No internet connection.";
-            }
+            if (msg.contains("401")) m = "Session expired. Please login again.";
+            else if (msg.contains("NETWORK")) m = "No internet connection.";
         }
-        
-        showToast(message, com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+        showToast(m, ToastHelper.Status.ERROR);
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
+    @Override public void onDestroyView() { super.onDestroyView(); binding = null; }
 }
