@@ -134,13 +134,27 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                boolean hasText = s.toString().trim().length() > 0;
+                boolean hasText = !s.toString().trim().isEmpty();
                 getBinding().layoutInput.btnSend.setEnabled(hasText);
                 getBinding().layoutInput.btnSend.setAlpha(hasText ? 1.0f : 0.5f);
+                getBinding().layoutInput.btnSend.setVisibility(hasText ? View.VISIBLE : View.GONE);
+                getBinding().layoutInput.btnEmojiLike.setVisibility(hasText ? View.GONE : View.VISIBLE);
             }
             @Override
             public void afterTextChanged(Editable s) {}
         });
+
+        View.OnClickListener emojiClickListener = v -> {
+            v.animate().scaleX(1.2f).scaleY(1.2f).setDuration(100).withEndAction(() -> 
+                v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
+            ).start();
+            if (v instanceof android.widget.TextView) {
+                String emoji = ((android.widget.TextView) v).getText().toString();
+                sendMessage(emoji);
+            }
+        };
+
+        getBinding().layoutInput.btnEmojiLike.setOnClickListener(emojiClickListener);
 
         getBinding().layoutInput.btnSend.setOnClickListener(v -> {
             String message = getBinding().layoutInput.etInput.getText().toString().trim();
@@ -242,15 +256,15 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
         ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutBottom, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
-            int bottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium);
-            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            int bottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_height) + getResources().getDimensionPixelSize(R.dimen.spacing_medium);
+            int paddingBottom;
 
             if (insets.isVisible(WindowInsetsCompat.Type.ime())) {
-                lp.bottomMargin = ime.bottom;
+                paddingBottom = ime.bottom;
             } else {
-                lp.bottomMargin = systemBars.bottom + bottomNavHeight;
+                paddingBottom = systemBars.bottom + bottomNavHeight;
             }
-            v.setLayoutParams(lp);
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), paddingBottom);
             return insets;
         });
     }

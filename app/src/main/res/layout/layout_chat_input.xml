@@ -28,29 +28,47 @@
 
     <ImageButton
         android:id="@+id/btnVoice"
-        android:layout_width="40dp"
+        android:layout_width="36dp"
         android:layout_height="48dp"
         android:background="?attr/selectableItemBackground"
         android:contentDescription="@null"
         android:scaleType="centerInside"
         android:src="@android:drawable/ic_btn_speak_now"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btnSend"
+        app:layout_constraintEnd_toStartOf="@id/layoutActionButtons"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/text_secondary" />
 
-    <ImageButton
-        android:id="@+id/btnSend"
-        android:layout_width="40dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="4dp"
-        android:background="?attr/selectableItemBackground"
-        android:contentDescription="@null"
-        android:scaleType="centerInside"
-        android:src="@android:drawable/ic_menu_send"
+    <FrameLayout
+        android:id="@+id/layoutActionButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/carti_primary_green" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/btnEmojiLike"
+            android:layout_width="36dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="👍"
+            android:textSize="20sp" />
+
+        <ImageButton
+            android:id="@+id/btnSend"
+            android:layout_width="36dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="@null"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_send"
+            android:visibility="gone"
+            app:tint="@color/carti_primary_green" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

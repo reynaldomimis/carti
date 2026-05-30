@@ -250,6 +250,9 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     private void updateInputState() {
         if (getBinding() == null) return;
         getBinding().layoutInput.btnSend.setImageResource(isAiThinking ? R.drawable.ic_close : R.drawable.ic_send);
+        boolean hasInputText = !getBinding().layoutInput.etInput.getText().toString().trim().isEmpty();
+        getBinding().layoutInput.btnSend.setVisibility(isAiThinking || hasInputText ? View.VISIBLE : View.GONE);
+        getBinding().layoutInput.btnEmojiLike.setVisibility(isAiThinking || hasInputText ? View.GONE : View.VISIBLE);
         getBinding().layoutInput.etInput.setHint(isAiThinking ? "Carti is thinking..." : getString(R.string.hint_ask_me));
     }
 
@@ -444,6 +447,28 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     }
 
     private void setupInput() {
+        getBinding().layoutInput.etInput.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                boolean hasText = !s.toString().trim().isEmpty();
+                getBinding().layoutInput.btnSend.setVisibility(hasText || isAiThinking ? View.VISIBLE : View.GONE);
+                getBinding().layoutInput.btnEmojiLike.setVisibility(hasText || isAiThinking ? View.GONE : View.VISIBLE);
+            }
+            @Override public void afterTextChanged(android.text.Editable s) {}
+        });
+
+        View.OnClickListener emojiClickListener = v -> {
+            v.animate().scaleX(1.2f).scaleY(1.2f).setDuration(100).withEndAction(() -> 
+                v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
+            ).start();
+            if (v instanceof android.widget.TextView) {
+                String emoji = ((android.widget.TextView) v).getText().toString();
+                sendDirectMessage(emoji);
+            }
+        };
+
+        getBinding().layoutInput.btnEmojiLike.setOnClickListener(emojiClickListener);
+
         getBinding().layoutInput.btnSend.setOnClickListener(v -> {
             if (isAiThinking) {
                 isAiThinking = false;
@@ -463,19 +488,25 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                 return;
             }
 
-            ChatMessage localMsg = new ChatMessage(null, pref.getUserId(), pref.getFamilyId(), pref.getUsername(), text, System.currentTimeMillis(), true);
-            List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
-            currentList.add(localMsg);
-            chatAdapter.submitList(currentList, () -> getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1));
-
-            getBinding().layoutInput.etInput.setText("");
-            if (apiHelper != null) {
-                apiHelper.sendMessage(text, new AppwriteCallback<Document<Map<String, Object>>>() {
-                    @Override public void onSuccess(Document<Map<String, Object>> result) {}
-                    @Override public void onError(Throwable e) { showError(e); }
-                });
-            }
+            sendDirectMessage(text);
         });
+    }
+
+    private void sendDirectMessage(String text) {
+        if (!checkNetwork()) return;
+
+        ChatMessage localMsg = new ChatMessage(null, pref.getUserId(), pref.getFamilyId(), pref.getUsername(), text, System.currentTimeMillis(), true);
+        List<ChatMessage> currentList = new ArrayList<>(chatAdapter.getCurrentList());
+        currentList.add(localMsg);
+        chatAdapter.submitList(currentList, () -> getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1));
+
+        getBinding().layoutInput.etInput.setText("");
+        if (apiHelper != null) {
+            apiHelper.sendMessage(text, new AppwriteCallback<Document<Map<String, Object>>>() {
+                @Override public void onSuccess(Document<Map<String, Object>> result) {}
+                @Override public void onError(Throwable e) { showError(e); }
+            });
+        }
     }
 
     @Override
@@ -507,7 +538,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     private void setupDynamicPadding() {
         if (getBinding() == null) return;
         int originalHeaderBottom = getBinding().layoutHeader.getPaddingBottom();
-        int bottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium);
+        int bottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_height) + getResources().getDimensionPixelSize(R.dimen.spacing_medium);
         int keyboardGap = getResources().getDimensionPixelSize(R.dimen.spacing_small);
 
         ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutHeader, (v, insets) -> {
