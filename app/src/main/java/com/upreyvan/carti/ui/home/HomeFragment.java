@@ -518,23 +518,16 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         }
 
         if (isAdmin) {
-            apiHelper.getMembers(new AppwriteManager.AppwriteCallback<>() {
+            apiHelper.getPendingMembers(new AppwriteManager.AppwriteCallback<>() {
                 @Override
                 public void onSuccess(DocumentList<Map<String, Object>> result) {
                     if (!isAdded()) return;
-                    int pendingCount = 0;
-                    for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                        Object status = doc.getData().get("status");
-                        if (Objects.equals("pending", status)) {
-                            pendingCount++;
-                        }
-                    }
+                    int pendingCount = result.getDocuments().size();
                     
-                    final int finalCount = pendingCount;
                     requireActivity().runOnUiThread(() -> {
-                        updateNotificationBadge(finalCount > 0);
-                        if (finalCount > 0) {
-                            showFamilyNotificationCard(finalCount);
+                        updateNotificationBadge(pendingCount > 0);
+                        if (pendingCount > 0) {
+                            showFamilyNotificationCard(pendingCount);
                         } else {
                             getBinding().viewFamilyNotification.cardNotification.setVisibility(View.GONE);
                         }

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.local.db.AppDatabase;
 import com.upreyvan.carti.ui.auth.LoginActivity;
 import com.upreyvan.carti.ui.profile.ProfileMenuAdapter;
 import com.upreyvan.carti.base.BaseActivity;
@@ -82,9 +83,14 @@ public class ProfileActivity extends BaseActivity<ActivityProfileBinding> {
     }
 
     private void finishLogout() {
-        new PreferenceManager(this).clear();
-        showLoading(false);
-        navigateToLogin();
+        new Thread(() -> {
+            AppDatabase.getInstance(this).clearAllTables();
+            runOnUiThread(() -> {
+                new PreferenceManager(this).clear();
+                showLoading(false);
+                navigateToLogin();
+            });
+        }).start();
     }
 
     private void navigateToLogin() {

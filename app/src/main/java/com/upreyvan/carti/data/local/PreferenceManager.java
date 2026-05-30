@@ -63,7 +63,7 @@ public class PreferenceManager {
     }
 
     public String getUsername() {
-        return sharedPreferences.getString(Constants.Keys.KEY_USER_NAME, "User");
+        return sharedPreferences.getString(Constants.Keys.KEY_USER_NAME, "");
     }
 
     public String getUserEmail() {

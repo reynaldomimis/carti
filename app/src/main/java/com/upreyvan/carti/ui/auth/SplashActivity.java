@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.data.local.db.AppDatabase;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.ActivitySplashBinding;
@@ -38,15 +39,36 @@ public class SplashActivity extends BaseActivity<ActivitySplashBinding> {
     }
 
     private void checkSession() {
+        PreferenceManager pref = new PreferenceManager(this);
         ApiHelper apiHelper = new ApiHelper(this);
+
+        // SENIOR STRATEGY: 
+        // 1. If we don't even have a locally saved userId, go straight to Login.
+        // This stops the "looping" feel for new/logged-out users.
+        if (pref.getUserId().isEmpty()) {
+            navigateToLogin();
+            return;
+        }
+
         apiHelper.getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> userDoc) {
-                PreferenceManager pref = new PreferenceManager(SplashActivity.this);
+                // Harmonize keys with AuthFragment
+                String userId = String.valueOf(userDoc.getOrDefault("$id", ""));
+                String name = String.valueOf(userDoc.getOrDefault("username", userDoc.getOrDefault("name", "User")));
+                String email = String.valueOf(userDoc.getOrDefault("email", ""));
+                String role = String.valueOf(userDoc.getOrDefault("role", ""));
                 
-                Object fid = userDoc.get("familyId");
-                String familyId = (fid != null && !"null".equals(String.valueOf(fid))) ? String.valueOf(fid) : "";
-                pref.setFamilyId(familyId);
+                boolean isEmployed = false;
+                Object emp = userDoc.get("isEmployed");
+                if (emp instanceof Boolean) isEmployed = (Boolean) emp;
+                else if (emp != null) isEmployed = Boolean.parseBoolean(String.valueOf(emp));
+                
+                String familyId = (userDoc.get("familyId") != null && !"null".equals(String.valueOf(userDoc.get("familyId")))) ? String.valueOf(userDoc.get("familyId")) : "";
+                String inviteCode = (userDoc.get("inviteCode") != null && !"null".equals(String.valueOf(userDoc.get("inviteCode")))) ? String.valueOf(userDoc.get("inviteCode")) : "";
+
+                // Update preferences
+                pref.setUserData(name, email, role, isEmployed, familyId, inviteCode, userId);
 
                 if (!familyId.isEmpty()) {
                     pref.setOnboardingFinished(true);
@@ -59,23 +81,31 @@ public class SplashActivity extends BaseActivity<ActivitySplashBinding> {
 
             @Override
             public void onError(Throwable error) {
-                PreferenceManager pref = new PreferenceManager(SplashActivity.this);
-                
                 String message = error.getMessage();
                 boolean isUnauthorized = message != null && (
+                        message.contains("401") || 
                         message.contains("Unauthorized") || 
                         message.contains("login") || 
                         message.contains("session")
                 );
 
                 if (isUnauthorized) {
-                    pref.clear(); // Wipe everything if we are definitely not logged in
-                    navigateToLogin();
-                } else if (pref.isOnboardingFinished() && !pref.getFamilyId().isEmpty()) {
-                    // Likely a network error, allow offline mode if we have data
-                    navigateToHome();
+                    new Thread(() -> {
+                        try {
+                            AppDatabase.getInstance(SplashActivity.this).clearAllTables();
+                        } catch (Exception ignored) {}
+                        runOnUiThread(() -> {
+                            pref.clear();
+                            navigateToLogin();
+                        });
+                    }).start();
                 } else {
-                    navigateToLogin();
+                    // Network error or other - if we have a familyId, allow offline entry to Home
+                    if (!pref.getFamilyId().isEmpty()) {
+                        navigateToHome();
+                    } else {
+                        navigateToLogin();
+                    }
                 }
             }
         });

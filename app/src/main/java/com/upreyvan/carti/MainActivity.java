@@ -19,6 +19,10 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.data.local.db.AppDatabase;
+import com.upreyvan.carti.data.remote.ApiHelper;
+import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.ui.auth.LoginActivity;
 import com.upreyvan.carti.ui.common.AddOptionsActivity;
 import com.upreyvan.carti.ui.profile.ProfileActivity;
 import com.upreyvan.carti.base.BaseActivity;
@@ -28,7 +32,10 @@ import com.upreyvan.carti.ui.debt.DebtTrackerFragment;
 import com.upreyvan.carti.ui.track.TrackFragment;
 import com.upreyvan.carti.ui.family.FamilyChatFragment;
 import com.upreyvan.carti.ui.home.HomeFragment;
+import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.SecurityGuard;
 import com.upreyvan.carti.util.Utils;
+import java.util.Map;
 
 public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
@@ -41,13 +48,67 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // ELITE SECURITY: Check if app has been tampered with or re-signed
-        com.upreyvan.carti.util.SecurityGuard.checkIntegrity(this);
-
+        SecurityGuard.checkIntegrity(this);
         super.onCreate(savedInstanceState);
+        
+        // GATEKEEPER: Perform online validation before showing any data
+        validateGate();
+    }
 
+    private void validateGate() {
+        PreferenceManager pref = new PreferenceManager(this);
+        String userId = pref.getUserId();
+        String familyId = pref.getFamilyId();
+
+        // SENIOR SETUP: 
+        // 1. Splash Activity handled the heavy validation/syncing.
+        // 2. Main just checks if local identity is present.
+        if (userId.isEmpty() || familyId.isEmpty() || "null".equals(familyId)) {
+            // No local identity? User shouldn't be here. 
+            // We force logout to clean any residue and go to Login.
+            forceLogout("No local session found");
+            return;
+        }
+
+        // Proceed immediately - no double API call to avoid looping/glitching
+        proceedWithInitialization();
+        
+        // Background sync only - doesn't block UI or cause loops
+        new ApiHelper(this).getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                String serverFamilyId = String.valueOf(result.get("familyId"));
+                if (serverFamilyId != null && !serverFamilyId.isEmpty() && !"null".equals(serverFamilyId)) {
+                    pref.setFamilyId(serverFamilyId);
+                }
+            }
+            @Override
+            public void onError(Throwable error) {
+                if (error.getMessage() != null && error.getMessage().contains(Constants.ErrorCodes.UNAUTHORIZED)) {
+                    forceLogout("Session expired");
+                }
+            }
+        });
+    }
+
+    private void forceLogout(String reason) {
+        android.util.Log.e("CARTI_GATE", "Access Denied: " + reason);
+        new Thread(() -> {
+            // Room cleanup
+            AppDatabase.getInstance(this).clearAllTables();
+            runOnUiThread(() -> {
+                // Pref cleanup
+                new PreferenceManager(this).clear();
+                Intent intent = new Intent(this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            });
+        }).start();
+    }
+
+    private void proceedWithInitialization() {
         new PreferenceManager(this).setOnboardingFinished(true);
-
         setupBottomNavInsets();
 
         tabBindings = new LayoutNavItemBinding[]{
@@ -61,7 +122,8 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
         setupBackPress();
 
-        if (savedInstanceState == null) {
+        // Only load fragment if container is empty
+        if (getSupportFragmentManager().findFragmentById(R.id.fragment_container) == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new HomeFragment())
                     .commit();

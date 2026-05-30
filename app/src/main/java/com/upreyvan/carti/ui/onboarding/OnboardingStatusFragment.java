@@ -5,11 +5,9 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,8 +20,6 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentOnboardingStatusBinding;
-import com.upreyvan.carti.util.Constants;
-import com.upreyvan.carti.util.Utils;
 
 import java.util.Map;
 
@@ -64,11 +60,6 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
                 copyToClipboard(code);
             }
         });
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
     }
 
     private void copyToClipboard(String text) {
@@ -116,25 +107,9 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
             String pendingFamilyId = String.valueOf(payload.get("pendingFamilyId"));
 
             if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
-                pref.setFamilyId(familyId);
-                getBinding().tvTitle.setText("Welcome to the Family!");
-                getBinding().tvDescription.setText("Your request has been approved. Getting things ready for you...");
-                getBinding().btnStatus.setText("Go to Home");
-                getBinding().btnStatus.setOnClickListener(v -> finishOnboarding());
-
-                new android.os.Handler().postDelayed(() -> {
-                    if (isAdded()) finishOnboarding();
-                }, 2000);
-            } else if (pendingFamilyId == null || pendingFamilyId.isEmpty() || "null".equals(pendingFamilyId)) {
-                getBinding().tvTitle.setText("Request Declined");
-                getBinding().tvDescription.setText("We're sorry, but your request to join this family group has been declined by the administrator. Please contact them or try joining a different family.");
-                getBinding().btnStatus.setText("Restart to JOIN");
-                getBinding().btnStatus.setOnClickListener(v -> {
-                    pref.setOnboardingFinished(false);
-                    if (getActivity() != null) {
-                        getActivity().recreate();
-                    }
-                });
+                checkApprovalStatus(); 
+            } else if ("declined".equals(pendingFamilyId) || pendingFamilyId == null || pendingFamilyId.isEmpty() || "null".equals(pendingFamilyId)) {
+                handleDeclined();
             }
         });
     }
@@ -146,29 +121,60 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
             public void onSuccess(Map<String, Object> user) {
                 if (!isAdded()) return;
                 showLoading(false);
+                
                 String familyId = String.valueOf(user.get("familyId"));
+                String pendingFamilyId = String.valueOf(user.get("pendingFamilyId"));
+
                 if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
-                    new PreferenceManager(requireContext()).setFamilyId(familyId);
-                    
-                    // Show Welcome Success UI
-                    getBinding().tvTitle.setText("Welcome to the Family!");
-                    getBinding().tvDescription.setText("Your request has been approved. Getting things ready for you...");
-                    getBinding().btnStatus.setText("Go to Home");
-                    getBinding().btnStatus.setOnClickListener(v -> finishOnboarding());
-                    
-                    new android.os.Handler().postDelayed(() -> {
-                        if (isAdded()) finishOnboarding();
-                    }, 2000);
+                    handleApproved(user);
+                } else if ("declined".equals(pendingFamilyId)) {
+                    handleDeclined();
                 } else {
-                    showToast("Still pending...", com.upreyvan.carti.util.ToastHelper.Status.INFO);
+                    showToast("Still pending approval...", com.upreyvan.carti.util.ToastHelper.Status.INFO);
                 }
             }
-
+            
             @Override
             public void onError(Throwable error) {
                 if (!isAdded()) return;
                 showLoading(false);
                 showError(error);
+            }
+        });
+    }
+
+    private void handleApproved(Map<String, Object> user) {
+        PreferenceManager pref = new PreferenceManager(requireContext());
+        String userId = String.valueOf(user.get("userId"));
+        String name = String.valueOf(user.getOrDefault("username", "User"));
+        String email = String.valueOf(user.getOrDefault("email", ""));
+        String role = String.valueOf(user.getOrDefault("role", ""));
+        String familyId = String.valueOf(user.get("familyId"));
+
+        pref.setUserData(name, email, role, pref.isEmployed(), familyId, "", userId);
+        
+        getBinding().tvTitle.setText("Welcome to the Family!");
+        getBinding().tvDescription.setText("Your request has been approved!");
+        getBinding().btnStatus.setText("Go to Home");
+        getBinding().btnStatus.setOnClickListener(v -> finishOnboarding());
+        
+        new android.os.Handler().postDelayed(() -> {
+            if (isAdded()) finishOnboarding();
+        }, 1500);
+    }
+
+    private void handleDeclined() {
+        getBinding().tvTitle.setText("Request Declined");
+        getBinding().tvDescription.setText("We're sorry, but your request was declined. You can try joining another family.");
+        getBinding().btnStatus.setText("Join Again / Try New Code");
+        getBinding().btnStatus.setOnClickListener(v -> {
+            PreferenceManager pref = new PreferenceManager(requireContext());
+            pref.setOnboardingFinished(false);
+            
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.start_fragment_container, new com.upreyvan.carti.ui.family.JoinFamilyFragment())
+                        .commit();
             }
         });
     }
