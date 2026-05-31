@@ -106,26 +106,20 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
                 b.ivAvatar.setImageResource(R.drawable.ai_holder);
                 b.ivAvatar.setImageTintList(null);
             } else {
-                b.ivAvatar.setImageTintList(android.content.res.ColorStateList.valueOf(
-                        androidx.core.content.ContextCompat.getColor(b.getRoot().getContext(), R.color.gray)));
-                if (message.getImageResId() != 0) {
-                    b.ivAvatar.setImageResource(message.getImageResId());
-                } else {
-                    b.ivAvatar.setImageResource(R.drawable.ic_person);
-                }
+                b.ivAvatar.setImageResource(R.drawable.ic_person);
+                b.ivAvatar.setImageTintList(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(b.getRoot().getContext(), R.color.gray)));
             }
-
 
             if (message.isCancelable() && !message.isCanceled()) {
                 b.layoutCancel.setVisibility(View.VISIBLE);
+                String act = message.getPendingAction() != null ? message.getPendingAction().optString("action", "Action") : "Action";
+                b.tvActionLabel.setText(act.replace("ADD_", "").replace("_", " "));
                 startTimer(b, message);
                 b.btnCancel.setOnClickListener(v -> {
                     cancelTimer(message);
                     message.setCanceled(true);
                     notifyItemChanged(holder.getAdapterPosition());
-                    if (cancelListener != null) {
-                        cancelListener.onCancel(message, holder.getAdapterPosition());
-                    }
+                    if (cancelListener != null) cancelListener.onCancel(message, holder.getAdapterPosition());
                 });
             } else {
                 b.layoutCancel.setVisibility(View.GONE);

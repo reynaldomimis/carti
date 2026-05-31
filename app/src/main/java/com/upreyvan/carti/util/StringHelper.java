@@ -8,6 +8,13 @@ public class StringHelper {
         return String.format(Locale.getDefault(), "₱%,.2f", amount);
     }
 
+    public static String formatCompactCurrency(double amount) {
+        if (amount >= 1000) {
+            return String.format(Locale.getDefault(), "₱%.0fk", amount / 1000);
+        }
+        return formatCurrency(amount);
+    }
+
     public static String getStringValue(Object value) {
         if (value == null) return "";
         return String.valueOf(value);

@@ -24,10 +24,9 @@ public class AiOrchestrator {
     }
 
     private AiOrchestrator(Context context) {
-        // May sapat na timeout para sa mga LLM responses
         this.client = new OkHttpClient.Builder()
-                .connectTimeout(40, TimeUnit.SECONDS)
-                .readTimeout(40, TimeUnit.SECONDS)
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
                 .build();
         initProviders();
     }
@@ -92,26 +91,34 @@ public class AiOrchestrator {
             cb.onError(new Exception("AI returned an empty response."));
             return;
         }
-        if (text.contains("[IGNORE]")) {
+        
+        String cleanedText = text.replaceAll("(?i)^(h:|carti:|@carti:|assistant:|ai:|user:|ctx:)\\s*", "").trim();
+
+        if (cleanedText.contains("[IGNORE]")) {
             cb.onSuccess("I'm sorry, I cannot process that request right now.");
             return;
         }
-        if (text.contains("INVALID_SESSION")) {
-            cb.onSuccess("I haven't been trained for that. I only assist with family finance tracking.");
+        if (cleanedText.contains("INVALID_SESSION")) {
+            cb.onSuccess("Session invalid or guest mode. Please ensure you are logged in and part of a family.");
             return;
         }
-        if (text.contains("{")) {
+        if (cleanedText.contains("{")) {
             try {
-                int start = text.indexOf("{");
-                int last = text.lastIndexOf("}") + 1;
-                cb.onActionDetected(new JSONObject(text.substring(start, last)));
-                String msg = text.substring(last).trim();
-                cb.onSuccess(msg.isEmpty() ? "Processed successfully. ✅" : msg);
+                int start = cleanedText.indexOf("{");
+                int last = cleanedText.lastIndexOf("}") + 1;
+                cb.onActionDetected(new JSONObject(cleanedText.substring(start, last)));
+
+                String before = cleanedText.substring(0, start).trim();
+                String after = cleanedText.substring(last).trim();
+                
+                String msg = (before + " " + after).replaceAll("(?i)^(h:|carti:|@carti:|assistant:)\\s*", "").trim();
+
+                cb.onSuccess(msg.isEmpty() ? "Action completed. ✅" : msg);
             } catch (Exception e) {
-                cb.onSuccess(text);
+                cb.onSuccess(cleanedText);
             }
         } else {
-            cb.onSuccess(text);
+            cb.onSuccess(cleanedText);
         }
     }
 
@@ -129,7 +136,7 @@ public class AiOrchestrator {
             String apiKey = BuildConfig.GEMINI_API_KEY;
             if (apiKey != null) apiKey = apiKey.replace("\"", "").trim();
 
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
+            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=" + apiKey;
             
             JSONObject json = new JSONObject();
             try {

@@ -57,7 +57,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:windowSoftInputMode="stateHidden|adjustResize" />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.profile.ProfileActivity"
             android:exported="false"

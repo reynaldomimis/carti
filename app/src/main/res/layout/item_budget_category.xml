@@ -46,12 +46,12 @@
         style="@style/CartiHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/spacing_medium"
+        android:layout_marginEnd="@dimen/spacing_small"
         android:textSize="@dimen/text_size_body_small"
         app:layout_constraintBottom_toBottomOf="@id/tvCategoryName"
         app:layout_constraintEnd_toStartOf="@id/tvPercentage"
         app:layout_constraintTop_toTopOf="@id/tvCategoryName"
-        tools:text="PHP 8,000" />
+        tools:text="₱4k / ₱8k" />
 
     <TextView
         android:id="@+id/tvPercentage"

@@ -326,6 +326,10 @@ public class TransactionRepository {
         apiHelper.callAction(Constants.Actions.ADD_TRANSACTION, data, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
+                if ("EXPENSE".equals(transaction.getType())) {
+                    com.upreyvan.carti.data.local.BudgetManager.getInstance(apiHelper.getContext())
+                        .addExpenseToCategory(transaction.getCategory(), transaction.getAmount());
+                }
                 refreshTransactions();
                 if (callback != null) callback.onSuccess(result);
             }
@@ -353,7 +357,6 @@ public class TransactionRepository {
     public void saveLocally(Transaction transaction) {
         executor.execute(() -> {
             transactionDao.insert(transaction);
-            // Refresh to ensure all observers are notified of the new state
             refreshTransactions();
         });
     }

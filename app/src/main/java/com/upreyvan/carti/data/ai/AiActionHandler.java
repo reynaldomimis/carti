@@ -2,6 +2,8 @@ package com.upreyvan.carti.data.ai;
 
 import android.content.Context;
 import android.util.Log;
+
+import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import org.json.JSONObject;
@@ -38,13 +40,16 @@ public class AiActionHandler {
             switch (intent.toUpperCase()) {
                 case "EXPENSE":
                 case "ADD_EXPENSE":
+                    double amount = data.optDouble("amount", 0.0);
+                    String category = data.optString("category", "unknown");
                     apiHelper.addTransaction(
-                        data.optDouble("amount", 0.0),
+                        amount,
                         "EXPENSE",
-                        data.optString("category", "unknown"),
+                        category,
                         data.optString("description", data.optString("note", "")),
                         callback
                     );
+                    BudgetManager.getInstance(context).addExpenseToCategory(category, amount);
                     break;
 
                 case "INCOME":
@@ -77,6 +82,15 @@ public class AiActionHandler {
                         "NO_REMINDER",
                         data.optString("description", data.optString("notes", "")),
                         callback
+                    );
+                    break;
+
+                case "ALLOCATE":
+                case "UPDATE_BUDGET":
+                    BudgetManager.getInstance(context).updateOrAddCategory(
+                        data.getString("category"),
+                        data.getDouble("amount"),
+                        data.optString("parent", null)
                     );
                     break;
 

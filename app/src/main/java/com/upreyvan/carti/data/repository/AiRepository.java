@@ -25,6 +25,7 @@ public class AiRepository {
     private final com.upreyvan.carti.data.local.db.dao.TransactionDao transactionDao;
     private long lastCallTime = 0;
     private static final long RATE_LIMIT_MS = 3000;
+    private static final long SESSION_TIMEOUT_MS = 60000;
     private static AiRepository instance;
 
     public static AiRepository getInstance(Context context) {
@@ -43,12 +44,46 @@ public class AiRepository {
 
     public void processChat(String msg, String sender, List<ChatMessage> history, boolean force, AiManager.AiCallback cb) {
         long now = System.currentTimeMillis();
-        if (!force && (now - lastCallTime < RATE_LIMIT_MS || msg.length() < 2 || msg.toLowerCase().matches("^(ok|okay|salamat|thanks|bye|ty|k|tnx|haha|hehe)$"))) return;
+        boolean sessionExpired = (now - lastCallTime > SESSION_TIMEOUT_MS);
+        
+        String normalizedMsg = msg.toLowerCase().replaceAll("\\s+", "");
+        boolean isCommand = normalizedMsg.contains("@carti");
+
+        if (!force && !isCommand && (now - lastCallTime < RATE_LIMIT_MS || msg.length() < 2 || msg.toLowerCase().matches("^(ok|okay|salamat|thanks|bye|ty|k|tnx|haha|hehe)$"))) return;
+        
         lastCallTime = now;
+
+        List<ChatMessage> effectiveHistory = sessionExpired ? null : history;
+
+        if (isCommand && !msg.matches(".*\\d+.*")) {
+            callAi(msg, "FAMILY_ID: " + pref.getFamilyId() + " | USER_ID: " + pref.getUserId() + "\nB:" + pref.getBalance() + buildHistoryContext(effectiveHistory), force, cb);
+            return;
+        }
+
         apiHelper.getTransactionsSince("2024-01-01T00:00:00.000Z", new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override public void onSuccess(DocumentList<Map<String, Object>> r) { callAi(msg, buildContext(r.getDocuments(), history), force, cb); }
-            @Override public void onError(Throwable e) { callAi(msg, "B:" + pref.getBalance(), force, cb); }
+            @Override public void onSuccess(DocumentList<Map<String, Object>> r) { 
+                callAi(msg, buildContext(r.getDocuments(), effectiveHistory), force, cb); 
+            }
+            @Override public void onError(Throwable e) {
+                String basicCtx = "FAMILY_ID: " + pref.getFamilyId() + " | USER_ID: " + pref.getUserId() + "\nB:" + pref.getBalance();
+                basicCtx += buildHistoryContext(effectiveHistory);
+                callAi(msg, basicCtx, force, cb); 
+            }
         });
+    }
+
+    private String buildHistoryContext(List<ChatMessage> history) {
+        if (history == null || history.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder("\nH:");
+        int start = Math.max(0, history.size() - 10);
+        for (int i = start; i < history.size(); i++) {
+            ChatMessage m = history.get(i);
+            if (!m.isShimmer()) {
+                String role = m.getSenderName().toLowerCase().contains("ai") ? "AI" : "USER";
+                sb.append(role).append(":").append(m.getMessage()).append("|");
+            }
+        }
+        return sb.toString();
     }
 
     private void callAi(String msg, String ctx, boolean f, AiManager.AiCallback cb) {
@@ -93,11 +128,12 @@ public class AiRepository {
 
         if (history != null && !history.isEmpty()) { 
             sb.append("\nH:"); 
-            int start = Math.max(0, history.size() - 5); 
+            int start = Math.max(0, history.size() - 10); 
             for (int i = start; i < history.size(); i++) {
                 ChatMessage m = history.get(i);
                 if (!m.isShimmer()) {
-                    sb.append(m.getSenderName()).append(":").append(m.getMessage()).append("|");
+                    String role = m.getSenderName().toLowerCase().contains("ai") ? "AI" : "USER";
+                    sb.append(role).append(":").append(m.getMessage()).append("|");
                 }
             }
         }

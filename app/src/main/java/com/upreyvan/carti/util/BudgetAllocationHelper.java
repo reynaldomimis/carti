@@ -20,7 +20,7 @@ public class BudgetAllocationHelper {
                 return;
             }
 
-            double allocated = 5000.0; // Simulated allocation
+            double allocated = 5000.0;
             double spent = transactions.stream()
                     .map(TransactionWithUser::getTransaction)
                     .filter(t -> "EXPENSE".equalsIgnoreCase(t.getType()) && categoryName.equalsIgnoreCase(t.getCategory()))

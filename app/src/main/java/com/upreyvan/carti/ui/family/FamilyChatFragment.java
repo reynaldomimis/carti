@@ -53,7 +53,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     private VoiceToTextHelper voiceToTextHelper;
     private boolean isAiThinking = false;
     private CountDownTimer activeSessionTimer;
-    private static final long SESSION_TIMEOUT_MS = 30000;
+    private static final long SESSION_TIMEOUT_MS = 60000;
 
     private boolean isLoading = false;
     private boolean isLastPage = false;
@@ -303,7 +303,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             @Override
             public void onTick(long millisUntilFinished) {
                 if (getBinding() != null) {
-                    String status = "Carti Online " + (millisUntilFinished / 1000) + "s";
+                    String status = "Carti Ai Online " + (millisUntilFinished / 1000) + "s";
                     getBinding().tvSessionStatus.setText(status);
                     
                     if (!isAiThinking) {
@@ -316,7 +316,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             public void onFinish() {
                 activeSessionTimer = null;
                 if (getBinding() != null) {
-                    getBinding().tvSessionStatus.setText("Carti Offline");
+                    getBinding().tvSessionStatus.setText("Carti Ai Offline");
                     getBinding().tvSessionStatus.setTextColor(getResources().getColor(R.color.text_tertiary));
                     
                     if (!isAiThinking) {
@@ -608,17 +608,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
     private void setupDynamicPadding() {
         if (getBinding() == null) return;
-        int originalHeaderBottom = getBinding().layoutHeader.getPaddingBottom();
         int bottomNavHeight = getResources().getDimensionPixelSize(R.dimen.bottom_nav_height) + getResources().getDimensionPixelSize(R.dimen.spacing_medium);
-        int keyboardGap = getResources().getDimensionPixelSize(R.dimen.spacing_small);
-
-        ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutHeader, (v, insets) -> {
-            if (getBinding() == null) return insets;
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            int adjustedTop = (int) (systemBars.top * 0.3f);
-            v.setPadding(v.getPaddingLeft(), adjustedTop, v.getPaddingRight(), originalHeaderBottom);
-            return insets;
-        });
 
         ViewCompat.setOnApplyWindowInsetsListener(getBinding().layoutInputContainer, (v, insets) -> {
             if (getBinding() == null) return insets;
@@ -626,20 +616,21 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
 
             boolean isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
-            int paddingBottom;
+            
+            // If keyboard is visible, we don't need extra padding because adjustResize handles it.
+            // If not, we add padding to clear the system navigation bar and bottom nav.
+            int paddingBottom = isKeyboardVisible ? 0 : (systemBars.bottom + bottomNavHeight);
 
-            if (isKeyboardVisible) {
-                paddingBottom = ime.bottom + keyboardGap;
-            } else {
-                paddingBottom = systemBars.bottom + bottomNavHeight;
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), paddingBottom);
+            
+            // Try to hide the MainActivity's bottom nav if keyboard is visible
+            if (getActivity() instanceof com.upreyvan.carti.MainActivity) {
+                View bottomNav = getActivity().findViewById(R.id.bottom_nav_container);
+                if (bottomNav != null) {
+                    bottomNav.setVisibility(isKeyboardVisible ? View.GONE : View.VISIBLE);
+                }
             }
 
-            v.setPadding(
-                    v.getPaddingLeft(),
-                    v.getPaddingTop(),
-                    v.getPaddingRight(),
-                    paddingBottom
-            );
             return insets;
         });
     }

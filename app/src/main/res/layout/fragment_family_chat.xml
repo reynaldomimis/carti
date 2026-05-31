@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/spacing_small"
             android:fontFamily="@font/plus_jakarta_sans_bold"
-            android:text="Carti Offline"
+            android:text="Carti Ai Offline"
             android:textColor="@color/text_tertiary"
             android:textSize="14sp"
             android:visibility="visible"

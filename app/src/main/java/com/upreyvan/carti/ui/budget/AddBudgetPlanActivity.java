@@ -12,6 +12,7 @@ import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.databinding.ActivityAddBudgetPlanBinding;
 import com.upreyvan.carti.databinding.ItemBudgetCategoryBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
+import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
 import androidx.core.util.Pair;
@@ -104,9 +105,12 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
                 (inflater, parent) -> ItemBudgetCategoryBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
                     binding.tvCategoryName.setText(item.getCategoryName());
-                    binding.tvAmount.setText(Utils.formatCurrency(item.getAmount()));
-                    binding.tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", item.getPercentage()));
-                    binding.pbBudget.setProgress(item.getPercentage());
+                    String spent = StringHelper.formatCompactCurrency(item.getCurrentSpent());
+                    String total = StringHelper.formatCompactCurrency(item.getAmount());
+                    binding.tvAmount.setText(String.format("%s / %s", spent, total));
+                    int progress = item.getAmount() > 0 ? (int)((item.getCurrentSpent() / item.getAmount()) * 100) : 0;
+                    binding.tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", progress));
+                    binding.pbBudget.setProgress(progress);
                     binding.ivIcon.setImageResource(item.getIconRes());
                     binding.cvIcon.setCardBackgroundColor(ContextCompat.getColor(this, item.getBgColor()));
                     binding.ivIcon.setColorFilter(ContextCompat.getColor(this, item.getIconColor()));

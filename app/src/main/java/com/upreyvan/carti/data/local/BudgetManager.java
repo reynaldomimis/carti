@@ -2,13 +2,10 @@ package com.upreyvan.carti.data.local;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.model.BudgetCategoryItem;
-import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.SecurityManager;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,15 +21,12 @@ public class BudgetManager {
     }
 
     public static synchronized BudgetManager getInstance(Context context) {
-        if (instance == null) {
-            instance = new BudgetManager(context.getApplicationContext());
-        }
+        if (instance == null) instance = new BudgetManager(context.getApplicationContext());
         return instance;
     }
 
     public void saveBudgetPlan(List<BudgetCategoryItem> items) {
-        String json = gson.toJson(items);
-        prefs.edit().putString("key_budget_plan_items", json).apply();
+        prefs.edit().putString("key_budget_plan_items", gson.toJson(items)).apply();
         notifyListeners();
     }
 
@@ -43,24 +37,41 @@ public class BudgetManager {
         return gson.fromJson(json, type);
     }
 
-    public interface OnBudgetChangeListener {
-        void onBudgetChanged(List<BudgetCategoryItem> items);
+    public void updateOrAddCategory(String name, double amount, String parent) {
+        List<BudgetCategoryItem> items = getBudgetPlan();
+        boolean found = false;
+        for (BudgetCategoryItem item : items) {
+            if (item.getCategoryName().equalsIgnoreCase(name)) {
+                item.setAmount(amount);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            items.add(new BudgetCategoryItem(name, com.upreyvan.carti.R.drawable.ic_chart, 
+                com.upreyvan.carti.R.color.carti_primary_green, 
+                com.upreyvan.carti.R.color.mint_green_alpha, amount, 0, parent, 0));
+        }
+        saveBudgetPlan(items);
     }
 
+    public void addExpenseToCategory(String name, double spent) {
+        List<BudgetCategoryItem> items = getBudgetPlan();
+        for (BudgetCategoryItem item : items) {
+            if (item.getCategoryName().equalsIgnoreCase(name)) {
+                item.setCurrentSpent(item.getCurrentSpent() + spent);
+                break;
+            }
+        }
+        saveBudgetPlan(items);
+    }
+
+    public interface OnBudgetChangeListener { void onBudgetChanged(List<BudgetCategoryItem> items); }
     private final List<OnBudgetChangeListener> listeners = new ArrayList<>();
-
-    public void addListener(OnBudgetChangeListener listener) {
-        if (!listeners.contains(listener)) listeners.add(listener);
-    }
-
-    public void removeListener(OnBudgetChangeListener listener) {
-        listeners.remove(listener);
-    }
-
+    public void addListener(OnBudgetChangeListener l) { if (!listeners.contains(l)) listeners.add(l); }
+    public void removeListener(OnBudgetChangeListener l) { listeners.remove(l); }
     private void notifyListeners() {
         List<BudgetCategoryItem> current = getBudgetPlan();
-        for (OnBudgetChangeListener listener : listeners) {
-            listener.onBudgetChanged(current);
-        }
+        for (OnBudgetChangeListener l : listeners) l.onBudgetChanged(current);
     }
 }

@@ -11,13 +11,22 @@ public class BudgetCategoryItem {
     private double amount;
     private int percentage;
 
+    private String parentCategory; // For Elite Hierarchy
+    private double currentSpent; // For actual vs budget tracking
+
     public BudgetCategoryItem(String categoryName, int iconRes, int iconColor, int bgColor, double amount, int percentage) {
+        this(categoryName, iconRes, iconColor, bgColor, amount, percentage, null, 0);
+    }
+
+    public BudgetCategoryItem(String categoryName, int iconRes, int iconColor, int bgColor, double amount, int percentage, String parentCategory, double currentSpent) {
         this.categoryName = categoryName;
         this.iconRes = iconRes;
         this.iconColor = iconColor;
         this.bgColor = bgColor;
         this.amount = amount;
         this.percentage = percentage;
+        this.parentCategory = parentCategory;
+        this.currentSpent = currentSpent;
     }
 
     public String getCategoryName() { return categoryName; }
@@ -26,6 +35,11 @@ public class BudgetCategoryItem {
     public int getBgColor() { return bgColor; }
     public double getAmount() { return amount; }
     public int getPercentage() { return percentage; }
+    public String getParentCategory() { return parentCategory; }
+    public double getCurrentSpent() { return currentSpent; }
+
+    public void setAmount(double amount) { this.amount = amount; }
+    public void setCurrentSpent(double spent) { this.currentSpent = spent; }
 
     public static final DiffUtil.ItemCallback<BudgetCategoryItem> DIFF_CALLBACK = new DiffUtil.ItemCallback<BudgetCategoryItem>() {
         @Override

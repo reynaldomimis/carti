@@ -101,7 +101,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
     private void initTab(LayoutNavItemBinding tab, int icon, String label, int navId) {
         tab.navIcon.setImageResource(icon); tab.navLabel.setText(label);
-        tab.getRoot().setPadding(0, 0, 0, 0); // Reset padding from include
+        tab.getRoot().setPadding(0, 0, 0, 0); 
         tab.getRoot().setOnClickListener(v -> { setTabActive(tab); navigateTo(navId); });
     }
 
@@ -123,10 +123,11 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     public void navigateTo(int id) {
         Fragment f = null;
         if (id == 1) f = new HomeFragment();
-        else if (id == 2) f = new TrackFragment();
-        else if (id == 3) f = new DebtTrackerFragment();
+        else if (id == 2) f = com.upreyvan.carti.ui.allocate.AllocateFragment.newInstance(true); 
+        else if (id == 3) f = com.upreyvan.carti.ui.allocate.AllocateFragment.newInstance(false);
         else if (id == 5) f = new FamilyChatFragment();
         else if (id == 4) { startActivity(new Intent(this, ProfileActivity.class)); return; }
+        else if (id == 7) { startActivity(new Intent(this, AddOptionsActivity.class)); return; }
         if (f != null) getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, f).setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out).commit();
     }
 
