@@ -42,6 +42,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import com.upreyvan.carti.data.ai.CartiAiManager;
 
+import org.json.JSONObject;
+
 public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding> {
 
     private AiSuggestionAdapter suggestionAdapter;
@@ -207,6 +209,27 @@ public class AiAssistantFragment extends BaseFragment<FragmentAiAssistantBinding
                     chatMessages.add(new ChatMessage(
                             getString(R.string.chat_sender_ai),
                             response,
+                            getCurrentSystemTime(),
+                            false,
+                            R.drawable.ai_holder,
+                            IntentType.UNKNOWN
+                    ));
+                    chatAdapter.submitList(new ArrayList<>(chatMessages));
+                    scrollToBottom();
+                });
+            }
+
+            @Override
+            public void onActionDetected(JSONObject action) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    chatMessages.remove(thinkingMsg);
+                    aiRepository.executeAction(action);
+                    
+                    String msg = action.optString("message", "Done! Recorded locally. ✅");
+                    chatMessages.add(new ChatMessage(
+                            getString(R.string.chat_sender_ai),
+                            msg,
                             getCurrentSystemTime(),
                             false,
                             R.drawable.ai_holder,

@@ -21,6 +21,7 @@ import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityMainBinding;
 import com.upreyvan.carti.databinding.LayoutNavItemBinding;
 import com.upreyvan.carti.ui.debt.DebtTrackerFragment;
+import com.upreyvan.carti.ui.track.IncomeModeFragment;
 import com.upreyvan.carti.ui.track.TrackFragment;
 import com.upreyvan.carti.ui.ai.AiAssistantFragment;
 import com.upreyvan.carti.ui.family.FamilyChatFragment;
@@ -123,9 +124,11 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     public void navigateTo(int id) {
         Fragment f = null;
         if (id == 1) f = new HomeFragment();
-        else if (id == 2) f = com.upreyvan.carti.ui.allocate.AllocateFragment.newInstance(true); 
+        else if (id == 2) f = new TrackFragment();
         else if (id == 3) f = com.upreyvan.carti.ui.allocate.AllocateFragment.newInstance(false);
         else if (id == 5) f = new FamilyChatFragment();
+        else if (id == 6) f = new com.upreyvan.carti.ui.goals.GoalFragment();
+        else if (id == 8) f = new IncomeModeFragment();
         else if (id == 4) { startActivity(new Intent(this, ProfileActivity.class)); return; }
         else if (id == 7) { startActivity(new Intent(this, AddOptionsActivity.class)); return; }
         if (f != null) getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, f).setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out).commit();

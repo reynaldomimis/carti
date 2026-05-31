@@ -246,6 +246,26 @@ public class PreferenceManager {
                 .apply();
     }
 
+    public void setLastPendingAmount(double amount) {
+        sharedPreferences.edit().putLong("last_pending_amount", Double.doubleToRawLongBits(amount)).apply();
+    }
+
+    public double getLastPendingAmount() {
+        return Double.longBitsToDouble(sharedPreferences.getLong("last_pending_amount", 0));
+    }
+
+    public void setLastPendingItem(String item) {
+        sharedPreferences.edit().putString("last_pending_item", item).apply();
+    }
+
+    public String getLastPendingItem() {
+        return sharedPreferences.getString("last_pending_item", "");
+    }
+
+    public void clearPendingSession() {
+        sharedPreferences.edit().remove("last_pending_amount").remove("last_pending_item").apply();
+    }
+
     public void clear() {
         // List of all preference files used in the app
         String[] prefFiles = {

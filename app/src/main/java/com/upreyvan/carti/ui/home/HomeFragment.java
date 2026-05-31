@@ -163,7 +163,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         quickActionsAdapter.setOnItemClickListener(item -> {
             MainActivity main = (MainActivity) getActivity();
             if (item.getTitle().equals(getString(R.string.add_options_expense))) main.navigateTo(7);
-            else if (item.getTitle().equals(getString(R.string.action_add_income))) main.navigateTo(2);
+            else if (item.getTitle().equals(getString(R.string.action_add_income))) main.navigateTo(8);
             else if (item.getTitle().equals(getString(R.string.action_family_chat))) main.navigateTo(5);
             else if (item.getTitle().equals(getString(R.string.action_manage_goals))) main.navigateTo(6);
         });

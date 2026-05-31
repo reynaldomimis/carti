@@ -321,6 +321,9 @@ public class TransactionRepository {
             data.put("targetAmount", transaction.getTargetAmount());
         } else if ("DEBT".equals(transaction.getType())) {
             data.put("personName", transaction.getTitle());
+        } else if ("ALLOCATION".equals(transaction.getType())) {
+            data.put("allocatedTo", transaction.getAllocatedTo());
+            data.put("allocationMonth", transaction.getAllocationMonth());
         }
 
         apiHelper.callAction(Constants.Actions.ADD_TRANSACTION, data, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {

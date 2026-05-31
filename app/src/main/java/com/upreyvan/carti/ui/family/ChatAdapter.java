@@ -15,7 +15,7 @@ import com.upreyvan.carti.databinding.ItemChatLeftBinding;
 import com.upreyvan.carti.databinding.ItemChatRightBinding;
 import com.upreyvan.carti.model.ChatMessage;
 import com.upreyvan.carti.util.Constants;
-
+import com.upreyvan.carti.util.Utils;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +24,7 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
     private static final int VIEW_TYPE_ME = 1;
     private static final int VIEW_TYPE_OTHER = 2;
     private static final int VIEW_TYPE_THINKING = 5;
+    private static final int VIEW_TYPE_SUMMARY = 6;
     private static final int TIMER_DURATION = 10000;
 
     private OnCancelListener cancelListener;
@@ -49,9 +50,8 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
     @Override
     public int getItemViewType(int position) {
         ChatMessage message = getItem(position);
-        if (message.isShimmer()) {
-            return VIEW_TYPE_THINKING;
-        }
+        if (message.isShimmer()) return VIEW_TYPE_THINKING;
+        if (message.isSummary()) return VIEW_TYPE_SUMMARY;
         return message.isMe() ? VIEW_TYPE_ME : VIEW_TYPE_OTHER;
     }
 
@@ -61,8 +61,8 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         ViewBinding binding = switch (viewType) {
             case VIEW_TYPE_ME -> ItemChatRightBinding.inflate(inflater, parent, false);
-            case VIEW_TYPE_THINKING ->
-                    com.upreyvan.carti.databinding.ItemChatThinkingBinding.inflate(inflater, parent, false);
+            case VIEW_TYPE_THINKING -> com.upreyvan.carti.databinding.ItemChatThinkingBinding.inflate(inflater, parent, false);
+            case VIEW_TYPE_SUMMARY -> com.upreyvan.carti.databinding.ItemChatSummaryBinding.inflate(inflater, parent, false);
             default -> ItemChatLeftBinding.inflate(inflater, parent, false);
         };
         return new ViewHolder<>(binding);
@@ -71,11 +71,32 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder<ViewBinding> holder, int position) {
         ChatMessage message = getItem(position);
-        if (message.isShimmer()) {
-            return;
-        }
+        if (message.isShimmer()) return;
 
-        if (holder.binding instanceof ItemChatRightBinding) {
+        if (holder.binding instanceof com.upreyvan.carti.databinding.ItemChatSummaryBinding) {
+            com.upreyvan.carti.databinding.ItemChatSummaryBinding b = (com.upreyvan.carti.databinding.ItemChatSummaryBinding) holder.binding;
+            org.json.JSONObject data = message.getSummaryData();
+            if (data != null) {
+                b.tvPeriod.setText(data.optString("period", "Financial Summary"));
+                
+                double balance = data.optDouble("balance", -1);
+                b.tvTotalBalance.setText(Utils.formatCurrency(balance));
+                b.tvTotalBalance.setVisibility(balance >= 0 ? View.VISIBLE : View.GONE);
+                b.tvBalanceLabel.setVisibility(balance >= 0 ? View.VISIBLE : View.GONE);
+
+                double income = data.optDouble("income", -1);
+                b.rowIncome.setVisibility(income >= 0 ? View.VISIBLE : View.GONE);
+                b.tvIncome.setText(Utils.formatCurrency(income));
+
+                double expense = data.optDouble("expense", -1);
+                b.rowExpense.setVisibility(expense >= 0 ? View.VISIBLE : View.GONE);
+                b.tvExpense.setText(Utils.formatCurrency(expense));
+
+                double alloc = data.optDouble("allocation", -1);
+                b.rowAlloc.setVisibility(alloc >= 0 ? View.VISIBLE : View.GONE);
+                b.tvAlloc.setText(Utils.formatCurrency(alloc));
+            }
+        } else if (holder.binding instanceof ItemChatRightBinding) {
             ItemChatRightBinding b = (ItemChatRightBinding) holder.binding;
             b.tvSenderName.setText(b.getRoot().getContext().getString(R.string.chat_sender_me));
             b.tvMessage.setText(message.getMessage());

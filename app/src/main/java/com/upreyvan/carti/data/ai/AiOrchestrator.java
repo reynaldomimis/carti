@@ -113,7 +113,9 @@ public class AiOrchestrator {
                 
                 String msg = (before + " " + after).replaceAll("(?i)^(h:|carti:|@carti:|assistant:)\\s*", "").trim();
 
-                cb.onSuccess(msg.isEmpty() ? "Action completed. ✅" : msg);
+                if (!msg.isEmpty()) {
+                    cb.onSuccess(msg);
+                }
             } catch (Exception e) {
                 cb.onSuccess(cleanedText);
             }
@@ -136,7 +138,7 @@ public class AiOrchestrator {
             String apiKey = BuildConfig.GEMINI_API_KEY;
             if (apiKey != null) apiKey = apiKey.replace("\"", "").trim();
 
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=" + apiKey;
+            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash:generateContent?key=" + apiKey;
             
             JSONObject json = new JSONObject();
             try {

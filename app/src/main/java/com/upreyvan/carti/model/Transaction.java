@@ -51,6 +51,8 @@ public class Transaction {
     private int likesCount;
     private int commentCount;
     private String lastEmoji;
+    private String allocatedTo;
+    private String allocationMonth;
 
     @Ignore
     private String reactorNames;
@@ -176,6 +178,12 @@ public class Transaction {
 
     public String getLastEmoji() { return lastEmoji; }
     public void setLastEmoji(String lastEmoji) { this.lastEmoji = lastEmoji; }
+
+    public String getAllocatedTo() { return allocatedTo; }
+    public void setAllocatedTo(String allocatedTo) { this.allocatedTo = allocatedTo; }
+
+    public String getAllocationMonth() { return allocationMonth; }
+    public void setAllocationMonth(String allocationMonth) { this.allocationMonth = allocationMonth; }
 
     public String getReactorNames() { return reactorNames; }
     public void setReactorNames(String reactorNames) { this.reactorNames = reactorNames; }

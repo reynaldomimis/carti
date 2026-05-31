@@ -17,9 +17,15 @@ public class ChatMessage {
     private IntentType intent;
     private boolean isCanceled = false;
     private boolean isShimmer = false;
+    private boolean isSummary = false;
     private org.json.JSONObject pendingAction;
+    private org.json.JSONObject summaryData;
 
-    // Appwrite Fields
+    public boolean isSummary() { return isSummary; }
+    public void setSummary(boolean summary) { isSummary = summary; }
+    public org.json.JSONObject getSummaryData() { return summaryData; }
+    public void setSummaryData(org.json.JSONObject summaryData) { this.summaryData = summaryData; }
+
     private String id;
     private String senderId;
     private String familyId;
