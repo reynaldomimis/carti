@@ -7,7 +7,6 @@ import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.ChatMessage;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
@@ -53,10 +52,17 @@ public class AiRepository {
     }
 
     private void callAi(String msg, String ctx, boolean f, AiManager.AiCallback cb) {
-        aiManager.processChat(msg, ctx, f, new AiManager.AiCallback() {
-            @Override public void onSuccess(String r) { cb.onSuccess(r); }
+        String fullCtx = ctx + "\nINTRO_DONE: " + (pref.isAiIntroDone() ? "TRUE" : "FALSE");
+        aiManager.processChat(msg, fullCtx, f, new AiManager.AiCallback() {
+            @Override public void onSuccess(String r) { 
+                pref.setAiIntroDone(true);
+                cb.onSuccess(r); 
+            }
             @Override public void onError(Throwable t) { cb.onError(t); }
-            @Override public void onActionDetected(JSONObject a) { cb.onActionDetected(a); }
+            @Override public void onActionDetected(JSONObject a) { 
+                pref.setAiIntroDone(true);
+                cb.onActionDetected(a); 
+            }
         });
     }
 
@@ -67,8 +73,27 @@ public class AiRepository {
     private String buildContext(List<Document<Map<String, Object>>> docs, List<ChatMessage> history) {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format(Locale.US, "B:%.0f|I:%.0f|E:%.0f\n", pref.getBalance(), pref.getTotalIncome(), pref.getTotalExpense()));
-        if (docs != null && !docs.isEmpty()) { sb.append("TX:"); int c = 0; for (Document<Map<String, Object>> d : docs) { if (c++ >= 3) break; Map<String, Object> m = d.getData(); sb.append(m.get("amount")).append(",").append(m.get("category")).append(";"); } }
-        if (history != null) { sb.append("\nH:"); int s = Math.max(0, history.size() - 3); for (int i = s; i < history.size(); i++) if (!history.get(i).isShimmer()) sb.append(history.get(i).getSenderName()).append(":").append(history.get(i).getMessage()).append("|"); }
+
+        if (docs != null && !docs.isEmpty()) { 
+            sb.append("TX:"); 
+            int c = 0; 
+            for (Document<Map<String, Object>> d : docs) { 
+                if (c++ >= 3) break; 
+                Map<String, Object> m = d.getData(); 
+                sb.append(m.get("amount")).append(",").append(m.get("category")).append(";"); 
+            } 
+        }
+
+        if (history != null && !history.isEmpty()) { 
+            sb.append("\nH:"); 
+            int start = Math.max(0, history.size() - 5); 
+            for (int i = start; i < history.size(); i++) {
+                ChatMessage m = history.get(i);
+                if (!m.isShimmer()) {
+                    sb.append(m.getSenderName()).append(":").append(m.getMessage()).append("|");
+                }
+            }
+        }
         return sb.toString();
     }
 

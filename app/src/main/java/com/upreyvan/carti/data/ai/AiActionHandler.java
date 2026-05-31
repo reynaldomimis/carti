@@ -4,13 +4,9 @@ import android.content.Context;
 import android.util.Log;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.util.ToastHelper;
 import org.json.JSONObject;
 import java.util.Map;
 
-/**
- * Senior Level: Orchestrator that executes database actions determined by the AI.
- */
 public class AiActionHandler {
     private final ApiHelper apiHelper;
     private final Context context;
@@ -20,64 +16,72 @@ public class AiActionHandler {
         this.apiHelper = new ApiHelper(context);
     }
 
-    public void executeAction(JSONObject actionJson) {
-        executeAction(actionJson, null);
+    public void executeAction(JSONObject json) {
+        executeAction(json, null);
     }
 
-    public void executeAction(JSONObject actionJson, AppwriteManager.AppwriteCallback<Map<String, Object>> customCallback) {
+    public void executeAction(JSONObject json, AppwriteManager.AppwriteCallback<Map<String, Object>> customCallback) {
         try {
-            String actionType = actionJson.optString("action");
-            JSONObject data = actionJson.optJSONObject("data");
-            if (data == null) return;
+            String intent = json.optString("intent", json.optString("action"));
+            if (intent.isEmpty()) {
+                Log.w("AiActionHandler", "No intent or action found in JSON");
+                return;
+            }
 
-            Log.d("AiActionHandler", "Executing AI Action: " + actionType);
+            JSONObject data = json.has("data") ? json.optJSONObject("data") : json;
+            
+            Log.d("AiActionHandler", "Executing AI Action: " + intent);
 
             AppwriteManager.AppwriteCallback<Map<String, Object>> callback = 
-                (customCallback != null) ? customCallback : new SimpleCallback(actionType + " added");
+                (customCallback != null) ? customCallback : new SimpleCallback(intent + " processed");
 
-            switch (actionType) {
+            switch (intent.toUpperCase()) {
+                case "EXPENSE":
                 case "ADD_EXPENSE":
                     apiHelper.addTransaction(
-                        data.getDouble("amount"),
+                        data.optDouble("amount", 0.0),
                         "EXPENSE",
-                        data.getString("category"),
-                        data.optString("note", ""),
+                        data.optString("category", "unknown"),
+                        data.optString("description", data.optString("note", "")),
                         callback
                     );
                     break;
 
+                case "INCOME":
                 case "ADD_INCOME":
                     apiHelper.addIncome(
-                        data.getString("source"),
-                        data.getDouble("amount"),
+                        data.optString("description", data.optString("source", "Other")),
+                        data.optDouble("amount", 0.0),
                         callback
                     );
                     break;
 
+                case "GOAL":
                 case "ADD_GOAL":
                     apiHelper.addGoal(
-                        data.getString("title"),
-                        data.getDouble("targetAmount"),
+                        data.optString("title", data.optString("description", "New Goal")),
+                        data.optDouble("amount", data.optDouble("targetAmount", 0.0)),
                         data.optString("targetDate", ""),
                         callback
                     );
                     break;
 
+                case "DEBT":
                 case "ADD_DEBT":
                     apiHelper.addDebt(
-                        data.getString("personName"),
-                        data.getDouble("amount"),
+                        data.optString("title", data.optString("personName", "Unknown")),
+                        data.optDouble("amount", 0.0),
                         data.optString("type", "BORROWED"),
                         data.optString("category", "General"),
                         data.optString("targetDate", ""),
                         "NO_REMINDER",
-                        data.optString("notes", ""),
+                        data.optString("description", data.optString("notes", "")),
                         callback
                     );
                     break;
 
                 default:
-                    Log.w("AiActionHandler", "Unknown AI action: " + actionType);
+                    Log.w("AiActionHandler", "Unknown AI intent/action: " + intent);
             }
         } catch (Exception e) {
             Log.e("AiActionHandler", "Error parsing AI action JSON", e);
@@ -90,7 +94,7 @@ public class AiActionHandler {
 
         @Override
         public void onSuccess(Map<String, Object> result) {
-            Log.d("AiActionHandler", message);
+            Log.d("AiActionHandler", "Success: " + message);
         }
 
         @Override

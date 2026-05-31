@@ -25,8 +25,22 @@
             android:text="@string/family_chat_title"
             android:textSize="@dimen/text_size_header"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/layoutActions"
+            app:layout_constraintEnd_toStartOf="@+id/tvSessionStatus"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvSessionStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
+            android:text="Carti Offline"
+            android:textColor="@color/text_tertiary"
+            android:textSize="14sp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/layoutActions"
             app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout

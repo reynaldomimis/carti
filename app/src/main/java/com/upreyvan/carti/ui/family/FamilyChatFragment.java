@@ -2,6 +2,7 @@ package com.upreyvan.carti.ui.family;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,10 +52,13 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     private AiRepository aiRepository;
     private VoiceToTextHelper voiceToTextHelper;
     private boolean isAiThinking = false;
+    private CountDownTimer activeSessionTimer;
+    private static final long SESSION_TIMEOUT_MS = 30000;
 
     private boolean isLoading = false;
     private boolean isLastPage = false;
     private long oldestTimestamp = Long.MAX_VALUE;
+    private long sessionStartTime = System.currentTimeMillis();
     private static final int PAGE_SIZE = 20;
 
     @Override
@@ -214,7 +218,17 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
     private void processAiForMessage(ChatMessage msg) {
         if (msg.isMe()) {
+            if (msg.getTimestamp() < sessionStartTime) return;
+
             boolean isAddressedToAi = msg.getMessage().toLowerCase().contains("carti") || msg.getMessage().toLowerCase().contains("ai");
+            
+            if (!isAddressedToAi && chatAdapter.getItemCount() > 1 && activeSessionTimer != null) {
+                ChatMessage lastMsg = chatAdapter.getCurrentList().get(chatAdapter.getItemCount() - 2);
+                if (lastMsg.getSenderId() != null && lastMsg.getSenderId().equals(Constants.Roles.AI_ID)) {
+                    isAddressedToAi = true;
+                }
+            }
+
             if (isAddressedToAi) {
                 isAiThinking = true;
                 updateInputState();
@@ -225,10 +239,29 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
                 chatAdapter.submitList(list, () -> getBinding().rvChat.smoothScrollToPosition(chatAdapter.getItemCount() - 1));
 
                 aiRepository.processChat(msg.getMessage(), pref.getUsername(), list, true, new AiManager.AiCallback() {
-                    @Override public void onSuccess(String response) { sendAiResponse(response); }
-                    @Override public void onError(Throwable t) { removeShimmerLocally(); isAiThinking = false; updateInputState(); }
+                    @Override public void onSuccess(String response) { 
+                        if (isAdded()) requireActivity().runOnUiThread(() -> {
+                            sendAiResponse(response);
+                            startActiveSessionTimer();
+                        }); 
+                    }
+                    @Override public void onError(Throwable t) { 
+                        if (isAdded()) requireActivity().runOnUiThread(() -> {
+                            removeShimmerLocally(); 
+                            isAiThinking = false; 
+                            updateInputState(); 
+                            android.util.Log.e("FamilyChatFragment", "AI Error", t);
+                            String debugError = "Error: " + t.getMessage();
+                            if (t.getCause() != null) debugError += " | Cause: " + t.getCause().getMessage();
+                            sendAiResponse("DEBUG INFO: " + debugError + "\n\nI'm sorry, I'm having trouble connecting to my brain.");
+                        });
+                    }
                     @Override public void onActionDetected(org.json.JSONObject action) {
-                        // Future implementation
+                        if (isAdded()) {
+                            requireActivity().runOnUiThread(() -> {
+                                aiRepository.executeAction(action);
+                            });
+                        }
                     }
                 });
             }
@@ -253,7 +286,48 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         boolean hasInputText = !getBinding().layoutInput.etInput.getText().toString().trim().isEmpty();
         getBinding().layoutInput.btnSend.setVisibility(isAiThinking || hasInputText ? View.VISIBLE : View.GONE);
         getBinding().layoutInput.btnEmojiLike.setVisibility(isAiThinking || hasInputText ? View.GONE : View.VISIBLE);
-        getBinding().layoutInput.etInput.setHint(isAiThinking ? "Carti is thinking..." : getString(R.string.hint_ask_me));
+        
+        if (isAiThinking) {
+            getBinding().layoutInput.etInput.setHint("Carti is thinking...");
+        } else if (activeSessionTimer == null) {
+            getBinding().layoutInput.etInput.setHint(getString(R.string.hint_ask_me));
+        }
+    }
+
+    private void startActiveSessionTimer() {
+        if (activeSessionTimer != null) activeSessionTimer.cancel();
+        
+        if (getBinding() != null) {
+            getBinding().tvSessionStatus.setVisibility(View.VISIBLE);
+            getBinding().tvSessionStatus.setTextColor(getResources().getColor(R.color.carti_primary_green));
+        }
+
+        activeSessionTimer = new android.os.CountDownTimer(SESSION_TIMEOUT_MS, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (getBinding() != null) {
+                    String status = "Carti Online " + (millisUntilFinished / 1000) + "s";
+                    getBinding().tvSessionStatus.setText(status);
+                    
+                    if (!isAiThinking) {
+                        getBinding().layoutInput.etInput.setHint("Carti is listening...");
+                    }
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                activeSessionTimer = null;
+                if (getBinding() != null) {
+                    getBinding().tvSessionStatus.setText("Carti Offline");
+                    getBinding().tvSessionStatus.setTextColor(getResources().getColor(R.color.text_tertiary));
+                    
+                    if (!isAiThinking) {
+                        getBinding().layoutInput.etInput.setHint(getString(R.string.hint_ask_me));
+                    }
+                }
+            }
+        }.start();
     }
 
     private void loadChatHistory() {

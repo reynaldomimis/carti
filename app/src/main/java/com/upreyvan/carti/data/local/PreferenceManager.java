@@ -154,6 +154,14 @@ public class PreferenceManager {
         sharedPreferences.edit().putBoolean(Constants.Keys.KEY_HAS_NOTIFICATIONS, has).apply();
     }
 
+    public boolean isAiIntroDone() {
+        return sharedPreferences.getBoolean(Constants.Keys.KEY_AI_INTRO_DONE, false);
+    }
+
+    public void setAiIntroDone(boolean done) {
+        sharedPreferences.edit().putBoolean(Constants.Keys.KEY_AI_INTRO_DONE, done).apply();
+    }
+
     public boolean hasNotifications() {
         return sharedPreferences.getBoolean(Constants.Keys.KEY_HAS_NOTIFICATIONS, false);
     }
