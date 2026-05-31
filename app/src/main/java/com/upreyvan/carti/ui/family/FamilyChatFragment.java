@@ -220,13 +220,10 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         if (msg.isMe()) {
             if (msg.getTimestamp() < sessionStartTime) return;
 
-            boolean isAddressedToAi = msg.getMessage().toLowerCase().contains("carti") || msg.getMessage().toLowerCase().contains("ai");
+            boolean isAddressedToAi = msg.getMessage().toLowerCase().contains("@carti");
             
-            if (!isAddressedToAi && chatAdapter.getItemCount() > 1 && activeSessionTimer != null) {
-                ChatMessage lastMsg = chatAdapter.getCurrentList().get(chatAdapter.getItemCount() - 2);
-                if (lastMsg.getSenderId() != null && lastMsg.getSenderId().equals(Constants.Roles.AI_ID)) {
-                    isAddressedToAi = true;
-                }
+            if (!isAddressedToAi && activeSessionTimer != null) {
+                isAddressedToAi = true;
             }
 
             if (isAddressedToAi) {

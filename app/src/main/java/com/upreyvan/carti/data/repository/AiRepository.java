@@ -72,7 +72,14 @@ public class AiRepository {
 
     private String buildContext(List<Document<Map<String, Object>>> docs, List<ChatMessage> history) {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format(Locale.US, "B:%.0f|I:%.0f|E:%.0f\n", pref.getBalance(), pref.getTotalIncome(), pref.getTotalExpense()));
+        String familyId = pref.getFamilyId();
+        String userId = pref.getUserId();
+        
+        if (familyId == null || familyId.isEmpty()) familyId = "GUEST_SESSION";
+        if (userId == null || userId.isEmpty()) userId = "GUEST_SESSION";
+        
+        sb.append("FAMILY_ID: ").append(familyId).append(" | USER_ID: ").append(userId).append("\n");
+        sb.append(String.format(Locale.US, "CURRENT_BALANCE: ₱%.0f | TOTAL_INCOME: ₱%.0f | TOTAL_EXPENSE: ₱%.0f\n", pref.getBalance(), pref.getTotalIncome(), pref.getTotalExpense()));
 
         if (docs != null && !docs.isEmpty()) { 
             sb.append("TX:"); 

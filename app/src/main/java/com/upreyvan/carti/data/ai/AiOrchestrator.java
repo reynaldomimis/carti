@@ -97,7 +97,7 @@ public class AiOrchestrator {
             return;
         }
         if (text.contains("INVALID_SESSION")) {
-            cb.onSuccess("I'm sorry, I haven't been trained to understand that yet. Please ensure you are in an active family session.");
+            cb.onSuccess("I haven't been trained for that. I only assist with family finance tracking.");
             return;
         }
         if (text.contains("{")) {
