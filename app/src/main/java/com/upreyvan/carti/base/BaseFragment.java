@@ -25,21 +25,7 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
     @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = inflateBinding(inflater, container);
-        setupStatusBar();
-        setupInsets();
         return binding.getRoot();
-    }
-
-    private void setupStatusBar() {
-        // Handled by BaseActivity for true edge-to-edge
-    }
-
-    private void setupInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
-            int t = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
-            v.setPadding(v.getPaddingLeft(), t, v.getPaddingRight(), v.getPaddingBottom());
-            return insets;
-        });
     }
 
     protected void navigateTo(Fragment f) {
@@ -56,7 +42,7 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
 
     protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding b, int res) { setupToolbar(b, getString(res)); }
 
-    protected void setupDynamicPadding(View h, View s, float r) { Utils.applySystemBarInsets(h, s, r, getResources().getDimensionPixelSize(R.dimen.bottom_nav_medium)); }
+    protected void setupDynamicPadding(View h, View s, float r) { Utils.applySystemBarInsets(h, s, r, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding)); }
 
     protected VB getBinding() { return binding; }
 

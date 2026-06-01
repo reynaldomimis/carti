@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,7 +160,7 @@ public class ApiHelper {
         queries.add(Query.Companion.equal("familyId", familyId));
         queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
         queries.add(Query.Companion.orderDesc("$createdAt"));
-        queries.add(Query.Companion.limit(100));
+        queries.add(Query.Companion.limit(1000));
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
@@ -171,7 +172,7 @@ public class ApiHelper {
         queries.add(Query.Companion.equal("familyId", familyId));
         queries.add(Query.Companion.between("$createdAt", startDate, endDate));
         queries.add(Query.Companion.orderDesc("$createdAt"));
-        queries.add(Query.Companion.limit(100));
+        queries.add(Query.Companion.limit(1000));
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
@@ -450,9 +451,9 @@ public class ApiHelper {
         appwriteManager.listDocuments(
                 Constants.Appwrite.DATABASE_ID,
                 Constants.Appwrite.COL_NOTIFICATIONS,
-                java.util.Arrays.asList(
-                        io.appwrite.Query.Companion.equal("familyId", familyId),
-                        io.appwrite.Query.Companion.orderDesc("$createdAt")
+                Arrays.asList(
+                        Query.Companion.equal("familyId", familyId),
+                        Query.Companion.orderDesc("$createdAt")
                 ),
                 callback
         );

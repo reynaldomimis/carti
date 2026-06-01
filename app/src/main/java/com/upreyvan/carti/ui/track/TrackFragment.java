@@ -88,7 +88,8 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
                 updateIncomeVsExpense(transactions);
                 fullTrackList.clear();
                 for (TransactionWithUser t : transactions) {
-                    if ("EXPENSE".equals(t.getTransaction().getType())) {
+                    String type = t.getTransaction().getType();
+                    if ("EXPENSE".equalsIgnoreCase(type)) {
                         fullTrackList.add(t);
                     }
                 }

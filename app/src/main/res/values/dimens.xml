@@ -47,8 +47,7 @@
     <dimen name="input_height_large">56dp</dimen>
 
     <dimen name="bottom_nav_height">80dp</dimen>
-    <dimen name="bottom_nav_medium">110dp</dimen>
-    <dimen name="bottom_nav_padding">150dp</dimen>
+    <dimen name="bottom_nav_padding">110dp</dimen>
     <dimen name="scroll_bottom_padding">120dp</dimen>
     <dimen name="fab_size">56dp</dimen>
 

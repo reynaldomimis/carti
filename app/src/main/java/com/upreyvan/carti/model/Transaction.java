@@ -232,7 +232,7 @@ public class Transaction {
             String updatedAt = String.valueOf(data.get("$updatedAt"));
             
             String type = "EXPENSE";
-            if (data.containsKey("type")) type = String.valueOf(data.get("type"));
+            if (data.containsKey("type")) type = String.valueOf(data.get("type")).toUpperCase();
             else if (data.containsKey("source")) type = "INCOME";
             else if (data.containsKey("targetAmount")) type = "GOAL";
             else if (data.containsKey("personName")) type = "DEBT";

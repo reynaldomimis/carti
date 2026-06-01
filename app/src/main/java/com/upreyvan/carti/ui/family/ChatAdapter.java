@@ -1,21 +1,24 @@
 package com.upreyvan.carti.ui.family;
 
+import android.content.res.ColorStateList;
 import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.viewbinding.ViewBinding;
-
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.data.repository.AiRepository;
 import com.upreyvan.carti.databinding.ItemChatLeftBinding;
 import com.upreyvan.carti.databinding.ItemChatRightBinding;
+import com.upreyvan.carti.databinding.ItemChatSummaryBinding;
+import com.upreyvan.carti.databinding.ItemChatThinkingBinding;
 import com.upreyvan.carti.model.ChatMessage;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
+import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,11 +43,8 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
 
     public ChatAdapter() {
         super(ChatMessage.DIFF_CALLBACK,
-                (inflater, parent) -> {
-                  return ItemChatLeftBinding.inflate(inflater, parent, false);
-                },
-                (binding, item) -> {
-              });
+                (inflater, parent) -> ItemChatLeftBinding.inflate(inflater, parent, false),
+                (binding, item) -> {});
     }
 
     @Override
@@ -61,8 +61,8 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         ViewBinding binding = switch (viewType) {
             case VIEW_TYPE_ME -> ItemChatRightBinding.inflate(inflater, parent, false);
-            case VIEW_TYPE_THINKING -> com.upreyvan.carti.databinding.ItemChatThinkingBinding.inflate(inflater, parent, false);
-            case VIEW_TYPE_SUMMARY -> com.upreyvan.carti.databinding.ItemChatSummaryBinding.inflate(inflater, parent, false);
+            case VIEW_TYPE_THINKING -> ItemChatThinkingBinding.inflate(inflater, parent, false);
+            case VIEW_TYPE_SUMMARY -> ItemChatSummaryBinding.inflate(inflater, parent, false);
             default -> ItemChatLeftBinding.inflate(inflater, parent, false);
         };
         return new ViewHolder<>(binding);
@@ -73,9 +73,8 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
         ChatMessage message = getItem(position);
         if (message.isShimmer()) return;
 
-        if (holder.binding instanceof com.upreyvan.carti.databinding.ItemChatSummaryBinding) {
-            com.upreyvan.carti.databinding.ItemChatSummaryBinding b = (com.upreyvan.carti.databinding.ItemChatSummaryBinding) holder.binding;
-            org.json.JSONObject data = message.getSummaryData();
+        if (holder.binding instanceof ItemChatSummaryBinding b) {
+            JSONObject data = message.getSummaryData();
             if (data != null) {
                 b.tvPeriod.setText(data.optString("period", "Financial Summary"));
                 
@@ -96,14 +95,11 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
                 b.rowAlloc.setVisibility(alloc >= 0 ? View.VISIBLE : View.GONE);
                 b.tvAlloc.setText(Utils.formatCurrency(alloc));
             }
-        } else if (holder.binding instanceof ItemChatRightBinding) {
-            ItemChatRightBinding b = (ItemChatRightBinding) holder.binding;
+        } else if (holder.binding instanceof ItemChatRightBinding b) {
             b.tvSenderName.setText(b.getRoot().getContext().getString(R.string.chat_sender_me));
             b.tvMessage.setText(message.getMessage());
             b.tvTime.setText(message.getTime());
-        } else if (holder.binding instanceof ItemChatLeftBinding) {
-            ItemChatLeftBinding b = (ItemChatLeftBinding) holder.binding;
-
+        } else if (holder.binding instanceof ItemChatLeftBinding b) {
             if (message.isMe()) {
                 b.tvSenderName.setText(b.getRoot().getContext().getString(R.string.chat_sender_me));
             } else {
@@ -128,7 +124,7 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
                 b.ivAvatar.setImageTintList(null);
             } else {
                 b.ivAvatar.setImageResource(R.drawable.ic_person);
-                b.ivAvatar.setImageTintList(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(b.getRoot().getContext(), R.color.gray)));
+                b.ivAvatar.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(b.getRoot().getContext(), R.color.gray)));
             }
 
             if (message.isCancelable() && !message.isCanceled()) {
@@ -139,8 +135,8 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
                 b.btnCancel.setOnClickListener(v -> {
                     cancelTimer(message);
                     message.setCanceled(true);
-                    notifyItemChanged(holder.getAdapterPosition());
-                    if (cancelListener != null) cancelListener.onCancel(message, holder.getAdapterPosition());
+                    notifyItemChanged(holder.getBindingAdapterPosition());
+                    if (cancelListener != null) cancelListener.onCancel(message, holder.getBindingAdapterPosition());
                 });
             } else {
                 b.layoutCancel.setVisibility(View.GONE);
@@ -170,8 +166,9 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
     }
 
     private void cancelTimer(ChatMessage message) {
-        if (activeTimers.containsKey(message)) {
-            activeTimers.get(message).cancel();
+        CountDownTimer timer = activeTimers.get(message);
+        if (timer != null) {
+            timer.cancel();
             activeTimers.remove(message);
         }
     }
@@ -179,8 +176,5 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
     @Override
     public void onViewRecycled(@NonNull ViewHolder<ViewBinding> holder) {
         super.onViewRecycled(holder);
-        // We don't necessarily want to cancel the timer on recycle, 
-        // but we should clear references if needed. 
-        // Actually, for a 10s timer, it's better to let it run in background if not canceled.
     }
 }

@@ -29,7 +29,7 @@ public class PreferenceManager {
                 .putString(Constants.Keys.KEY_FAMILY_ID, familyId)
                 .putString(Constants.Keys.KEY_INVITE_CODE, inviteCode)
                 .putBoolean(Constants.Keys.KEY_IS_EMPLOYED, isEmployed)
-                .commit(); // Senior Logic: Use commit to ensure identity data is written before navigation
+                .commit();
     }
 
     public String getUserId() {
@@ -110,6 +110,18 @@ public class PreferenceManager {
         sharedPreferences.edit().putString(Constants.Keys.KEY_LAST_SYNC_TIME, timestamp).apply();
     }
 
+    public void setLastSyncTimeMillis(long millis) {
+        sharedPreferences.edit().putLong("last_sync_millis", millis).apply();
+    }
+
+    public long getLastSyncTimeMillis() {
+        return sharedPreferences.getLong("last_sync_millis", 0);
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
     public void resetAllSyncTimestamps() {
         sharedPreferences.edit()
                 .remove(Constants.Keys.KEY_LAST_SYNC_TIME)
@@ -154,14 +166,6 @@ public class PreferenceManager {
         sharedPreferences.edit().putBoolean(Constants.Keys.KEY_HAS_NOTIFICATIONS, has).apply();
     }
 
-    public boolean isAiIntroDone() {
-        return sharedPreferences.getBoolean(Constants.Keys.KEY_AI_INTRO_DONE, false);
-    }
-
-    public void setAiIntroDone(boolean done) {
-        sharedPreferences.edit().putBoolean(Constants.Keys.KEY_AI_INTRO_DONE, done).apply();
-    }
-
     public boolean hasNotifications() {
         return sharedPreferences.getBoolean(Constants.Keys.KEY_HAS_NOTIFICATIONS, false);
     }
@@ -200,74 +204,10 @@ public class PreferenceManager {
         return sharedPreferences.getString(Constants.Keys.KEY_LAST_NOTIF_CHECK, "1970-01-01T00:00:00.000Z");
     }
 
-    public void saveDailyAiInsight(String date, String insight) {
-        sharedPreferences.edit()
-                .putString("daily_ai_insight_date", date)
-                .putString("daily_ai_insight_text", insight)
-                .apply();
-    }
-
-    public void saveDailyAiSuggestions(String date, String json) {
-        sharedPreferences.edit()
-                .putString("daily_ai_suggestions_date", date)
-                .putString("daily_ai_suggestions_json", json)
-                .apply();
-    }
-
-    public String getDailyAiSuggestionsJson() {
-        return sharedPreferences.getString("daily_ai_suggestions_json", "");
-    }
-
-    public String getDailyAiSuggestionsDate() {
-        return sharedPreferences.getString("daily_ai_suggestions_date", "");
-    }
-
-    public String getDailyAiInsightText() {
-        return sharedPreferences.getString("daily_ai_insight_text", "");
-    }
-
-    public String getDailyAiInsightDate() {
-        return sharedPreferences.getString("daily_ai_insight_date", "");
-    }
-
-    public int getAiUsageCount(String date) {
-        String lastDate = sharedPreferences.getString("ai_usage_date", "");
-        if (!lastDate.equals(date)) {
-            return 0;
-        }
-        return sharedPreferences.getInt("ai_usage_count", 0);
-    }
-
-    public void incrementAiUsageCount(String date) {
-        int currentCount = getAiUsageCount(date);
-        sharedPreferences.edit()
-                .putString("ai_usage_date", date)
-                .putInt("ai_usage_count", currentCount + 1)
-                .apply();
-    }
-
-    public void setLastPendingAmount(double amount) {
-        sharedPreferences.edit().putLong("last_pending_amount", Double.doubleToRawLongBits(amount)).apply();
-    }
-
-    public double getLastPendingAmount() {
-        return Double.longBitsToDouble(sharedPreferences.getLong("last_pending_amount", 0));
-    }
-
-    public void setLastPendingItem(String item) {
-        sharedPreferences.edit().putString("last_pending_item", item).apply();
-    }
-
-    public String getLastPendingItem() {
-        return sharedPreferences.getString("last_pending_item", "");
-    }
-
-    public void clearPendingSession() {
-        sharedPreferences.edit().remove("last_pending_amount").remove("last_pending_item").apply();
-    }
+    public void setAiIntroDone(boolean done) { sharedPreferences.edit().putBoolean("ai_intro_done", done).apply(); }
+    public boolean isAiIntroDone() { return sharedPreferences.getBoolean("ai_intro_done", false); }
 
     public void clear() {
-        // List of all preference files used in the app
         String[] prefFiles = {
                 Constants.Keys.PREF_NAME,
                 "pref_budget_plan",

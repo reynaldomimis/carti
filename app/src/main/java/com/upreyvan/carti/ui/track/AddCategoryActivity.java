@@ -6,21 +6,17 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
+import com.upreyvan.carti.data.local.CategoryManager;
 import com.upreyvan.carti.databinding.ActivityAddCategoryBinding;
-import com.upreyvan.carti.ui.common.IconPickerDialog;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.IconChoice;
-import com.upreyvan.carti.data.local.CategoryManager;
+import com.upreyvan.carti.ui.common.IconPickerDialog;
 import com.upreyvan.carti.util.Utils;
-
 import com.yalantis.ucrop.UCrop;
-
 import java.io.File;
 import java.util.UUID;
 
@@ -31,11 +27,7 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
 
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
-            uri -> {
-                if (uri != null) {
-                    startCrop(uri);
-                }
-            }
+            uri -> { if (uri != null) startCrop(uri); }
     );
 
     private final ActivityResultLauncher<Intent> cropImageLauncher = registerForActivityResult(
@@ -62,8 +54,6 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
         setupListeners();
     }
 
-
-
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.title_add_category);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
@@ -81,11 +71,7 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
                     getBinding().ivCategoryIcon.setImageResource(selectedIconRes);
                     getBinding().ivCategoryIcon.setImageTintList(null);
                 }
-
-                @Override
-                public void onUploadCustom() {
-                    pickImageLauncher.launch("image/*");
-                }
+                @Override public void onUploadCustom() { pickImageLauncher.launch("image/*"); }
             });
             dialog.show(getSupportFragmentManager(), "ICON_PICKER");
         });
@@ -96,16 +82,7 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
                 Toast.makeText(this, "Please enter a category name", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            Category newCategory = new Category(
-                    UUID.randomUUID().toString(),
-                    name,
-                    selectedIconRes,
-                    R.color.icon_others,
-                    R.color.log_others,
-                    false
-            );
-
+            Category newCategory = new Category(UUID.randomUUID().toString(), name, selectedIconRes, R.color.icon_others, R.color.log_others, false);
             CategoryManager.getInstance(this).addCategory(newCategory);
             Toast.makeText(this, "Category Saved!", Toast.LENGTH_SHORT).show();
             finish();
@@ -113,20 +90,15 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
     }
 
     private void startCrop(Uri uri) {
-        String destinationFileName = "cropped_category_" + UUID.randomUUID().toString() + ".jpg";
-        UCrop uCrop = UCrop.of(uri, Uri.fromFile(new File(getCacheDir(), destinationFileName)));
+        String dest = "cropped_category_" + UUID.randomUUID() + ".jpg";
+        UCrop uCrop = UCrop.of(uri, Uri.fromFile(new File(getCacheDir(), dest)));
         uCrop.withAspectRatio(1, 1);
         uCrop.withMaxResultSize(200, 200);
         cropImageLauncher.launch(uCrop.getIntent(this));
     }
 
     private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutToolbar.getRoot(),
-                getBinding().btnSave,
-                1f,
-                0
-        );
+        Utils.applySystemBarInsets(getBinding().layoutToolbar.getRoot(), getBinding().btnSave, 1f, 0);
         getBinding().scrollView.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding));
     }
 }

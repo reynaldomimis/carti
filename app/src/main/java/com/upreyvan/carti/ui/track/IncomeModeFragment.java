@@ -1,5 +1,6 @@
 package com.upreyvan.carti.ui.track;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,15 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentIncomeModeBinding;
-import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.model.TransactionWithUser;
 import java.util.ArrayList;
 import java.util.List;
-import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ItemIncomeBinding;
 import com.upreyvan.carti.model.Transaction;
@@ -27,7 +25,7 @@ import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.ValueHelper;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Objects;
 
 public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> {
 
@@ -55,18 +53,8 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     }
 
     private void observeRealtime() {
-        realtimeRepo.getIncomeStream().observe(getViewLifecycleOwner(), payload -> {
-            requireActivity().runOnUiThread(() -> transactionRepository.refreshTransactions());
-        });
-
-        realtimeRepo.getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> {
-            requireActivity().runOnUiThread(this::updateUI);
-        });
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+        realtimeRepo.getIncomeStream().observe(getViewLifecycleOwner(), payload -> transactionRepository.refreshTransactions());
+        realtimeRepo.getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> updateUI());
     }
 
     private void setupRecyclerView() {
@@ -114,9 +102,8 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
             incomeAdapter.submitList(incomes);
         });
 
-        transactionRepository.getTotalIncome().observe(getViewLifecycleOwner(), totalIncome -> {
-            updateTotalBudget(totalIncome != null ? totalIncome : 0.0);
-        });
+        transactionRepository.getTotalIncome().observe(getViewLifecycleOwner(), totalIncome -> 
+                updateTotalBudget(Objects.requireNonNullElse(totalIncome, 0.0)));
 
         transactionRepository.refreshTransactions();
     }
@@ -142,7 +129,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         SalaryManager manager = SalaryManager.getInstance(requireContext());
         
         int daysLeft = manager.getDaysUntilNextPayday();
-        getBinding().tvDaysLeft.setText(String.valueOf(daysLeft));
+        getBinding().tvDaysLeft.setText(String.format(Locale.getDefault(), "%d", daysLeft));
         
         Calendar nextPayday = manager.getNextPayday();
         getBinding().tvTargetDate.setText(Utils.formatDateShort(nextPayday));
@@ -168,7 +155,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         SalaryManager manager = SalaryManager.getInstance(requireContext());
         Calendar nextPayday = manager.getNextPayday();
 
-        android.app.DatePickerDialog datePickerDialog = new android.app.DatePickerDialog(
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
                 requireContext(),
                 (view, year, month, dayOfMonth) -> {
                     if (manager.isMonthly()) {

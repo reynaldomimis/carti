@@ -340,7 +340,7 @@
     <string name="menu_family_sub_format">%d members</string>
     <string name="menu_invite">Invite Family</string>
     <string name="menu_invite_sub">Add new members to your group</string>
-    <string name="menu_chat">Family Chat</string>
+    <string name="menu_chat">Chat</string>
     <string name="menu_chat_sub">Talk with your family</string>
     <string name="menu_goals">Financial Goals</string>
     <string name="menu_goals_sub">Track your savings</string>
@@ -728,4 +728,9 @@
     <string name="label_grocery">Grocery</string>
     <string name="label_health">Health</string>
     <string name="label_home">Home</string>
+    <string name="ai_status_online_format">Carti AI Online (%ds)</string>
+    <string name="ai_status_offline">Carti AI Offline</string>
+    <string name="ai_status_thinking">Carti AI is thinking...</string>
+    <string name="carti_ai_offline">Carti Ai Offline</string>
+    <string name="carti_ai_is_thinking">Carti Ai is thinking...</string>
 </resources>

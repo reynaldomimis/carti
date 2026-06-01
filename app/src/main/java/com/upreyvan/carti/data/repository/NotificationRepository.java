@@ -1,6 +1,7 @@
 package com.upreyvan.carti.data.repository;
 
 import android.content.Context;
+import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import com.upreyvan.carti.R;
@@ -8,18 +9,12 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.model.Bill;
 import com.upreyvan.carti.util.Utils;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import io.appwrite.models.DocumentList;
 import io.appwrite.models.Document;
 
-/**
- * Senior Architecture: Centralized Realtime Data Hub.
- * Minimizes bandwidth by delivering full payloads directly to observers, 
- * eliminating the need for redundant "refresh" API calls.
- */
 public class NotificationRepository {
 
     private static NotificationRepository instance;
@@ -53,7 +48,6 @@ public class NotificationRepository {
             billsLiveData = new MediatorLiveData<>();
             currentBills.clear();
 
-            // Initial fetch - Ensure this always posts a value
             new ApiHelper(realtimeRepo.getContext()).getNotifications(familyId, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
                 @Override
                 public void onSuccess(DocumentList<Map<String, Object>> result) {
@@ -69,26 +63,27 @@ public class NotificationRepository {
 
                 @Override
                 public void onError(Throwable error) {
-                    android.util.Log.e("NotificationRepository", "Fetch error: " + error.getMessage());
-                    billsLiveData.postValue(new ArrayList<>(currentBills)); // Post empty to stop loading
+                    Log.e("NotificationRepository", "Fetch error: " + error.getMessage(), error);
+                    billsLiveData.postValue(new ArrayList<>(currentBills));
                 }
             });
-
-            // Observe realtime stream
             billsLiveData.addSource(realtimeRepo.getNotificationStream(), payload -> {
                 if (payload != null && familyId.equals(payload.get("familyId"))) {
                     String id = (String) payload.get("$id");
                     Bill bill = mapToBill(id, payload);
                     if (bill != null) {
-                        boolean found = false;
+                        int index = -1;
                         for (int i = 0; i < currentBills.size(); i++) {
                             if (currentBills.get(i).getId().equals(id)) {
-                                currentBills.set(i, bill);
-                                found = true;
+                                index = i;
                                 break;
                             }
                         }
-                        if (!found) currentBills.add(0, bill);
+                        if (index != -1) {
+                            currentBills.set(index, bill);
+                        } else {
+                            currentBills.add(0, bill);
+                        }
                         billsLiveData.setValue(new ArrayList<>(currentBills));
                     }
                 }
@@ -106,12 +101,10 @@ public class NotificationRepository {
             String content = (String) data.get("content");
             String date = "";
             
-            // Mas flexible na date extraction
             if (content != null && content.toLowerCase().contains("due on ")) {
                 int index = content.toLowerCase().lastIndexOf("due on ");
                 date = content.substring(index + 7).trim();
             } else {
-                // Fallback sa $createdAt kung walang date sa content
                 Object createdAt = data.get("$createdAt");
                 if (createdAt != null) date = Utils.formatTimestamp(createdAt.toString());
             }

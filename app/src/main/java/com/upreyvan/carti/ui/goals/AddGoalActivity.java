@@ -2,13 +2,10 @@ package com.upreyvan.carti.ui.goals;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.ToastHelper.Status;
-import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
-import com.upreyvan.carti.util.ValueHelper;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -45,7 +42,7 @@ public class AddGoalActivity extends BaseGoalActivity {
         goal.setMembers(new ArrayList<>(selectedMemberIds));
         goal.setUserId(new PreferenceManager(this).getUserId());
 
-        transactionRepository.addTransaction(goal, new AppwriteCallback<Map<String, Object>>() {
+        transactionRepository.addTransaction(goal, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 showLoading(false);

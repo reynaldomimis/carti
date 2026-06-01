@@ -17,8 +17,8 @@ public class ToastHelper {
         SUCCESS, ERROR, INFO, WARNING
     }
 
-    private static final long DEBOUNCE_INTERVAL = 2500; // 2.5 seconds per message
-    private static final long GLOBAL_THROTTLE = 1000;   // 1 second between ANY toasts
+    private static final long DEBOUNCE_INTERVAL = 2500;
+    private static final long GLOBAL_THROTTLE = 1000;
     private static final Map<String, Long> lastShownMessages = new HashMap<>();
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
     private static Toast currentToast;

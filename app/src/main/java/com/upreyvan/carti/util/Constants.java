@@ -9,14 +9,13 @@ public class Constants {
         public static final String BROTHER = "Brother";
         public static final String SISTER = "Sister";
         public static final String CHILD = "Child";
-        public static final String AI = "Carti AI";
-
-        public static final String AI_ID = "CARTI_AI_SYSTEM";
-        public static final String AI_NAME = "Carti AI";
 
         public static final String[] PARENTS = {FATHER, MOTHER};
         public static final String[] CHILDREN = {BROTHER, SISTER, CHILD};
         public static final String[] ALL = {FATHER, MOTHER, BROTHER, SISTER, CHILD};
+
+        public static final String AI_ID = "carti_ai";
+        public static final String AI_NAME = "Carti AI";
     }
 
     public static final class Appwrite {
@@ -97,7 +96,6 @@ public class Constants {
         public static final String KEY_BUDGET_PLAN_DISMISSED_MONTH = "budget_plan_dismissed_month";
         public static final String KEY_HAS_NOTIFICATIONS = "has_notifications";
         public static final String KEY_LAST_NOTIF_CHECK = "last_notif_check";
-        public static final String KEY_AI_INTRO_DONE = "ai_intro_done";
 
         // Manager Keys
         public static final String KEY_TRANSACTIONS = "transactions_list";
@@ -120,6 +118,17 @@ public class Constants {
         public static final String KEY_COMMENT_TEXT = "text";
         public static final String KEY_LIKES_COUNT = "likesCount";
         public static final String KEY_COMMENTS_COUNT = "commentCount";
+    }
+
+    public static final class Navigation {
+        public static final int HOME = 1;
+        public static final int TRACK = 2;
+        public static final int ALLOCATE = 3;
+        public static final int PROFILE = 4;
+        public static final int CHAT = 5;
+        public static final int GOALS = 6;
+        public static final int ADD = 7;
+        public static final int INCOME = 8;
     }
 
     public static final class ErrorCodes {

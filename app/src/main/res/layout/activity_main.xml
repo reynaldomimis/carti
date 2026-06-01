@@ -20,6 +20,7 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="16dp"
         android:paddingBottom="@dimen/spacing_small"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <com.google.android.material.card.MaterialCardView
@@ -57,7 +58,7 @@
                     android:layout_weight="1" />
 
                 <include
-                    android:id="@+id/tab_ai"
+                    android:id="@+id/tab_chat"
                     layout="@layout/layout_nav_item"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"

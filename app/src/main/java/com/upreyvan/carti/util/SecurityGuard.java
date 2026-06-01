@@ -38,19 +38,27 @@ public class SecurityGuard {
             return;
         }
 
-        // 1. Signature Check
-        if (!isValidSignature(context)) {
-            Log.e("SecurityGuard", "TAMPERING DETECTED: App signature mismatch.");
-            throw new RuntimeException("Security violation: App integrity compromised.");
-        }
+        // Run security checks on a background thread to prevent blocking the Main Thread (Startup Optimization)
+        new Thread(() -> {
+            // 1. Signature Check
+            if (!isValidSignature(context)) {
+                Log.e("SecurityGuard", "TAMPERING DETECTED: App signature mismatch.");
+                // Note: RuntimeException on background thread won't crash the app immediately but will stop the thread.
+                // For critical security, we notify the UI via a dialog (must be on main thread).
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> 
+                    showSecurityViolationDialog(context, "Integrity Error", "This app version is not authentic."));
+                return;
+            }
 
-        // 2. Illegal Apps Check
-        String detectedApp = getDetectedIllegalApp(context);
-        if (detectedApp != null) {
-            showSecurityViolationDialog(context, "Security Threat Detected", 
-                "Your device has a restricted application installed: " + detectedApp + 
-                "\n\nFor security reasons, Carti cannot run. Please uninstall it to continue.");
-        }
+            // 2. Illegal Apps Check
+            String detectedApp = getDetectedIllegalApp(context);
+            if (detectedApp != null) {
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> 
+                    showSecurityViolationDialog(context, "Security Threat Detected", 
+                        "Your device has a restricted application installed: " + detectedApp + 
+                        "\n\nFor security reasons, Carti cannot run. Please uninstall it to continue."));
+            }
+        }).start();
     }
 
     private static boolean isValidSignature(Context context) {

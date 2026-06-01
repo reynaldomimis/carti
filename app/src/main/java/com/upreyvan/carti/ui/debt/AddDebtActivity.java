@@ -39,7 +39,6 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     private String selectedMemberId;
     private String selectedMemberName;
     private String selectedCategoryName = "";
-    private String selectedType = "OWE";
     private Calendar selectedDueDate = Calendar.getInstance();
 
     @Override
@@ -65,7 +64,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
 
     private void setupTabs() {
         getBinding().tabType.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override public void onTabSelected(TabLayout.Tab tab) { selectedType = tab.getPosition() == 0 ? "OWE" : "OWED_TO_ME"; }
+            @Override public void onTabSelected(TabLayout.Tab tab) {}
             @Override public void onTabUnselected(TabLayout.Tab tab) {}
             @Override public void onTabReselected(TabLayout.Tab tab) {}
         });
@@ -174,9 +173,10 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         transaction.setDueDate(dueDateStr);
         transaction.setReminder(reminder);
         transaction.setMembers(selectedMemberId != null ? List.of(selectedMemberId) : new ArrayList<>());
-        transaction.setUserId(new PreferenceManager(this).getUserId());
-        transaction.setFamilyId(new PreferenceManager(this).getFamilyId());
-        transactionRepository.addTransaction(transaction, new AppwriteCallback<Map<String, Object>>() {
+        PreferenceManager pref = new PreferenceManager(this);
+        transaction.setUserId(pref.getUserId());
+        transaction.setFamilyId(pref.getFamilyId());
+        transactionRepository.addTransaction(transaction, new AppwriteCallback<>() {
             @Override public void onSuccess(Map<String, Object> result) { showLoading(false); finish(); }
             @Override public void onError(Throwable error) { showLoading(false); showToast(getString(R.string.err_generic, error.getMessage()), Status.ERROR); }
         });

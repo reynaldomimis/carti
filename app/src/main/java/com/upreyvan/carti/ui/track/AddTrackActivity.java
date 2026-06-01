@@ -12,6 +12,7 @@ import com.upreyvan.carti.data.local.CategoryManager;
 import com.upreyvan.carti.databinding.ActivityAddTrackBinding;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.util.BudgetAllocationHelper;
 import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.TransactionHandler;
@@ -42,7 +43,7 @@ public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
 
     private void updateBalanceInfo(String cat) {
         getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
-        com.upreyvan.carti.util.BudgetAllocationHelper.getRemainingBalance(this, cat, b -> getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(b)));
+        BudgetAllocationHelper.getRemainingBalance(this, cat, b -> getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(b)));
     }
 
     private void setupDynamicPadding() {

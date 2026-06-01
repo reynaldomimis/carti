@@ -2,6 +2,7 @@ package com.upreyvan.carti.data.ai;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class CategoryMapper {
     private static final Map<String, String> MAPPING = new HashMap<>();
@@ -76,14 +77,9 @@ public class CategoryMapper {
     public static String getCategory(String item, String fallback) {
         if (item == null || item.isEmpty()) return fallback;
         String normalized = item.toLowerCase().trim();
-        
         for (Map.Entry<String, String> entry : MAPPING.entrySet()) {
-            String keyword = entry.getKey();
-            if (java.util.regex.Pattern.compile("\\b" + java.util.regex.Pattern.quote(keyword) + "\\b", 
-                java.util.regex.Pattern.CASE_INSENSITIVE).matcher(normalized).find()) {
-                return entry.getValue();
-            }
+            if (Pattern.compile("\\b" + Pattern.quote(entry.getKey()) + "\\b", Pattern.CASE_INSENSITIVE).matcher(normalized).find()) return entry.getValue();
         }
-        return (fallback != null && !fallback.isEmpty() && !fallback.equalsIgnoreCase("unknown")) ? fallback : "Others";
+        return fallback;
     }
 }

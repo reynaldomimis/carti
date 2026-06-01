@@ -1,50 +1,64 @@
 package com.upreyvan.carti.data.repository;
 
 import android.content.Context;
-
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-
+import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.util.Constants;
-
+import io.appwrite.Query;
+import io.appwrite.models.Document;
+import io.appwrite.models.DocumentList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import io.appwrite.models.Document;
-
-/**
- * Senior Level Repository for Chat.
- * Handles both REST API (via ApiHelper) and Realtime updates.
- */
 public class ChatRepository {
-
+    private static ChatRepository instance;
     private final ApiHelper apiHelper;
     private final RealtimeRepository realtimeRepo;
+    private final PreferenceManager pref;
+    private final AppwriteManager appwriteManager;
 
-    public ChatRepository(Context context) {
+    private ChatRepository(Context context) {
         this.apiHelper = new ApiHelper(context);
         this.realtimeRepo = RealtimeRepository.getInstance(context);
+        this.pref = new PreferenceManager(context);
+        this.appwriteManager = AppwriteManager.getInstance(context);
     }
 
-    /**
-     * Sends a message via ApiHelper.
-     */
+    public static synchronized ChatRepository getInstance(Context context) {
+        if (instance == null) instance = new ChatRepository(context);
+        return instance;
+    }
+
     public void sendMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
         apiHelper.sendMessage(text, callback);
     }
 
-    /**
-     * Subscribes to realtime chat messages and returns a LiveData.
-     */
-    public LiveData<Map<String, Object>> getRealtimeMessages() {
+    public void sendAiMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
+        apiHelper.sendAiMessage(text, callback);
+    }
+
+    public LiveData<Map<String, Object>> getChatStream() {
         return realtimeRepo.getChatStream();
     }
 
-    /**
-     * Clean up resources. Should be called when the ViewModel is cleared.
-     */
-    public void onDestroy() {
-        // No-op as the hub is central
+    public void loadHistory(int pageSize, long oldestTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", pref.getFamilyId()));
+        queries.add(Query.Companion.orderDesc("timestamp"));
+        queries.add(Query.Companion.limit(pageSize));
+
+        if (oldestTimestamp != Long.MAX_VALUE) {
+            queries.add(Query.Companion.lessThan("timestamp", oldestTimestamp));
+        }
+
+        appwriteManager.listDocuments(
+            Constants.Appwrite.DATABASE_ID,
+            Constants.Appwrite.COL_MESSAGES,
+            queries,
+            callback
+        );
     }
 }

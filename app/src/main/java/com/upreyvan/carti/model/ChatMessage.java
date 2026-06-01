@@ -5,6 +5,8 @@ import androidx.recyclerview.widget.DiffUtil;
 
 import com.upreyvan.carti.data.ai.IntentType;
 
+import org.json.JSONObject;
+
 import java.util.Objects;
 
 public class ChatMessage {
@@ -18,13 +20,13 @@ public class ChatMessage {
     private boolean isCanceled = false;
     private boolean isShimmer = false;
     private boolean isSummary = false;
-    private org.json.JSONObject pendingAction;
-    private org.json.JSONObject summaryData;
+    private JSONObject pendingAction;
+    private JSONObject summaryData;
 
     public boolean isSummary() { return isSummary; }
     public void setSummary(boolean summary) { isSummary = summary; }
-    public org.json.JSONObject getSummaryData() { return summaryData; }
-    public void setSummaryData(org.json.JSONObject summaryData) { this.summaryData = summaryData; }
+    public JSONObject getSummaryData() { return summaryData; }
+    public void setSummaryData(JSONObject summaryData) { this.summaryData = summaryData; }
 
     private String id;
     private String senderId;
@@ -156,13 +158,12 @@ public class ChatMessage {
         public boolean areItemsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
             if (oldItem.isShimmer() && newItem.isShimmer()) return true;
             if (oldItem.isShimmer() || newItem.isShimmer()) return false;
-            
+
             if (oldItem.id != null && newItem.id != null) {
                 return oldItem.id.equals(newItem.id);
             }
-            
-            // Optimistic match fallback
-            return oldItem.message.equals(newItem.message) 
+
+            return oldItem.message.equals(newItem.message)
                     && Math.abs(oldItem.timestamp - newItem.timestamp) < 30000;
         }
 

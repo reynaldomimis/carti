@@ -6,27 +6,31 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentGoalDetailBinding;
 import com.upreyvan.carti.databinding.ItemGoalHistoryBinding;
 import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.ui.common.AddFundsFragment;
-import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.ui.common.AddFundsFragment;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.ValueHelper;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> {
 
     private String goalId;
     private Transaction goal;
-    private TransactionRepository transactionRepository;
+    private GoalDetailViewModel viewModel;
+    private GenericAdapter<HistoryItem, ItemGoalHistoryBinding> historyAdapter;
 
     public static GoalDetailFragment newInstance(String goalId) {
         GoalDetailFragment fragment = new GoalDetailFragment();
@@ -52,22 +56,50 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        transactionRepository = TransactionRepository.getInstance(requireContext());
+        viewModel = new ViewModelProvider(this).get(GoalDetailViewModel.class);
         setupDynamicPadding();
-        observeGoal();
-        setupHistoryList();
+        setupHistory();
+        observeViewModel();
     }
 
-    private void observeGoal() {
-        transactionRepository.getGoals().observe(getViewLifecycleOwner(), goals -> {
-            if (goals != null) {
-                for (TransactionWithUser tWithU : goals) {
-                    if (tWithU.getTransaction().getId().equals(goalId)) {
-                        goal = tWithU.getTransaction();
-                        updateUI();
-                        break;
-                    }
+    private void setupHistory() {
+        getBinding().rvProgressHistory.setLayoutManager(new LinearLayoutManager(requireContext()));
+        historyAdapter = new GenericAdapter<>(
+                new DiffUtil.ItemCallback<HistoryItem>() {
+                    @Override public boolean areItemsTheSame(@NonNull HistoryItem oldItem, @NonNull HistoryItem newItem) { return oldItem.equals(newItem); }
+                    @Override public boolean areContentsTheSame(@NonNull HistoryItem oldItem, @NonNull HistoryItem newItem) { return oldItem.equals(newItem); }
+                },
+                (inflater, parent) -> ItemGoalHistoryBinding.inflate(inflater, parent, false),
+                (binding, item) -> {
+                    binding.tvHistoryDate.setText(item.date);
+                    binding.tvHistoryAmount.setText(item.amount);
                 }
+        );
+        getBinding().rvProgressHistory.setAdapter(historyAdapter);
+    }
+
+    private void observeViewModel() {
+        viewModel.getGoal(goalId).observe(getViewLifecycleOwner(), goal -> {
+            if (goal != null) {
+                this.goal = goal;
+                updateUI();
+            }
+        });
+
+        viewModel.getHistory(goalId).observe(getViewLifecycleOwner(), transactions -> {
+            if (transactions != null) {
+                List<HistoryItem> items = new ArrayList<>();
+                NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "PH"));
+                currencyFormat.setMaximumFractionDigits(0);
+
+                for (TransactionWithUser tWithU : transactions) {
+                    Transaction t = tWithU.getTransaction();
+                    items.add(new HistoryItem(
+                            Utils.formatDate(t.getTimestampMillis()),
+                            currencyFormat.format(t.getAmount())
+                    ));
+                }
+                historyAdapter.submitList(items);
             }
         });
     }
@@ -119,7 +151,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
         currencyFormat.setMaximumFractionDigits(0);
 
         getBinding().tvGoalName.setText(ValueHelper.toStr(goal.getTitle()));
-        getBinding().tvGoalProgressAmount.setText(String.format("%s / %s",
+        getBinding().tvGoalProgressAmount.setText(String.format(Locale.getDefault(), "%s / %s",
                 currencyFormat.format(goal.getAmount()),
                 currencyFormat.format(goal.getTargetAmount())));
 
@@ -137,53 +169,26 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
         }
     }
 
-    private void setupHistoryList() {
-        List<HistoryItem> history = new ArrayList<>();
-        history.add(new HistoryItem("May 22, 2024", "₱500"));
-        history.add(new HistoryItem("May 15, 2024", "₱300"));
-        history.add(new HistoryItem("May 1, 2024", "₱200"));
-
-        getBinding().rvProgressHistory.setLayoutManager(new LinearLayoutManager(requireContext()));
-        getBinding().rvProgressHistory.setAdapter(new HistoryAdapter(history));
-    }
-
     private static class HistoryItem {
-        String date;
-        String amount;
+        final String date;
+        final String amount;
 
         HistoryItem(String date, String amount) {
             this.date = date;
             this.amount = amount;
         }
-    }
 
-    private static class HistoryAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
-        private final List<HistoryItem> items;
-
-        HistoryAdapter(List<HistoryItem> items) { this.items = items; }
-
-        @NonNull
         @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new ViewHolder(ItemGoalHistoryBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            HistoryItem that = (HistoryItem) o;
+            return date.equals(that.date) && amount.equals(that.amount);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            HistoryItem item = items.get(position);
-            holder.binding.tvHistoryDate.setText(item.date);
-            holder.binding.tvHistoryAmount.setText(item.amount);
-        }
-
-        @Override
-        public int getItemCount() { return items.size(); }
-
-        static class ViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
-            final ItemGoalHistoryBinding binding;
-            ViewHolder(ItemGoalHistoryBinding binding) {
-                super(binding.getRoot());
-                this.binding = binding;
-            }
+        public int hashCode() {
+            return Objects.hash(date, amount);
         }
     }
 }

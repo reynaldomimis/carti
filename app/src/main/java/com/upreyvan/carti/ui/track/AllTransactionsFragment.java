@@ -1,38 +1,40 @@
 package com.upreyvan.carti.ui.track;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.ui.home.ReactionsBottomSheetFragment;
-import com.upreyvan.carti.ui.home.TransactionAdapter;
-import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
-import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentAllTransactionsBinding;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
+import com.upreyvan.carti.ui.home.ReactionsBottomSheetFragment;
+import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.ToastHelper.Status;
 import com.upreyvan.carti.util.Utils;
-
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.inputmethod.InputMethodManager;
-import android.content.Context;
-import android.widget.TextView;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
 public class AllTransactionsFragment extends BaseFragment<FragmentAllTransactionsBinding> {
 
@@ -41,7 +43,6 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     private static final String ARG_USER_NAME = "user_name";
     private TransactionAdapter adapter;
     private TransactionRepository transactionRepository;
-    private Calendar currentDisplayDate;
     private String filterType;
     private String filterUserId;
     private String filterUserName;
@@ -87,8 +88,6 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(requireContext());
-        currentDisplayDate = Calendar.getInstance();
-        
         setupToolbar();
         setupSearchBar();
         setupRecyclerView();
@@ -97,29 +96,15 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
 
     private void setupSearchBar() {
         getBinding().layoutToolbar.btnSearchToggle.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnSearchToggle.setOnClickListener(v -> {
-            showSearch();
-        });
-
+        getBinding().layoutToolbar.btnSearchToggle.setOnClickListener(v -> showSearch());
         getBinding().layoutToolbar.btnClearSearch.setOnClickListener(v -> {
-            if (getBinding().layoutToolbar.etSearch.getText().toString().isEmpty()) {
-                hideSearch();
-            } else {
-                getBinding().layoutToolbar.etSearch.setText("");
-            }
+            if (getBinding().layoutToolbar.etSearch.getText().toString().isEmpty()) hideSearch();
+            else getBinding().layoutToolbar.etSearch.setText("");
         });
-
         getBinding().layoutToolbar.etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterBySearch(s.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { filterBySearch(s.toString()); }
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
 
@@ -145,6 +130,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         currentQuery = query.toLowerCase().trim();
         currentPage = 0;
         isLastPage = false;
+        isLoading = false;
         displayList.clear();
         applyFilters();
     }
@@ -152,76 +138,59 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     private void applyFilters() {
         List<TransactionWithUser> filteredList = new ArrayList<>();
         for (TransactionWithUser t : fullList) {
-            boolean matchesType = filterType == null || filterType.equals(t.getTransaction().getType());
+            String type = t.getTransaction().getType();
+            boolean matchesType = filterType == null || filterType.equalsIgnoreCase(type);
             boolean matchesUser = filterUserId == null || filterUserId.equals(t.getTransaction().getUserId());
-
             String username = t.getUsername() != null ? t.getUsername().toLowerCase() : "";
             String category = t.getTransaction().getCategory() != null ? t.getTransaction().getCategory().toLowerCase() : "";
             String description = t.getTransaction().getDescription() != null ? t.getTransaction().getDescription().toLowerCase() : "";
             String amount = String.valueOf(t.getTransaction().getAmount());
-
-            boolean matchesSearch = currentQuery.isEmpty() ||
-                                   username.contains(currentQuery) ||
-                                   category.contains(currentQuery) ||
-                                   description.contains(currentQuery) ||
-                                   amount.contains(currentQuery);
-
-            if (matchesType && matchesUser && matchesSearch) {
-                filteredList.add(t);
-            }
+            boolean matchesSearch = currentQuery.isEmpty() || username.contains(currentQuery) || category.contains(currentQuery) || description.contains(currentQuery) || amount.contains(currentQuery);
+            if (matchesType && matchesUser && matchesSearch) filteredList.add(t);
         }
-
         if (filteredList.isEmpty()) {
             getBinding().rvAllTransactions.setVisibility(View.GONE);
             getBinding().layoutEmptyState.setVisibility(View.VISIBLE);
         } else {
             getBinding().layoutEmptyState.setVisibility(View.GONE);
             getBinding().rvAllTransactions.setVisibility(View.VISIBLE);
+            isLoading = false;
             loadNextPage(filteredList);
         }
     }
 
     private void loadNextPage(List<TransactionWithUser> sourceList) {
         if (isLoading || isLastPage) return;
-
         isLoading = true;
         getBinding().pbLoading.setVisibility(View.VISIBLE);
-        
-        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (!isAdded() || getBinding() == null) return;
-
             int start = currentPage * PAGE_SIZE;
             int end = Math.min(start + PAGE_SIZE, sourceList.size());
-
             if (start >= sourceList.size()) {
                 isLastPage = true;
                 isLoading = false;
                 getBinding().pbLoading.setVisibility(View.GONE);
                 return;
             }
-
             List<TransactionWithUser> pageItems = sourceList.subList(start, end);
             displayList.addAll(pageItems);
             adapter.submitList(new ArrayList<>(displayList));
-
-            // Sync visibility after loading data
             getBinding().rvAllTransactions.setVisibility(displayList.isEmpty() ? View.GONE : View.VISIBLE);
             getBinding().layoutEmptyState.setVisibility(displayList.isEmpty() ? View.VISIBLE : View.GONE);
-
             currentPage++;
-            if (end >= sourceList.size()) {
-                isLastPage = true;
-            }
+            if (end >= sourceList.size()) isLastPage = true;
             isLoading = false;
             getBinding().pbLoading.setVisibility(View.GONE);
         }, 800);
     }
 
-    private androidx.lifecycle.Observer<List<TransactionWithUser>> transactionObserver = transactions -> {
+    private final Observer<List<TransactionWithUser>> transactionObserver = transactions -> {
         if (transactions != null) {
             fullList = transactions;
             currentPage = 0;
             isLastPage = false;
+            isLoading = false;
             displayList.clear();
             applyFilters();
         }
@@ -229,13 +198,9 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     private LiveData<List<TransactionWithUser>> currentLiveData;
 
     private void observeTransactions() {
-        if (currentLiveData != null) {
-            currentLiveData.removeObserver(transactionObserver);
-        }
-        
+        if (currentLiveData != null) currentLiveData.removeObserver(transactionObserver);
         currentLiveData = transactionRepository.getAllTransactions();
         currentLiveData.observe(getViewLifecycleOwner(), transactionObserver);
-
         transactionRepository.syncTransactionsIfNeeded();
     }
 
@@ -246,101 +211,33 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         lp.horizontalBias = 0.0f;
         lp.setMarginStart((int) getResources().getDimension(R.dimen.spacing_xs));
         title.setLayoutParams(lp);
-
-        if (filterUserName != null) {
-            title.setText(getString(R.string.label_user_expenses, filterUserName));
-        } else if ("EXPENSE".equals(filterType)) {
-            title.setText(R.string.expenses_title);
-        } else {
-            title.setText(R.string.all_transactions_title);
-        }
+        if (filterUserName != null) title.setText(getString(R.string.label_user_expenses, filterUserName));
+        else if ("EXPENSE".equals(filterType)) title.setText(R.string.expenses_title);
+        else title.setText(R.string.all_transactions_title);
     }
 
     private void setupRecyclerView() {
         adapter = new TransactionAdapter();
-        // ... (existing adapter listener code remains same)
         adapter.setOnTransactionInteractionListener(new TransactionAdapter.OnTransactionInteractionListener() {
-            @Override
-            public void onLikeClick(Transaction transaction) {
-                transactionRepository.likeTransaction(transaction.getId(), "👍", new AppwriteCallback<Map<String, Object>>() {
-                    @Override
-                    public void onSuccess(Map<String, Object> result) {
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        showToast("Failed to like", Status.ERROR);
-                    }
-                });
-            }
-
-            @Override
-            public void onReactionClick(Transaction transaction, String emoji) {
-                transactionRepository.likeTransaction(transaction.getId(), emoji, new AppwriteCallback<Map<String, Object>>() {
-                    @Override
-                    public void onSuccess(Map<String, Object> result) {
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        showToast("Failed to react", Status.ERROR);
-                    }
-                });
-            }
-
-            @Override
-            public void onCommentClick(Transaction transaction) {
-                CommentsBottomSheetFragment fragment = CommentsBottomSheetFragment.newInstance(transaction.getId());
-                fragment.show(getChildFragmentManager(), "CommentsBottomSheet");
-            }
-
-            @Override
-            public void onViewLikesClick(Transaction transaction, String reactorNames) {
-                ReactionsBottomSheetFragment fragment = ReactionsBottomSheetFragment.newInstance(transaction.getId());
-                fragment.show(getChildFragmentManager(), "ReactionsBottomSheet");
-            }
+            @Override public void onLikeClick(TransactionWithUser item) { transactionRepository.toggleLike(item, "👍"); }
+            @Override public void onReactionClick(TransactionWithUser item, String emoji) { transactionRepository.toggleLike(item, emoji); }
+            @Override public void onCommentClick(Transaction transaction) { CommentsBottomSheetFragment.newInstance(transaction.getId()).show(getChildFragmentManager(), "CommentsBottomSheet"); }
+            @Override public void onViewLikesClick(Transaction transaction, String reactorNames) { ReactionsBottomSheetFragment.newInstance(transaction.getId()).show(getChildFragmentManager(), "ReactionsBottomSheet"); }
         });
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
         getBinding().rvAllTransactions.setLayoutManager(layoutManager);
         getBinding().rvAllTransactions.setAdapter(adapter);
-
-        getBinding().rvAllTransactions.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView, int dx, int dy) {
+        getBinding().rvAllTransactions.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
                 if (dy > 0) {
                     int visibleItemCount = layoutManager.getChildCount();
                     int totalItemCount = layoutManager.getItemCount();
                     int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-
                     if (!isLoading && !isLastPage) {
-                        if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                                && firstVisibleItemPosition >= 0
-                                && totalItemCount >= PAGE_SIZE) {
-                            
-                            // Re-filter to get the list to slice from
-                            List<TransactionWithUser> filteredList = new ArrayList<>();
-                            for (TransactionWithUser t : fullList) {
-                                boolean matchesType = filterType == null || filterType.equals(t.getTransaction().getType());
-                                boolean matchesUser = filterUserId == null || filterUserId.equals(t.getTransaction().getUserId());
-
-                                String username = t.getUsername() != null ? t.getUsername().toLowerCase() : "";
-                                String category = t.getTransaction().getCategory() != null ? t.getTransaction().getCategory().toLowerCase() : "";
-                                String description = t.getTransaction().getDescription() != null ? t.getTransaction().getDescription().toLowerCase() : "";
-                                String amount = String.valueOf(t.getTransaction().getAmount());
-
-                                boolean matchesSearch = currentQuery.isEmpty() ||
-                                                       username.contains(currentQuery) ||
-                                                       category.contains(currentQuery) ||
-                                                       description.contains(currentQuery) ||
-                                                       amount.contains(currentQuery);
-
-                                if (matchesType && matchesUser && matchesSearch) {
-                                    filteredList.add(t);
-                                }
-                            }
-                            loadNextPage(filteredList);
+                        if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount && firstVisibleItemPosition >= 0 && totalItemCount >= PAGE_SIZE) {
+                            applyFilters();
                         }
                     }
                 }
@@ -349,36 +246,19 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
 
         adapter.setOnItemClickListener(itemWithUser -> {
             Transaction item = itemWithUser.getTransaction();
-            DialogHelper.showConfirmation(
-                    requireContext(),
-                    "Delete Transaction?",
-                    "Are you sure you want to delete this " + item.getName() + "?",
-                    "Delete",
-                    () -> {
-                        ApiHelper apiHelper = new ApiHelper(requireContext());
-                        apiHelper.deleteTransaction(item.getId(), new AppwriteCallback<Object>() {
-                            @Override
-                            public void onSuccess(Object result) {
-                                requireActivity().runOnUiThread(() -> {
-                                    transactionRepository.deleteLocally(item.getId());
-                                    showToast(getString(R.string.msg_deleted_balance_updated), Status.SUCCESS);
-                                });
-                            }
-
-                            @Override
-                            public void onError(Throwable error) {
-                                requireActivity().runOnUiThread(() -> {
-                                    showToast(getString(R.string.err_generic, error.getMessage()), Status.ERROR);
-                                });
-                            }
+            DialogHelper.showConfirmation(requireContext(), "Delete Transaction?", "Are you sure you want to delete this " + item.getName() + "?", "Delete", () -> {
+                new ApiHelper(requireContext()).deleteTransaction(item.getId(), new AppwriteCallback<Object>() {
+                    @Override public void onSuccess(Object result) {
+                        requireActivity().runOnUiThread(() -> {
+                            transactionRepository.deleteLocally(item.getId());
+                            showToast(getString(R.string.msg_deleted_balance_updated), Status.SUCCESS);
                         });
                     }
-            );
+                    @Override public void onError(Throwable error) { requireActivity().runOnUiThread(() -> showToast(getString(R.string.err_generic, error.getMessage()), Status.ERROR)); }
+                });
+            });
         });
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
+    @Override public void onDestroyView() { super.onDestroyView(); }
 }

@@ -1,23 +1,24 @@
 package com.upreyvan.carti.ui.onboarding;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
+import androidx.fragment.app.Fragment;
+import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentOnboardingWelcomeBinding;
+import com.upreyvan.carti.ui.family.JoinFamilyFragment;
 import com.upreyvan.carti.util.Utils;
-
 import java.util.Map;
-import android.widget.Toast;
 
 public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWelcomeBinding> {
 
@@ -30,21 +31,18 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupDynamicPadding();
-        
         getBinding().btnStart.setOnClickListener(v -> fetchLatestUserStatus());
     }
 
     private void fetchLatestUserStatus() {
         setLoading(true);
-        
         ApiHelper apiHelper = new ApiHelper(requireContext());
-        apiHelper.getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        apiHelper.getUser(new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> userDoc) {
                 if (!isAdded()) return;
                 setLoading(false);
 
-                // Get live status from backend
                 boolean isEmployed = false;
                 Object emp = userDoc.get("isEmployed");
                 if (emp != null) {
@@ -60,7 +58,6 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
                 
                 String userId = String.valueOf(userDoc.getOrDefault("$id", ""));
 
-                // Update preferences to match remote user data
                 PreferenceManager pref = new PreferenceManager(requireContext());
                 pref.setUserData(
                     String.valueOf(userDoc.get("username")),
@@ -73,22 +70,16 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
                 );
 
                 if (!familyId.isEmpty()) {
-                    // Already in a family
                     pref.setOnboardingFinished(true);
-                    com.upreyvan.carti.util.Utils.showToast(requireContext(), "Welcome back!");
-                    android.content.Intent intent = new android.content.Intent(requireActivity(), com.upreyvan.carti.MainActivity.class);
-                    startActivity(intent);
+                    Utils.showToast(requireContext(), "Welcome back!");
+                    startActivity(new Intent(requireActivity(), MainActivity.class));
                     requireActivity().finish();
-                } else if ("declined".equals(pendingFamilyId)) {
-                    // REJECTED: Show declined screen immediately
-                    navigateTo(OnboardingStatusFragment.newInstanceForWaiting());
-                } else if (!pendingFamilyId.isEmpty()) {
-                    // PENDING: Regular waiting screen
+                } else if ("declined".equals(pendingFamilyId) || !pendingFamilyId.isEmpty()) {
                     navigateTo(OnboardingStatusFragment.newInstanceForWaiting());
                 } else if (isEmployed) {
                     navigateTo(new OnboardingOptionsFragment());
                 } else {
-                    navigateTo(new com.upreyvan.carti.ui.family.JoinFamilyFragment());
+                    navigateTo(new JoinFamilyFragment());
                 }
             }
 
@@ -96,18 +87,11 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
             public void onError(Throwable error) {
                 if (!isAdded()) return;
                 setLoading(false);
-                
-                // Fallback to Prefs if network/backend fails
                 PreferenceManager pref = new PreferenceManager(requireContext());
                 boolean isEmployed = pref.isEmployed();
-                
                 Toast.makeText(requireContext(), getString(R.string.debug_fallback_is_employed, isEmployed), Toast.LENGTH_LONG).show();
-                
-                if (isEmployed) {
-                    navigateTo(new OnboardingOptionsFragment());
-                } else {
-                    navigateTo(new com.upreyvan.carti.ui.family.JoinFamilyFragment());
-                }
+                if (isEmployed) navigateTo(new OnboardingOptionsFragment());
+                else navigateTo(new JoinFamilyFragment());
             }
         });
     }
@@ -118,24 +102,14 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
     }
 
     private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().onboardingWelcomeHeader,
-                getBinding().onboardingWelcome,
-                0f,
-                0
-        );
+        Utils.applySystemBarInsets(getBinding().onboardingWelcomeHeader, getBinding().onboardingWelcome, 0f, 0);
     }
 
     @Override
-    protected void navigateTo(androidx.fragment.app.Fragment fragment) {
+    protected void navigateTo(Fragment fragment) {
         if (getActivity() != null) {
             getActivity().getSupportFragmentManager().beginTransaction()
-                    .setCustomAnimations(
-                            R.anim.slide_in_right,
-                            R.anim.slide_out_left,
-                            R.anim.slide_in_left,
-                            R.anim.slide_out_right
-                    )
+                    .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right)
                     .replace(R.id.start_fragment_container, fragment)
                     .addToBackStack(null)
                     .commit();

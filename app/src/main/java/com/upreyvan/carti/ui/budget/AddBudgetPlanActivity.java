@@ -2,9 +2,10 @@ package com.upreyvan.carti.ui.budget;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-
 import androidx.core.content.ContextCompat;
+import androidx.core.util.Pair;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
@@ -15,8 +16,6 @@ import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
-import androidx.core.util.Pair;
-import com.google.android.material.datepicker.MaterialDatePicker;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -65,12 +64,7 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
     }
 
     private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutToolbar.getRoot(),
-                getBinding().btnCreateBudgetPlan,
-                1f,
-                20
-        );
+        Utils.applySystemBarInsets(getBinding().layoutToolbar.getRoot(), getBinding().btnCreateBudgetPlan, 1f, 20);
     }
 
     private void setupToolbar() {
@@ -84,18 +78,15 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
     }
 
     private void showDateRangePicker() {
-        MaterialDatePicker<Pair<Long, Long>> picker =
-                MaterialDatePicker.Builder.dateRangePicker()
-                        .setTitleText(R.string.select_month)
-                        .setTheme(R.style.CartiDatePicker)
-                        .build();
-
+        MaterialDatePicker<Pair<Long, Long>> picker = MaterialDatePicker.Builder.dateRangePicker()
+                .setTitleText(R.string.select_month)
+                .setTheme(R.style.CartiDatePicker)
+                .build();
         picker.addOnPositiveButtonClickListener(selection -> {
             if (selection != null && selection.first != null && selection.second != null) {
                 getBinding().etBudgetPeriod.setText(Utils.formatDateRange(selection.first, selection.second));
             }
         });
-
         picker.show(getSupportFragmentManager(), "DATE_RANGE_PICKER");
     }
 
@@ -107,7 +98,7 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
                     binding.tvCategoryName.setText(item.getCategoryName());
                     String spent = StringHelper.formatCompactCurrency(item.getCurrentSpent());
                     String total = StringHelper.formatCompactCurrency(item.getAmount());
-                    binding.tvAmount.setText(String.format("%s / %s", spent, total));
+                    binding.tvAmount.setText(String.format(Locale.getDefault(), "%s / %s", spent, total));
                     int progress = item.getAmount() > 0 ? (int)((item.getCurrentSpent() / item.getAmount()) * 100) : 0;
                     binding.tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", progress));
                     binding.pbBudget.setProgress(progress);
@@ -116,7 +107,6 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
                     binding.ivIcon.setColorFilter(ContextCompat.getColor(this, item.getIconColor()));
                 }
         );
-
         getBinding().rvCategories.setLayoutManager(new LinearLayoutManager(this));
         getBinding().rvCategories.setAdapter(adapter);
     }

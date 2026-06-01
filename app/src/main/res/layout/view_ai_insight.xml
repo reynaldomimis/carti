@@ -1,80 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/CartiCard"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/spacing_small"
-    app:cardBackgroundColor="@color/tonal_button_bg">
+    app:cardBackgroundColor="@color/mint_green_alpha"
+    app:cardCornerRadius="@dimen/radius_large"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:padding="@dimen/spacing_medium">
 
-        <TextView
-            android:id="@+id/tvAiTitle"
-            style="@style/CartiHeader"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/ai_insight_title"
-            android:textSize="@dimen/text_size_header_small"
-            app:layout_constraintEnd_toStartOf="@+id/btnAskAi"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ai_holder" />
 
         <LinearLayout
-            android:id="@+id/btnAskAi"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_pill_white"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="@dimen/spacing_small"
-            android:paddingVertical="4dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginEnd="4dp"
-                android:src="@drawable/ic_add"
-                android:contentDescription="@null"
-                app:tint="@color/carti_primary_green" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_ask_ai"
-                android:textColor="@color/carti_primary_green"
-                android:textSize="10sp"
-                android:fontFamily="@font/plus_jakarta_sans_bold" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvAiMessage"
-            style="@style/CartiTextDescription"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_small"
-            android:textColor="@color/text_secondary"
-            android:lineSpacingExtra="4dp"
-            android:textSize="11sp"
-            app:layout_constraintEnd_toStartOf="@+id/ivRobot"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvAiTitle" />
+            android:layout_marginStart="@dimen/spacing_small"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/CartiTextTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ai_insight_title"
+                android:textColor="@color/carti_primary_green"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvInsightMessage"
+                style="@style/CartiTextDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/ai_insight_message"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+        </LinearLayout>
 
         <ImageView
-            android:id="@+id/ivRobot"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ai_holder"
-            android:contentDescription="@null"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnAskAi" />
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_send"
+            app:tint="@color/carti_primary_green" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

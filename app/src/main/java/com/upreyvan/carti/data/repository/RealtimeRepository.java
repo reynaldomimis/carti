@@ -1,30 +1,33 @@
 package com.upreyvan.carti.data.repository;
 
 import android.content.Context;
+import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.db.AppDatabase;
 import com.upreyvan.carti.data.local.db.dao.LikeDao;
-import com.upreyvan.carti.data.local.db.dao.TransactionDao;
+import com.upreyvan.carti.data.local.source.TransactionLocalDataSource;
 import com.upreyvan.carti.data.remote.RealtimeHelper;
 import com.upreyvan.carti.model.Like;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Constants;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
 import io.appwrite.models.RealtimeSubscription;
 
 public class RealtimeRepository {
-
+    private static final String TAG = "RealtimeRepository";
     private static RealtimeRepository instance;
+    
     private final RealtimeHelper realtimeHelper;
     private final PreferenceManager pref;
     private final LikeDao likeDao;
-    private final TransactionDao transactionDao;
+    private final TransactionLocalDataSource localDataSource;
     private final Executor executor = Executors.newSingleThreadExecutor();
+    private final Context context;
     private RealtimeSubscription subscription;
 
     private final MutableLiveData<Map<String, Object>> transactionStream = new MutableLiveData<>();
@@ -39,69 +42,54 @@ public class RealtimeRepository {
     private final MutableLiveData<Map<String, Object>> likeStream = new MutableLiveData<>();
 
     private RealtimeRepository(Context context) {
+        this.context = context.getApplicationContext();
         this.realtimeHelper = new RealtimeHelper(context);
         this.pref = new PreferenceManager(context);
         AppDatabase db = AppDatabase.getInstance(context);
         this.likeDao = db.likeDao();
-        this.transactionDao = db.transactionDao();
-    }
-
-    public Context getContext() {
-        return realtimeHelper.getContext();
+        this.localDataSource = new TransactionLocalDataSource(context);
     }
 
     public static synchronized RealtimeRepository getInstance(Context context) {
-        if (instance == null) {
-            instance = new RealtimeRepository(context.getApplicationContext());
-        }
+        if (instance == null) instance = new RealtimeRepository(context);
         return instance;
     }
 
-    public void startListening() {
+    public synchronized void startListening() {
         String familyId = pref.getFamilyId();
         if (familyId == null || familyId.isEmpty() || subscription != null) return;
 
         String[] channels = {
-            getCollectionChannel(Constants.Appwrite.COL_TRANSACTIONS),
-            getCollectionChannel(Constants.Appwrite.COL_GOALS),
-            getCollectionChannel(Constants.Appwrite.COL_DEBTS),
-            getCollectionChannel(Constants.Appwrite.COL_NOTIFICATIONS),
-            getCollectionChannel(Constants.Appwrite.COL_USERS),
-            getCollectionChannel(Constants.Appwrite.COL_MESSAGES),
-            getCollectionChannel(Constants.Appwrite.COL_INCOMES),
-            getCollectionChannel(Constants.Appwrite.COL_COMMENTS),
-            getCollectionChannel(Constants.Appwrite.COL_LIKES),
-            getDocumentChannel(Constants.Appwrite.COL_FAMILIES, familyId)
+            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_TRANSACTIONS),
+            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_GOALS),
+            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_DEBTS),
+            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_NOTIFICATIONS),
+            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_USERS),
+            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_MESSAGES),
+            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_INCOMES),
+            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_COMMENTS),
+            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_LIKES),
+            RealtimeHelper.getDocumentChannel(Constants.Appwrite.COL_FAMILIES, familyId)
         };
 
         subscription = realtimeHelper.subscribe(channels, event -> {
             Map<String, Object> payload = RealtimeHelper.getPayload(event);
-            if (payload == null || event.getEvents().isEmpty()) return;
+            Collection<String> events = event.getEvents();
+            if (payload == null || events.isEmpty()) return;
 
-            String eventPath = event.getEvents().iterator().next();
+            String path = events.iterator().next();
+            String payloadFamilyId = (String) payload.get("familyId");
+            boolean isGlobal = path.contains(Constants.Appwrite.COL_FAMILIES) || path.contains(Constants.Appwrite.COL_USERS);
 
-            if (eventPath.contains(Constants.Appwrite.COL_LIKES)) {
-                handleLikeEvent(eventPath, payload);
-            } else if (isTransactionCollection(eventPath)) {
-                if (familyId.equals(payload.get("familyId"))) {
-                    handleTransactionEvent(eventPath, payload);
-                    transactionStream.postValue(payload);
-                    dispatchTypedStream(payload);
-                }
-            } else if (eventPath.contains(Constants.Appwrite.COL_NOTIFICATIONS)) {
-                if (familyId.equals(payload.get("familyId"))) {
-                    android.util.Log.d("RealtimeRepository", "Notification: " + payload.get("title"));
-                    notificationStream.postValue(payload);
-                }
-            } else if (eventPath.contains(Constants.Appwrite.COL_MESSAGES)) {
-                if (familyId.equals(payload.get("familyId"))) chatStream.postValue(payload);
-            } else if (eventPath.contains(Constants.Appwrite.COL_USERS)) {
-                userUpdateStream.postValue(payload);
-            } else if (eventPath.contains(Constants.Appwrite.COL_FAMILIES)) {
-                familyStream.postValue(payload);
-            } else if (eventPath.contains(Constants.Appwrite.COL_COMMENTS)) {
-                commentStream.postValue(payload);
-            }
+            if (!isGlobal && !familyId.equals(payloadFamilyId)) return;
+
+            if (path.contains(Constants.Appwrite.COL_LIKES)) handleLikeEvent(path, payload);
+            else if (isTransactionCollection(path)) handleTransactionEvent(path, payload);
+            else if (path.contains(Constants.Appwrite.COL_NOTIFICATIONS)) notificationStream.postValue(payload);
+            else if (path.contains(Constants.Appwrite.COL_MESSAGES)) chatStream.postValue(payload);
+            else if (path.contains(Constants.Appwrite.COL_USERS)) userUpdateStream.postValue(payload);
+            else if (path.contains(Constants.Appwrite.COL_FAMILIES)) familyStream.postValue(payload);
+            else if (path.contains(Constants.Appwrite.COL_COMMENTS)) commentStream.postValue(payload);
         });
     }
 
@@ -112,6 +100,23 @@ public class RealtimeRepository {
                path.contains(Constants.Appwrite.COL_INCOMES);
     }
 
+    private void handleTransactionEvent(String path, Map<String, Object> payload) {
+        executor.execute(() -> {
+            try {
+                if (path.endsWith(".delete")) {
+                    localDataSource.deleteTransactionById(String.valueOf(payload.get("$id")));
+                } else {
+                    Transaction t = Transaction.fromPayload(payload, pref.getFamilyId(), context, pref.getUserId());
+                    if (t != null) localDataSource.saveTransactions(java.util.Collections.singletonList(t));
+                }
+                transactionStream.postValue(payload);
+                dispatchTypedStream(payload);
+            } catch (Exception e) {
+                Log.e(TAG, "Transaction event error", e);
+            }
+        });
+    }
+
     private void dispatchTypedStream(Map<String, Object> payload) {
         String type = (String) payload.get("type");
         if ("INCOME".equals(type)) incomeStream.postValue(payload);
@@ -119,58 +124,26 @@ public class RealtimeRepository {
         else if ("DEBT".equals(type)) debtStream.postValue(payload);
     }
 
-    private void handleTransactionEvent(String eventPath, Map<String, Object> payload) {
-        executor.execute(() -> {
-            try {
-                if (eventPath.contains(".delete")) {
-                    String id = String.valueOf(payload.get("$id"));
-                    transactionDao.deleteById(id);
-                } else {
-                    Transaction transaction = Transaction.fromPayload(payload, pref.getFamilyId(), getContext(), pref.getUserId());
-                    if (transaction != null) {
-                        transactionDao.insert(transaction);
-                    }
-                }
-            } catch (Exception e) {
-                android.util.Log.e("RealtimeRepository", "Error handling transaction event", e);
-            }
-        });
-    }
-
-    private void handleLikeEvent(String eventPath, Map<String, Object> payload) {
+    private void handleLikeEvent(String path, Map<String, Object> payload) {
         executor.execute(() -> {
             try {
                 String id = (String) payload.get("$id");
-                String txnId = (String) payload.get("transactionId");
-                String userId = (String) payload.get("userId");
-
-                String username = (String) payload.get("username");
-                if (username == null) username = (String) payload.get("userName");
-                if (username != null) username = username.toLowerCase();
-                
-                String emoji = (String) payload.get("emojiType");
-
-                if (id == null || txnId == null) return;
-
-                if (eventPath.contains(".delete")) {
+                if (path.endsWith(".delete")) {
                     likeDao.deleteById(id);
                 } else {
-                    likeDao.insert(new Like(id, txnId, userId, username, emoji));
+                    String txnId = (String) payload.get("transactionId");
+                    String userId = (String) payload.get("userId");
+                    String username = (String) payload.get("username");
+                    if (username == null) username = (String) payload.get("userName");
+                    if (username != null) username = username.toLowerCase();
+                    String emoji = (String) payload.get("emojiType");
+                    if (id != null && txnId != null) likeDao.insert(new Like(id, txnId, userId, username, emoji));
                 }
-
                 likeStream.postValue(payload);
             } catch (Exception e) {
-                android.util.Log.e("RealtimeRepository", "Error handling like event", e);
+                Log.e(TAG, "Like event error", e);
             }
         });
-    }
-
-    private String getCollectionChannel(String collectionId) {
-        return "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + collectionId + ".documents";
-    }
-
-    private String getDocumentChannel(String collectionId, String documentId) {
-        return "databases." + Constants.Appwrite.DATABASE_ID + ".collections." + collectionId + ".documents." + documentId;
     }
 
     public LiveData<Map<String, Object>> getTransactionStream() { return transactionStream; }
@@ -184,7 +157,9 @@ public class RealtimeRepository {
     public LiveData<Map<String, Object>> getCommentStream() { return commentStream; }
     public LiveData<Map<String, Object>> getLikeStream() { return likeStream; }
 
-    public void stopListening() {
+    public Context getContext() { return context; }
+
+    public synchronized void stopListening() {
         if (subscription != null) {
             subscription.close();
             subscription = null;

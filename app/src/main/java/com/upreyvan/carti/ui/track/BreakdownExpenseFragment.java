@@ -5,11 +5,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.GenericAdapter;
@@ -21,7 +20,6 @@ import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.Utils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,16 +77,15 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
                     binding.tvAmount.setText(Utils.formatCurrency(item.getAmount()));
                     binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
                     
-                    // Icon logic using CategoryManager
                     Category cat = findCategory(item.getCategory());
                     if (cat != null) {
                         binding.ivIcon.setImageResource(cat.getIconRes());
-                        binding.ivIcon.setImageTintList(ColorStateList.valueOf(getResources().getColor(cat.getIconColor(), null)));
-                        binding.cvIcon.setCardBackgroundColor(getResources().getColor(cat.getBackgroundColor(), null));
+                        binding.ivIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), cat.getIconColor())));
+                        binding.cvIcon.setCardBackgroundColor(ContextCompat.getColor(requireContext(), cat.getBackgroundColor()));
                     } else {
                         binding.ivIcon.setImageResource(R.drawable.ic_sync); 
-                        binding.ivIcon.setImageTintList(ColorStateList.valueOf(getResources().getColor(R.color.gray, null)));
-                        binding.cvIcon.setCardBackgroundColor(getResources().getColor(R.color.surface_variant, null));
+                        binding.ivIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.gray)));
+                        binding.cvIcon.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.surface_variant));
                     }
 
                     binding.getRoot().setOnClickListener(v -> navigateTo(AllTransactionsFragment.newInstance("EXPENSE", item.getUserId(), itemWithUser.getUsername())));
@@ -116,9 +113,7 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
                     }
                 }
 
-                // Sorting by timestamp descending (newest first)
                 expenseList.sort((t1, t2) -> Long.compare(t2.getTransaction().getTimestampMillis(), t1.getTransaction().getTimestampMillis()));
-                
                 adapter.submitList(expenseList);
                 
                 boolean isEmpty = expenseList.isEmpty();

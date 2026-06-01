@@ -4,23 +4,22 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-
 import androidx.recyclerview.widget.GridLayoutManager;
-
+import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.ui.common.AddOptionsAdapter;
 import com.upreyvan.carti.base.BaseActivity;
+import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.databinding.ActivityAddOptionsBinding;
+import com.upreyvan.carti.model.AddOption;
+import com.upreyvan.carti.ui.bills.BillsActivity;
+import com.upreyvan.carti.ui.budget.AddBudgetPlanActivity;
 import com.upreyvan.carti.ui.debt.AddDebtActivity;
-import com.upreyvan.carti.ui.track.AddCategoryActivity;
-import com.upreyvan.carti.ui.track.AddTrackActivity;
 import com.upreyvan.carti.ui.family.InviteFamilyActivity;
 import com.upreyvan.carti.ui.goals.AddGoalActivity;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.model.AddOption;
 import com.upreyvan.carti.ui.notifications.SendNotificationBottomSheetFragment;
+import com.upreyvan.carti.ui.track.AddCategoryActivity;
+import com.upreyvan.carti.ui.track.AddTrackActivity;
 import com.upreyvan.carti.util.Utils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,12 +39,7 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
     }
 
     private void setupDynamicPadding() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutToolbar.getRoot(),
-                getBinding().rvOptions,
-                1f,
-                20
-        );
+        Utils.applySystemBarInsets(getBinding().layoutToolbar.getRoot(), getBinding().rvOptions, 1f, 20);
     }
 
     private void setupToolbar() {
@@ -55,7 +49,7 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
     }
 
     private void goBackToHome() {
-        Intent intent = new Intent(this, com.upreyvan.carti.MainActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra("show_home", true);
         startActivity(intent);
@@ -84,28 +78,25 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
 
         AddOptionsAdapter adapter = new AddOptionsAdapter(item -> {
             Intent intent = null;
-            if (item.getTitleResId() == R.string.add_options_expense) {
+            int titleId = item.getTitleResId();
+            if (titleId == R.string.add_options_expense) {
                 intent = new Intent(this, AddTrackActivity.class);
-            } else if (item.getTitleResId() == R.string.add_options_debt) {
+            } else if (titleId == R.string.add_options_debt) {
                 intent = new Intent(this, AddDebtActivity.class);
-            } else if (item.getTitleResId() == R.string.add_options_goal) {
+            } else if (titleId == R.string.add_options_goal) {
                 intent = new Intent(this, AddGoalActivity.class);
-            } else if (item.getTitleResId() == R.string.add_options_invite) {
+            } else if (titleId == R.string.add_options_invite) {
                 intent = new Intent(this, InviteFamilyActivity.class);
-            } else if (item.getTitleResId() == R.string.add_options_category) {
+            } else if (titleId == R.string.add_options_category) {
                 intent = new Intent(this, AddCategoryActivity.class);
-            } else if (item.getTitleResId() == R.string.add_options_bills) {
-                intent = new Intent(this, com.upreyvan.carti.ui.bills.BillsActivity.class);
-            } else if (item.getTitleResId() == R.string.add_options_budget_plan) {
-                intent = new Intent(this, com.upreyvan.carti.ui.budget.AddBudgetPlanActivity.class);
-            } else if (item.getTitleResId() == R.string.add_options_announcement) {
-                SendNotificationBottomSheetFragment bottomSheet = new SendNotificationBottomSheetFragment();
-                bottomSheet.show(getSupportFragmentManager(), "SendNotificationBottomSheet");
+            } else if (titleId == R.string.add_options_bills) {
+                intent = new Intent(this, BillsActivity.class);
+            } else if (titleId == R.string.add_options_budget_plan) {
+                intent = new Intent(this, AddBudgetPlanActivity.class);
+            } else if (titleId == R.string.add_options_announcement) {
+                new SendNotificationBottomSheetFragment().show(getSupportFragmentManager(), "SendNotificationBottomSheet");
             }
-
-            if (intent != null) {
-                startActivity(intent);
-            }
+            if (intent != null) startActivity(intent);
         });
         adapter.submitList(options);
         

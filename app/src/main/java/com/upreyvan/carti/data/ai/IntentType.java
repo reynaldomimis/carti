@@ -6,14 +6,13 @@ public enum IntentType {
     INCOME_LOG,
     GOAL_LOG,
     DEBT_LOG,
-
     ASK_AMOUNT,
     ASK_CATEGORY,
     ASK_TYPE,
-
     TRAINING,
     LEARNING_CONFIRMATION,
-
+    SUMMARY,
+    REPORT,
     PROFANITY,
     UNKNOWN
 }

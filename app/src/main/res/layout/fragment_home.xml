@@ -118,13 +118,6 @@
             android:orientation="vertical">
 
             <include
-                android:id="@+id/viewAiInsight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                layout="@layout/view_ai_insight" />
-
-            <include
                 android:id="@+id/viewHomeDashboard"
                 layout="@layout/view_home_dashboard" />
 
@@ -135,9 +128,11 @@
                 android:layout_height="wrap_content" />
 
 
-            <include
+            <ViewStub
                 android:id="@+id/viewDueDateBills"
-                layout="@layout/view_due_date_bills" />
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout="@layout/view_due_date_bills" />
 
             <include
                 android:id="@+id/viewHeaderQuickActions"
@@ -176,21 +171,13 @@
                 app:spanCount="4"
                 tools:listitem="@layout/item_quick_log" />
 
-            <!-- 8. Future Goals (AI Suggestions) -->
-            <include
-                android:id="@+id/viewAiSuggestions"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                layout="@layout/view_ai_suggestions" />
-
             <!-- Notifications / Family Messages -->
-            <include
+            <ViewStub
                 android:id="@+id/viewFamilyNotification"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_medium"
-                layout="@layout/view_bill_notification_card" />
+                android:layout="@layout/view_bill_notification_card" />
 
             <!-- 9. History (Recent Activity) -->
             <include

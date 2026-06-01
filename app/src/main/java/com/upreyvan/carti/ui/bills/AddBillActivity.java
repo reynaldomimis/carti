@@ -6,15 +6,14 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.databinding.ActivityAddBillBinding;
+import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.databinding.ActivityAddBillBinding;
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.util.ToastHelper.Status;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
-import com.upreyvan.carti.data.local.PreferenceManager;
 import java.util.Calendar;
-import java.util.Locale;
-import java.util.UUID;
 
 public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
 
@@ -42,12 +41,7 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
     }
 
     private void setupStatusBar() {
-        Utils.applySystemBarInsets(
-                getBinding().layoutToolbar.getRoot(),
-                getBinding().btnSave,
-                1f,
-                20
-        );
+        Utils.applySystemBarInsets(getBinding().layoutToolbar.getRoot(), getBinding().btnSave, 1f, 20);
     }
 
     private void setupClickListeners() {
@@ -57,13 +51,14 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
             String category = getBinding().actCategory.getText().toString();
 
             if (Validator.isEmpty(getBinding().etBillName) || Validator.isEmpty(getBinding().etAmount) || category.isEmpty()) {
-                showToast(getString(R.string.msg_fill_all_fields), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                showToast(getString(R.string.msg_fill_all_fields), Status.WARNING);
                 return;
             }
 
             double amount = Double.parseDouble(amountText);
-            String familyId = new PreferenceManager(this).getFamilyId();
-            String userId = new PreferenceManager(this).getUserId();
+            PreferenceManager pref = new PreferenceManager(this);
+            String familyId = pref.getFamilyId();
+            String userId = pref.getUserId();
             String date = Utils.formatDateShort(Calendar.getInstance());
             
             Transaction transaction = new Transaction();
@@ -77,7 +72,7 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
             transaction.setPaid(false);
 
             transactionRepository.addTransaction(transaction, null);
-            showToast(getString(R.string.msg_bill_saved), com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+            showToast(getString(R.string.msg_bill_saved), Status.SUCCESS);
             finish();
         });
     }

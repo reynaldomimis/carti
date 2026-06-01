@@ -43,9 +43,11 @@ android {
         buildConfigField("String", "APPWRITE_COL_NOTIFICATIONS", "\"${secrets.getProperty("APPWRITE_COL_NOTIFICATIONS", "")}\"")
         buildConfigField("String", "APPWRITE_COL_LIKES", "\"${secrets.getProperty("APPWRITE_COL_LIKES", "")}\"")
         buildConfigField("String", "APPWRITE_COL_COMMENTS", "\"${secrets.getProperty("APPWRITE_COL_COMMENTS", "")}\"")
+        buildConfigField("String", "APP_SIGNATURE_HASH", "\"${secrets.getProperty("APP_SIGNATURE_HASH", "")}\"")
         buildConfigField("String", "GEMINI_API_KEY", "\"${secrets.getProperty("GEMINI_API_KEY", "")}\"")
         buildConfigField("String", "NVIDIA_API_KEY", "\"${secrets.getProperty("NVIDIA_API_KEY", "")}\"")
-        buildConfigField("String", "APP_SIGNATURE_HASH", "\"${secrets.getProperty("APP_SIGNATURE_HASH", "")}\"")
+        buildConfigField("String", "DEEPSEEK_API_KEY", "\"${secrets.getProperty("DEEPSEEK_API_KEY", "")}\"")
+        buildConfigField("String", "OPENAI_API_KEY", "\"${secrets.getProperty("OPENAI_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -89,7 +91,6 @@ dependencies {
     implementation(libs.shimmer)
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
-    implementation(libs.googlegenai)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
 

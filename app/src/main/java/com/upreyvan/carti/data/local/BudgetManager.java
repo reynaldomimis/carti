@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.upreyvan.carti.R;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.util.SecurityManager;
 import java.lang.reflect.Type;
@@ -48,9 +49,7 @@ public class BudgetManager {
             }
         }
         if (!found) {
-            items.add(new BudgetCategoryItem(name, com.upreyvan.carti.R.drawable.ic_chart, 
-                com.upreyvan.carti.R.color.carti_primary_green, 
-                com.upreyvan.carti.R.color.mint_green_alpha, amount, 0, parent, 0));
+            items.add(new BudgetCategoryItem(name, R.drawable.ic_chart, R.color.carti_primary_green, R.color.mint_green_alpha, amount, 0, parent, 0));
         }
         saveBudgetPlan(items);
     }

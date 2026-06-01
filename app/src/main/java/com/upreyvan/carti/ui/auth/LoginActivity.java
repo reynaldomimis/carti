@@ -4,15 +4,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.ActivityLoginBinding;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Validator;
@@ -41,9 +36,7 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
         Uri data = intent.getData();
         if (data == null) return;
 
-        boolean isCarti = "carti".equals(data.getScheme())
-                && "reset-password".equals(data.getHost());
-        
+        boolean isCarti = "carti".equals(data.getScheme()) && "reset-password".equals(data.getHost());
         boolean isVercel = ("http".equals(data.getScheme()) || "https".equals(data.getScheme()))
                 && "mintyai.vercel.app".equals(data.getHost())
                 && "/reset-password".equals(data.getPath());

@@ -2,17 +2,15 @@ package com.upreyvan.carti.ui.auth;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.View;
-
 import androidx.annotation.Nullable;
-
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.databinding.ActivityResetPasswordBinding;
+import com.upreyvan.carti.util.Constants.ErrorCodes;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Validator;
 
@@ -83,28 +81,20 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
         getBinding().btnReset.setEnabled(false);
         showToast(R.string.msg_updating_password, ToastHelper.Status.INFO);
 
-        AppwriteManager.getInstance(this).updatePasswordRecovery(
-                userId,
-                secret,
-                newPassword,
-                new AppwriteManager.AppwriteCallback<Object>() {
-                    @Override
-                    public void onSuccess(Object result) {
-                        showToast(R.string.msg_password_updated, ToastHelper.Status.SUCCESS);
-                        finish();
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        getBinding().btnReset.setEnabled(true);
-                        String message = error.getMessage();
-                        if (message != null && message.contains("similar to your previous password")) {
-                            showToast(com.upreyvan.carti.util.Constants.ErrorCodes.PASSWORD_RECENTLY_USED, ToastHelper.Status.ERROR);
-                        } else {
-                            showToast("Error: " + (message != null ? message : "Unknown error"), ToastHelper.Status.ERROR);
-                        }
-                    }
+        AppwriteManager.getInstance(this).updatePasswordRecovery(userId, secret, newPassword, new AppwriteCallback<>() {
+            @Override public void onSuccess(Object result) {
+                showToast(R.string.msg_password_updated, ToastHelper.Status.SUCCESS);
+                finish();
+            }
+            @Override public void onError(Throwable error) {
+                getBinding().btnReset.setEnabled(true);
+                String message = error.getMessage();
+                if (message != null && message.contains("similar to your previous password")) {
+                    showToast(ErrorCodes.PASSWORD_RECENTLY_USED, ToastHelper.Status.ERROR);
+                } else {
+                    showToast("Error: " + (message != null ? message : "Unknown error"), ToastHelper.Status.ERROR);
                 }
-        );
+            }
+        });
     }
 }

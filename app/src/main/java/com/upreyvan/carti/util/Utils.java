@@ -1,21 +1,17 @@
 package com.upreyvan.carti.util;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkCapabilities;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-import java.text.SimpleDateFormat;
+import android.widget.TextView;
+import androidx.core.util.Pair;
+import androidx.fragment.app.FragmentManager;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
+import com.upreyvan.carti.R;
+import com.upreyvan.carti.model.Transaction;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class Utils {
@@ -36,394 +32,99 @@ public class Utils {
     }
 
     public static String getTimeAgo(long time) {
-        if (time < 1000000000000L) {
-            time *= 1000;
-        }
-
+        if (time < 1000000000000L) time *= 1000;
         long now = System.currentTimeMillis();
-        if (time > now || time <= 0) {
-            return "Just now";
-        }
+        if (time > now || time <= 0) return "Just now";
 
-        final long diff = now - time;
-        if (diff < 60 * 1000) {
-            return "Just now";
-        } else if (diff < 2 * 60 * 1000) {
-            return "1 min ago";
-        } else if (diff < 50 * 60 * 1000) {
-            return diff / (60 * 1000) + " mins ago";
-        } else if (diff < 90 * 60 * 1000) {
-            return "1 hour ago";
-        } else if (diff < 24 * 60 * 60 * 1000) {
-            return diff / (60 * 60 * 1000) + " hours ago";
-        } else if (diff < 48 * 60 * 60 * 1000) {
-            return "yesterday";
-        } else {
-            return diff / (24 * 60 * 60 * 1000) + " days ago";
-        }
+        long diff = now - time;
+        if (diff < 60000) return "Just now";
+        if (diff < 120000) return "1 min ago";
+        if (diff < 3000000) return diff / 60000 + " mins ago";
+        if (diff < 5400000) return "1 hour ago";
+        if (diff < 86400000) return diff / 3600000 + " hours ago";
+        if (diff < 172800000) return "yesterday";
+        return diff / 86400000 + " days ago";
     }
 
-    public static String formatIsoDateToTime(String isoDate) {
-        if (isoDate == null || isoDate.isEmpty()) return "";
-        try {
-            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
-            parser.setTimeZone(TimeZone.getTimeZone("UTC"));
-            Date date = parser.parse(isoDate);
-            if (date == null) return "";
-            
-            SimpleDateFormat formatter = new SimpleDateFormat("hh:mm a", Locale.getDefault());
-            return formatter.format(date);
-        } catch (Exception e) {
-            try {
-                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
-                Date date = parser.parse(isoDate);
-                return new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(date);
-            } catch (Exception e2) {
-                return "";
-            }
-        }
-    }
+    public static String formatIsoDateToTime(String iso) { return DateHelper.formatIsoToTime(iso); }
+    public static String formatTimestamp(String iso) { return DateHelper.formatIsoToFull(iso); }
+    public static long getMillisFromIso(String iso) { return DateHelper.getMillisFromIso(iso); }
+    public static String getCurrentTimestamp() { return DateHelper.getCurrentTimestamp(); }
+    public static String formatMonthYear(Calendar cal) { return DateHelper.formatMonthYear(cal); }
+    public static String formatDateFull(Calendar cal) { return DateHelper.formatDateFull(cal); }
+    public static String formatDateShort(Calendar cal) { return DateHelper.formatDateShort(cal); }
+    public static String formatDateQuery(Calendar cal) { return DateHelper.formatDateQuery(cal); }
+    public static String formatMonthQuery(Calendar cal) { return DateHelper.formatMonthQuery(cal); }
+    public static String formatTime(Calendar cal) { return DateHelper.formatTime(cal); }
+    public static String formatDate(long millis) { return DateHelper.formatDate(millis); }
+    public static String formatDateRange(long start, long end) { return DateHelper.formatDateRange(start, end); }
+    public static long getMonthStartMillis(Calendar cal) { return DateHelper.getMonthStartMillis(cal); }
+    public static long getMonthEndMillis(Calendar cal) { return DateHelper.getMonthEndMillis(cal); }
+    public static long getYearStartMillis(Calendar cal) { return DateHelper.getYearStartMillis(cal); }
+    public static long getYearEndMillis(Calendar cal) { return DateHelper.getYearEndMillis(cal); }
+    public static String getMonthStart(int m, int y) { return DateHelper.getMonthStart(m, y); }
+    public static String getMonthEnd(int m, int y) { return DateHelper.getMonthEnd(m, y); }
+    public static long getStartOfDayMillis() { return DateHelper.getStartOfDayMillis(); }
 
-    public static String formatTimestamp(String isoDate) {
-        if (isoDate == null || isoDate.isEmpty()) return "";
-        try {
-            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
-            parser.setTimeZone(TimeZone.getTimeZone("UTC"));
-            Date date = parser.parse(isoDate);
-            if (date == null) return "";
+    public static String formatCurrency(double amount) { return CurrencyHelper.format(amount); }
+    public static double getDouble(Object val) { return CurrencyHelper.parse(val); }
 
-            SimpleDateFormat formatter = new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault());
-            return formatter.format(date);
-        } catch (Exception e) {
-            try {
-                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
-                Date date = parser.parse(isoDate);
-                return new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault()).format(date);
-            } catch (Exception e2) {
-                return "";
-            }
-        }
-    }
-
-    public static long getMillisFromIso(String isoDate) {
-        if (isoDate == null || isoDate.isEmpty()) return 0;
-        try {
-            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
-            parser.setTimeZone(TimeZone.getTimeZone("UTC"));
-            Date date = parser.parse(isoDate);
-            return date != null ? date.getTime() : 0;
-        } catch (Exception e) {
-            try {
-                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
-                Date date = parser.parse(isoDate);
-                return date != null ? date.getTime() : 0;
-            } catch (Exception e2) {
-                return 0;
-            }
-        }
-    }
-
-    public static String getGreeting() {
-        Calendar c = Calendar.getInstance();
-        int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
-
-        if (timeOfDay < 12) {
-            return "Good morning";
-        } else if (timeOfDay < 17) {
-            return "Good afternoon";
-        } else {
-            return "Good evening";
-        }
-    }
-
-    public static int dpToPx(Context context, int dp) {
-        float density = context.getResources().getDisplayMetrics().density;
-        return Math.round((float) dp * density);
-    }
-
-    public static void applySystemBarInsets(
-            View topView,
-            View bottomView,
-            float topMultiplier,
-            int customBarHeight
-    ) {
-
-        int originalTopPadding = topView.getPaddingTop();
-
-        ViewCompat.setOnApplyWindowInsetsListener(topView, (v, insets) -> {
-
-            Insets systemBars =
-                    insets.getInsets(WindowInsetsCompat.Type.systemBars());
-
-            int statusBarHeight = systemBars.top;
-
-            int adjustedTop =
-                    (int) (statusBarHeight * topMultiplier);
-
-            v.setPadding(
-                    v.getPaddingLeft(),
-                    originalTopPadding + adjustedTop,
-                    v.getPaddingRight(),
-                    v.getPaddingBottom()
-            );
-
-            return insets;
-        });
-
-        if (bottomView != null) {
-            final int originalBottomPadding = bottomView.getPaddingBottom();
-            final ViewGroup.LayoutParams layoutParams = bottomView.getLayoutParams();
-            final int originalBottomMargin = (layoutParams instanceof ViewGroup.MarginLayoutParams) ?
-                    ((ViewGroup.MarginLayoutParams) layoutParams).bottomMargin : 0;
-
-            ViewCompat.setOnApplyWindowInsetsListener(bottomView, (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                int systemNavHeight = systemBars.bottom;
-
-                if (v instanceof androidx.core.widget.NestedScrollView || v instanceof androidx.recyclerview.widget.RecyclerView) {
-                    v.setPadding(
-                            v.getPaddingLeft(),
-                            v.getPaddingTop(),
-                            v.getPaddingRight(),
-                            originalBottomPadding + systemNavHeight + customBarHeight
-                    );
-                } else {
-                    if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
-                        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-                        lp.bottomMargin = originalBottomMargin + systemNavHeight + customBarHeight;
-                        v.setLayoutParams(lp);
-                    }
-                }
-
-                return insets;
-            });
-        }
-    }
+    public static boolean isNetworkAvailable(Context ctx) { return NetworkHelper.isNetworkAvailable(ctx); }
 
     public static void showToast(Context context, String message) {
         ToastHelper.show(context, message, ToastHelper.Status.INFO);
     }
 
-    public static void showKeyboard(Context context, View view) {
-        if (context != null && view != null) {
-            view.requestFocus();
-            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.showSoftInput(view, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
-            }
-        }
+    public static void applySystemBarInsets(View t, View b, float m, int h) { UiHelper.applySystemBarInsets(t, b, m, h); }
+    public static void showKeyboard(Context ctx, View v) { UiHelper.showKeyboard(ctx, v); }
+    public static void hideKeyboard(Context ctx, View v) { UiHelper.hideKeyboard(ctx, v); }
+    public static void setOptionalText(TextView tv, String txt) { UiHelper.setOptionalText(tv, txt); }
+
+    public static String getGreeting() {
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        if (hour < 12) return "Good morning";
+        if (hour < 17) return "Good afternoon";
+        return "Good evening";
     }
 
-    public static void hideKeyboard(Context context, View view) {
-        if (context != null && view != null) {
-            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
-        }
+    public static int dpToPx(Context context, int dp) {
+        return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
-    public static boolean isNetworkAvailable(Context context) {
-        if (context == null) return false;
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager != null) {
-            NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
-            if (capabilities != null) {
-                return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-            }
-        }
-        return false;
+    public static void showDateRangePicker(FragmentManager fm, MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>> l) {
+        MaterialDatePicker<Pair<Long, Long>> picker = MaterialDatePicker.Builder.dateRangePicker()
+                .setTitleText("Select Period")
+                .build();
+        picker.addOnPositiveButtonClickListener(l);
+        picker.show(fm, "DATE_RANGE_PICKER");
     }
 
-    public static void setOptionalText(android.widget.TextView textView, String text) {
-        if (text == null || text.trim().isEmpty()) {
-            textView.setVisibility(View.GONE);
-        } else {
-            textView.setText(text);
-            textView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    public static String formatCurrency(double amount) {
-        return String.format(Locale.getDefault(), "₱%,.2f", amount);
-    }
-
-    public static void showDateRangePicker(androidx.fragment.app.FragmentManager fragmentManager, com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener<androidx.core.util.Pair<Long, Long>> listener) {
-        com.google.android.material.datepicker.MaterialDatePicker<androidx.core.util.Pair<Long, Long>> picker =
-                com.google.android.material.datepicker.MaterialDatePicker.Builder.dateRangePicker()
-                        .setTitleText("Select Period")
-                        .build();
-
-        picker.addOnPositiveButtonClickListener(listener);
-        picker.show(fragmentManager, "DATE_RANGE_PICKER");
-    }
-
-    public static double getDouble(Object value) {
-        if (value instanceof Number) {
-            return ((Number) value).doubleValue();
-        } else if (value instanceof String) {
-            try {
-                return Double.parseDouble((String) value);
-            } catch (NumberFormatException e) {
-                return 0.0;
-            }
-        }
-        return 0.0;
-    }
-
-    public static String getCurrentTimestamp() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return sdf.format(new Date());
-    }
-
-    public static String formatMonthYear(Calendar calendar) {
-        return new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(calendar.getTime());
-    }
-
-    public static String formatDateFull(Calendar calendar) {
-        return new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault()).format(calendar.getTime());
-    }
-
-    public static String formatDateShort(Calendar calendar) {
-        return new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.getTime());
-    }
-
-    public static String formatDateQuery(Calendar calendar) {
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.getTime());
-    }
-
-    public static String formatTime(Calendar calendar) {
-        return new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(calendar.getTime());
-    }
-
-    public static String formatMonthQuery(Calendar calendar) {
-        return new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(calendar.getTime());
-    }
-
-    public static String formatDateRange(long start, long end) {
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM d", Locale.getDefault());
-        String startDate = sdf.format(new Date(start));
-        String endDate = sdf.format(new Date(end));
-        String year = new SimpleDateFormat("yyyy", Locale.getDefault()).format(new Date(end));
-        return String.format("%s - %s, %s", startDate, endDate, year);
-    }
-
-    public static long getMonthStartMillis(Calendar calendar) {
-        Calendar start = (Calendar) calendar.clone();
-        start.set(Calendar.DAY_OF_MONTH, 1);
-        start.set(Calendar.HOUR_OF_DAY, 0);
-        start.set(Calendar.MINUTE, 0);
-        start.set(Calendar.SECOND, 0);
-        start.set(Calendar.MILLISECOND, 0);
-        return start.getTimeInMillis();
-    }
-
-    public static long getMonthEndMillis(Calendar calendar) {
-        Calendar end = (Calendar) calendar.clone();
-        end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH));
-        end.set(Calendar.HOUR_OF_DAY, 23);
-        end.set(Calendar.MINUTE, 59);
-        end.set(Calendar.SECOND, 59);
-        end.set(Calendar.MILLISECOND, 999);
-        return end.getTimeInMillis();
-    }
-
-    public static long getYearStartMillis(Calendar calendar) {
-        Calendar start = (Calendar) calendar.clone();
-        start.set(Calendar.MONTH, Calendar.JANUARY);
-        start.set(Calendar.DAY_OF_MONTH, 1);
-        start.set(Calendar.HOUR_OF_DAY, 0);
-        start.set(Calendar.MINUTE, 0);
-        start.set(Calendar.SECOND, 0);
-        start.set(Calendar.MILLISECOND, 0);
-        return start.getTimeInMillis();
-    }
-
-    public static long getYearEndMillis(Calendar calendar) {
-        Calendar end = (Calendar) calendar.clone();
-        end.set(Calendar.MONTH, Calendar.DECEMBER);
-        end.set(Calendar.DAY_OF_MONTH, 31);
-        end.set(Calendar.HOUR_OF_DAY, 23);
-        end.set(Calendar.MINUTE, 59);
-        end.set(Calendar.SECOND, 59);
-        end.set(Calendar.MILLISECOND, 999);
-        return end.getTimeInMillis();
-    }
-
-    public static String getMonthStart(int month, int year) {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.YEAR, year);
-        cal.set(Calendar.MONTH, month);
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return sdf.format(cal.getTime());
-    }
-
-    public static String getMonthEnd(int month, int year) {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.YEAR, year);
-        cal.set(Calendar.MONTH, month);
-        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
-        cal.set(Calendar.HOUR_OF_DAY, 23);
-        cal.set(Calendar.MINUTE, 59);
-        cal.set(Calendar.SECOND, 59);
-        cal.set(Calendar.MILLISECOND, 999);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return sdf.format(cal.getTime());
-    }
-
-    public static long getStartOfDayMillis() {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTimeInMillis();
-    }
-
-    public static String joinStrings(java.util.List<?> list, String delimiter) {
+    public static String joinStrings(List<?> list, String delimiter) {
         if (list == null || list.isEmpty()) return "";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < list.size(); i++) {
-            sb.append(String.valueOf(list.get(i)));
-            if (i < list.size() - 1) {
-                sb.append(delimiter);
-            }
+            sb.append(list.get(i));
+            if (i < list.size() - 1) sb.append(delimiter);
         }
         return sb.toString();
     }
 
-    public static int getCategoryColor(android.content.Context context, String category) {
-        if (category == null) return context.getResources().getColor(com.upreyvan.carti.R.color.gray, null);
-        
-        switch (category.toLowerCase()) {
-            case "food":
-            case "food & drinks":
-                return context.getResources().getColor(com.upreyvan.carti.R.color.icon_food, null);
-            case "transport":
-            case "transportation":
-                return context.getResources().getColor(com.upreyvan.carti.R.color.icon_fare, null);
-            case "bills":
-            case "utilities":
-                return context.getResources().getColor(com.upreyvan.carti.R.color.status_red, null);
-            case "shopping":
-                return context.getResources().getColor(com.upreyvan.carti.R.color.icon_store, null);
-            case "health":
-                return context.getResources().getColor(com.upreyvan.carti.R.color.icon_load, null);
-            case "entertainment":
-                return context.getResources().getColor(com.upreyvan.carti.R.color.purple, null);
-            case "income":
-            case "salary":
-                return context.getResources().getColor(com.upreyvan.carti.R.color.carti_primary_green, null);
-            default:
-                return context.getResources().getColor(com.upreyvan.carti.R.color.gray, null);
-        }
+    public static Transaction parseTransaction(Map<String, Object> d, String id, String c, String u) {
+        return TransactionHelper.parse(d, id, c, u);
+    }
+
+    public static int getCategoryColor(Context ctx, String category) {
+        if (category == null) return ctx.getColor(R.color.gray);
+        int resId = switch (category.toLowerCase()) {
+            case "food", "food & drinks" -> R.color.icon_food;
+            case "transport", "transportation" -> R.color.icon_fare;
+            case "bills", "utilities" -> R.color.status_red;
+            case "shopping" -> R.color.icon_store;
+            case "health" -> R.color.icon_load;
+            case "entertainment" -> R.color.purple;
+            case "income", "salary" -> R.color.carti_primary_green;
+            default -> R.color.gray;
+        };
+        return ctx.getColor(resId);
     }
 }
