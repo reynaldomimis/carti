@@ -39,7 +39,7 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
     }
 
     private void displayUserRole() {
-        PreferenceManager pref = new PreferenceManager(requireContext());
+        PreferenceManager pref = PreferenceManager.getInstance(requireContext());
         String role = pref.getUserRole();
         getBinding().tvUserRole.setText(role);
     }
@@ -60,7 +60,7 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
                 if (isAdded()) {
                     setLoading(false);
                     
-                    PreferenceManager pref = new PreferenceManager(requireContext());
+                    PreferenceManager pref = PreferenceManager.getInstance(requireContext());
                     Object fid = result.get("familyId");
                     String familyId = (fid != null && !"null".equals(String.valueOf(fid))) ? String.valueOf(fid) : "";
                     if (!familyId.isEmpty()) {

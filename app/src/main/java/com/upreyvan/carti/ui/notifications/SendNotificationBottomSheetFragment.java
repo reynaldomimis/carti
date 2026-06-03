@@ -36,7 +36,7 @@ public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragme
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         apiHelper = new ApiHelper(requireContext());
-        pref = new PreferenceManager(requireContext());
+        pref = PreferenceManager.getInstance(requireContext());
 
         binding.btnSend.setOnClickListener(v -> sendNotification());
     }

@@ -3,6 +3,7 @@ package com.upreyvan.carti.data.repository;
 import android.content.Context;
 import android.util.Log;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.db.AppDatabase;
 import com.upreyvan.carti.data.local.source.TransactionLocalDataSource;
@@ -34,16 +35,21 @@ public class TransactionRepository {
     private final TransactionRemoteDataSource remoteDataSource;
     private final PreferenceManager pref;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final MutableLiveData<Boolean> isSyncing = new MutableLiveData<>(false);
 
     private TransactionRepository(Context context) {
         this.localDataSource = new TransactionLocalDataSource(context);
         this.remoteDataSource = new TransactionRemoteDataSource(context);
-        this.pref = new PreferenceManager(context);
+        this.pref = PreferenceManager.getInstance(context);
     }
 
     public static synchronized TransactionRepository getInstance(Context context) {
         if (instance == null) instance = new TransactionRepository(context);
         return instance;
+    }
+
+    public LiveData<Boolean> getSyncingStatus() {
+        return isSyncing;
     }
 
     public void syncTransactionsIfNeeded() {
@@ -53,17 +59,20 @@ public class TransactionRepository {
     }
 
     public void performIncrementalSync() {
+        isSyncing.postValue(true);
         remoteDataSource.getTransactionsSince(pref.getLastSyncTime(), new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(DocumentList<Map<String, Object>> result) {
                 processAndSaveSync(result);
                 pref.setLastSyncTime(Utils.getCurrentTimestamp());
                 pref.setLastSyncTimeMillis(System.currentTimeMillis());
+                isSyncing.postValue(false);
             }
 
             @Override
             public void onError(Throwable error) {
                 Log.e(TAG, "Incremental sync failed: " + error.getMessage());
+                isSyncing.postValue(false);
             }
         });
     }

@@ -37,7 +37,7 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
         super.onViewCreated(view, savedInstanceState);
         appwriteManager = AppwriteManager.getInstance(requireContext());
         apiHelper = new ApiHelper(requireContext());
-        pref = new PreferenceManager(requireContext());
+        pref = PreferenceManager.getInstance(requireContext());
 
         setupToolbar();
         setupListeners();

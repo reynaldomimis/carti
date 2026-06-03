@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentFamilyChatBinding;
 import com.upreyvan.carti.util.Constants;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> {
     private ChatViewModel viewModel;
     private ChatAdapter chatAdapter;
-    private AiSuggestionAdapter suggestionAdapter;
     private VoiceToTextHelper voiceToTextHelper;
 
     @Override
@@ -48,15 +46,10 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         checkConnectionAndLoad();
 
         getBinding().btnBackContainer.setOnClickListener(v -> {
-            getBinding().btnBack.animate()
-                .rotation(-45f)
-                .setDuration(100)
-                .withEndAction(() -> {
-                    if (getActivity() instanceof MainActivity main) {
-                        main.navigateTo(Constants.Navigation.HOME);
-                    }
-                })
-                .start();
+            Utils.hideKeyboard(requireContext(), getBinding().layoutInput.etInput);
+            if (getActivity() instanceof MainActivity main) {
+                main.navigateTo(Constants.Navigation.HOME);
+            }
         });
     }
 
@@ -138,7 +131,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     }
 
     private void setupSuggestions() {
-        suggestionAdapter = new AiSuggestionAdapter();
+        AiSuggestionAdapter suggestionAdapter = new AiSuggestionAdapter();
         suggestionAdapter.setOnItemClickListener(suggestion -> {
             getBinding().layoutInput.etInput.setText(suggestion.getTitle());
             getBinding().layoutEmpty.setVisibility(View.GONE);
@@ -151,7 +144,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         getBinding().layoutInput.etInput.addTextChangedListener(new android.text.TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                boolean hasText = s.toString().trim().length() > 0;
+                boolean hasText = s != null && !s.toString().trim().isEmpty();
                 getBinding().layoutInput.btnSend.setVisibility(hasText ? View.VISIBLE : View.GONE);
                 getBinding().layoutInput.btnEmojiLike.setVisibility(hasText ? View.GONE : View.VISIBLE);
             }
@@ -166,9 +159,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             }
         });
 
-        getBinding().layoutInput.btnEmojiLike.setOnClickListener(v -> {
-            viewModel.sendMessage("👍");
-        });
+        getBinding().layoutInput.btnEmojiLike.setOnClickListener(v -> viewModel.sendMessage("👍"));
     }
 
     private void updateEmptyState(boolean empty) {
@@ -224,13 +215,6 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
     private void setupToolbar() {
         getBinding().tvTitle.setText(R.string.family_chat_title);
-        
-        getBinding().btnBack.setRotation(-45f);
-        getBinding().btnBack.animate()
-            .rotation(0f)
-            .setDuration(400)
-            .setInterpolator(new android.view.animation.DecelerateInterpolator())
-            .start();
     }
 
     private void setupDynamicPadding() {

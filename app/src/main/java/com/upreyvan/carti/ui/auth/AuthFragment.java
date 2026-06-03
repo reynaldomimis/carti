@@ -92,7 +92,7 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         new ApiHelper(requireContext()).getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> user) {
-                PreferenceManager pref = new PreferenceManager(requireContext());
+                PreferenceManager pref = PreferenceManager.getInstance(requireContext());
                 String familyId = (user.get("familyId") != null && !"null".equals(String.valueOf(user.get("familyId")))) ? String.valueOf(user.get("familyId")) : "";
                 String userId = String.valueOf(user.getOrDefault("$id", user.getOrDefault("userId", "")));
                 if (userId.isEmpty() || "null".equals(userId)) userId = "";

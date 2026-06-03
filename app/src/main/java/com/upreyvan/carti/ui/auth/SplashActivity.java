@@ -22,7 +22,7 @@ public class SplashActivity extends BaseActivity<ActivitySplashBinding> {
 
         new Handler().postDelayed(() -> {
             if (isNavigating) return;
-            PreferenceManager pref = new PreferenceManager(this);
+            PreferenceManager pref = PreferenceManager.getInstance(this);
             
             if (pref.getUserId().isEmpty()) {
                 navigateToLogin();

@@ -25,7 +25,7 @@ public class ApiHelper {
 
     public ApiHelper(Context context) {
         this.appwriteManager = AppwriteManager.getInstance(context);
-        this.pref = new PreferenceManager(context);
+        this.pref = PreferenceManager.getInstance(context);
         this.context = context.getApplicationContext();
     }
 
@@ -410,14 +410,18 @@ public class ApiHelper {
     }
 
     public void sendMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
-        sendMessage(text, pref.getUserId(), pref.getUsername(), callback);
+        sendMessage(io.appwrite.ID.Companion.unique(0), text, pref.getUserId(), pref.getUsername(), callback);
+    }
+
+    public void sendMessageWithId(String id, String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
+        sendMessage(id, text, pref.getUserId(), pref.getUsername(), callback);
     }
 
     public void sendAiMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
-        sendMessage(text, Constants.Roles.AI_ID, Constants.Roles.AI_NAME, callback);
+        sendMessage(io.appwrite.ID.Companion.unique(0), text, Constants.Roles.AI_ID, Constants.Roles.AI_NAME, callback);
     }
 
-    private void sendMessage(String text, String senderId, String senderName, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
+    private void sendMessage(String id, String text, String senderId, String senderName, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
 
         Map<String, Object> data = new HashMap<>();
@@ -433,7 +437,7 @@ public class ApiHelper {
         appwriteManager.createDocument(
                 Constants.Appwrite.DATABASE_ID,
                 Constants.Appwrite.COL_MESSAGES,
-                io.appwrite.ID.Companion.unique(0),
+                id,
                 data,
                 permissions,
                 callback

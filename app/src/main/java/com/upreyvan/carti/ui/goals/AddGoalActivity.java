@@ -40,7 +40,7 @@ public class AddGoalActivity extends BaseGoalActivity {
         goal.setDueDate(date);
         goal.setCategory("Goal");
         goal.setMembers(new ArrayList<>(selectedMemberIds));
-        goal.setUserId(new PreferenceManager(this).getUserId());
+        goal.setUserId(PreferenceManager.getInstance(this).getUserId());
 
         transactionRepository.addTransaction(goal, new AppwriteCallback<>() {
             @Override

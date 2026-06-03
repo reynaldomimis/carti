@@ -55,13 +55,11 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
     }
 
     private void setupContent() {
-        PreferenceManager pref = new PreferenceManager(this);
+        PreferenceManager pref = PreferenceManager.getInstance(this);
         String inviteCode = pref.getInviteCode();
-        
-        // Initial display from prefs
+
         updateInviteUI(inviteCode);
 
-        // Setup Steps
         getBinding().step1.tvStepNumber.setText("1");
         getBinding().step1.tvStepDescription.setText(R.string.step_1);
 
@@ -81,7 +79,7 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
                     if (code != null) {
                         String inviteCode = String.valueOf(code);
                         // Save to prefs for next time
-                        new PreferenceManager(InviteFamilyActivity.this).setInviteCode(inviteCode);
+                        PreferenceManager.getInstance(InviteFamilyActivity.this).setInviteCode(inviteCode);
                         runOnUiThread(() -> updateInviteUI(inviteCode));
                     }
                 }
@@ -96,7 +94,7 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
 
     private void updateInviteUI(String inviteCode) {
         if (inviteCode == null || inviteCode.isEmpty()) {
-            inviteCode = new PreferenceManager(this).getFamilyId(); // Fallback
+            inviteCode = PreferenceManager.getInstance(this).getFamilyId(); // Fallback
         }
 
         if (inviteCode != null && inviteCode.startsWith("FAM-")) {

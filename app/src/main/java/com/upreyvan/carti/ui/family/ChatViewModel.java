@@ -53,7 +53,7 @@ public class ChatViewModel extends BaseViewModel {
         chatRepo = ChatRepository.getInstance(application);
         aiRepo = AiRepository.getInstance(application);
         transRepo = TransactionRepository.getInstance(application);
-        pref = new PreferenceManager(application);
+        pref = PreferenceManager.getInstance(application);
     }
 
     public LiveData<List<ChatMessage>> getMessages() { return messages; }
@@ -70,20 +70,28 @@ public class ChatViewModel extends BaseViewModel {
         chatRepo.loadHistory(PAGE_SIZE, oldestTimestamp, new AppwriteCallback<>() {
             @Override
             public void onSuccess(DocumentList<Map<String, Object>> result) {
-                List<ChatMessage> history = new ArrayList<>();
+                List<ChatMessage> batch = new ArrayList<>();
                 for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                    history.add(mapToChatMessage(doc.getData()));
+                    batch.add(mapToChatMessage(doc.getData(), doc.getId()));
                 }
-                List<ChatMessage> currentList = new ArrayList<>(Objects.requireNonNullElse(messages.getValue(), new ArrayList<>()));
+
+                if (batch.isEmpty()) {
+                    setLoading(false);
+                    return;
+                }
+
+                ChatMessage oldestInBatch = batch.get(batch.size() - 1);
+                oldestTimestamp = oldestInBatch.getTimestamp();
+                Collections.reverse(batch);
+
+                List<ChatMessage> currentMessages = new ArrayList<>(Objects.requireNonNullElse(messages.getValue(), new ArrayList<>()));
                 if (loadMore) {
-                    List<ChatMessage> newList = new ArrayList<>(history);
-                    newList.addAll(currentList);
+                    List<ChatMessage> newList = new ArrayList<>(batch);
+                    newList.addAll(currentMessages);
                     messages.postValue(newList);
                 } else {
-                    Collections.reverse(history);
-                    messages.postValue(history);
+                    messages.postValue(batch);
                 }
-                if (!history.isEmpty()) oldestTimestamp = history.get(0).getTimestamp();
                 setLoading(false);
             }
             @Override public void onError(Throwable error) {
@@ -95,10 +103,13 @@ public class ChatViewModel extends BaseViewModel {
 
     public void sendMessage(String text) {
         if (text == null || text.trim().isEmpty()) return;
-
-        addMessage(new ChatMessage("msg_" + UUID.randomUUID().toString(), pref.getUserId(), pref.getFamilyId(), pref.getUsername(), text, System.currentTimeMillis(), true));
         
-        chatRepo.sendMessage(text, new AppwriteCallback<>() {
+        String uuid = UUID.randomUUID().toString().replace("-", ""); 
+        String clientSideId = "msg_" + uuid;
+
+        addMessage(new ChatMessage(clientSideId, pref.getUserId(), pref.getFamilyId(), pref.getUsername(), text, System.currentTimeMillis(), true));
+        
+        chatRepo.sendMessage(clientSideId, text, new AppwriteCallback<>() {
             @Override public void onSuccess(Document<Map<String, Object>> result) {
                 boolean hasMention = MENTION_PATTERN.matcher(text).find();
                 boolean isSessionActive = sessionTimeRemaining.getValue() != null && sessionTimeRemaining.getValue() > 0;
@@ -113,35 +124,10 @@ public class ChatViewModel extends BaseViewModel {
 
                 if (hasMention || isSessionActive) {
                     startSession();
-                    
                     if (pendingTransaction != null) {
                         handleClarificationReply(text);
                     } else {
-                        JSONObject freshParse = LocalIntentParser.parse(text);
-                        String status = freshParse != null ? freshParse.optString("status") : "UNKNOWN";
-                        
-                        if (status.equals("LOG")) {
-                            isClarifying = false;
-                            handleParsedIntent(freshParse);
-                        } else if (status.equals("BLOCK")) {
-                            isClarifying = false;
-                            sendAiResponse("I can only help with financial tracking. Please send an expense, income, or transaction.");
-                        } else if (status.equals("PENDING")) {
-                            pendingTransaction = freshParse;
-                            sendAiResponse(freshParse.optString("message"));
-                        } else if (status.equals("INSIGHT")) {
-                            isClarifying = false;
-                            processAiChat("Task: Provide insight for " + freshParse.optString("type"));
-                        } else {
-                            // UNKNOWN: Trigger local clarification or AI suggestion
-                            if (!isClarifying) {
-                                isClarifying = true;
-                                sendAiResponse("I couldn't identify those words. Could you please clarify?");
-                            } else {
-                                isClarifying = false;
-                                processAiChat(text); 
-                            }
-                        }
+                        processIntent(text);
                     }
                 }
             }
@@ -149,6 +135,33 @@ public class ChatViewModel extends BaseViewModel {
                 errorMsg.postValue("Failed to send: " + error.getMessage());
             }
         });
+    }
+
+    private void processIntent(String text) {
+        JSONObject freshParse = LocalIntentParser.parse(text);
+        String status = freshParse != null ? freshParse.optString("status") : "UNKNOWN";
+        
+        if (status.equals("LOG")) {
+            isClarifying = false;
+            handleParsedIntent(freshParse);
+        } else if (status.equals("BLOCK")) {
+            isClarifying = false;
+            sendAiResponse("I can only help with financial tracking. Please send an expense, income, or transaction.");
+        } else if (status.equals("PENDING")) {
+            pendingTransaction = freshParse;
+            sendAiResponse(freshParse.optString("message"));
+        } else if (status.equals("INSIGHT")) {
+            isClarifying = false;
+            processAiChat("Task: Provide insight for " + freshParse.optString("type"));
+        } else {
+            if (!isClarifying) {
+                isClarifying = true;
+                sendAiResponse("I couldn't identify those words. Could you please clarify?");
+            } else {
+                isClarifying = false;
+                processAiChat(text); 
+            }
+        }
     }
 
     private void startSession() {
@@ -176,7 +189,6 @@ public class ChatViewModel extends BaseViewModel {
             if (amount > 0 && !item.isEmpty() && item.length() >= 2) {
                 final double finalAmt = amount;
                 final String finalItem = item;
-                
                 String initialCategory = CategoryMapper.getCategory(item, null);
                 
                 CategoryValidator.validate(getApplication(), item, initialCategory, validatedCategory -> {
@@ -190,7 +202,6 @@ public class ChatViewModel extends BaseViewModel {
                         ext.put("item", finalItem);
                         ext.put("category", validatedCategory);
                         finalized.put("extracted", ext);
-
                         logTransaction(finalized);
                     } catch (Exception e) {
                         Log.e("ChatViewModel", "Finalization error", e);
@@ -199,7 +210,9 @@ public class ChatViewModel extends BaseViewModel {
                 pendingTransaction = null;
             } else {
                 pendingTransaction = null;
-                sendMessage(reply); 
+                // Important: Don't call sendMessage(reply) again to avoid recursion/duplication.
+                // Just process the existing reply as a new intent.
+                processIntent(reply); 
             }
         } catch (Exception e) {
             pendingTransaction = null;
@@ -287,28 +300,33 @@ public class ChatViewModel extends BaseViewModel {
     }
 
     public void handleIncomingMessage(Map<String, Object> payload) {
-        ChatMessage msg = mapToChatMessage(payload);
+        ChatMessage msg = mapToChatMessage(payload, String.valueOf(payload.get("$id")));
         List<ChatMessage> currentList = new ArrayList<>(Objects.requireNonNullElse(messages.getValue(), new ArrayList<>()));
+        
         int index = -1;
         for (int i = 0; i < currentList.size(); i++) {
-            if (Objects.equals(currentList.get(i).getId(), msg.getId()) || 
-                (currentList.get(i).getId().startsWith("msg_") && Objects.equals(currentList.get(i).getMessage(), msg.getMessage()))) {
-                index = i; break;
+            if (Objects.equals(currentList.get(i).getId(), msg.getId())) {
+                index = i;
+                break;
             }
         }
-        if (index != -1) currentList.set(index, msg);
-        else currentList.add(msg);
+
+        if (index != -1) {
+            currentList.set(index, msg);
+        } else {
+            currentList.add(msg);
+        }
         messages.postValue(currentList);
     }
 
     private void addMessage(ChatMessage msg) {
         List<ChatMessage> list = new ArrayList<>(Objects.requireNonNullElse(messages.getValue(), new ArrayList<>()));
         list.add(msg);
-        messages.postValue(list);
+        messages.setValue(list);
     }
 
-    private ChatMessage mapToChatMessage(Map<String, Object> map) {
-        String id = String.valueOf(map.get("$id"));
+    private ChatMessage mapToChatMessage(Map<String, Object> map, String docId) {
+        String id = (docId == null || docId.equals("null")) ? "msg_" + UUID.randomUUID() : docId;
         String senderId = map.get("senderId") != null ? String.valueOf(map.get("senderId")).trim() : "";
         String senderName = map.get("senderName") != null ? String.valueOf(map.get("senderName")).trim() : "";
         String familyId = String.valueOf(map.get("familyId"));
@@ -316,6 +334,10 @@ public class ChatViewModel extends BaseViewModel {
         long ts = 0;
         Object tsObj = map.get("timestamp");
         if (tsObj instanceof Number n) ts = n.longValue();
+        else if (tsObj instanceof String s) {
+            try { ts = Long.parseLong(s); } catch (Exception ignored) {}
+        }
+        if (ts == 0) ts = System.currentTimeMillis();
         boolean isMe = senderId.equalsIgnoreCase(pref.getUserId()) || senderName.equalsIgnoreCase(pref.getUsername());
         return new ChatMessage(id, senderId, familyId, senderName, text, ts, isMe);
     }

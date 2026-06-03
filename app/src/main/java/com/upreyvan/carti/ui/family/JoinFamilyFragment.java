@@ -35,7 +35,7 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
         super.onViewCreated(view, savedInstanceState);
         setupDynamicPadding();
 
-        PreferenceManager pref = new PreferenceManager(requireContext());
+        PreferenceManager pref = PreferenceManager.getInstance(requireContext());
         getBinding().tvUserRole.setText(pref.getUserRole());
 
         getBinding().btnJoin.setOnClickListener(v -> {
@@ -65,9 +65,8 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
                     }
 
                     setLoading(false);
-                    PreferenceManager pref = new PreferenceManager(requireContext());
-                    
-                    // Extract data safely
+                    PreferenceManager pref = PreferenceManager.getInstance(requireContext());
+
                     Map<String, Object> data = result;
                     if (result.containsKey("data") && result.get("data") instanceof Map) {
                         data = (Map<String, Object>) result.get("data");

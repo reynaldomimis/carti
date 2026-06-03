@@ -22,7 +22,7 @@ public class TransactionRemoteDataSource {
 
     public TransactionRemoteDataSource(Context context) {
         this.appwriteManager = AppwriteManager.getInstance(context);
-        this.pref = new PreferenceManager(context);
+        this.pref = PreferenceManager.getInstance(context);
     }
 
     public void addTransaction(double amount, String type, String category, String description, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {

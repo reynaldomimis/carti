@@ -39,12 +39,11 @@ public class RealtimeRepository {
     private final MutableLiveData<Map<String, Object>> chatStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> incomeStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> commentStream = new MutableLiveData<>();
-    private final MutableLiveData<Map<String, Object>> likeStream = new MutableLiveData<>();
 
     private RealtimeRepository(Context context) {
         this.context = context.getApplicationContext();
         this.realtimeHelper = new RealtimeHelper(context);
-        this.pref = new PreferenceManager(context);
+        this.pref = PreferenceManager.getInstance(context);
         AppDatabase db = AppDatabase.getInstance(context);
         this.likeDao = db.likeDao();
         this.localDataSource = new TransactionLocalDataSource(context);
@@ -139,7 +138,6 @@ public class RealtimeRepository {
                     String emoji = (String) payload.get("emojiType");
                     if (id != null && txnId != null) likeDao.insert(new Like(id, txnId, userId, username, emoji));
                 }
-                likeStream.postValue(payload);
             } catch (Exception e) {
                 Log.e(TAG, "Like event error", e);
             }
@@ -155,7 +153,6 @@ public class RealtimeRepository {
     public LiveData<Map<String, Object>> getChatStream() { return chatStream; }
     public LiveData<Map<String, Object>> getIncomeStream() { return incomeStream; }
     public LiveData<Map<String, Object>> getCommentStream() { return commentStream; }
-    public LiveData<Map<String, Object>> getLikeStream() { return likeStream; }
 
     public Context getContext() { return context; }
 

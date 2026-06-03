@@ -1,4 +1,4 @@
-package com.upreyvan.carti.data.provider;
+package com.upreyvan.carti.data.local;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.model.IconChoice;

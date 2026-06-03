@@ -23,7 +23,7 @@ public class ChatRepository {
     private ChatRepository(Context context) {
         this.apiHelper = new ApiHelper(context);
         this.realtimeRepo = RealtimeRepository.getInstance(context);
-        this.pref = new PreferenceManager(context);
+        this.pref = PreferenceManager.getInstance(context);
         this.appwriteManager = AppwriteManager.getInstance(context);
     }
 
@@ -32,8 +32,8 @@ public class ChatRepository {
         return instance;
     }
 
-    public void sendMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
-        apiHelper.sendMessage(text, callback);
+    public void sendMessage(String id, String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
+        apiHelper.sendMessageWithId(id, text, callback);
     }
 
     public void sendAiMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
@@ -45,8 +45,14 @@ public class ChatRepository {
     }
 
     public void loadHistory(int pageSize, long oldestTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) {
+            callback.onError(new Exception("No family session found."));
+            return;
+        }
+
         List<String> queries = new ArrayList<>();
-        queries.add(Query.Companion.equal("familyId", pref.getFamilyId()));
+        queries.add(Query.Companion.equal("familyId", familyId));
         queries.add(Query.Companion.orderDesc("timestamp"));
         queries.add(Query.Companion.limit(pageSize));
 

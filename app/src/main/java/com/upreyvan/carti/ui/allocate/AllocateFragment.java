@@ -59,7 +59,7 @@ public class AllocateFragment extends BaseFragment<FragmentAllocateBinding> {
         new Thread(() -> {
             if (!isAdded() || getContext() == null) return;
             List<BudgetCategoryItem> plan = BudgetManager.getInstance(requireContext()).getBudgetPlan();
-            String familyId = new PreferenceManager(requireContext()).getFamilyId();
+            String familyId = PreferenceManager.getInstance(requireContext()).getFamilyId();
             List<Transaction> txs = AppDatabase.getInstance(requireContext()).transactionDao().getAllTransactionsList(familyId);
 
             Map<String, BudgetAllocation> mainGroups = new HashMap<>();

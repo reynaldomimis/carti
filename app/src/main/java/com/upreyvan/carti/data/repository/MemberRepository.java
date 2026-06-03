@@ -27,7 +27,7 @@ public class MemberRepository {
         AppDatabase db = AppDatabase.getInstance(context);
         memberDao = db.memberDao();
         apiHelper = new ApiHelper(context);
-        pref = new PreferenceManager(context);
+        pref = PreferenceManager.getInstance(context);
     }
 
     public LiveData<List<Member>> getMembers() {

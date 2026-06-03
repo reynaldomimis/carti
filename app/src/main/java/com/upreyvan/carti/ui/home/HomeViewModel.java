@@ -30,7 +30,7 @@ public class HomeViewModel extends BaseViewModel {
         transRepo = TransactionRepository.getInstance(application);
         notifRepo = NotificationRepository.getInstance(application);
         memberRepo = new MemberRepository(application);
-        pref = new PreferenceManager(application);
+        pref = PreferenceManager.getInstance(application);
         
         setupDashboardMediator();
     }

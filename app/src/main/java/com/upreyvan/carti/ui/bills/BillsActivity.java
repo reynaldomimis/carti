@@ -40,7 +40,7 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         notificationRepository = NotificationRepository.getInstance(getApplication());
-        pref = new PreferenceManager(this);
+        pref = PreferenceManager.getInstance(this);
         
         setupToolbar();
         setupDynamicPadding();

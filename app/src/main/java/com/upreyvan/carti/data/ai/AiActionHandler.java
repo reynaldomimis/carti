@@ -35,7 +35,7 @@ public class AiActionHandler {
             JSONObject data = json.has("data") ? json.optJSONObject("data") : json;
             if (data == null) data = json;
 
-            AppwriteCallback<Map<String, Object>> callback = (customCallback != null) ? customCallback : new SimpleCallback(intent + " processed");
+            AppwriteCallback<Map<String, Object>> callback = (customCallback != null) ? customCallback : new SimpleCallback();
 
             switch (intent) {
                 case "EXPENSE" -> {
@@ -112,8 +112,7 @@ public class AiActionHandler {
     }
 
     private class SimpleCallback implements AppwriteCallback<Map<String, Object>> {
-        private final String message;
-        public SimpleCallback(String message) { this.message = message; }
+        public SimpleCallback() { }
         @Override
         public void onSuccess(Map<String, Object> result) {
             transactionRepository.refreshTransactions();

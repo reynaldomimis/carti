@@ -28,7 +28,6 @@ import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
 import com.upreyvan.carti.ui.home.ReactionsBottomSheetFragment;
-import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.ToastHelper.Status;
 import com.upreyvan.carti.util.Utils;

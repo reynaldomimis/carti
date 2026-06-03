@@ -56,7 +56,7 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
             }
 
             double amount = Double.parseDouble(amountText);
-            PreferenceManager pref = new PreferenceManager(this);
+            PreferenceManager pref = PreferenceManager.getInstance(this);
             String familyId = pref.getFamilyId();
             String userId = pref.getUserId();
             String date = Utils.formatDateShort(Calendar.getInstance());

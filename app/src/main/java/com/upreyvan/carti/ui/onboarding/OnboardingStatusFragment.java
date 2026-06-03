@@ -96,7 +96,7 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
     }
 
     private void startRealtimeListener() {
-        PreferenceManager pref = new PreferenceManager(requireContext());
+        PreferenceManager pref = PreferenceManager.getInstance(requireContext());
         String userId = pref.getUserId();
         if (userId.isEmpty()) return;
 
@@ -144,7 +144,7 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
     }
 
     private void handleApproved(Map<String, Object> user) {
-        PreferenceManager pref = new PreferenceManager(requireContext());
+        PreferenceManager pref = PreferenceManager.getInstance(requireContext());
         String userId = String.valueOf(user.get("userId"));
         String name = String.valueOf(user.getOrDefault("username", "User"));
         String email = String.valueOf(user.getOrDefault("email", ""));
@@ -168,7 +168,7 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
         getBinding().tvDescription.setText("We're sorry, but your request was declined. You can try joining another family.");
         getBinding().btnStatus.setText("Join Again / Try New Code");
         getBinding().btnStatus.setOnClickListener(v -> {
-            PreferenceManager pref = new PreferenceManager(requireContext());
+            PreferenceManager pref = PreferenceManager.getInstance(requireContext());
             pref.setOnboardingFinished(false);
             
             if (getActivity() != null) {
@@ -180,7 +180,7 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
     }
 
     private void finishOnboarding() {
-        new PreferenceManager(requireContext()).setOnboardingFinished(true);
+        PreferenceManager.getInstance(requireContext()).setOnboardingFinished(true);
         Intent intent = new Intent(requireActivity(), MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

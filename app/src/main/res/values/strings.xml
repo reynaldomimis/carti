@@ -733,4 +733,5 @@
     <string name="ai_status_thinking">Carti AI is thinking...</string>
     <string name="carti_ai_offline">Carti Ai Offline</string>
     <string name="carti_ai_is_thinking">Carti Ai is thinking...</string>
+    <string name="synchronizing_your_wallet">Synchronizing your wallet...</string>
 </resources>

@@ -54,17 +54,6 @@ public class BudgetManager {
         saveBudgetPlan(items);
     }
 
-    public void addExpenseToCategory(String name, double spent) {
-        List<BudgetCategoryItem> items = getBudgetPlan();
-        for (BudgetCategoryItem item : items) {
-            if (item.getCategoryName().equalsIgnoreCase(name)) {
-                item.setCurrentSpent(item.getCurrentSpent() + spent);
-                break;
-            }
-        }
-        saveBudgetPlan(items);
-    }
-
     public interface OnBudgetChangeListener { void onBudgetChanged(List<BudgetCategoryItem> items); }
     private final List<OnBudgetChangeListener> listeners = new ArrayList<>();
     public void addListener(OnBudgetChangeListener l) { if (!listeners.contains(l)) listeners.add(l); }

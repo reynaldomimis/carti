@@ -58,7 +58,7 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         repository = TransactionRepository.getInstance(requireContext());
-        pref = new PreferenceManager(requireContext());
+        pref = PreferenceManager.getInstance(requireContext());
 
         setupUI();
         loadComments();

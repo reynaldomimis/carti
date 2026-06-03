@@ -34,11 +34,9 @@ public class OnboardingOptionsFragment extends BaseFragment<FragmentOnboardingOp
         setupDynamicPadding();
         checkIfAlreadyInFamily();
         
-        com.upreyvan.carti.data.local.PreferenceManager pref = new com.upreyvan.carti.data.local.PreferenceManager(requireContext());
+        com.upreyvan.carti.data.local.PreferenceManager pref = com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext());
         if (!pref.isEmployed()) {
             getBinding().cardCreate.setVisibility(View.GONE);
-            // Optional: If they are not employee, maybe they should automatically see the Join screen
-            // navigateTo(new JoinFamilyFragment()); 
         }
 
         getBinding().cardCreate.setOnClickListener(v -> navigateTo(new OnboardingCreateFragment()));
@@ -56,7 +54,6 @@ public class OnboardingOptionsFragment extends BaseFragment<FragmentOnboardingOp
             @Override
             public void onSuccess(User<Map<String, Object>> result) {
                 if (isAdded()) {
-                    // In some Appwrite versions it's getId()
                     fetchUserDocument();
                 }
             }

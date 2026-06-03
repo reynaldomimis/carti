@@ -58,7 +58,7 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
                 
                 String userId = String.valueOf(userDoc.getOrDefault("$id", ""));
 
-                PreferenceManager pref = new PreferenceManager(requireContext());
+                PreferenceManager pref = PreferenceManager.getInstance(requireContext());
                 pref.setUserData(
                     String.valueOf(userDoc.get("username")),
                     String.valueOf(userDoc.get("email")),
@@ -87,7 +87,7 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
             public void onError(Throwable error) {
                 if (!isAdded()) return;
                 setLoading(false);
-                PreferenceManager pref = new PreferenceManager(requireContext());
+                PreferenceManager pref = PreferenceManager.getInstance(requireContext());
                 boolean isEmployed = pref.isEmployed();
                 Toast.makeText(requireContext(), getString(R.string.debug_fallback_is_employed, isEmployed), Toast.LENGTH_LONG).show();
                 if (isEmployed) navigateTo(new OnboardingOptionsFragment());

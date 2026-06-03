@@ -1,4 +1,4 @@
-package com.upreyvan.carti.ui.main;
+package com.upreyvan.carti;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -18,7 +18,7 @@ public class MainViewModel extends AndroidViewModel {
 
     public MainViewModel(@NonNull Application application) {
         super(application);
-        pref = new PreferenceManager(application);
+        pref = PreferenceManager.getInstance(application);
         apiHelper = new ApiHelper(application);
     }
 
@@ -41,7 +41,7 @@ public class MainViewModel extends AndroidViewModel {
                 String fid = (r.get("familyId") != null && !"null".equals(String.valueOf(r.get("familyId")))) ? String.valueOf(r.get("familyId")) : "";
                 if (!fid.isEmpty()) {
                     pref.setFamilyId(fid);
-                    if (pref.getFamilyId().isEmpty()) authState.postValue(AuthState.AUTHENTICATED);
+                    authState.postValue(AuthState.AUTHENTICATED);
                 } else {
                     authState.postValue(AuthState.NO_FAMILY);
                 }

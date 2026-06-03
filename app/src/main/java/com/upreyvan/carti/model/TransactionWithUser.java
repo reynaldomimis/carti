@@ -25,20 +25,12 @@ public class TransactionWithUser {
         this.transaction = transaction;
     }
 
-    public String getMemberUsername() {
-        return memberUsername;
-    }
-
     public void setMemberUsername(String memberUsername) {
         this.memberUsername = memberUsername;
     }
 
     public String getUsername() {
         return memberUsername != null ? memberUsername : (transaction != null ? transaction.getUsername() : null);
-    }
-
-    public String getUserRole() {
-        return userRole;
     }
 
     public void setUserRole(String userRole) {

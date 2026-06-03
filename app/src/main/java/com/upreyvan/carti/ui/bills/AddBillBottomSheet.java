@@ -42,7 +42,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         apiHelper = new ApiHelper(requireContext());
-        pref = new PreferenceManager(requireContext());
+        pref = PreferenceManager.getInstance(requireContext());
 
         formattedDate = getArguments().getString(ARG_DATE);
         getBinding().tvTitle.setText(getString(R.string.add_bill_at_date, formattedDate));

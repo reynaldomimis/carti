@@ -157,10 +157,4 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:elevation="@dimen/icon_size_xxs" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

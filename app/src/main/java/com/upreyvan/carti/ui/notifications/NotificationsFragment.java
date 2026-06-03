@@ -43,7 +43,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         apiHelper = new ApiHelper(requireContext());
-        pref = new PreferenceManager(requireContext());
+        pref = PreferenceManager.getInstance(requireContext());
         realtimeRepo = RealtimeRepository.getInstance(requireContext());
         
         pref.setHasNotifications(false);
@@ -56,15 +56,9 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
         observeRealtimeChanges();
     }
 
-    /**
-     * Senior Optimization: Observe the global stream.
-     * Updates the UI instantly using the payload, avoiding redundant network fetches.
-     */
     private void observeRealtimeChanges() {
-        // 1. Listen for new announcements
         realtimeRepo.getNotificationStream().observe(getViewLifecycleOwner(), payload -> {
             if (payload != null) {
-                // Instantly inject the new notification into the top of the list
                 String title = String.valueOf(payload.get("title"));
                 String content = String.valueOf(payload.get("content"));
                 
@@ -82,11 +76,9 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
             }
         });
 
-        // 2. Listen for Join Requests (For Admins)
         if (pref.isAdmin()) {
             realtimeRepo.getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> {
                 if (payload != null) {
-                    // Someone new wants to join, refresh the requests part
                     loadAllNotifications(); 
                 }
             });
@@ -95,8 +87,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
 
     private void loadAllNotifications() {
         List<Notification> allNotifications = new ArrayList<>();
-        
-        // 1. Add General/App Notifications (Static or from DB soon)
+
         allNotifications.add(new Notification(
                 "Welcome to Carti!",
                 "Start tracking your family expenses and reach your goals together.",
@@ -105,7 +96,6 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
                 null
         ));
 
-        // 2. If Admin, fetch Join Requests from Server
         if (pref.isAdmin()) {
             apiHelper.getPendingMembers(new AppwriteManager.AppwriteCallback<>() {
                 @Override

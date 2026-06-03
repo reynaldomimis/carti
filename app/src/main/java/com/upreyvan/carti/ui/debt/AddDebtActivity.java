@@ -173,7 +173,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         transaction.setDueDate(dueDateStr);
         transaction.setReminder(reminder);
         transaction.setMembers(selectedMemberId != null ? List.of(selectedMemberId) : new ArrayList<>());
-        PreferenceManager pref = new PreferenceManager(this);
+        PreferenceManager pref = PreferenceManager.getInstance(this);
         transaction.setUserId(pref.getUserId());
         transaction.setFamilyId(pref.getFamilyId());
         transactionRepository.addTransaction(transaction, new AppwriteCallback<>() {

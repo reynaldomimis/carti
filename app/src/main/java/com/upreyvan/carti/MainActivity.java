@@ -2,30 +2,34 @@ package com.upreyvan.carti;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityMainBinding;
 import com.upreyvan.carti.databinding.LayoutNavItemBinding;
 import com.upreyvan.carti.ui.allocate.AllocateFragment;
 import com.upreyvan.carti.ui.auth.LoginActivity;
 import com.upreyvan.carti.ui.common.AddOptionsActivity;
 import com.upreyvan.carti.ui.family.FamilyChatFragment;
-import com.upreyvan.carti.ui.goals.GoalFragment;
 import com.upreyvan.carti.ui.home.HomeFragment;
-import com.upreyvan.carti.ui.main.MainViewModel;
 import com.upreyvan.carti.ui.onboarding.StartActivity;
-import com.upreyvan.carti.ui.profile.ProfileActivity;
-import com.upreyvan.carti.ui.track.IncomeModeFragment;
+import com.upreyvan.carti.ui.profile.ProfileFragment;
 import com.upreyvan.carti.ui.track.TrackFragment;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.SecurityGuard;
@@ -36,7 +40,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private LayoutNavItemBinding[] navTabs;
     private boolean isInit = false;
 
-    private Fragment homeFragment, trackFragment, allocateFragment, chatFragment;
+    private Fragment homeFragment, trackFragment, allocateFragment, chatFragment, profileFragment;
     private Fragment activeFragment;
 
     @Override
@@ -56,10 +60,18 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
         viewModel.getAuthState().observe(this, state -> {
             switch (state) {
-                case AUTHENTICATED: proceed(); break;
-                case UNAUTHENTICATED: forceLogout(); break;
-                case NO_FAMILY: navigateToOnboarding(); break;
-                case ERROR: showToast("Connection required for first-time sync", ToastHelper.Status.ERROR); break;
+                case AUTHENTICATED:
+                    proceed();
+                    break;
+                case UNAUTHENTICATED:
+                    forceLogout();
+                    break;
+                case NO_FAMILY:
+                    navigateToOnboarding();
+                    break;
+                case ERROR:
+                    showToast("Connection required for first-time sync", ToastHelper.Status.ERROR);
+                    break;
             }
         });
         viewModel.validateGate();
@@ -85,19 +97,19 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         isInit = true;
         setupEdgeToEdge();
         navTabs = new LayoutNavItemBinding[]{
-            getBinding().tabHome, 
-            getBinding().tabExpenses, 
-            getBinding().tabChat, 
-            getBinding().tabAllocate, 
-            getBinding().tabProfile
+                getBinding().tabHome,
+                getBinding().tabExpenses,
+                getBinding().tabChat,
+                getBinding().tabAllocate,
+                getBinding().tabProfile
         };
         setupTabs();
         setupFragments();
-        
+
         getBinding().tabAddContainer.setOnClickListener(v -> startActivity(new Intent(this, AddOptionsActivity.class)));
         RealtimeRepository.getInstance(this).startListening();
         setupBackPress();
-        
+
         if (getIntent().getBooleanExtra("show_home", false)) {
             navigateTo(Constants.Navigation.HOME);
         }
@@ -105,19 +117,45 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
     private void setupFragments() {
         homeFragment = new HomeFragment();
-        activeFragment = homeFragment;
+        trackFragment = new TrackFragment();
+        allocateFragment = AllocateFragment.newInstance(false);
+        chatFragment = new FamilyChatFragment();
+        profileFragment = new ProfileFragment();
 
         getSupportFragmentManager().beginTransaction()
-            .add(R.id.fragment_container, homeFragment, "1")
-            .commit();
-        
+                .add(R.id.fragment_container, homeFragment, "1")
+                .add(R.id.fragment_container, trackFragment, "2").hide(trackFragment)
+                .add(R.id.fragment_container, allocateFragment, "3").hide(allocateFragment)
+                .add(R.id.fragment_container, chatFragment, "4").hide(chatFragment)
+                .add(R.id.fragment_container, profileFragment, "5").hide(profileFragment)
+                .commit();
+
+        activeFragment = homeFragment;
         setTabActive(getBinding().tabHome);
+
+        TransactionRepository.getInstance(this)
+                .getSyncingStatus().observe(this, isSyncing -> {
+                    if (!isSyncing) {
+                        hideSyncOverlay();
+                    }
+                });
+        new Handler(Looper.getMainLooper()).postDelayed(this::hideSyncOverlay, 5000);
+    }
+
+    private void hideSyncOverlay() {
+        if (getBinding().syncOverlay != null && getBinding().syncOverlay.getVisibility() == View.VISIBLE) {
+            getBinding().syncOverlay.animate()
+                    .alpha(0f)
+                    .setDuration(500)
+                    .withEndAction(() -> getBinding().syncOverlay.setVisibility(View.GONE))
+                    .start();
+        }
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+    protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
-        if (intent != null && intent.getBooleanExtra("show_home", false)) {
+        if (intent.getBooleanExtra("show_home", false)) {
             navigateTo(Constants.Navigation.HOME);
         }
     }
@@ -166,39 +204,50 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         boolean showBottomNav = true;
 
         if (isInit) {
-            if (id == Constants.Navigation.HOME) { 
-                target = homeFragment; 
-                setTabActive(getBinding().tabHome); 
-            } else if (id == Constants.Navigation.TRACK) { 
-                if (trackFragment == null) trackFragment = new TrackFragment();
-                target = trackFragment; 
-                setTabActive(getBinding().tabExpenses); 
-            } else if (id == Constants.Navigation.CHAT) { 
-                if (chatFragment == null) chatFragment = new FamilyChatFragment();
-                target = chatFragment; 
-                setTabActive(getBinding().tabChat); 
-                showBottomNav = false; 
-            } else if (id == Constants.Navigation.ALLOCATE) { 
-                if (allocateFragment == null) allocateFragment = AllocateFragment.newInstance(false);
-                target = allocateFragment; 
-                setTabActive(getBinding().tabAllocate); 
-            } else if (id == Constants.Navigation.PROFILE) { 
-                startActivity(new Intent(this, ProfileActivity.class)); 
-                return; 
-            } else if (id == Constants.Navigation.ADD) { 
-                startActivity(new Intent(this, AddOptionsActivity.class)); 
-                return; 
+            if (id == Constants.Navigation.HOME) {
+                target = homeFragment;
+                setTabActive(getBinding().tabHome);
+            } else if (id == Constants.Navigation.TRACK) {
+                target = trackFragment;
+                setTabActive(getBinding().tabExpenses);
+            } else if (id == Constants.Navigation.CHAT) {
+                target = chatFragment;
+                setTabActive(getBinding().tabChat);
+                showBottomNav = false;
+            } else if (id == Constants.Navigation.ALLOCATE) {
+                target = allocateFragment;
+                setTabActive(getBinding().tabAllocate);
+            } else if (id == Constants.Navigation.PROFILE) {
+                target = profileFragment;
+                setTabActive(getBinding().tabProfile);
+                showBottomNav = false;
+            } else if (id == Constants.Navigation.ADD) {
+                startActivity(new Intent(this, AddOptionsActivity.class));
+                return;
             }
         }
 
         if (target != null && target != activeFragment) {
-            androidx.fragment.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-            
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+            int enterAnim, exitAnim;
+            if (id == Constants.Navigation.CHAT || id == Constants.Navigation.PROFILE) {
+                enterAnim = R.anim.slide_in_right;
+                exitAnim = R.anim.slide_out_left;
+            } else if (activeFragment == chatFragment || activeFragment == profileFragment) {
+                enterAnim = R.anim.slide_in_left;
+                exitAnim = R.anim.slide_out_right;
+            } else {
+                enterAnim = android.R.anim.fade_in;
+                exitAnim = android.R.anim.fade_out;
+            }
+
+            transaction.setCustomAnimations(enterAnim, exitAnim);
+
             if (!target.isAdded()) {
                 transaction.add(R.id.fragment_container, target);
             }
-            
+
             transaction.hide(activeFragment).show(target).commit();
             activeFragment = target;
             setBottomNavVisibility(showBottomNav);
@@ -207,7 +256,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
     public void setBottomNavVisibility(boolean show) {
         if (getBinding().bottomNavContainer == null) return;
-        
+
         boolean isCurrentlyVisible = getBinding().bottomNavContainer.getVisibility() == android.view.View.VISIBLE;
         if (show == isCurrentlyVisible) return;
 
@@ -236,11 +285,11 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             @Override
             public void handleOnBackPressed() {
                 new MaterialAlertDialogBuilder(MainActivity.this)
-                    .setTitle("Exit")
-                    .setMessage("Are you sure you want to exit?")
-                    .setPositiveButton("Yes", (d, w) -> finishAffinity())
-                    .setNegativeButton("No", null)
-                    .show();
+                        .setTitle("Exit")
+                        .setMessage("Are you sure you want to exit?")
+                        .setPositiveButton("Yes", (d, w) -> finishAffinity())
+                        .setNegativeButton("No", null)
+                        .show();
             }
         });
     }

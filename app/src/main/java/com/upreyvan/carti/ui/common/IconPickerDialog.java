@@ -15,11 +15,11 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.data.local.IconManager;
 import com.upreyvan.carti.databinding.DialogIconPickerBinding;
+import com.upreyvan.carti.databinding.ItemIconChoiceBinding;
 import com.upreyvan.carti.model.IconChoice;
-import com.upreyvan.carti.ui.common.IconAdapter;
-import com.upreyvan.carti.data.provider.IconManager;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +34,7 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
     private DialogIconPickerBinding binding;
     private OnIconSelectedListener listener;
     private List<IconChoice> allIcons;
-    private IconAdapter adapter;
+    private GenericAdapter<IconChoice, ItemIconChoiceBinding> adapter;
 
     public void setListener(OnIconSelectedListener listener) {
         this.listener = listener;
@@ -51,9 +51,9 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
             int flags = decorView.getSystemUiVisibility();
             flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
             decorView.setSystemUiVisibility(flags);
+            dialog.getWindow().setDimAmount(0.4f);
         }
 
-        dialog.getWindow().setDimAmount(0.4f);
         return dialog;
     }
 
@@ -79,11 +79,16 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
 
     private void setupRecyclerView() {
         allIcons = IconManager.getSystemIcons();
-        adapter = new IconAdapter(icon -> {
+        adapter = new GenericAdapter<>(
+                IconChoice.DIFF_CALLBACK,
+                (inflater, parent) -> ItemIconChoiceBinding.inflate(inflater, parent, false),
+                (binding, icon) -> binding.ivIcon.setImageResource(icon.getIconRes())
+        );
+        adapter.setOnItemClickListener(icon -> {
             if (listener != null) listener.onIconSelected(icon);
             dismiss();
         });
-        adapter.updateList(new ArrayList<>(allIcons));
+        adapter.submitList(new ArrayList<>(allIcons));
         binding.rvIcons.setLayoutManager(new GridLayoutManager(requireContext(), 5));
         binding.rvIcons.setAdapter(adapter);
     }
@@ -105,14 +110,14 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
 
     private void filterIcons(String query) {
         if (query.isEmpty()) {
-            adapter.updateList(new ArrayList<>(allIcons));
+            adapter.submitList(new ArrayList<>(allIcons));
             return;
         }
 
         List<IconChoice> filtered = allIcons.stream()
                 .filter(icon -> icon.getName().toLowerCase().contains(query.toLowerCase()))
                 .collect(Collectors.toList());
-        adapter.updateList(filtered);
+        adapter.submitList(filtered);
     }
 
     private void setupListeners() {

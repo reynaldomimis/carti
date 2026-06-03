@@ -31,7 +31,6 @@ import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.TrackCategory;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
-import com.upreyvan.carti.ui.home.TransactionAdapter;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.ValueHelper;
 
@@ -64,7 +63,7 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(requireContext());
-        preferenceManager = new PreferenceManager(requireContext());
+        preferenceManager = PreferenceManager.getInstance(requireContext());
         currentDisplayDate = Calendar.getInstance();
         
         setupDynamicPadding(getBinding().layoutHeader, getBinding().scrollView, 0.3f);
@@ -438,6 +437,24 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> {
         transactionAdapter = new TransactionAdapter();
         getBinding().rvTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvTransactions.setAdapter(transactionAdapter);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (!isHidden()) {
+            loadCurrentMonthData();
+            transactionRepository.syncTransactionsIfNeeded();
+        }
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            loadCurrentMonthData();
+            transactionRepository.syncTransactionsIfNeeded();
+        }
     }
 
     @Override

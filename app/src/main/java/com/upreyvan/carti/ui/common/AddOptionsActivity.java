@@ -9,10 +9,12 @@ import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ActivityAddOptionsBinding;
+import com.upreyvan.carti.databinding.ItemAddOptionBinding;
 import com.upreyvan.carti.model.AddOption;
 import com.upreyvan.carti.ui.bills.BillsActivity;
-import com.upreyvan.carti.ui.budget.AddBudgetPlanActivity;
+import com.upreyvan.carti.ui.track.AddBudgetPlanActivity;
 import com.upreyvan.carti.ui.debt.AddDebtActivity;
 import com.upreyvan.carti.ui.family.InviteFamilyActivity;
 import com.upreyvan.carti.ui.goals.AddGoalActivity;
@@ -36,6 +38,16 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
         setupDynamicPadding();
         setupToolbar();
         setupRecyclerView();
+        setupBackPress();
+    }
+
+    private void setupBackPress() {
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                goBackToHome();
+            }
+        });
     }
 
     private void setupDynamicPadding() {
@@ -56,12 +68,17 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
         finish();
     }
 
-    @Override
-    public void onBackPressed() {
-        goBackToHome();
-    }
 
     private void setupRecyclerView() {
+        List<AddOption> options = getAddOptions();
+        GenericAdapter<AddOption, ItemAddOptionBinding> adapter = createAdapter();
+        
+        adapter.submitList(options);
+        getBinding().rvOptions.setLayoutManager(new GridLayoutManager(this, 2));
+        getBinding().rvOptions.setAdapter(adapter);
+    }
+
+    private List<AddOption> getAddOptions() {
         List<AddOption> options = new ArrayList<>();
         options.add(new AddOption(R.drawable.ic_chart, R.color.icon_food, R.color.log_food, R.string.add_options_expense, R.string.add_options_expense_desc, null));
         options.add(new AddOption(R.drawable.ic_calendar, R.color.icon_debt, R.color.log_debt, R.string.add_options_debt, R.string.add_options_debt_desc, null));
@@ -71,12 +88,28 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
         options.add(new AddOption(R.drawable.ic_chart, R.color.status_green, R.color.tonal_button_bg, R.string.add_options_budget_plan, R.string.add_options_budget_plan_desc, null));
         options.add(new AddOption(R.drawable.ic_add, R.color.icon_others, R.color.log_others, R.string.add_options_category, R.string.add_options_category_desc, null));
         
-        PreferenceManager pref = new PreferenceManager(this);
-        if (pref.isAdmin()) {
+        if (PreferenceManager.getInstance(this).isAdmin()) {
             options.add(new AddOption(R.drawable.ic_bell, R.color.icon_debt, R.color.log_debt, R.string.add_options_announcement, R.string.add_options_announcement_desc, null));
         }
+        return options;
+    }
 
-        AddOptionsAdapter adapter = new AddOptionsAdapter(item -> {
+    private GenericAdapter<AddOption, ItemAddOptionBinding> createAdapter() {
+        GenericAdapter<AddOption, ItemAddOptionBinding> adapter = new GenericAdapter<>(
+                AddOption.DIFF_CALLBACK,
+                (inflater, parent) -> ItemAddOptionBinding.inflate(inflater, parent, false),
+                (binding, item) -> {
+                    binding.ivOptionIcon.setImageResource(item.getIconResId());
+                    binding.ivOptionIcon.setImageTintList(android.content.res.ColorStateList.valueOf(
+                            androidx.core.content.ContextCompat.getColor(binding.getRoot().getContext(), item.getIconTintResId())));
+                    binding.viewBgTint.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                            androidx.core.content.ContextCompat.getColor(binding.getRoot().getContext(), item.getBgTintResId())));
+                    binding.tvOptionTitle.setText(item.getTitleResId());
+                    binding.tvOptionDesc.setText(item.getDescResId());
+                }
+        );
+
+        adapter.setOnItemClickListener(item -> {
             Intent intent = null;
             int titleId = item.getTitleResId();
             if (titleId == R.string.add_options_expense) {
@@ -98,9 +131,6 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
             }
             if (intent != null) startActivity(intent);
         });
-        adapter.submitList(options);
-        
-        getBinding().rvOptions.setLayoutManager(new GridLayoutManager(this, 2));
-        getBinding().rvOptions.setAdapter(adapter);
+        return adapter;
     }
 }

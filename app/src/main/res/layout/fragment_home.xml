@@ -101,131 +101,16 @@
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/home"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMainHome"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:paddingHorizontal="@dimen/spacing_medium"
+        android:paddingBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layoutHeader">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <include
-                android:id="@+id/viewHomeDashboard"
-                layout="@layout/view_home_dashboard" />
-
-            <include
-                android:id="@+id/viewBudgetPlanPrompt"
-                layout="@layout/view_budget_plan_prompt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-
-            <ViewStub
-                android:id="@+id/viewDueDateBills"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout="@layout/view_due_date_bills" />
-
-            <include
-                android:id="@+id/viewHeaderQuickActions"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                layout="@layout/view_section_header" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvQuickActions"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:scrollbars="none"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_quick_action" />
-
-            <!-- 5. Action (Quick Log) -->
-            <include
-                android:id="@+id/viewHeaderQuickLog"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                layout="@layout/view_section_header" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvQuickLog"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xs"
-                android:nestedScrollingEnabled="false"
-                android:scrollbars="none"
-                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                app:spanCount="4"
-                tools:listitem="@layout/item_quick_log" />
-
-            <!-- Notifications / Family Messages -->
-            <ViewStub
-                android:id="@+id/viewFamilyNotification"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:layout="@layout/view_bill_notification_card" />
-
-            <!-- 9. History (Recent Activity) -->
-            <include
-                android:id="@+id/viewHeaderRecent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                layout="@layout/view_section_header" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardRecentTransactions"
-                style="@style/CartiCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:layout_marginBottom="16dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="12dp">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvTransactions"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        android:scrollbars="none"
-                        tools:listitem="@layout/item_transaction" />
-
-                    <TextView
-                        android:id="@+id/tvNoTransactions"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginVertical="@dimen/spacing_large"
-                        android:fontFamily="@font/plus_jakarta_sans_medium"
-                        android:gravity="center"
-                        android:text="@string/no_transactions_yet"
-                        android:textColor="@color/text_tertiary"
-                        android:textSize="@dimen/text_size_body"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
-                </FrameLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
