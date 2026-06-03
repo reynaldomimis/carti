@@ -71,8 +71,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
         observeViewModel();
         observeRealtime();
 
-        BudgetManager.getInstance(requireContext()).addListener(items -> 
-                requireActivity().runOnUiThread(this::updateItems));
+        BudgetManager.getInstance(requireContext()).getBudgetPlanLiveData().observe(getViewLifecycleOwner(), items -> 
+                updateItems());
     }
 
     private void initAdapter() {

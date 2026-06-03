@@ -123,7 +123,7 @@ public class Constants {
     public static final class Navigation {
         public static final int HOME = 1;
         public static final int TRACK = 2;
-        public static final int ALLOCATE = 3;
+        public static final int PLAN = 3;
         public static final int PROFILE = 4;
         public static final int CHAT = 5;
         public static final int GOALS = 6;

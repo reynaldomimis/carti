@@ -65,7 +65,7 @@
                     android:layout_weight="1" />
 
                 <include
-                    android:id="@+id/tab_allocate"
+                    android:id="@+id/tab_plan"
                     layout="@layout/layout_nav_item"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"

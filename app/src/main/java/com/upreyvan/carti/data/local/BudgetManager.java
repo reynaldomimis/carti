@@ -2,6 +2,10 @@ package com.upreyvan.carti.data.local;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.R;
@@ -15,6 +19,7 @@ public class BudgetManager {
     private static BudgetManager instance;
     private final SharedPreferences prefs;
     private final Gson gson;
+    private final MutableLiveData<List<BudgetCategoryItem>> budgetPlanLiveData = new MutableLiveData<>();
 
     private BudgetManager(Context context) {
         prefs = SecurityManager.getEncryptedPrefs(context, "pref_budget_plan");
@@ -28,38 +33,70 @@ public class BudgetManager {
 
     public void saveBudgetPlan(List<BudgetCategoryItem> items) {
         prefs.edit().putString("key_budget_plan_items", gson.toJson(items)).apply();
-        notifyListeners();
+        budgetPlanLiveData.postValue(items);
+    }
+
+    public LiveData<List<BudgetCategoryItem>> getBudgetPlanLiveData() {
+        if (budgetPlanLiveData.getValue() == null) {
+            budgetPlanLiveData.postValue(getBudgetPlan());
+        }
+        return budgetPlanLiveData;
     }
 
     public List<BudgetCategoryItem> getBudgetPlan() {
         String json = prefs.getString("key_budget_plan_items", null);
-        if (json == null) return new ArrayList<>();
+        if (json == null) return getDefaultCategories();
         Type type = new TypeToken<ArrayList<BudgetCategoryItem>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
+    public List<BudgetCategoryItem> getDefaultCategories() {
+        List<BudgetCategoryItem> items = new ArrayList<>();
+        items.add(new BudgetCategoryItem("Food", R.drawable.ic_chart, R.color.icon_food, R.color.log_food, 0, 0));
+        items.add(new BudgetCategoryItem("Transportation", R.drawable.ic_chart, R.color.icon_fare, R.color.log_fare, 0, 0));
+        items.add(new BudgetCategoryItem("Bills", R.drawable.ic_calendar, R.color.icon_water, R.color.log_water, 0, 0));
+        items.add(new BudgetCategoryItem("Shopping", R.drawable.ic_chart, R.color.icon_store, R.color.log_store, 0, 0));
+        items.add(new BudgetCategoryItem("Health", R.drawable.ic_chart, R.color.status_red, R.color.status_red_tonal, 0, 0));
+        items.add(new BudgetCategoryItem("Education", R.drawable.ic_chart, R.color.carti_primary_blue, R.color.log_fare, 0, 0));
+        items.add(new BudgetCategoryItem("Others", R.drawable.ic_chart, R.color.icon_others, R.color.log_others, 0, 0));
+        return items;
+    }
+
     public void updateOrAddCategory(String name, double amount, String parent) {
+        updateOrAddCategory(name, R.drawable.ic_chart, R.color.carti_primary_green, R.color.mint_green_alpha, amount, parent);
+    }
+
+    public void updateOrAddCategory(String name, int icon, int iconColor, int bgColor, double amount, String parent) {
         List<BudgetCategoryItem> items = getBudgetPlan();
         boolean found = false;
         for (BudgetCategoryItem item : items) {
             if (item.getCategoryName().equalsIgnoreCase(name)) {
                 item.setAmount(amount);
+                item.setIconRes(icon);
+                item.setIconColor(iconColor);
+                item.setBgColor(bgColor);
                 found = true;
                 break;
             }
         }
         if (!found) {
-            items.add(new BudgetCategoryItem(name, R.drawable.ic_chart, R.color.carti_primary_green, R.color.mint_green_alpha, amount, 0, parent, 0));
+            BudgetCategoryItem def = null;
+            for (BudgetCategoryItem d : getDefaultCategories()) {
+                if (d.getCategoryName().equalsIgnoreCase(name)) { def = d; break; }
+            }
+            
+            if (def != null) {
+                def.setAmount(amount);
+                if (icon != R.drawable.ic_chart) {
+                    def.setIconRes(icon);
+                    def.setIconColor(iconColor);
+                    def.setBgColor(bgColor);
+                }
+                items.add(def);
+            } else {
+                items.add(new BudgetCategoryItem(name, icon, iconColor, bgColor, amount, 0, parent, 0));
+            }
         }
         saveBudgetPlan(items);
-    }
-
-    public interface OnBudgetChangeListener { void onBudgetChanged(List<BudgetCategoryItem> items); }
-    private final List<OnBudgetChangeListener> listeners = new ArrayList<>();
-    public void addListener(OnBudgetChangeListener l) { if (!listeners.contains(l)) listeners.add(l); }
-    public void removeListener(OnBudgetChangeListener l) { listeners.remove(l); }
-    private void notifyListeners() {
-        List<BudgetCategoryItem> current = getBudgetPlan();
-        for (OnBudgetChangeListener l : listeners) l.onBudgetChanged(current);
     }
 }

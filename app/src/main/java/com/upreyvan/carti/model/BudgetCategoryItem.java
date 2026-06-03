@@ -38,6 +38,10 @@ public class BudgetCategoryItem {
     public String getParentCategory() { return parentCategory; }
     public double getCurrentSpent() { return currentSpent; }
 
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    public void setIconRes(int iconRes) { this.iconRes = iconRes; }
+    public void setIconColor(int iconColor) { this.iconColor = iconColor; }
+    public void setBgColor(int bgColor) { this.bgColor = bgColor; }
     public void setAmount(double amount) { this.amount = amount; }
     public void setCurrentSpent(double spent) { this.currentSpent = spent; }
 

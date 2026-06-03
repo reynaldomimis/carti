@@ -36,7 +36,7 @@
     <string name="nav_debt">Debt</string>
     <string name="nav_ranking">Ranking</string>
     <string name="nav_profile">Profile</string>
-    <string name="nav_allocate">Allocate</string>
+    <string name="nav_plan">Plan</string>
     <string name="label_add">Add</string>
     <string name="menu_ai">Chat</string>
     <string name="notifications">Notifications</string>
@@ -174,6 +174,7 @@
     <string name="recurring_bills_title">Recurring Bills</string>
     <string name="recurring_bills_desc">Automate your recurring bill payments.</string>
     <string name="status_unpaid">Unpaid</string>
+    <string name="status_good">Good</string>
     <string name="status_paid_label">Paid</string>
     <string name="placeholder_bill_date">May 20, 2025</string>
     <string name="placeholder_bill_amount">P1,200</string>
@@ -614,6 +615,13 @@
     <string name="msg_expense_saved">Record Saved!</string>
     <string name="msg_fill_all_fields">Please fill in all fields</string>
     <string name="title_add_category">Add Category</string>
+    <string name="label_category_icon">Category icon</string>
+    <string name="desc_category_icon">Used in transaction lists.</string>
+    <string name="label_choose_icon_caps">CHOOSE ICON</string>
+    <string name="label_category_name_caps">CATEGORY NAME</string>
+    <string name="label_description_caps">DESCRIPTION</string>
+    <string name="hint_description_category">e.g. Monthly grocery spending</string>
+    <string name="hint_groceries">e.g. Groceries</string>
     <string name="title_customize_quick_log">Customize Quick Log</string>
     <string name="title_set_new_password">Set New Password</string>
     <string name="label_enable_monthly">Enable Monthly (Every end of month)</string>
@@ -734,4 +742,5 @@
     <string name="carti_ai_offline">Carti Ai Offline</string>
     <string name="carti_ai_is_thinking">Carti Ai is thinking...</string>
     <string name="synchronizing_your_wallet">Synchronizing your wallet...</string>
+    <string name="manage_expense_categories_used_for_transactions_and_budgets">Manage expense categories used for transactions and budgets.</string>
 </resources>

@@ -103,7 +103,7 @@ public class ChatViewModel extends BaseViewModel {
 
     public void sendMessage(String text) {
         if (text == null || text.trim().isEmpty()) return;
-        
+
         String uuid = UUID.randomUUID().toString().replace("-", ""); 
         String clientSideId = "msg_" + uuid;
 

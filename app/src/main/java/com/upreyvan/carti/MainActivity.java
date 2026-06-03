@@ -23,7 +23,7 @@ import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityMainBinding;
 import com.upreyvan.carti.databinding.LayoutNavItemBinding;
-import com.upreyvan.carti.ui.allocate.AllocateFragment;
+import com.upreyvan.carti.ui.allocate.PlanFragment;
 import com.upreyvan.carti.ui.auth.LoginActivity;
 import com.upreyvan.carti.ui.common.AddOptionsActivity;
 import com.upreyvan.carti.ui.family.FamilyChatFragment;
@@ -40,7 +40,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private LayoutNavItemBinding[] navTabs;
     private boolean isInit = false;
 
-    private Fragment homeFragment, trackFragment, allocateFragment, chatFragment, profileFragment;
+    private Fragment homeFragment, trackFragment, planFragment, chatFragment, profileFragment;
     private Fragment activeFragment;
 
     @Override
@@ -100,7 +100,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                 getBinding().tabHome,
                 getBinding().tabExpenses,
                 getBinding().tabChat,
-                getBinding().tabAllocate,
+                getBinding().tabPlan,
                 getBinding().tabProfile
         };
         setupTabs();
@@ -118,14 +118,14 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private void setupFragments() {
         homeFragment = new HomeFragment();
         trackFragment = new TrackFragment();
-        allocateFragment = AllocateFragment.newInstance(false);
+        planFragment = PlanFragment.newInstance(false);
         chatFragment = new FamilyChatFragment();
         profileFragment = new ProfileFragment();
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_container, homeFragment, "1")
                 .add(R.id.fragment_container, trackFragment, "2").hide(trackFragment)
-                .add(R.id.fragment_container, allocateFragment, "3").hide(allocateFragment)
+                .add(R.id.fragment_container, planFragment, "3").hide(planFragment)
                 .add(R.id.fragment_container, chatFragment, "4").hide(chatFragment)
                 .add(R.id.fragment_container, profileFragment, "5").hide(profileFragment)
                 .commit();
@@ -173,7 +173,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         initTab(getBinding().tabHome, R.drawable.ic_home, getString(R.string.nav_home), Constants.Navigation.HOME);
         initTab(getBinding().tabExpenses, R.drawable.ic_chart, getString(R.string.nav_track), Constants.Navigation.TRACK);
         initTab(getBinding().tabChat, R.drawable.ai_holder, getString(R.string.menu_chat), Constants.Navigation.CHAT);
-        initTab(getBinding().tabAllocate, R.drawable.ic_calendar, getString(R.string.nav_allocate), Constants.Navigation.ALLOCATE);
+        initTab(getBinding().tabPlan, R.drawable.ic_calendar, getString(R.string.nav_plan), Constants.Navigation.PLAN);
         initTab(getBinding().tabProfile, R.drawable.ic_person, getString(R.string.nav_profile), Constants.Navigation.PROFILE);
     }
 
@@ -214,9 +214,9 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                 target = chatFragment;
                 setTabActive(getBinding().tabChat);
                 showBottomNav = false;
-            } else if (id == Constants.Navigation.ALLOCATE) {
-                target = allocateFragment;
-                setTabActive(getBinding().tabAllocate);
+            } else if (id == Constants.Navigation.PLAN) {
+                target = planFragment;
+                setTabActive(getBinding().tabPlan);
             } else if (id == Constants.Navigation.PROFILE) {
                 target = profileFragment;
                 setTabActive(getBinding().tabProfile);

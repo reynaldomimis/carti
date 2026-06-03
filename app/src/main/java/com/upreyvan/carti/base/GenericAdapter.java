@@ -13,6 +13,13 @@ import java.util.function.BiFunction;
 public class GenericAdapter<T, VB extends ViewBinding> extends BaseAdapter<T, VB> {
     public GenericAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback,
                           BiFunction<LayoutInflater, ViewGroup, VB> bindingInflater,
+                          Binder<VB, T> binder) {
+        super(diffCallback, bindingInflater, binder);
+    }
+
+    @Deprecated
+    public GenericAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback,
+                          BiFunction<LayoutInflater, ViewGroup, VB> bindingInflater,
                           BiConsumer<VB, T> binder) {
         super(diffCallback, bindingInflater, binder);
     }

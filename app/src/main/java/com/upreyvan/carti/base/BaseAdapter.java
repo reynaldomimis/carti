@@ -14,17 +14,28 @@ import java.util.function.BiFunction;
 
 public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter<T, BaseAdapter.ViewHolder<VB>> {
 
+    public interface Binder<VB extends ViewBinding, T> {
+        void bind(VB binding, T item, int position, int totalCount);
+    }
+
     private final BiFunction<LayoutInflater, ViewGroup, VB> bindingInflater;
-    private final BiConsumer<VB, T> binder;
+    private final Binder<VB, T> binder;
     protected OnItemClickListener<T> listener;
     protected OnItemLongClickListener<T> longClickListener;
 
     protected BaseAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback,
                         BiFunction<LayoutInflater, ViewGroup, VB> bindingInflater,
-                        BiConsumer<VB, T> binder) {
+                        Binder<VB, T> binder) {
         super(diffCallback);
         this.bindingInflater = bindingInflater;
         this.binder = binder;
+    }
+
+    @Deprecated
+    protected BaseAdapter(@NonNull DiffUtil.ItemCallback<T> diffCallback,
+                        BiFunction<LayoutInflater, ViewGroup, VB> bindingInflater,
+                        java.util.function.BiConsumer<VB, T> binder) {
+        this(diffCallback, bindingInflater, (b, item, pos, count) -> binder.accept(b, item));
     }
 
     public interface OnItemClickListener<T> {
@@ -58,7 +69,7 @@ public abstract class BaseAdapter<T, VB extends ViewBinding> extends ListAdapter
     @Override
     public void onBindViewHolder(@NonNull ViewHolder<VB> holder, int position) {
         T item = getItem(position);
-        binder.accept(holder.binding, item);
+        binder.bind(holder.binding, item, position, getItemCount());
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onItemClick(item);
         });
