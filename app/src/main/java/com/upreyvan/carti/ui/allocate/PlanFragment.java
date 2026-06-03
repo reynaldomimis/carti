@@ -42,18 +42,15 @@ public class PlanFragment extends BaseFragment<FragmentPlanBinding> {
         setupAdapters();
         observeViewModel();
         
-        setupDynamicPadding();
         viewModel.loadData();
+
+        selectTab(R.id.tabBudget);
     }
 
-    private void setupDynamicPadding() {
-        setupDynamicPadding(getBinding().appBar, getBinding().rootScroll, 0.85f);
-    }
 
     private void setupUI() {
-        Calendar cal = Calendar.getInstance();
-        String monthYear = cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) + " " + cal.get(Calendar.YEAR);
-        getBinding().tvCurrentMonth.setText(monthYear);
+        String monthYear = Utils.formatMonthYear(Calendar.getInstance());
+        getBinding().tvCurrentMonth.setText(getString(R.string.for_the_month_of, monthYear));
 
         getBinding().tabBudget.setOnClickListener(v -> selectTab(v.getId()));
         getBinding().tabBills.setOnClickListener(v -> selectTab(v.getId()));
@@ -64,17 +61,26 @@ public class PlanFragment extends BaseFragment<FragmentPlanBinding> {
     }
 
     private void selectTab(int id) {
-        getBinding().tabBudget.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(id == R.id.tabBudget ? R.color.carti_primary_green : android.R.color.transparent, null)));
-        getBinding().tabBudget.setTextColor(getResources().getColor(id == R.id.tabBudget ? R.color.white : R.color.text_secondary, null));
-        getBinding().tabBudget.setIconTintResource(id == R.id.tabBudget ? R.color.white : R.color.text_secondary);
+        updateTabStyle(getBinding().tabBudget, id == R.id.tabBudget);
+        updateTabStyle(getBinding().tabBills, id == R.id.tabBills);
+        updateTabStyle(getBinding().tabGoals, id == R.id.tabGoals);
+    }
 
-        getBinding().tabBills.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(id == R.id.tabBills ? R.color.carti_primary_green : android.R.color.transparent, null)));
-        getBinding().tabBills.setTextColor(getResources().getColor(id == R.id.tabBills ? R.color.white : R.color.text_secondary, null));
-        getBinding().tabBills.setIconTintResource(id == R.id.tabBills ? R.color.white : R.color.text_secondary);
+    private void updateTabStyle(com.google.android.material.button.MaterialButton tab, boolean isActive) {
+        int activeBg = getResources().getColor(R.color.white, null);
+        int inactiveBg = getResources().getColor(android.R.color.transparent, null);
+        int activeContent = getResources().getColor(R.color.carti_primary_green, null);
+        int inactiveContent = getResources().getColor(R.color.text_secondary, null);
 
-        getBinding().tabGoals.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(id == R.id.tabGoals ? R.color.carti_primary_green : android.R.color.transparent, null)));
-        getBinding().tabGoals.setTextColor(getResources().getColor(id == R.id.tabGoals ? R.color.white : R.color.text_secondary, null));
-        getBinding().tabGoals.setIconTintResource(id == R.id.tabGoals ? R.color.white : R.color.text_secondary);
+        tab.setBackgroundTintList(android.content.res.ColorStateList.valueOf(isActive ? activeBg : inactiveBg));
+        tab.setTextColor(isActive ? activeContent : inactiveContent);
+        tab.setIconTint(android.content.res.ColorStateList.valueOf(isActive ? activeContent : inactiveContent));
+
+        if (isActive) {
+            tab.setElevation(2f);
+        } else {
+            tab.setElevation(0f);
+        }
     }
 
     private void setupAdapters() {
@@ -82,14 +88,13 @@ public class PlanFragment extends BaseFragment<FragmentPlanBinding> {
                 (inflater, parent) -> ItemBudgetCardBinding.inflate(inflater, parent, false),
                 (binding, item, pos, count) -> {
                     binding.tvCategoryName.setText(item.getCategoryName());
-                    binding.tvStatus.setText(R.string.status_good);
-                    binding.tvProgressText.setText(String.format("%s of %s", Utils.formatCurrency(item.getCurrentSpent()), Utils.formatCurrency(item.getAmount())));
-                    binding.tvRemainingText.setText(String.format("%s left", Utils.formatCurrency(Math.max(0, item.getAmount() - item.getCurrentSpent()))));
+                    binding.tvRemainingText.setText(Utils.formatCurrency(Math.max(0, item.getAmount() - item.getCurrentSpent())));
+                    binding.tvStatus.setText(item.getAmount() - item.getCurrentSpent() >= 0 ? "left" : "over");
                 });
 
         categoryAdapter = new GenericAdapter<>(BudgetCategoryItem.DIFF_CALLBACK,
                 (inflater, parent) -> ItemCategoryRowBinding.inflate(inflater, parent, false),
-                (binding, item, pos, count) -> {
+                (binding, item) -> {
                     binding.tvCategoryName.setText(item.getCategoryName());
                     binding.ivCategoryIcon.setImageResource(item.getIconRes() != 0 ? item.getIconRes() : R.drawable.ic_chart);
                     
@@ -98,11 +103,9 @@ public class PlanFragment extends BaseFragment<FragmentPlanBinding> {
                     
                     binding.cardIcon.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(getResources().getColor(bgColor, null)));
                     binding.ivCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(iconColor, null)));
-
-                    binding.divider.setVisibility(pos == count - 1 ? View.GONE : View.VISIBLE);
                 });
 
-        getBinding().rvBudgets.setLayoutManager(new LinearLayoutManager(requireContext()));
+        getBinding().rvBudgets.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3));
         getBinding().rvBudgets.setAdapter(budgetAdapter);
 
         getBinding().rvCategories.setLayoutManager(new LinearLayoutManager(requireContext()));

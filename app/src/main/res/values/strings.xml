@@ -36,7 +36,7 @@
     <string name="nav_debt">Debt</string>
     <string name="nav_ranking">Ranking</string>
     <string name="nav_profile">Profile</string>
-    <string name="nav_plan">Plan</string>
+    <string name="nav_plan">Financial Planning</string>
     <string name="label_add">Add</string>
     <string name="menu_ai">Chat</string>
     <string name="notifications">Notifications</string>
@@ -742,5 +742,7 @@
     <string name="carti_ai_offline">Carti Ai Offline</string>
     <string name="carti_ai_is_thinking">Carti Ai is thinking...</string>
     <string name="synchronizing_your_wallet">Synchronizing your wallet...</string>
-    <string name="manage_expense_categories_used_for_transactions_and_budgets">Manage expense categories used for transactions and budgets.</string>
+    <string name="manage_expense_categories_used_for_transactions_and_budgets">Organize your family spending.</string>
+    <string name="budget_setup_header">Set Up Budget</string>
+    <string name="for_the_month_of">For the Month of %s</string>
 </resources>

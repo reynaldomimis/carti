@@ -284,12 +284,18 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                new MaterialAlertDialogBuilder(MainActivity.this)
-                        .setTitle("Exit")
-                        .setMessage("Are you sure you want to exit?")
-                        .setPositiveButton("Yes", (d, w) -> finishAffinity())
-                        .setNegativeButton("No", null)
-                        .show();
+                if (activeFragment == profileFragment || activeFragment == chatFragment) {
+                    navigateTo(Constants.Navigation.HOME);
+                } else if (activeFragment != homeFragment) {
+                    navigateTo(Constants.Navigation.HOME);
+                } else {
+                    new MaterialAlertDialogBuilder(MainActivity.this)
+                            .setTitle("Exit")
+                            .setMessage("Are you sure you want to exit?")
+                            .setPositiveButton("Yes", (d, w) -> finishAffinity())
+                            .setNegativeButton("No", null)
+                            .show();
+                }
             }
         });
     }
