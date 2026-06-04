@@ -5,12 +5,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
@@ -23,8 +24,7 @@ import com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment;
 import com.upreyvan.carti.ui.track.AddBudgetPlanActivity;
 import com.upreyvan.carti.ui.track.AllTransactionsFragment;
 import com.upreyvan.carti.util.Utils;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.stream.Collectors;
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements HomeListItem.OnHomeInteractionListener {
@@ -42,7 +42,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
         if (getActivity() instanceof MainActivity main) main.setBottomNavVisibility(true);
         setupHeaders();
         initAdapter();
-        setupDynamicPadding(getBinding().layoutHeader, getBinding().rvMainHome);
         observeViewModel();
     }
 
@@ -93,7 +92,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
     @Override public void onQuickLogClick(com.upreyvan.carti.model.QuickLogItem item) { QuickLogsBottomSheetFragment.newInstance(item.getTitle()).show(getChildFragmentManager(), "QUICK_LOG"); }
     @Override public void onQuickLogLongClick(com.upreyvan.carti.model.QuickLogItem item) { startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class)); }
     @Override public void onTransactionClick(com.upreyvan.carti.model.TransactionWithUser item) {}
-    @Override public void onTransactionLike(com.upreyvan.carti.model.TransactionWithUser item) { viewModel.refreshData(); }
+    @Override public void onTransactionLike(com.upreyvan.carti.model.TransactionWithUser item) { viewModel.toggleLike(item); }
     @Override public void onTransactionComment(com.upreyvan.carti.model.TransactionWithUser item) { com.upreyvan.carti.ui.home.CommentsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Comments"); }
     @Override public void onSeeAllTransactions() { navigateTo(AllTransactionsFragment.newInstance(null)); }
     @Override public void onResume() { super.onResume(); if (!isHidden()) viewModel.refreshData(); }

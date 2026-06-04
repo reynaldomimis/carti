@@ -35,6 +35,7 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
         viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
         setupUI();
         setupAdapters();
+        setupDynamicPadding(null, getBinding().rootScroll);
         observeViewModel();
     }
 

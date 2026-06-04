@@ -29,6 +29,9 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
     public interface OnIconSelectedListener {
         void onIconSelected(IconChoice icon);
         void onUploadCustom();
+        default boolean isUploadItem(IconChoice icon) {
+            return "UPLOAD_CUSTOM_ACTION".equals(icon.getName());
+        }
     }
 
     private DialogIconPickerBinding binding;
@@ -75,17 +78,35 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
         setupRecyclerView();
         setupSearch();
         setupListeners();
+        binding.btnClose.setOnClickListener(v -> dismiss());
     }
 
     private void setupRecyclerView() {
-        allIcons = IconManager.getSystemIcons();
+        allIcons = new ArrayList<>(IconManager.getSystemIcons());
+        allIcons.add(new IconChoice("UPLOAD_CUSTOM_ACTION", R.drawable.ic_upload));
+        
         adapter = new GenericAdapter<>(
                 IconChoice.DIFF_CALLBACK,
                 (inflater, parent) -> ItemIconChoiceBinding.inflate(inflater, parent, false),
-                (binding, icon) -> binding.ivIcon.setImageResource(icon.getIconRes())
+                (binding, icon) -> {
+                    binding.ivIcon.setImageResource(icon.getIconRes());
+                    if ("UPLOAD_CUSTOM_ACTION".equals(icon.getName())) {
+                        binding.ivIcon.setColorFilter(requireContext().getColor(R.color.carti_primary_green));
+                        binding.getRoot().setStrokeColor(requireContext().getColor(R.color.carti_primary_green));
+                    } else {
+                        binding.ivIcon.setColorFilter(requireContext().getColor(R.color.text_secondary));
+                        binding.getRoot().setStrokeColor(requireContext().getColor(R.color.card_border));
+                    }
+                }
         );
         adapter.setOnItemClickListener(icon -> {
-            if (listener != null) listener.onIconSelected(icon);
+            if (listener != null) {
+                if ("UPLOAD_CUSTOM_ACTION".equals(icon.getName())) {
+                    listener.onUploadCustom();
+                } else {
+                    listener.onIconSelected(icon);
+                }
+            }
             dismiss();
         });
         adapter.submitList(new ArrayList<>(allIcons));
@@ -115,15 +136,13 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
         }
 
         List<IconChoice> filtered = allIcons.stream()
-                .filter(icon -> icon.getName().toLowerCase().contains(query.toLowerCase()))
+                .filter(icon -> "UPLOAD_CUSTOM_ACTION".equals(icon.getName()) || 
+                                icon.getName().toLowerCase().contains(query.toLowerCase()))
                 .collect(Collectors.toList());
         adapter.submitList(filtered);
     }
 
     private void setupListeners() {
-        binding.btnUploadCustom.setOnClickListener(v -> {
-            if (listener != null) listener.onUploadCustom();
-            dismiss();
-        });
+        // Button removed from UI, action moved to list item
     }
 }

@@ -39,6 +39,10 @@ public class TransactionLocalDataSource {
         return transactionDao.getTransactionById(id, currentUserId);
     }
 
+    public List<Transaction> getAllTransactionsList(String familyId) {
+        return transactionDao.getAllTransactionsList(familyId);
+    }
+
     public void saveTransactions(List<Transaction> transactions) {
         transactionDao.insertAll(transactions);
     }

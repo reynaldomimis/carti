@@ -46,7 +46,7 @@ public class UpdateGoalActivity extends BaseGoalActivity {
         
         getBinding().etGoalName.setText(ValueHelper.toStr(currentGoal.getTitle()));
         getBinding().etTargetAmount.setText(String.valueOf(currentGoal.getTargetAmount()));
-        getBinding().etTargetDate.setText(ValueHelper.toStr(currentGoal.getDueDate()));
+        getBinding().etTargetDate.setText(ValueHelper.toStr(currentGoal.getTargetDate()));
 
         List<String> ids = currentGoal.getMembers();
         if (ids != null && !ids.isEmpty()) {
@@ -85,7 +85,7 @@ public class UpdateGoalActivity extends BaseGoalActivity {
 
         currentGoal.setTitle(name);
         currentGoal.setTargetAmount(targetAmount);
-        currentGoal.setDueDate(date);
+        currentGoal.setTargetDate(date);
         currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
 
         transactionRepository.updateTransaction(currentGoal, new AppwriteCallback<Map<String, Object>>() {

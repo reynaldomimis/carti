@@ -54,7 +54,7 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "PH"));
         currencyFormat.setMaximumFractionDigits(0);
 
-        getBinding().tvGoalName.setText(ValueHelper.toStr(goal.getName()));
+        getBinding().tvGoalName.setText(ValueHelper.toStr(goal.getTitle()));
         getBinding().tvCurrentProgress.setText(getString(R.string.goal_progress_amount_format,
                 currencyFormat.format(goal.getAmount()),
                 currencyFormat.format(goal.getTargetAmount())));
@@ -74,13 +74,6 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
             Toast.makeText(requireContext(), "Saved successfully!", Toast.LENGTH_SHORT).show();
             if (getActivity() != null) getActivity().onBackPressed();
         });
-
-        getBinding().cardSalary.setOnClickListener(v -> selectSource(0));
-        getBinding().cardChallenge.setOnClickListener(v -> selectSource(1));
-        getBinding().cardOther.setOnClickListener(v -> selectSource(2));
-    }
-
-    private void selectSource(int index) {
     }
 
     private void setupDynamicPadding() {

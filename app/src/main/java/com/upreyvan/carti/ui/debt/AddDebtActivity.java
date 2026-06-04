@@ -168,9 +168,9 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         transaction.setType("DEBT");
         transaction.setAmount(amount);
         transaction.setTitle(selectedMemberName);
-        transaction.setDescription(purpose + (notes.isEmpty() ? "" : ": " + notes));
+        transaction.setNote(purpose + (notes.isEmpty() ? "" : ": " + notes));
         transaction.setCategory(selectedCategoryName);
-        transaction.setDueDate(dueDateStr);
+        transaction.setTargetDate(dueDateStr);
         transaction.setReminder(reminder);
         transaction.setMembers(selectedMemberId != null ? List.of(selectedMemberId) : new ArrayList<>());
         PreferenceManager pref = PreferenceManager.getInstance(this);

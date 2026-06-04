@@ -53,11 +53,9 @@ public class ToastHelper {
                 if (currentToast != null) {
                     currentToast.cancel();
                 }
-                // Use application context to avoid leaks
                 currentToast = Toast.makeText(context.getApplicationContext(), message, Toast.LENGTH_SHORT);
                 currentToast.show();
             } catch (Exception e) {
-                // Fallback for edge cases
                 android.util.Log.e("ToastHelper", "Error showing toast", e);
             }
         });

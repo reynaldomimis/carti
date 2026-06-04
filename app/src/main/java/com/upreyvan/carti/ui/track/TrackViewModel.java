@@ -138,4 +138,8 @@ public class TrackViewModel extends BaseViewModel {
     }
 
     public void sync() { repo.syncTransactionsIfNeeded(); }
+
+    public void toggleLike(TransactionWithUser item) {
+        repo.toggleLike(item, "👍");
+    }
 }

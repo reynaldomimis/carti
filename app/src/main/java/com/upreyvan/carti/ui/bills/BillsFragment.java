@@ -38,6 +38,7 @@ public class BillsFragment extends BaseFragment<FragmentBillsBinding> {
         
         setupUI();
         setupBillsRecyclerView();
+        setupDynamicPadding(null, getBinding().scrollView);
         observeData();
     }
 

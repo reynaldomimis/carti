@@ -5,13 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:columnCount="2"
-    android:useDefaultMargins="true">
+    android:alignmentMode="alignMargins"
+    android:columnOrderPreserved="false"
+    android:useDefaultMargins="false"
+    android:padding="@dimen/spacing_xxs">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardUnpaid"
         style="@style/DashCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_xs"
         android:layout_columnWeight="1"
         app:strokeColor="@color/carti_primary_green"
         app:strokeWidth="1.5dp">
@@ -69,6 +73,7 @@
         style="@style/DashCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_xs"
         android:layout_columnWeight="1">
 
         <LinearLayout
@@ -124,6 +129,7 @@
         style="@style/DashCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_xs"
         android:layout_columnWeight="1">
 
         <LinearLayout
@@ -179,6 +185,7 @@
         style="@style/DashCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_xs"
         android:layout_columnWeight="1">
 
         <LinearLayout

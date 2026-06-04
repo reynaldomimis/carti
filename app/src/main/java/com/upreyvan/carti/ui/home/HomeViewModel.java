@@ -123,4 +123,8 @@ public class HomeViewModel extends BaseViewModel {
 
     private double calculateTrend(double c, double p) { return p == 0 ? 0 : ((c - p) / p) * 100; }
     public record DashboardState(double balance, double monthlyIncome, double monthlyExpense, double monthlySavings, double incomeTrend, double expenseTrend, double savingsTrend) {}
+
+    public void toggleLike(TransactionWithUser item) {
+        transRepo.toggleLike(item, "👍");
+    }
 }

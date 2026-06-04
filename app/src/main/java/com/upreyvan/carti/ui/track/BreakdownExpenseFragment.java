@@ -73,7 +73,7 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
                 (binding, itemWithUser) -> {
                     Transaction item = itemWithUser.getTransaction();
                     binding.tvCategory.setText(item.getCategory());
-                    binding.tvDescription.setText(item.getDescription());
+                    binding.tvDescription.setText(item.getNote());
                     binding.tvAmount.setText(Utils.formatCurrency(item.getAmount()));
                     binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
                     

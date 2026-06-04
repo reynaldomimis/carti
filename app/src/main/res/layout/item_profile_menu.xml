@@ -12,14 +12,14 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="16dp"
-        android:paddingEnd="24dp"
-        android:paddingVertical="16dp">
+        android:paddingStart="@dimen/spacing_medium"
+        android:paddingEnd="@dimen/spacing_large"
+        android:paddingVertical="@dimen/spacing_medium">
 
         <ImageView
             android:id="@+id/ivMenuIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="@dimen/icon_size_medium"
+            android:layout_height="@dimen/icon_size_medium"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -30,38 +30,34 @@
             android:id="@+id/llMenuContent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:layout_marginEnd="@dimen/spacing_medium"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/ivChevron"
             app:layout_constraintStart_toEndOf="@id/ivMenuIcon"
             app:layout_constraintTop_toTopOf="parent">
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvMenuTitle"
+                style="@style/CartiHeaderSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/plus_jakarta_sans_bold"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
                 tools:text="@string/menu_settings" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvMenuSubTitle"
+                style="@style/CartiTextDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/plus_jakarta_sans_medium"
-                android:textColor="@color/text_tertiary"
-                android:textSize="13sp"
                 tools:text="@string/menu_settings_sub" />
 
         </LinearLayout>
 
         <ImageView
             android:id="@+id/ivChevron"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="@dimen/icon_size_small"
+            android:layout_height="@dimen/icon_size_small"
             android:src="@drawable/ic_chevron_right"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -74,7 +70,7 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="56dp"
+        android:layout_marginStart="@dimen/spacing_xxl"
         app:dividerColor="@color/surface_variant" />
 
 </LinearLayout>

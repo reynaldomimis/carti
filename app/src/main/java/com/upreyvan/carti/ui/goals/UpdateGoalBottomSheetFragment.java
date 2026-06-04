@@ -31,16 +31,15 @@ import java.util.Map;
 import java.util.Set;
 
 public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBottomSheetUpdateGoalBinding> {
-    public static final String ARG_GOAL_ID = "arg_goal_id";
     private String goalId; private Transaction currentGoal; private TransactionRepository transactionRepository; private MemberRepository memberRepository;
     private GenericAdapter<Member, ItemMemberAvatarSelectBinding> memberAdapter; private final Set<String> selectedMemberIds = new HashSet<>();
 
     public static UpdateGoalBottomSheetFragment newInstance(String id) {
-        UpdateGoalBottomSheetFragment f = new UpdateGoalBottomSheetFragment(); Bundle a = new Bundle(); a.putString(ARG_GOAL_ID, id); f.setArguments(a); return f;
+        UpdateGoalBottomSheetFragment f = new UpdateGoalBottomSheetFragment(); Bundle a = new Bundle(); a.putString(com.upreyvan.carti.util.Constants.Keys.KEY_TRANSACTION_ID, id); f.setArguments(a); return f;
     }
 
     @Override public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState); if (getArguments() != null) goalId = getArguments().getString(ARG_GOAL_ID);
+        super.onCreate(savedInstanceState); if (getArguments() != null) goalId = getArguments().getString(com.upreyvan.carti.util.Constants.Keys.KEY_TRANSACTION_ID);
         transactionRepository = TransactionRepository.getInstance(requireContext()); memberRepository = new MemberRepository(requireContext());
     }
 
@@ -51,7 +50,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
     private void observeGoal() { transactionRepository.getTransactionById(goalId).observe(getViewLifecycleOwner(), g -> { if (g != null) { currentGoal = g.getTransaction(); preFillData(); } }); }
 
     private void preFillData() {
-        getBinding().etGoalName.setText(ValueHelper.toStr(currentGoal.getTitle())); getBinding().etTargetAmount.setText(String.valueOf(currentGoal.getTargetAmount())); getBinding().etTargetDate.setText(ValueHelper.toStr(currentGoal.getDueDate()));
+        getBinding().etGoalName.setText(ValueHelper.toStr(currentGoal.getTitle())); getBinding().etTargetAmount.setText(String.valueOf(currentGoal.getTargetAmount())); getBinding().etTargetDate.setText(ValueHelper.toStr(currentGoal.getTargetDate()));
         selectedMemberIds.clear(); List<String> members = currentGoal.getMembers(); if (members != null) selectedMemberIds.addAll(members); loadMembers();
     }
 
@@ -81,7 +80,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
         if (!checkNetwork() || currentGoal == null) return;
         if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) { showToast(R.string.msg_fill_all_fields, ToastHelper.Status.WARNING); return; }
         showLoading(true, "Updating goal..."); currentGoal.setTitle(getBinding().etGoalName.getText().toString().trim()); currentGoal.setTargetAmount(Double.parseDouble(getBinding().etTargetAmount.getText().toString().trim()));
-        currentGoal.setDueDate(getBinding().etTargetDate.getText().toString().trim()); currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
+        currentGoal.setTargetDate(getBinding().etTargetDate.getText().toString().trim()); currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
         transactionRepository.updateTransaction(currentGoal, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override public void onSuccess(Map<String, Object> r) { if (isAdded()) { showLoading(false); showToast("Goal updated successfully", ToastHelper.Status.SUCCESS); dismiss(); } }
             @Override public void onError(Throwable e) { if (isAdded()) { showLoading(false); showToast(getString(R.string.err_generic, e.getMessage()), ToastHelper.Status.ERROR); } }

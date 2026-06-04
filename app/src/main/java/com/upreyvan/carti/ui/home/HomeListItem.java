@@ -237,19 +237,107 @@ public interface HomeListItem extends BaseMultiItem {
         @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) { return ItemTransactionBinding.inflate(inflater, parent, false); }
         @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
             ItemTransactionBinding b = (ItemTransactionBinding) binding;
+
+            if (Objects.equals(b.getRoot().getTag(R.id.item_tag_id), this)) return;
+            b.getRoot().setTag(R.id.item_tag_id, this);
+
             Transaction t = transaction.getTransaction();
-            b.tvUserAction.setText(transaction.getUsername());
+            String username = transaction.getUsername() != null && !transaction.getUsername().isEmpty() ? transaction.getUsername() : "Someone";
+            String type = t.getType() != null ? t.getType().toUpperCase() : "EXPENSE";
+
+            int amountColor;
+            int amountFormatRes;
+            String actionLabel;
+
+            switch (type) {
+                case "INCOME" -> {
+                    actionLabel = "Received income";
+                    amountColor = R.color.green_primary;
+                    amountFormatRes = R.string.format_income;
+                }
+                case "DEBT" -> {
+                    actionLabel = "Recorded a debt";
+                    amountColor = R.color.status_red;
+                    amountFormatRes = R.string.format_expense;
+                }
+                case "GOAL", "GOAL_FUNDS" -> {
+                    actionLabel = type.equals("GOAL") ? "Started a goal" : "Added funds to goal";
+                    amountColor = R.color.carti_primary_green;
+                    amountFormatRes = R.string.format_income;
+                }
+                case "BILL" -> {
+                    actionLabel = "Settled a bill";
+                    amountColor = R.color.status_red;
+                    amountFormatRes = R.string.format_expense;
+                }
+                default -> {
+                    actionLabel = "Added an expense";
+                    amountColor = R.color.status_red;
+                    amountFormatRes = R.string.format_expense;
+                }
+            }
+
+            b.tvUserAction.setText(username);
             b.tvTimestamp.setText(Utils.getTimeAgo(t.getTimestampMillis()));
-            b.tvTitle.setText(t.getCategory());
-            b.tvAmount.setText(Utils.formatCurrency(t.getAmount()));
-            b.tvAmount.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), "INCOME".equals(t.getType()) ? R.color.green_primary : R.color.status_red));
-            
+            b.tvTitle.setText(t.getTitle() != null ? t.getTitle() : t.getCategory());
+
+            String note = t.getNote();
+            if (note != null && !note.isEmpty()) {
+                String filteredNote = note.replace("Logged by Carti AI", "").replace("Logged by AI", "").trim();
+                b.tvDescription.setText(filteredNote.isEmpty() ? actionLabel : String.format("%s: %s", actionLabel, filteredNote));
+                b.tvDescription.setVisibility(View.VISIBLE);
+            } else {
+                b.tvDescription.setText(actionLabel);
+                b.tvDescription.setVisibility(View.VISIBLE);
+            }
+
+            String formattedAmount = Utils.formatCurrency(t.getAmount());
+            b.tvAmount.setText(b.getRoot().getContext().getString(amountFormatRes, formattedAmount));
+            b.tvAmount.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), amountColor));
+
             if (transaction.getUserAvatarUrl() != null && !transaction.getUserAvatarUrl().isEmpty()) {
                 Glide.with(b.getRoot().getContext()).load(transaction.getUserAvatarUrl()).placeholder(R.drawable.ai_holder).into(b.ivAvatar);
             } else if (transaction.getUserAvatarRes() != 0) {
                 b.ivAvatar.setImageResource(transaction.getUserAvatarRes());
             } else {
                 b.ivAvatar.setImageResource(R.drawable.ai_holder);
+            }
+
+            String myReaction = transaction.getMyReaction();
+            if (myReaction != null && !myReaction.isEmpty()) {
+                b.tvBtnLikeIcon.setText(myReaction);
+                b.tvBtnLikeText.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.carti_primary_green));
+            } else {
+                b.tvBtnLikeIcon.setText("👍");
+                b.tvBtnLikeText.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.text_secondary));
+            }
+
+            int likesCount = t.getLikesCount();
+            int commentCount = t.getCommentCount();
+            String rNames = transaction.getReactorNames();
+
+            if (likesCount > 0 || commentCount > 0) {
+                b.layoutReactionsSummary.setVisibility(View.VISIBLE);
+                b.divider.setVisibility(View.VISIBLE);
+                if (likesCount > 0) {
+                    b.tvReactionEmoji.setVisibility(View.VISIBLE);
+                    b.tvLikesCount.setVisibility(View.VISIBLE);
+                    b.tvReactionEmoji.setText(myReaction != null && !myReaction.isEmpty() ? myReaction : "👍");
+                    b.tvLikesCount.setText(rNames != null && !rNames.isEmpty() ? rNames : String.valueOf(likesCount));
+                } else {
+                    b.tvReactionEmoji.setVisibility(View.GONE);
+                    b.tvLikesCount.setVisibility(View.GONE);
+                }
+
+                if (commentCount > 0) {
+                    b.tvCommentsCountSummary.setText(String.format(java.util.Locale.getDefault(), "%d comments", commentCount));
+                    b.tvCommentsCountSummary.setVisibility(View.VISIBLE);
+                } else {
+                    b.tvCommentsCountSummary.setVisibility(View.GONE);
+                }
+            } else {
+                b.layoutReactionsSummary.setVisibility(View.GONE);
+                b.divider.setVisibility(View.GONE);
             }
 
             b.btnLike.setOnClickListener(v -> listener.onTransactionLike(transaction));

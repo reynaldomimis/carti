@@ -48,6 +48,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         setupUI();
         setupTabs();
         setupRecyclerView();
+        setupDynamicPadding(null, getBinding().getRoot());
         observeViewModel();
         observeRealtimeChanges();
     }
@@ -108,8 +109,8 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         }
         
         filteredList.sort((a, b) -> {
-            String n1 = a.getTransaction().getName();
-            String n2 = b.getTransaction().getName();
+            String n1 = a.getTransaction().getTitle();
+            String n2 = b.getTransaction().getTitle();
             boolean aOther = "others".equalsIgnoreCase(n1);
             boolean bOther = "others".equalsIgnoreCase(n2);
             if (aOther && bOther) return 0;
@@ -143,7 +144,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                     } else {
                         shimmer.setVisibility(View.GONE);
                         binding.layoutContent.setVisibility(View.VISIBLE);
-                        binding.tvGoalTitle.setText(goal.getName());
+                        binding.tvGoalTitle.setText(goal.getTitle());
                         binding.ivGoalIcon.setImageResource(goal.getIconRes());
                         binding.ivGoalIcon.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.surface_variant));
                         binding.tvGoalProgressAmount.setText(getString(R.string.goal_progress_amount_format,
@@ -172,7 +173,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
             currentList.remove(pos);
             adapter.submitList(currentList);
 
-            String msg = String.format("Goal '%s' deleted", goalToDelete.getTransaction().getName());
+            String msg = String.format("Goal '%s' deleted", goalToDelete.getTransaction().getTitle());
             SwipeToDeleteHelper.showUndoSnackbar(getBinding().getRoot(), msg, () -> {
                 List<TransactionWithUser> restoredList = new ArrayList<>(adapter.getCurrentList());
                 restoredList.add(pos, goalToDelete);

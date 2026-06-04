@@ -139,7 +139,7 @@ public class ApiHelper {
         params.put("category", category);
         params.put("note", note);
         params.put("startDate", Utils.getCurrentTimestamp());
-        callAction(Constants.Actions.ADD_TRANSACTION, params, callback);
+        callAction(Constants.Actions.CREATE_TRANSACTION, params, callback);
     }
 
     public void updateTransaction(String txnId, Map<String, Object> fields, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
@@ -233,7 +233,6 @@ public class ApiHelper {
     }
 
     // ─── MEMBERS ─────────────────────────────────────────────────────────────
-
     public void getMembers(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
@@ -253,16 +252,21 @@ public class ApiHelper {
     }
 
     // ─── GOALS ───────────────────────────────────────────────────────────────
-
-    public void addGoal(String name, double targetAmount, String targetDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+    public void addGoal(String name, double targetAmount, double currentAmount, int iconRes, String targetDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("username", pref.getUsername());
         params.put("title", name);
         params.put("type", "GOAL");
         params.put("targetAmount", targetAmount);
+        params.put("amount", currentAmount);
+        params.put("iconRes", iconRes);
         params.put("targetDate", targetDate);
         params.put("startDate", Utils.getCurrentTimestamp());
-        callAction(Constants.Actions.ADD_GOAL, params, callback);
+        callAction(Constants.Actions.CREATE_TRANSACTION, params, callback);
+    }
+
+    public void addGoal(String name, double targetAmount, String targetDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        addGoal(name, targetAmount, 0, 0, targetDate, callback);
     }
 
     public void updateGoalAmount(String goalId, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
@@ -270,13 +274,13 @@ public class ApiHelper {
         params.put("txnId", goalId);
         params.put("amount", amount);
         params.put("type", "GOAL");
-        callAction(Constants.Actions.UPDATE_GOAL, params, callback);
+        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
     }
 
     public void deleteGoal(String goalId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("txnId", goalId);
-        callAction(Constants.Actions.DELETE_GOAL, params, callback);
+        callAction(Constants.Actions.DELETE_TRANSACTION, params, callback);
     }
 
     public void getGoalsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
@@ -292,7 +296,7 @@ public class ApiHelper {
     }
 
     public void getGoals(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
-        getGoalsSince(pref.getLastGoalSyncTime(), callback);
+        getGoalsSince(pref.getLastSyncTime(), callback);
     }
 
     // ─── DEBTS ───────────────────────────────────────────────────────────────
@@ -307,8 +311,8 @@ public class ApiHelper {
         params.put("targetDate", targetDate);
         params.put("startDate", Utils.getCurrentTimestamp());
         params.put("reminder", reminder);
-        params.put("notes", notes);
-        callAction(Constants.Actions.ADD_DEBT, params, callback);
+        params.put("note", notes);
+        callAction(Constants.Actions.CREATE_TRANSACTION, params, callback);
     }
 
     public void updateDebtAmount(String debtId, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
@@ -316,7 +320,7 @@ public class ApiHelper {
         params.put("txnId", debtId);
         params.put("amount", amount);
         params.put("type", "DEBT");
-        callAction(Constants.Actions.UPDATE_DEBT, params, callback);
+        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
     }
 
     public void markDebtPaid(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
@@ -324,13 +328,13 @@ public class ApiHelper {
         params.put("txnId", debtId);
         params.put("isPaid", true);
         params.put("type", "DEBT");
-        callAction(Constants.Actions.MARK_DEBT_PAID, params, callback);
+        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
     }
 
     public void deleteDebt(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("txnId", debtId);
-        callAction(Constants.Actions.DELETE_DEBT, params, callback);
+        callAction(Constants.Actions.DELETE_TRANSACTION, params, callback);
     }
 
     public void getDebtsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
@@ -346,7 +350,7 @@ public class ApiHelper {
     }
 
     public void getDebts(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
-        getDebtsSince(pref.getLastDebtSyncTime(), callback);
+        getDebtsSince(pref.getLastSyncTime(), callback);
     }
 
     // ─── INCOMES ─────────────────────────────────────────────────────────────
@@ -360,7 +364,7 @@ public class ApiHelper {
         params.put("type", "INCOME");
         params.put("category", "Income");
         params.put("startDate", Utils.getCurrentTimestamp());
-        callAction(Constants.Actions.ADD_INCOME, params, callback);
+        callAction(Constants.Actions.CREATE_TRANSACTION, params, callback);
     }
 
     public void updateIncome(String incomeId, String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
@@ -370,13 +374,13 @@ public class ApiHelper {
         params.put("source", source);
         params.put("amount", amount);
         params.put("type", "INCOME");
-        callAction(Constants.Actions.UPDATE_INCOME, params, callback);
+        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
     }
 
     public void deleteIncome(String incomeId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("txnId", incomeId);
-        callAction(Constants.Actions.DELETE_INCOME, params, callback);
+        callAction(Constants.Actions.DELETE_TRANSACTION, params, callback);
     }
 
     public void getIncomes(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {

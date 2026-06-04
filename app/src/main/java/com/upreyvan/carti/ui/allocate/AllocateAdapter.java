@@ -61,7 +61,7 @@ public class AllocateAdapter extends ListAdapter<BudgetAllocation, AllocateAdapt
 
         private void setupExpenseChildren(BudgetAllocation p) {
             GenericAdapter<Transaction, ItemAllocationChildBinding> adapter = new GenericAdapter<>(Transaction.DIFF_CALLBACK, (i, c) -> ItemAllocationChildBinding.inflate(i, c, false), (bi, tx) -> {
-                bi.tvTitle.setText(tx.getDescription());
+                bi.tvTitle.setText(tx.getNote());
                 bi.tvAmount.setText(Utils.formatCurrency(tx.getAmount()));
                 bi.pbAllocation.setVisibility(View.GONE);
             });

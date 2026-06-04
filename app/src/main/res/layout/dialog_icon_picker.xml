@@ -1,33 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet_white"
-    android:orientation="vertical"
-    android:padding="@dimen/spacing_large">
+    android:paddingBottom="@dimen/spacing_large">
 
     <View
+        android:id="@+id/handle"
         android:layout_width="@dimen/handle_width"
         android:layout_height="@dimen/handle_height"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="@dimen/spacing_large"
-        android:background="@color/border_subtle" />
+        android:layout_marginTop="@dimen/spacing_small"
+        android:background="@color/border_subtle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvTitle"
         style="@style/CartiHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/label_select_icon" />
+        android:layout_marginStart="@dimen/spacing_large"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="@string/label_select_icon"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/handle" />
+
+    <ImageButton
+        android:id="@+id/btnClose"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="@dimen/spacing_medium"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/btn_cancel"
+        android:src="@drawable/ic_close"
+        app:layout_constraintBottom_toBottomOf="@id/tvTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvTitle"
+        app:tint="@color/text_primary" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilSearch"
         style="@style/CartiInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_large"
         android:layout_marginTop="@dimen/spacing_medium"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:startIconDrawable="@android:drawable/ic_menu_search">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -44,15 +65,10 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:layout_marginTop="@dimen/spacing_medium"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/spacing_large"
+        android:paddingBottom="@dimen/spacing_medium"
+        app:layout_constraintTop_toBottomOf="@id/tilSearch"
         tools:listitem="@layout/item_icon_choice" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnUploadCustom"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:text="@string/label_upload_device"
-        android:textColor="@color/carti_primary_green" />
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

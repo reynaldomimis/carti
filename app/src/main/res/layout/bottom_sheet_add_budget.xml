@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvTitle"
         style="@style/DashAmountSmall"
         android:layout_width="wrap_content"
@@ -40,7 +40,7 @@
         app:layout_constraintTop_toTopOf="@id/tvTitle"
         app:tint="@color/text_primary" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/labelCategory"
         style="@style/DashLabel"
         android:layout_width="wrap_content"
@@ -71,7 +71,7 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/labelLimit"
         style="@style/DashLabel"
         android:layout_width="wrap_content"
@@ -103,12 +103,39 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout
+        android:id="@+id/layoutRecurring"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/layoutLimit">
+
+        <com.google.android.material.textview.MaterialTextView
+            style="@style/CartiHeaderSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/label_make_it_recurring"
+            android:textColor="@color/text_secondary" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchRecurring"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:thumbTint="@color/switch_thumb_selector"
+            app:trackTint="@color/switch_track_selector" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xl"
         android:orientation="horizontal"
         android:paddingHorizontal="@dimen/spacing_medium"
-        app:layout_constraintTop_toBottomOf="@id/layoutLimit">
+        app:layout_constraintTop_toBottomOf="@id/layoutRecurring">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancel"

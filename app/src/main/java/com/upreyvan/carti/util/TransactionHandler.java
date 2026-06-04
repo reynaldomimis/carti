@@ -1,7 +1,6 @@
 package com.upreyvan.carti.util;
 
 import android.content.Context;
-import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.Transaction;
@@ -15,15 +14,17 @@ public class TransactionHandler {
         void onError(String message);
     }
 
-    /**
-     * SENDS TO SERVER ONLY.
-     * Room is updated automatically via Realtime in TransactionRepository.
-     */
     public static void saveTrack(Context context, double amount, String categoryName, String description, String source, TransactionCallback callback) {
         Context appContext = context.getApplicationContext();
         callback.onLoading(true);
 
-        new ApiHelper(appContext).addTransaction(amount, "EXPENSE", categoryName, description + " (via " + source + ")", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        Transaction t = new Transaction();
+        t.setAmount(amount);
+        t.setType("EXPENSE");
+        t.setCategory(categoryName);
+        t.setTitle(description + " (via " + source + ")");
+
+        TransactionRepository.getInstance(appContext).addTransaction(t, new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 callback.onLoading(false);
@@ -43,7 +44,14 @@ public class TransactionHandler {
         Context appContext = context.getApplicationContext();
         callback.onLoading(true);
 
-        new ApiHelper(appContext).addDebt(personName, amount, "I Owe", "Personal", "", "", note, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        Transaction t = new Transaction();
+        t.setAmount(amount);
+        t.setType("DEBT");
+        t.setTitle(personName);
+        t.setNote(note);
+        t.setCategory("Personal");
+
+        TransactionRepository.getInstance(appContext).addTransaction(t, new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 callback.onLoading(false);
@@ -63,7 +71,13 @@ public class TransactionHandler {
         Context appContext = context.getApplicationContext();
         callback.onLoading(true);
 
-        new ApiHelper(appContext).addGoal(goalName, amount, "", new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        Transaction t = new Transaction();
+        t.setAmount(0);
+        t.setTargetAmount(amount);
+        t.setType("GOAL");
+        t.setTitle(goalName);
+
+        TransactionRepository.getInstance(appContext).addTransaction(t, new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 callback.onLoading(false);

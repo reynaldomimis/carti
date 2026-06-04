@@ -20,9 +20,7 @@ import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentProfileBinding;
 import com.upreyvan.carti.model.ProfileMenuItem;
 import com.upreyvan.carti.ui.auth.LoginActivity;
-import com.upreyvan.carti.ui.debt.DebtTrackerFragment;
 import com.upreyvan.carti.ui.family.MembersFragment;
-import com.upreyvan.carti.ui.goals.GoalFragment;
 import com.upreyvan.carti.ui.track.IncomeModeFragment;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
@@ -48,13 +46,15 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        if (getActivity() instanceof MainActivity main) {
+            main.setBottomNavVisibility(true);
+        }
+
         apiHelper = new ApiHelper(requireContext());
         setupToolbar();
         setupUserInfo();
         setupMenuItems();
         fetchMemberCount();
-        
-        Utils.applySystemBarInsets(getBinding().layoutToolbar.getRoot(), getBinding().profileScroll, 1f, 20);
     }
 
     private void setupUserInfo() {
@@ -89,17 +89,13 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.profile_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() instanceof MainActivity main) {
-                main.navigateTo(Constants.Navigation.HOME);
-            }
+            requireActivity().onBackPressed();
         });
     }
 
     private void setupMenuItems() {
         menuItems = new ArrayList<>();
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_myplaces, R.string.menu_family, getString(R.string.menu_family_sub), MembersFragment.class));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_compass, R.string.menu_goals, getString(R.string.menu_goals_sub), GoalFragment.class));
-        menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_edit, R.string.menu_debt, getString(R.string.menu_debt_sub), DebtTrackerFragment.class));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_today, R.string.menu_salary, getString(R.string.menu_salary_sub), IncomeModeFragment.class));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_lock_idle_lock, R.string.menu_security, getString(R.string.menu_security_sub), SecurityFragment.class));
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_manage, R.string.menu_settings, getString(R.string.menu_settings_sub), SettingsFragment.class));

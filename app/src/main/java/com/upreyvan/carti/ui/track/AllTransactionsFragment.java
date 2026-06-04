@@ -142,9 +142,9 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
             boolean matchesUser = filterUserId == null || filterUserId.equals(t.getTransaction().getUserId());
             String username = t.getUsername() != null ? t.getUsername().toLowerCase() : "";
             String category = t.getTransaction().getCategory() != null ? t.getTransaction().getCategory().toLowerCase() : "";
-            String description = t.getTransaction().getDescription() != null ? t.getTransaction().getDescription().toLowerCase() : "";
+            String note = t.getTransaction().getNote() != null ? t.getTransaction().getNote().toLowerCase() : "";
             String amount = String.valueOf(t.getTransaction().getAmount());
-            boolean matchesSearch = currentQuery.isEmpty() || username.contains(currentQuery) || category.contains(currentQuery) || description.contains(currentQuery) || amount.contains(currentQuery);
+            boolean matchesSearch = currentQuery.isEmpty() || username.contains(currentQuery) || category.contains(currentQuery) || note.contains(currentQuery) || amount.contains(currentQuery);
             if (matchesType && matchesUser && matchesSearch) filteredList.add(t);
         }
         if (filteredList.isEmpty()) {
@@ -245,7 +245,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
 
         adapter.setOnItemClickListener(itemWithUser -> {
             Transaction item = itemWithUser.getTransaction();
-            DialogHelper.showConfirmation(requireContext(), "Delete Transaction?", "Are you sure you want to delete this " + item.getName() + "?", "Delete", () -> {
+            DialogHelper.showConfirmation(requireContext(), "Delete Transaction?", "Are you sure you want to delete this " + item.getTitle() + "?", "Delete", () -> {
                 new ApiHelper(requireContext()).deleteTransaction(item.getId(), new AppwriteCallback<Object>() {
                     @Override public void onSuccess(Object result) {
                         requireActivity().runOnUiThread(() -> {

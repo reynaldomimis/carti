@@ -37,7 +37,7 @@ public class AddGoalActivity extends BaseGoalActivity {
         goal.setType("GOAL");
         goal.setTitle(name);
         goal.setTargetAmount(targetAmount);
-        goal.setDueDate(date);
+        goal.setTargetDate(date);
         goal.setCategory("Goal");
         goal.setMembers(new ArrayList<>(selectedMemberIds));
         goal.setUserId(PreferenceManager.getInstance(this).getUserId());

@@ -10,7 +10,7 @@
         android:id="@+id/layout_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="@dimen/spacing_medium"
+        android:paddingHorizontal="@dimen/screen_padding"
         android:paddingVertical="@dimen/spacing_medium">
 
         <com.google.android.material.card.MaterialCardView
@@ -94,7 +94,7 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="64dp"
+        android:layout_marginStart="@dimen/spacing_xxl"
         app:dividerColor="@color/border_subtle" />
 
 </LinearLayout>

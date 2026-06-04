@@ -60,12 +60,9 @@ public class RealtimeRepository {
 
         String[] channels = {
             RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_TRANSACTIONS),
-            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_GOALS),
-            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_DEBTS),
             RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_NOTIFICATIONS),
             RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_USERS),
             RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_MESSAGES),
-            RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_INCOMES),
             RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_COMMENTS),
             RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_LIKES),
             RealtimeHelper.getDocumentChannel(Constants.Appwrite.COL_FAMILIES, familyId)
@@ -93,10 +90,7 @@ public class RealtimeRepository {
     }
 
     private boolean isTransactionCollection(String path) {
-        return path.contains(Constants.Appwrite.COL_TRANSACTIONS) ||
-               path.contains(Constants.Appwrite.COL_GOALS) ||
-               path.contains(Constants.Appwrite.COL_DEBTS) ||
-               path.contains(Constants.Appwrite.COL_INCOMES);
+        return path.contains(Constants.Appwrite.COL_TRANSACTIONS);
     }
 
     private void handleTransactionEvent(String path, Map<String, Object> payload) {

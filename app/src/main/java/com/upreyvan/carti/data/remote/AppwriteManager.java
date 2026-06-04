@@ -22,6 +22,7 @@ import io.appwrite.models.User;
 import io.appwrite.services.Account;
 import io.appwrite.services.Databases;
 import io.appwrite.services.Functions;
+import io.appwrite.services.Storage;
 
 import kotlin.Unit;
 import kotlin.coroutines.EmptyCoroutineContext;
@@ -42,6 +43,7 @@ public class AppwriteManager {
     private Account account;
     private Functions functions;
     private Databases databases;
+    private Storage storage;
     private final Gson gson = new Gson();
     private final CoroutineScope scope;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -77,6 +79,7 @@ public class AppwriteManager {
                 account = new Account(client);
                 functions = new Functions(client);
                 databases = new Databases(client);
+                storage = new Storage(client);
                 isInitialized = true;
             } finally {
                 initLatch.countDown();
@@ -116,9 +119,9 @@ public class AppwriteManager {
         String message = error.getMessage();
         String userFriendlyMessage = Constants.ErrorCodes.GENERIC_ERROR;
 
-        if (error instanceof io.appwrite.exceptions.AppwriteException) {
-            io.appwrite.exceptions.AppwriteException ae = (io.appwrite.exceptions.AppwriteException) error;
-            switch (ae.getCode()) {
+        if (error instanceof io.appwrite.exceptions.AppwriteException ae) {
+            int code = ae.getCode() != null ? ae.getCode() : 0;
+            switch (code) {
                 case 401: userFriendlyMessage = Constants.ErrorCodes.UNAUTHORIZED; break;
                 case 404: userFriendlyMessage = Constants.ErrorCodes.NOT_FOUND; break;
                 case 429: userFriendlyMessage = Constants.ErrorCodes.RATE_LIMIT; break;
@@ -182,11 +185,10 @@ public class AppwriteManager {
             try {
                 Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
                     try {
-                        return account.deleteSession("current", (kotlin.coroutines.Continuation<Object>) c2);
+                        return account.deleteSession("current", c2);
                     } catch (Exception e) {
-                        if (e instanceof io.appwrite.exceptions.AppwriteException) {
-                            io.appwrite.exceptions.AppwriteException ae = (io.appwrite.exceptions.AppwriteException) e;
-                            if (ae.getCode() == 401) return new Object(); 
+                        if (e instanceof io.appwrite.exceptions.AppwriteException ae) {
+                            if (Integer.valueOf(401).equals(ae.getCode())) return new Object(); 
                             throw new RuntimeException(ae);
                         }
                         throw new RuntimeException(e);
@@ -205,11 +207,10 @@ public class AppwriteManager {
             try {
                 Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
                     try {
-                        return account.deleteSessions((kotlin.coroutines.Continuation<Object>) c2);
+                        return account.deleteSessions(c2);
                     } catch (Exception e) {
-                        if (e instanceof io.appwrite.exceptions.AppwriteException) {
-                            io.appwrite.exceptions.AppwriteException ae = (io.appwrite.exceptions.AppwriteException) e;
-                            if (ae.getCode() == 401) return new Object(); // Already logged out
+                        if (e instanceof io.appwrite.exceptions.AppwriteException ae) {
+                            if (Integer.valueOf(401).equals(ae.getCode())) return new Object(); // Already logged out
                             throw new RuntimeException(ae);
                         }
                         throw new RuntimeException(e);
@@ -227,7 +228,7 @@ public class AppwriteManager {
         ensureInitialized(() -> BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
                 Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
-                    try { return account.createRecovery(email, url != null ? url : RECOVERY_URL, (kotlin.coroutines.Continuation<Object>) c2); }
+                    try { return account.createRecovery(email, url != null ? url : RECOVERY_URL, c2); }
                     catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
@@ -246,7 +247,7 @@ public class AppwriteManager {
         ensureInitialized(() -> BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {
                 Object result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
-                    try { return account.updateRecovery(userId, secret, password, (kotlin.coroutines.Continuation<Object>) c2); }
+                    try { return account.updateRecovery(userId, secret, password, c2); }
                     catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);
@@ -322,6 +323,21 @@ public class AppwriteManager {
             try {
                 Document<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
                     try { return databases.getDocument(databaseId, collectionId, documentId, c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        }));
+    }
+
+    public void uploadFile(String bucketId, String fileId, io.appwrite.models.InputFile file, List<String> permissions, AppwriteCallback<io.appwrite.models.File> callback) {
+        ensureInitialized(() -> BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                io.appwrite.models.File result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return storage.createFile(bucketId, fileId, file, permissions, null, c2); }
                     catch (Exception e) { throw new RuntimeException(e); }
                 });
                 postSuccess(callback, result);

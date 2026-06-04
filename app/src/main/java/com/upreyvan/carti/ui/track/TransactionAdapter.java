@@ -103,7 +103,7 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
 
             binding.tvUserAction.setText(username);
             binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
-            binding.tvTitle.setText(item.getCategory()); 
+            binding.tvTitle.setText(item.getTitle() != null ? item.getTitle() : item.getCategory());
 
             String note = item.getNote();
             if (note != null && !note.isEmpty()) {

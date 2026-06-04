@@ -13,6 +13,7 @@ import com.upreyvan.carti.data.repository.NotificationRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.Bill;
 import com.upreyvan.carti.model.BudgetCategoryItem;
+import com.upreyvan.carti.model.RecurringBudgetStats;
 import com.upreyvan.carti.model.TransactionWithUser;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.concurrent.Executors;
 public class PlanViewModel extends BaseViewModel {
     private final MutableLiveData<List<BudgetCategoryItem>> budgets = new MutableLiveData<>();
     private final MutableLiveData<List<BudgetCategoryItem>> categories = new MutableLiveData<>();
+    private final MutableLiveData<RecurringBudgetStats> recurringStats = new MutableLiveData<>();
     
     private final BudgetManager budgetManager;
     private final TransactionRepository transRepo;
@@ -42,18 +44,22 @@ public class PlanViewModel extends BaseViewModel {
         pref = PreferenceManager.getInstance(application);
         
         budgetManager.getBudgetPlanLiveData().observeForever(observer);
+        budgetManager.getRecurringStatsLiveData().observeForever(recurringStatsObserver);
     }
 
     private final androidx.lifecycle.Observer<List<BudgetCategoryItem>> observer = items -> loadData();
+    private final androidx.lifecycle.Observer<RecurringBudgetStats> recurringStatsObserver = recurringStats::postValue;
 
     public LiveData<List<BudgetCategoryItem>> getBudgets() { return budgets; }
     public LiveData<List<BudgetCategoryItem>> getCategories() { return categories; }
+    public LiveData<RecurringBudgetStats> getRecurringStats() { return recurringStats; }
     public LiveData<List<TransactionWithUser>> getGoals() { return transRepo.getGoals(); }
     public LiveData<List<Bill>> getBills() { return notifRepo.getBills(pref.getFamilyId()); }
     public LiveData<List<TransactionWithUser>> getDebts() { return transRepo.getTransactionsByType("DEBT"); }
 
     public void loadData() {
         executor.execute(() -> {
+            budgetManager.processRecurringBudgets();
             String familyId = pref.getFamilyId();
             
             List<BudgetCategoryItem> plan = budgetManager.getBudgetPlan();
@@ -80,7 +86,7 @@ public class PlanViewModel extends BaseViewModel {
                 BudgetCategoryItem updatedItem = new BudgetCategoryItem(
                         item.getCategoryName(), item.getIconRes(), item.getIconColor(), 
                         item.getBgColor(), item.getAmount(), item.getPercentage(), 
-                        item.getParentCategory(), spent);
+                        item.getParentCategory(), spent, item.isRecurring());
                 
                 if (item.getAmount() > 0) budgetList.add(updatedItem);
                 categoryMap.put(catName.toLowerCase(Locale.ROOT), updatedItem);
@@ -119,6 +125,7 @@ public class PlanViewModel extends BaseViewModel {
     protected void onCleared() {
         super.onCleared();
         budgetManager.getBudgetPlanLiveData().removeObserver(observer);
+        budgetManager.getRecurringStatsLiveData().removeObserver(recurringStatsObserver);
         executor.shutdown();
     }
 }

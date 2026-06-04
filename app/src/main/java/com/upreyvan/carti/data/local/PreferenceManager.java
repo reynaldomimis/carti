@@ -149,8 +149,6 @@ public class PreferenceManager {
     public void resetAllSyncTimestamps() {
         getPrefs().edit()
                 .remove(Constants.Keys.KEY_LAST_SYNC_TIME)
-                .remove(Constants.Keys.KEY_LAST_GOAL_SYNC_TIME)
-                .remove(Constants.Keys.KEY_LAST_DEBT_SYNC_TIME)
                 .apply();
     }
 
@@ -160,22 +158,6 @@ public class PreferenceManager {
 
     public String getLastSyncTime() {
         return getPrefs().getString(Constants.Keys.KEY_LAST_SYNC_TIME, "1970-01-01T00:00:00.000Z");
-    }
-
-    public void setLastGoalSyncTime(String timestamp) {
-        getPrefs().edit().putString(Constants.Keys.KEY_LAST_GOAL_SYNC_TIME, timestamp).apply();
-    }
-
-    public String getLastGoalSyncTime() {
-        return getPrefs().getString(Constants.Keys.KEY_LAST_GOAL_SYNC_TIME, "1970-01-01T00:00:00.000Z");
-    }
-
-    public void setLastDebtSyncTime(String timestamp) {
-        getPrefs().edit().putString(Constants.Keys.KEY_LAST_DEBT_SYNC_TIME, timestamp).apply();
-    }
-
-    public String getLastDebtSyncTime() {
-        return getPrefs().getString(Constants.Keys.KEY_LAST_DEBT_SYNC_TIME, "1970-01-01T00:00:00.000Z");
     }
 
     public void setBudgetPlanDismissedMonth(String month) {
@@ -226,6 +208,14 @@ public class PreferenceManager {
 
     public String getLastNotifCheck() {
         return getPrefs().getString(Constants.Keys.KEY_LAST_NOTIF_CHECK, "1970-01-01T00:00:00.000Z");
+    }
+
+    public void setLastRecurringCheck(String yearMonth) {
+        getPrefs().edit().putString("last_recurring_check", yearMonth).apply();
+    }
+
+    public String getLastRecurringCheck() {
+        return getPrefs().getString("last_recurring_check", "");
     }
 
     public void setAiIntroDone(boolean done) { getPrefs().edit().putBoolean("ai_intro_done", done).apply(); }

@@ -144,7 +144,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
                     } else {
                         if (shimmer != null) shimmer.setVisibility(View.GONE);
                         binding.layoutContent.setVisibility(View.VISIBLE);
-                        binding.tvPersonName.setText(debt.getName());
+                        binding.tvPersonName.setText(debt.getTitle());
                         binding.tvDescription.setText(debt.getNote());
                         binding.tvAmount.setText(Utils.formatCurrency(debt.getAmount()));
                         binding.tvDate.setText(Utils.getTimeAgo(debt.getTimestampMillis()));
@@ -165,7 +165,7 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         DialogDebtDetailBinding dialogBinding = DialogDebtDetailBinding.inflate(getLayoutInflater());
         dialog.setContentView(dialogBinding.getRoot());
 
-        dialogBinding.tvDetailName.setText(debt.getName());
+        dialogBinding.tvDetailName.setText(debt.getTitle());
         dialogBinding.tvDetailDesc.setText(debt.getNote());
         dialogBinding.tvDetailAmount.setText(Utils.formatCurrency(debt.getAmount()));
         dialogBinding.tvDetailDate.setText(Utils.getTimeAgo(debt.getTimestampMillis()));

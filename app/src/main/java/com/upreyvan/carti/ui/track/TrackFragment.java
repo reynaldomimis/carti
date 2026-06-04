@@ -4,12 +4,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.upreyvan.carti.R;
+
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.BaseMultiItem;
 import com.upreyvan.carti.data.local.CategoryManager;
@@ -17,7 +18,7 @@ import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
-import java.util.ArrayList;
+
 import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +36,6 @@ public class TrackFragment extends BaseFragment<com.upreyvan.carti.databinding.F
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(TrackViewModel.class);
         initAdapter();
-        setupDynamicPadding(getBinding().layoutHeader, getBinding().rvTrack);
         observeViewModel();
         viewModel.sync();
     }
@@ -66,7 +66,7 @@ public class TrackFragment extends BaseFragment<com.upreyvan.carti.databinding.F
     @Override public void onTotalBalanceClick() { onViewDetails(); }
     @Override public void onToggleAllocation() { viewModel.toggleExpansion(); }
     @Override public void onSeeAllTransactions() { navigateTo(AllTransactionsFragment.newInstance("EXPENSE")); }
-    @Override public void onTransactionLike(TransactionWithUser item) {}
+    @Override public void onTransactionLike(TransactionWithUser item) { viewModel.toggleLike(item); }
     @Override public void onTransactionComment(TransactionWithUser item) { CommentsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Comments"); }
     @Override public void onTransactionClick(TransactionWithUser item) {}
     

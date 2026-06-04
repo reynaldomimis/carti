@@ -35,7 +35,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     public static GoalDetailFragment newInstance(String goalId) {
         GoalDetailFragment fragment = new GoalDetailFragment();
         Bundle args = new Bundle();
-        args.putString("goal_id", goalId);
+        args.putString(com.upreyvan.carti.util.Constants.Keys.KEY_TRANSACTION_ID, goalId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -44,7 +44,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            goalId = getArguments().getString("goal_id");
+            goalId = getArguments().getString(com.upreyvan.carti.util.Constants.Keys.KEY_TRANSACTION_ID);
         }
     }
 
@@ -159,7 +159,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
         getBinding().progressGoal.setProgress(progress);
         getBinding().tvStatusComplete.setText(getString(R.string.goal_progress_complete_format, progress));
 
-        getBinding().tvTargetDate.setText(ValueHelper.toStr(goal.getDueDate()));
+        getBinding().tvTargetDate.setText(ValueHelper.toStr(goal.getTargetDate()));
         getBinding().tvMonthlyTarget.setText(currencyFormat.format(1000));
 
         if (goal.getIconRes() != 0) {

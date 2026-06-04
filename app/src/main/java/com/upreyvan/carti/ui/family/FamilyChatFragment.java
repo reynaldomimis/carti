@@ -4,23 +4,22 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentFamilyChatBinding;
-import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.VoiceToTextHelper;
+
 import java.util.ArrayList;
 
 public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> {
@@ -42,14 +41,11 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
         setupSuggestions();
         setupInput();
         setupVoiceInput();
-        setupDynamicPadding();
         checkConnectionAndLoad();
 
         getBinding().btnBackContainer.setOnClickListener(v -> {
             Utils.hideKeyboard(requireContext(), getBinding().layoutInput.etInput);
-            if (getActivity() instanceof MainActivity main) {
-                main.navigateTo(Constants.Navigation.HOME);
-            }
+            requireActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }
 
@@ -215,21 +211,6 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
     private void setupToolbar() {
         getBinding().tvTitle.setText(R.string.family_chat_title);
-    }
-
-    private void setupDynamicPadding() {
-        ViewCompat.setOnApplyWindowInsetsListener(getBinding().getRoot(), (v, windowInsets) -> {
-            Insets systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            Insets ime = windowInsets.getInsets(WindowInsetsCompat.Type.ime());
-
-            int topPadding = (int) (systemBars.top * 0.85f);
-            int extraGap = getResources().getDimensionPixelSize(R.dimen.spacing_medium);
-            int keyboardGap = getResources().getDimensionPixelSize(R.dimen.spacing_small);
-
-            int bottomPadding = (ime.bottom > 0) ? ime.bottom + keyboardGap : systemBars.bottom + extraGap;
-            v.setPadding(systemBars.left, topPadding, systemBars.right, bottomPadding);
-            return WindowInsetsCompat.CONSUMED;
-        });
     }
 
     @Override

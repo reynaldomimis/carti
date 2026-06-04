@@ -26,6 +26,7 @@ import com.upreyvan.carti.databinding.LayoutNavItemBinding;
 import com.upreyvan.carti.ui.allocate.PlanFragment;
 import com.upreyvan.carti.ui.auth.LoginActivity;
 import com.upreyvan.carti.ui.common.AddOptionsActivity;
+import com.upreyvan.carti.ui.common.QuickAddBottomSheetFragment;
 import com.upreyvan.carti.ui.family.FamilyChatFragment;
 import com.upreyvan.carti.ui.home.HomeFragment;
 import com.upreyvan.carti.ui.onboarding.StartActivity;
@@ -106,7 +107,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         setupTabs();
         setupFragments();
 
-        getBinding().tabAddContainer.setOnClickListener(v -> startActivity(new Intent(this, AddOptionsActivity.class)));
+        getBinding().tabAddContainer.setOnClickListener(v -> QuickAddBottomSheetFragment.newInstance().show(getSupportFragmentManager(), "QuickAdd"));
         RealtimeRepository.getInstance(this).startListening();
         setupBackPress();
 
@@ -213,14 +214,15 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             } else if (id == Constants.Navigation.CHAT) {
                 target = chatFragment;
                 setTabActive(getBinding().tabChat);
-                showBottomNav = false;
             } else if (id == Constants.Navigation.PLAN) {
                 target = planFragment;
                 setTabActive(getBinding().tabPlan);
             } else if (id == Constants.Navigation.PROFILE) {
                 target = profileFragment;
                 setTabActive(getBinding().tabProfile);
-                showBottomNav = false;
+            } else if (id == Constants.Navigation.INCOME) {
+                target = new com.upreyvan.carti.ui.track.IncomeModeFragment();
+                setTabActive(getBinding().tabExpenses);
             } else if (id == Constants.Navigation.ADD) {
                 startActivity(new Intent(this, AddOptionsActivity.class));
                 return;

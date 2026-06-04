@@ -13,6 +13,7 @@ import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.databinding.ActivityAddBudgetPlanBinding;
 import com.upreyvan.carti.databinding.ItemBudgetCategoryBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
+import com.upreyvan.carti.ui.allocate.AddCategoryBottomSheet;
 import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.Utils;
@@ -42,10 +43,10 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
 
     private void setupListeners() {
         getBinding().btnAddCategory.setOnClickListener(v -> {
-            AddBudgetCategoryBottomSheet bottomSheet = new AddBudgetCategoryBottomSheet();
-            bottomSheet.setListener((name, amount) -> {
+            AddCategoryBottomSheet bottomSheet = AddCategoryBottomSheet.newInstance();
+            bottomSheet.setListener((name, amount, isRecurring) -> {
                 List<BudgetCategoryItem> currentList = new ArrayList<>(adapter.getCurrentList());
-                currentList.add(new BudgetCategoryItem(name, R.drawable.ic_chart, R.color.mint_green, R.color.mint_green_alpha, amount, 0));
+                currentList.add(new BudgetCategoryItem(name, R.drawable.ic_chart, R.color.mint_green, R.color.mint_green_alpha, amount, 0, null, 0, isRecurring));
                 adapter.submitList(currentList);
             });
             bottomSheet.show(getSupportFragmentManager(), "ADD_CATEGORY_BOTTOM_SHEET");

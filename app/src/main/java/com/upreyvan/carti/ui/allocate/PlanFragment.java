@@ -32,7 +32,6 @@ public class PlanFragment extends BaseFragment<FragmentPlanBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
-        setupDynamicPadding(getBinding().headerContainer, null);
         setupViewPager();
         viewModel.loadData();
     }

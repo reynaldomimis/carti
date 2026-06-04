@@ -1,66 +1,278 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet_white"
-    android:orientation="vertical"
-    android:padding="@dimen/spacing_large">
+    android:paddingBottom="@dimen/spacing_large">
 
     <View
-        android:layout_width="@dimen/handle_width"
-        android:layout_height="@dimen/handle_height"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="@dimen/spacing_large"
-        android:background="@color/border_subtle" />
+        android:id="@+id/handle"
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:background="@drawable/bg_handle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tv_title"
-        style="@style/CartiHeader"
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvTitle"
+        style="@style/DashAmountSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/spacing_medium"
-        tools:text="Add Bill" />
+        android:layout_marginStart="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="@string/label_add_bill_reminder"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/handle" />
 
-    <com.google.android.material.card.MaterialCardView
-        style="@style/CartiCard"
+    <ImageButton
+        android:id="@+id/btnClose"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="@dimen/spacing_medium"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/btn_cancel"
+        android:padding="8dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_close"
+        app:layout_constraintBottom_toBottomOf="@id/tvTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvTitle"
+        app:tint="@color/text_primary" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelBillName"
+        style="@style/DashLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:letterSpacing="0.1"
+        android:text="@string/label_bill_name"
+        android:textAllCaps="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutBillName"
+        style="@style/CartiInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/spacing_large">
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_small"
+        app:layout_constraintTop_toBottomOf="@id/labelBillName">
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etBillName"
+            style="@style/CartiEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/spacing_medium">
+            android:hint="@string/hint_bill_name"
+            android:inputType="textCapWords" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/til_category"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Category"
-                app:boxStrokeColor="@color/carti_primary_green"
-                app:hintTextColor="@color/carti_primary_green">
+    </com.google.android.material.textfield.TextInputLayout>
 
-                <AutoCompleteTextView
-                    android:id="@+id/act_category"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:textColor="@color/text_primary" />
-            </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelAmount"
+        style="@style/DashLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:letterSpacing="0.1"
+        android:text="@string/label_amount_peso"
+        android:textAllCaps="true"
+        app:layout_constraintEnd_toStartOf="@+id/labelDueDate"
+        app:layout_constraintStart_toStartOf="@id/layoutBillName"
+        app:layout_constraintTop_toBottomOf="@id/layoutBillName" />
 
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelDueDate"
+        style="@style/DashLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_medium"
+        android:letterSpacing="0.1"
+        android:text="@string/label_due_date"
+        android:textAllCaps="true"
+        app:layout_constraintEnd_toEndOf="@id/layoutBillName"
+        app:layout_constraintStart_toEndOf="@id/labelAmount"
+        app:layout_constraintTop_toTopOf="@id/labelAmount" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_save"
-        style="@style/CartiButton.Primary"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutAmount"
+        style="@style/CartiInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small"
+        app:layout_constraintEnd_toEndOf="@id/labelAmount"
+        app:layout_constraintStart_toStartOf="@id/labelAmount"
+        app:layout_constraintTop_toBottomOf="@id/labelAmount">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etAmount"
+            style="@style/CartiEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/placeholder_amount"
+            android:inputType="numberDecimal" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutDueDate"
+        style="@style/CartiInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@id/labelDueDate"
+        app:layout_constraintStart_toStartOf="@id/labelDueDate"
+        app:layout_constraintTop_toTopOf="@id/layoutAmount">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etDueDate"
+            style="@style/CartiEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="false"
+            android:hint="@string/placeholder_date" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelCategory"
+        style="@style/DashLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:letterSpacing="0.1"
+        android:text="@string/label_category"
+        android:textAllCaps="true"
+        app:layout_constraintStart_toStartOf="@id/layoutBillName"
+        app:layout_constraintTop_toBottomOf="@id/layoutAmount" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutCategory"
+        style="@style/CartiInputLayout.Dropdown"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_small"
+        app:layout_constraintTop_toBottomOf="@id/labelCategory">
+
+        <AutoCompleteTextView
+            android:id="@+id/actCategory"
+            style="@style/CartiEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Status -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelStatus"
+        style="@style/DashLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:letterSpacing="0.1"
+        android:text="@string/label_status"
+        android:textAllCaps="true"
+        app:layout_constraintStart_toStartOf="@id/layoutBillName"
+        app:layout_constraintTop_toBottomOf="@id/layoutCategory" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutStatus"
+        style="@style/CartiInputLayout.Dropdown"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_small"
+        app:layout_constraintTop_toBottomOf="@id/labelStatus">
+
+        <AutoCompleteTextView
+            android:id="@+id/actStatus"
+            style="@style/CartiEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvStatusDesc"
+        style="@style/CartiCaption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_xxs"
+        android:text="@string/status_active_desc"
+        app:layout_constraintStart_toStartOf="@id/layoutStatus"
+        app:layout_constraintTop_toBottomOf="@id/layoutStatus" />
+
+    <!-- Notes -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelNotes"
+        style="@style/DashLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:letterSpacing="0.1"
+        android:text="@string/label_notes_optional"
+        android:textAllCaps="true"
+        app:layout_constraintStart_toStartOf="@id/layoutBillName"
+        app:layout_constraintTop_toBottomOf="@id/tvStatusDesc" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutNotes"
+        style="@style/CartiInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_small"
+        app:layout_constraintTop_toBottomOf="@id/labelNotes">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etNotes"
+            style="@style/CartiEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_notes"
+            android:inputType="textMultiLine"
+            android:maxLines="3" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Buttons -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xl"
-        android:text="@string/btn_save_bill" />
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_medium"
+        app:layout_constraintTop_toBottomOf="@id/layoutNotes">
 
-</LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancel"
+            style="@style/CartiButton.Tonal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:layout_weight="1"
+            android:text="@string/btn_cancel"
+            android:textColor="@color/text_primary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSave"
+            style="@style/CartiButton.Primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_small"
+            android:layout_weight="1"
+            android:text="@string/label_save" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

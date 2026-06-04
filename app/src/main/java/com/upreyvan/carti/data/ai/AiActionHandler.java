@@ -3,7 +3,6 @@ package com.upreyvan.carti.data.ai;
 import android.content.Context;
 import android.util.Log;
 import com.upreyvan.carti.data.local.BudgetManager;
-import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.Transaction;
@@ -12,13 +11,11 @@ import org.json.JSONObject;
 import java.util.Map;
 
 public class AiActionHandler {
-    private final ApiHelper apiHelper;
     private final TransactionRepository transactionRepository;
     private final Context context;
 
     public AiActionHandler(Context context) {
         this.context = context;
-        this.apiHelper = new ApiHelper(context);
         this.transactionRepository = TransactionRepository.getInstance(context);
     }
 
@@ -47,7 +44,7 @@ public class AiActionHandler {
                     expense.setType("EXPENSE"); 
                     expense.setCategory(category);
                     expense.setTitle(item);
-                    expense.setDescription(String.format("Outflow log: %s", item));
+                    expense.setNote(String.format("Outflow log: %s", item));
                     transactionRepository.addTransaction(expense, callback);
                 }
                 case "INCOME" -> {
@@ -58,17 +55,19 @@ public class AiActionHandler {
                     income.setType("INCOME");
                     income.setCategory("Income");
                     income.setTitle(source);
-                    income.setDescription(String.format("Inflow log: %s", source));
+                    income.setNote(String.format("Inflow log: %s", source));
                     transactionRepository.addTransaction(income, callback);
                 }
                 case "GOAL" -> {
                     String goalTitle = data.optString("title", data.optString("item", "New Goal"));
                     double goalAmount = data.optDouble("amount", data.optDouble("targetAmount", 0.0));
                     String targetDate = data.optString("targetDate", "");
-                    apiHelper.addGoal(goalTitle, goalAmount, targetDate, new AppwriteCallback<>() {
-                        @Override public void onSuccess(Map<String, Object> result) { transactionRepository.refreshTransactions(); callback.onSuccess(result); }
-                        @Override public void onError(Throwable error) { callback.onError(error); }
-                    });
+                    Transaction goal = new Transaction();
+                    goal.setType("GOAL");
+                    goal.setTitle(goalTitle);
+                    goal.setTargetAmount(goalAmount);
+                    goal.setTargetDate(targetDate);
+                    transactionRepository.addTransaction(goal, callback);
                 }
                 case "DEBT" -> {
                     String personName = data.optString("personName", data.optString("item", "Unknown"));
@@ -76,15 +75,19 @@ public class AiActionHandler {
                     String debtType = data.optString("type", "BORROWED");
                     String debtCategory = data.optString("category", "General");
                     String debtTargetDate = data.optString("targetDate", "");
-                    apiHelper.addDebt(personName, debtAmount, debtType, debtCategory, debtTargetDate, "NO_REMINDER", "", new AppwriteCallback<>() {
-                        @Override public void onSuccess(Map<String, Object> result) { transactionRepository.refreshTransactions(); callback.onSuccess(result); }
-                        @Override public void onError(Throwable error) { callback.onError(error); }
-                    });
+                    Transaction debt = new Transaction();
+                    debt.setType("DEBT");
+                    debt.setTitle(personName);
+                    debt.setAmount(debtAmount);
+                    debt.setCategory(debtCategory);
+                    debt.setTargetDate(debtTargetDate);
+                    debt.setStatus(debtType);
+                    transactionRepository.addTransaction(debt, callback);
                 }
                 case "ALLOCATION" -> {
                     String catName = data.optString("category", "Others");
                     double allocAmount = data.optDouble("amount", 0.0);
-                    BudgetManager.getInstance(context).updateOrAddCategory(catName, allocAmount, null);
+                    BudgetManager.getInstance(context).updateOrAddCategory(catName, allocAmount, null, false);
                     Transaction alloc = new Transaction();
                     alloc.setAmount(allocAmount);
                     alloc.setType("ALLOCATION"); 
