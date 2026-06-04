@@ -107,13 +107,25 @@
         tools:listitem="@layout/item_icon_picker"
         tools:spanCount="7" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnUploadImage"
+        style="@style/CartiButton.Tonal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:text="@string/label_upload_device"
+        app:icon="@drawable/ic_image"
+        app:iconGravity="textStart"
+        app:layout_constraintTop_toBottomOf="@id/rvIcons" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xl"
         android:orientation="horizontal"
         android:paddingHorizontal="@dimen/spacing_medium"
-        app:layout_constraintTop_toBottomOf="@id/rvIcons">
+        app:layout_constraintTop_toBottomOf="@id/btnUploadImage">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancel"

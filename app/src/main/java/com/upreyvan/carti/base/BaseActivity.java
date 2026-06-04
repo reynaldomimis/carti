@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.Window;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +17,7 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.util.LoadingDialog;
 import com.upreyvan.carti.util.NetworkMonitor;
 import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.Utils;
 
 
 public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActivity {
@@ -94,6 +96,10 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
     }
 
     protected VB getBinding() { return binding; }
+
+    protected void setupDynamicPadding(View topView, View bottomView) {
+        Utils.applySystemBarInsets(topView, bottomView, 1.0f, 0);
+    }
 
     private void applyEdgeToEdge() {
         Window window = getWindow();

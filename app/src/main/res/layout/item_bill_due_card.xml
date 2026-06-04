@@ -37,39 +37,37 @@
                 app:tint="@color/status_red" />
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvBillName"
+            style="@style/CartiHeaderSmall"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_small"
             android:layout_marginEnd="@dimen/spacing_xs"
             android:ellipsize="end"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
             android:maxLines="1"
-            android:textColor="@color/text_primary"
             android:textSize="11sp"
             app:layout_constraintEnd_toStartOf="@id/tvStatus"
             app:layout_constraintStart_toEndOf="@id/cvIcon"
             app:layout_constraintTop_toTopOf="@id/cvIcon"
             tools:text="Rent Bill" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvDueDate"
+            style="@style/CartiTextDescription"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_medium"
-            android:textColor="@color/text_secondary"
             android:textSize="9sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvBillName"
             app:layout_constraintTop_toBottomOf="@id/tvBillName"
             tools:text="Due May 20" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvStatus"
+            style="@style/CartiCaption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/plus_jakarta_sans_bold"
             android:paddingHorizontal="4dp"
             android:paddingVertical="1dp"
             android:text="@string/status_unpaid"

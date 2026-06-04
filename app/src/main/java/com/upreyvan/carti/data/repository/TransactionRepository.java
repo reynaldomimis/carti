@@ -140,6 +140,10 @@ public class TransactionRepository {
         });
     }
 
+    public void addGoal(String name, double targetAmount, String dueDate, List<String> members, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        remoteDataSource.addGoal(name, targetAmount, dueDate, members, callback);
+    }
+
     public void updateTransaction(Transaction transaction, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> data = new HashMap<>();
         data.put("title", transaction.getTitle());

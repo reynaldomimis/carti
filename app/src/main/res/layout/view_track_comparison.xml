@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/DashCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/gap_card"
+    app:strokeColor="@color/border_subtle"
+    app:strokeWidth="1dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_medium">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvIncomeVsExpenseTitle"
+            style="@style/CartiHeaderSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_income_vs_expense"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/layoutIncomeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:orientation="vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvIncomeVsExpenseTitle">
+
+            <com.google.android.material.textview.MaterialTextView
+                style="@style/CartiCaption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_income" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvIncomeAmountComp"
+                style="@style/CartiHeaderSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xxs"
+                android:textColor="@color/carti_primary_green" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutExpenseLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:orientation="vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutIncomeLabel">
+
+            <com.google.android.material.textview.MaterialTextView
+                style="@style/CartiCaption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_expense"
+                android:textColor="@color/status_red" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvExpenseAmountComp"
+                style="@style/CartiHeaderSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xxs"
+                android:textColor="@color/status_red" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutBars"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:paddingTop="@dimen/spacing_small"
+            android:layout_marginStart="@dimen/spacing_xl"
+            android:gravity="bottom"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/layoutIncomeLabel"
+            app:layout_constraintTop_toBottomOf="@id/tvIncomeVsExpenseTitle">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="bottom|center_horizontal"
+                android:orientation="vertical">
+                <View
+                    android:id="@+id/barIncome"
+                    android:layout_width="32dp"
+                    android:layout_height="0dp"
+                    android:background="@drawable/bg_pill_green" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="@dimen/spacing_medium"
+                android:layout_height="match_parent" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="bottom|center_horizontal"
+                android:orientation="vertical">
+                <View
+                    android:id="@+id/barExpense"
+                    android:layout_width="32dp"
+                    android:layout_height="0dp"
+                    android:background="@drawable/bg_pill_red" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

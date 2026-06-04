@@ -1,49 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/CartiCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp">
+    android:layout_margin="@dimen/spacing_xxs">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="@dimen/spacing_small">
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvCategoryName"
             style="@style/CartiTextTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textSize="14sp"
+            android:textSize="@dimen/text_size_body"
             tools:text="Food" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvRemainingText"
             style="@style/CartiHeaderSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/spacing_xxs"
             android:textColor="@color/carti_primary_green"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_size_small"
             tools:text="₱1,000" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvStatus"
             style="@style/CartiTextDescription"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="left"
-            android:textSize="10sp" />
+            android:text="@string/label_balance" />
 
-        <!-- Hidden but kept for binding compatibility if needed, or can be removed if Java is updated -->
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvProgressText"
             android:layout_width="0dp"
             android:layout_height="0dp"

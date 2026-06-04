@@ -1,129 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/goal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
-
-    <include
-        android:id="@+id/layoutToolbar"
-        layout="@layout/layout_custom_toolbar"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="@dimen/spacing_small"
-        android:layout_marginHorizontal="@dimen/spacing_medium"
-        android:background="@android:color/transparent"
-        app:tabBackground="@drawable/sl_tab_pill"
-        app:tabIndicatorAnimationMode="linear"
-        app:tabIndicator="@drawable/bg_pill_green"
-        app:tabIndicatorGravity="center"
-        app:tabIndicatorHeight="32dp"
-        app:tabIndicatorFullWidth="true"
-        app:tabMode="scrollable"
-        app:tabMinWidth="0dp"
-        app:tabPaddingStart="@dimen/spacing_medium"
-        app:tabPaddingEnd="@dimen/spacing_medium"
-        app:tabRippleColor="@null"
-        app:tabSelectedTextColor="@color/white"
-        app:tabTextColor="@color/text_secondary"
-        app:tabTextAppearance="@style/CartiHeaderSmall"
-        app:layout_constraintTop_toBottomOf="@id/layoutToolbar">
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/tab_all_goals" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/tab_active_goals" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/tab_completed_goals" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/tab_paused_goals" />
-
-    </com.google.android.material.tabs.TabLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_goals"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="@dimen/spacing_small"
-        android:layout_marginHorizontal="@dimen/spacing_medium"
-        android:clipToPadding="false"
-        android:paddingBottom="80dp"
-        android:scrollbars="none"
-        app:layout_constraintTop_toBottomOf="@id/tabLayout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:listitem="@layout/item_goal" />
+    android:background="@color/white"
+    android:clipToPadding="false">
 
     <LinearLayout
-        android:id="@+id/layoutEmptyState"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tabLayout"
-        app:layout_constraintVertical_bias="0.4"
-        tools:visibility="visible">
+        android:paddingBottom="@dimen/spacing_xl">
 
-        <ImageView
-            android:id="@+id/ivEmptyIcon"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/ic_trophy"
-            android:contentDescription="@string/no_goals_title"
-            app:tint="@color/surface_variant" />
+        <include
+            android:id="@+id/layoutHeader"
+            layout="@layout/view_plan_header" />
 
-        <TextView
-            android:id="@+id/tvEmptyTitle"
-            style="@style/CartiHeader"
-            android:layout_width="wrap_content"
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginHorizontal="@dimen/screen_padding"
+            android:background="@android:color/transparent"
+            app:tabBackground="@drawable/sl_tab_pill"
+            app:tabIndicatorAnimationMode="linear"
+            app:tabIndicator="@drawable/bg_pill_green"
+            app:tabIndicatorGravity="center"
+            app:tabIndicatorHeight="32dp"
+            app:tabIndicatorFullWidth="true"
+            app:tabMode="scrollable"
+            app:tabMinWidth="0dp"
+            app:tabPaddingStart="@dimen/spacing_medium"
+            app:tabPaddingEnd="@dimen/spacing_medium"
+            app:tabRippleColor="@null"
+            app:tabSelectedTextColor="@color/white"
+            app:tabTextColor="@color/text_secondary"
+            app:tabTextAppearance="@style/CartiHeaderSmall">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tab_all_goals" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tab_active_goals" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tab_completed_goals" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tab_paused_goals" />
+
+        </com.google.android.material.tabs.TabLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvGoals"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:text="@string/no_goals_title"
-            android:textSize="@dimen/text_size_header" />
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginHorizontal="@dimen/screen_padding"
+            android:nestedScrollingEnabled="false"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_goal" />
 
-        <TextView
-            android:id="@+id/tvEmptyDesc"
-            style="@style/CartiSubHeader"
-            android:layout_width="wrap_content"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/layoutEmptyState"
+            style="@style/DashCard"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xs"
-            android:gravity="center"
-            android:text="@string/no_goals_desc"
-            android:textSize="@dimen/text_size_body_small" />
+            android:layout_marginHorizontal="@dimen/screen_padding"
+            android:layout_marginVertical="@dimen/spacing_small"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/white"
+            app:strokeColor="@color/border_subtle"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_large">
+
+                <ImageView
+                    android:id="@+id/ivEmptyIcon"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_trophy"
+                    android:contentDescription="@string/no_goals_title"
+                    app:tint="@color/carti_primary_green" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvEmptyTitle"
+                    style="@style/CartiHeaderSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:text="@string/no_goals_title" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvEmptyDesc"
+                    style="@style/CartiTextDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:text="@string/no_goals_desc"
+                    android:textAlignment="center" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnAddGoalFloating"
-        style="@style/CartiButton.Tonal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_medium"
-        android:text="@string/btn_add_goal"
-        app:icon="@drawable/ic_add"
-        app:iconGravity="textStart"
-        app:iconTint="@color/carti_primary_green"
-        android:textColor="@color/carti_primary_green"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

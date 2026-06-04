@@ -38,7 +38,9 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
 
     protected abstract void initForm();
 
-    private void setupDynamicPadding() { Utils.applySystemBarInsets(getBinding().layoutToolbar.getRoot(), getBinding().btnCreateGoal, 1f, 20); }
+    private void setupDynamicPadding() { 
+        setupDynamicPadding(getBinding().layoutToolbar.getRoot(), getBinding().btnCreateGoal); 
+    }
 
     protected void setupToolbar() { getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish()); }
 

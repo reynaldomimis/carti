@@ -2,9 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+    style="@style/CartiContainer">
 
     <include
         android:id="@+id/layoutToolbar"
@@ -18,19 +16,22 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/layoutToolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="@dimen/spacing_xxl">
+            android:paddingBottom="@dimen/scroll_bottom_padding">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/spacing_large"
-                android:layout_marginVertical="@dimen/spacing_xs"
+                android:layout_marginHorizontal="@dimen/screen_padding"
+                android:layout_marginTop="@dimen/gap_section"
+                android:layout_marginBottom="@dimen/gap_card"
                 app:cardBackgroundColor="@color/surface_variant"
                 app:cardCornerRadius="@dimen/radius_xl"
                 app:cardElevation="0dp"
@@ -39,35 +40,36 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/spacing_medium">
+                    android:padding="@dimen/screen_padding">
 
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardAvatar"
                         android:layout_width="@dimen/avatar_size_medium"
                         android:layout_height="@dimen/avatar_size_medium"
-                        app:cardCornerRadius="@dimen/text_size_display"
+                        app:cardCornerRadius="@dimen/radius_full"
                         app:cardElevation="0dp"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:strokeWidth="0dp">
 
-                        <ImageView
+                        <com.google.android.material.imageview.ShapeableImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="centerCrop"
                             android:src="@drawable/ic_person"
-                            app:tint="@color/gray" />
+                            app:tint="@color/gray"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle" />
 
                     </com.google.android.material.card.MaterialCardView>
 
-                    <TextView
+                    <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvUserName"
+                        style="@style/CartiHeader"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/spacing_medium"
                         android:layout_marginEnd="@dimen/radius_medium"
-                        style="@style/CartiHeader"
                         tools:text="@string/placeholder_user_name"
-                        android:textSize="@dimen/text_size_header"
                         app:layout_constraintEnd_toStartOf="@+id/btnLogout"
                         app:layout_constraintStart_toEndOf="@id/cardAvatar"
                         app:layout_constraintTop_toTopOf="@id/cardAvatar" />
@@ -78,11 +80,9 @@
                         android:layout_height="@dimen/icon_size_xl"
                         android:clickable="true"
                         android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground"
                         app:cardBackgroundColor="@color/mint_green_alpha"
                         app:cardCornerRadius="@dimen/pill_corner_radius"
                         app:cardElevation="0dp"
-                        app:cardPreventCornerOverlap="false"
                         app:layout_constraintBottom_toBottomOf="@id/cardAvatar"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="@id/cardAvatar"
@@ -93,7 +93,8 @@
                             android:layout_height="match_parent"
                             android:padding="@dimen/icon_size_xxs"
                             android:src="@android:drawable/ic_lock_power_off"
-                            app:tint="@color/carti_primary_green" />
+                            app:tint="@color/carti_primary_green"
+                            android:contentDescription="@null" />
 
                     </com.google.android.material.card.MaterialCardView>
 
@@ -109,26 +110,25 @@
                         app:layout_constraintTop_toBottomOf="@id/tvUserName"
                         app:strokeWidth="0dp">
 
-                        <TextView
+                        <com.google.android.material.textview.MaterialTextView
+                            style="@style/CartiCaption"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
                             android:paddingHorizontal="@dimen/spacing_small"
                             android:paddingVertical="@dimen/spacing_xxs"
                             android:text="@string/role_admin"
-                            android:textColor="@color/carti_primary_green"
-                            android:textSize="@dimen/text_size_caption" />
+                            android:textColor="@color/carti_primary_green" />
 
                     </com.google.android.material.card.MaterialCardView>
 
-                    <TextView
+                    <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvUserEmail"
+                        style="@style/CartiSubHeader"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_small"
-                        style="@style/CartiSubHeader"
                         tools:text="@string/placeholder_user_email"
-                        android:textSize="@dimen/text_size_body_small"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="@id/tvUserName"
                         app:layout_constraintTop_toBottomOf="@id/cardRole" />
@@ -141,8 +141,8 @@
                 style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/spacing_large"
-                android:layout_marginTop="@dimen/spacing_medium">
+                android:layout_marginHorizontal="@dimen/screen_padding"
+                android:layout_marginTop="@dimen/gap_section">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvProfileMenu"

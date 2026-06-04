@@ -5,18 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/white"
-    android:paddingHorizontal="@dimen/spacing_medium"
-    android:paddingTop="@dimen/spacing_small"
-    android:paddingBottom="@dimen/spacing_small">
+    android:paddingHorizontal="@dimen/screen_padding"
+    android:paddingVertical="@dimen/spacing_small">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/back_button_container"
         android:layout_width="@dimen/back_button_size"
         android:layout_height="@dimen/back_button_size"
-        android:layout_marginStart="@dimen/spacing_xs"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?attr/selectableItemBackground"
         app:cardBackgroundColor="@color/surface_variant"
         app:cardCornerRadius="@dimen/radius_medium"
         app:cardElevation="0dp"
@@ -25,31 +22,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_back"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/transparent"
             android:contentDescription="@null"
-            android:padding="@dimen/spacing_small"
-            android:scaleType="fitXY"
-            android:src="@drawable/ic_back"
-            app:tint="@color/text_primary" />
+            app:icon="@drawable/ic_back"
+            app:iconTint="@color/text_primary" />
 
     </com.google.android.material.card.MaterialCardView>
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_toolbar_title"
         style="@style/CartiHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/text_size_header"
-        app:layout_constraintHorizontal_bias="0.45"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:text="@string/label_title" />
+        tools:text="@string/label_title" />
 
     <LinearLayout
         android:id="@+id/layout_search_container"
@@ -65,48 +58,43 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btn_search_toggle"
         app:layout_constraintStart_toEndOf="@id/back_button_container"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible">
+        app:layout_constraintTop_toTopOf="parent">
 
         <EditText
             android:id="@+id/et_search"
+            style="@style/CartiEditText"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@null"
-            android:fontFamily="@font/plus_jakarta_sans_medium"
             android:hint="@string/hint_search_transactions"
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:maxLines="1"
-            android:paddingHorizontal="@dimen/spacing_xs"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_tertiary"
-            android:textSize="@dimen/text_size_body_small" />
+            android:paddingHorizontal="@dimen/spacing_xs" />
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_clear_search"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_close"
-            app:tint="@color/text_tertiary" />
+            app:icon="@drawable/ic_close"
+            app:iconTint="@color/text_tertiary" />
 
     </LinearLayout>
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_search_toggle"
+        style="@style/Widget.Material3.Button.IconButton"
         android:layout_width="@dimen/back_button_size"
         android:layout_height="@dimen/back_button_size"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@android:drawable/ic_menu_search"
         android:visibility="gone"
         android:contentDescription="@string/hint_search_transactions"
-        app:tint="@color/text_primary"
+        app:icon="@android:drawable/ic_menu_search"
+        app:iconTint="@color/text_primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_action"
@@ -115,15 +103,10 @@
         android:layout_height="@dimen/action_button_height"
         android:minHeight="0dp"
         android:paddingHorizontal="@dimen/spacing_medium"
-        android:textSize="@dimen/text_size_small"
         android:visibility="gone"
-        app:iconPadding="@dimen/spacing_xs"
-        app:iconSize="@dimen/icon_size_xs"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:text="@string/label_action"
-        tools:visibility="visible"/>
-
+        tools:text="@string/label_action" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

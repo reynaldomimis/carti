@@ -34,6 +34,16 @@ public class TransactionRemoteDataSource {
         appwriteManager.callGateway(Constants.Actions.ADD_TRANSACTION, params, wrapExecution(callback));
     }
 
+    public void addGoal(String name, double targetAmount, String dueDate, List<String> members, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("title", name);
+        params.put("targetAmount", targetAmount);
+        params.put("dueDate", dueDate);
+        if (members != null) params.put("members", members);
+        params.put("type", "GOAL");
+        appwriteManager.callGateway(Constants.Actions.ADD_GOAL, params, wrapExecution(callback));
+    }
+
     public void getTransactionsSince(String lastSync, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         if (familyId.isEmpty()) {

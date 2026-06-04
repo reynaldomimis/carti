@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/spacing_small"
+    android:layout_marginTop="@dimen/gap_card"
     app:cardBackgroundColor="@color/mint_green_alpha"
     app:cardCornerRadius="@dimen/radius_large"
     app:cardElevation="0dp"
@@ -16,10 +16,11 @@
         android:orientation="horizontal"
         android:padding="@dimen/spacing_medium">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/ai_holder" />
+            android:src="@drawable/ai_holder"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -28,23 +29,20 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <TextView
-                style="@style/CartiTextTitle"
+            <com.google.android.material.textview.MaterialTextView
+                style="@style/CartiHeaderSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/ai_insight_title"
-                android:textColor="@color/carti_primary_green"
-                android:textSize="14sp" />
+                android:textColor="@color/carti_primary_green" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvInsightMessage"
                 style="@style/CartiTextDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/ai_insight_message"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:layout_marginTop="@dimen/spacing_xxs"
+                android:text="@string/ai_insight_message" />
 
         </LinearLayout>
 
@@ -52,7 +50,8 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@android:drawable/ic_menu_send"
-            app:tint="@color/carti_primary_green" />
+            app:tint="@color/carti_primary_green"
+            android:contentDescription="@null" />
 
     </LinearLayout>
 

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.microsoft.com/tools"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="@dimen/spacing_medium"
-    android:paddingVertical="@dimen/spacing_small">
+    android:paddingHorizontal="@dimen/screen_padding"
+    android:paddingVertical="@dimen/spacing_xxs">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -15,19 +15,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvSenderName"
             style="@style/CartiHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/carti_primary_green"
-            android:textSize="@dimen/text_size_small"
-            tools:text="@string/placeholder_maria" />
+            android:textSize="@dimen/text_size_small" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xs"
+            android:layout_marginTop="@dimen/spacing_xxs"
             app:cardBackgroundColor="@color/tonal_button_bg"
             app:cardCornerRadius="@dimen/radius_large"
             app:cardElevation="0dp"
@@ -41,24 +40,22 @@
                 android:paddingHorizontal="@dimen/radius_medium"
                 android:paddingVertical="@dimen/spacing_small">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvMessage"
-                    style="@style/CartiSubHeader"
+                    style="@style/CartiTextBody"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_primary"
                     tools:text="@string/placeholder_chat_msg_reply" />
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvTime"
+                    style="@style/CartiCaption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:layout_marginTop="2dp"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
-                    android:textColor="@color/text_tertiary"
-                    android:textSize="10sp"
-                    tools:text="@string/placeholder_time_931" />
+                    android:layout_marginTop="@dimen/spacing_xxs"
+                    android:textColor="@color/text_tertiary" />
 
             </LinearLayout>
 

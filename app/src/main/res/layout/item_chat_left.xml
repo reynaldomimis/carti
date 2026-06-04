@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="@dimen/spacing_medium"
-    android:paddingVertical="@dimen/spacing_small">
+    android:paddingHorizontal="@dimen/screen_padding"
+    android:paddingVertical="@dimen/spacing_xxs">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/ivAvatar"
@@ -27,7 +27,7 @@
         app:layout_constraintStart_toEndOf="@id/ivAvatar"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvSenderName"
             style="@style/CartiHeader"
             android:layout_width="wrap_content"
@@ -38,7 +38,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xs"
+            android:layout_marginTop="@dimen/spacing_xxs"
             app:cardBackgroundColor="@color/surface_variant"
             app:cardCornerRadius="@dimen/radius_large"
             app:cardElevation="0dp"
@@ -52,9 +52,9 @@
                 android:paddingHorizontal="@dimen/radius_medium"
                 android:paddingVertical="@dimen/spacing_small">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvMessage"
-                    style="@style/CartiSubHeader"
+                    style="@style/CartiTextBody"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_primary"
@@ -63,7 +63,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="@dimen/spacing_xxs"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -76,14 +76,14 @@
                         android:visibility="gone"
                         tools:visibility="visible">
 
-                        <TextView
+                        <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvActionLabel"
+                            style="@style/CartiCaption"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
                             android:textColor="@color/carti_primary_green"
-                            android:textSize="11sp"
-                            android:layout_marginEnd="4dp"
+                            android:layout_marginEnd="@dimen/spacing_xxs"
                             tools:text="Expense" />
 
                         <com.google.android.material.button.MaterialButton
@@ -93,20 +93,19 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
                             android:minHeight="32dp"
-                            android:paddingHorizontal="4dp"
+                            android:paddingHorizontal="@dimen/spacing_xxs"
                             android:text="@string/btn_cancel"
                             android:textAllCaps="false"
                             android:textColor="@color/status_red"
-                            android:textSize="12sp"
-                            app:rippleColor="@color/ripple_color" />
+                            android:textSize="@dimen/text_size_small" />
 
-                        <TextView
+                        <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvTimer"
+                            style="@style/CartiCaption"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/plus_jakarta_sans_bold"
                             android:textColor="@color/status_red"
-                            android:textSize="12sp"
                             tools:text="@string/placeholder_timer" />
 
                     </LinearLayout>
@@ -116,13 +115,12 @@
                         android:layout_height="0dp"
                         android:layout_weight="1" />
 
-                    <TextView
+                    <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvTime"
+                        style="@style/CartiCaption"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/plus_jakarta_sans_medium"
                         android:textColor="@color/text_tertiary"
-                        android:textSize="10sp"
                         tools:text="@string/placeholder_time_930" />
 
                 </LinearLayout>

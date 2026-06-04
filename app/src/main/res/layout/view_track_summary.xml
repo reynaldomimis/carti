@@ -5,9 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="@dimen/spacing_medium">
-
-    <!-- Total Balance Card -->
+    android:paddingTop="@dimen/gap_section_title">
+    
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardTotalBalance"
         style="@style/DashCard"
@@ -22,7 +21,7 @@
             android:layout_height="wrap_content"
             android:padding="@dimen/spacing_large">
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvBalanceLabel"
                 style="@style/CartiSubHeader"
                 android:layout_width="wrap_content"
@@ -32,12 +31,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTotalBalance"
                 style="@style/CartiTextAmount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xs"
+                android:layout_marginTop="@dimen/spacing_xxs"
                 android:textColor="@color/carti_primary_green"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvBalanceLabel" />
@@ -52,13 +51,13 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvTotalBalance">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
+                    style="@style/CartiCaption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/plus_jakarta_sans_semibold"
                     android:text="@string/label_view"
                     android:textColor="@color/carti_primary_green"
-                    android:textSize="@dimen/text_size_caption" />
+                    android:fontFamily="@font/plus_jakarta_sans_semibold" />
 
                 <ImageView
                     android:layout_width="@dimen/icon_size_xxs"
@@ -85,10 +84,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/gap_card"
         android:orientation="horizontal">
 
-        <!-- Monthly Income -->
         <com.google.android.material.card.MaterialCardView
             style="@style/DashCard"
             android:layout_width="0dp"
@@ -102,14 +100,14 @@
                 android:orientation="vertical"
                 android:padding="@dimen/spacing_medium">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvSummaryIncomeLabel"
                     style="@style/DashLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_monthly_income" />
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvSummaryIncome"
                     style="@style/DashAmountSmall"
                     android:layout_width="match_parent"
@@ -118,7 +116,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Monthly Expenses -->
         <com.google.android.material.card.MaterialCardView
             style="@style/DashCard"
             android:layout_width="0dp"
@@ -132,14 +129,14 @@
                 android:orientation="vertical"
                 android:padding="@dimen/spacing_medium">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvSummaryExpenseLabel"
                     style="@style/DashLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_monthly_expenses" />
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvSummaryExpense"
                     style="@style/DashAmountSmall"
                     android:layout_width="match_parent"
@@ -150,19 +147,18 @@
 
     </LinearLayout>
 
-    <!-- Savings Progress Card -->
     <com.google.android.material.card.MaterialCardView
         style="@style/DashCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_medium">
+        android:layout_marginTop="@dimen/gap_card">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="@dimen/spacing_medium">
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvSavingsLabel"
                 style="@style/DashLabel"
                 android:layout_width="wrap_content"
@@ -171,7 +167,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvSavingsAmount"
                 style="@style/DashAmountSmall"
                 android:layout_width="wrap_content"
@@ -181,7 +177,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tvSavingsLabel"
                 tools:text="₱40,180 / ₱100,000" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvSavingsPercent"
                 style="@style/DashPercentage"
                 android:layout_width="wrap_content"
@@ -201,7 +197,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tvSavingsAmount"
                 app:trackColor="@color/border_subtle"
                 app:trackCornerRadius="@dimen/radius_full"
-                app:trackThickness="8dp"
+                app:trackThickness="@dimen/spacing_small"
                 tools:progress="40" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

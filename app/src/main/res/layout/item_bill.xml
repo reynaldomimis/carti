@@ -10,58 +10,83 @@
         android:id="@+id/layout_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/spacing_medium">
+        android:paddingHorizontal="@dimen/spacing_medium"
+        android:paddingVertical="@dimen/spacing_medium">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/iv_bill_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="12dp"
-            android:background="@color/surface_variant"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_icon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            app:cardBackgroundColor="@color/surface_variant"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle"
-            tools:src="@drawable/ic_water" />
+            app:strokeWidth="0dp">
+
+            <ImageView
+                android:id="@+id/iv_bill_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="10dp"
+                app:tint="@color/carti_primary_green"
+                tools:src="@drawable/ic_water" />
+        </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout
+            android:id="@+id/layout_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_medium"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/tv_bill_status"
-            app:layout_constraintStart_toEndOf="@id/iv_bill_icon"
+            app:layout_constraintEnd_toStartOf="@id/tv_due_badge"
+            app:layout_constraintStart_toEndOf="@id/card_icon"
             app:layout_constraintTop_toTopOf="parent">
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_bill_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 style="@style/CartiTextTitle"
-                tools:text="Maynilad Water Bill" />
-
-            <TextView
-                android:id="@+id/tv_bill_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/CartiTextDescription"
-                tools:text="May 20, 2025" />
+                tools:text="Meralco" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_bill_category"
+                style="@style/CartiCaption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary"
+                tools:text="Electricity Bill" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_bill_status"
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_due_badge"
+            style="@style/CartiCaption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_medium"
             android:background="@drawable/bg_status_unpaid"
             android:paddingHorizontal="@dimen/spacing_small"
             android:paddingVertical="2dp"
             android:textColor="@color/status_red"
-            android:textSize="@dimen/text_size_xxs"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_bill_amount"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Due May 20" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_bill_amount"
+            style="@style/CartiTextTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Unpaid" />
+            tools:text="₱2,150" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -69,8 +94,7 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/avatar_size_medium"
-        android:layout_marginEnd="@dimen/spacing_medium"
-        app:dividerColor="@color/surface_variant" />
+        android:layout_marginStart="64dp"
+        app:dividerColor="@color/border_subtle" />
 
 </LinearLayout>

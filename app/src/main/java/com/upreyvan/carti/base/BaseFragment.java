@@ -42,7 +42,38 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
 
     protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding b, int res) { setupToolbar(b, getString(res)); }
 
-    protected void setupDynamicPadding(View h, View s, float r) { Utils.applySystemBarInsets(h, s, r, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding)); }
+    protected void setupDynamicPadding(View h, View s, float r) { 
+        Utils.applySystemBarInsets(h, s, r, getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding)); 
+    }
+
+    protected void setupDynamicPadding(View h, View s) {
+        setupDynamicPadding(h, s, 1.0f);
+    }
+
+    protected void setupSmoothScrolling(@NonNull androidx.recyclerview.widget.RecyclerView rv) {
+        rv.setItemViewCacheSize(20);
+        rv.setDrawingCacheEnabled(true);
+        rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+        if (rv.getItemAnimator() instanceof androidx.recyclerview.widget.SimpleItemAnimator animator) {
+            animator.setSupportsChangeAnimations(false);
+        }
+        rv.setOnFlingListener(new androidx.recyclerview.widget.RecyclerView.OnFlingListener() {
+            @Override public boolean onFling(int vX, int vY) {
+                int max = (int) (getResources().getDisplayMetrics().density * 4500);
+                if (Math.abs(vY) > max) {
+                    rv.fling(vX, (int) Math.signum(vY) * max);
+                    return true;
+                }
+                return false;
+            }
+        });
+        rv.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            @Override public void onScrollStateChanged(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView, int newState) {
+                if (newState == androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_SETTLING) com.bumptech.glide.Glide.with(requireContext()).pauseRequests();
+                else com.bumptech.glide.Glide.with(requireContext()).resumeRequests();
+            }
+        });
+    }
 
     protected VB getBinding() { return binding; }
 

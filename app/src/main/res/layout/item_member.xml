@@ -5,8 +5,8 @@
     style="@style/CartiCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_medium"
-    android:layout_marginVertical="@dimen/spacing_xs">
+    android:layout_marginHorizontal="@dimen/screen_padding"
+    android:layout_marginVertical="@dimen/spacing_xxs">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -29,20 +29,19 @@
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
                 tools:src="@android:drawable/ic_menu_gallery" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTitle"
                 style="@style/CartiTextTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_medium"
                 android:layout_marginEnd="@dimen/spacing_small"
-                android:textSize="@dimen/text_size_header_small"
                 app:layout_constraintEnd_toStartOf="@+id/chipRole"
                 app:layout_constraintStart_toEndOf="@+id/ivAvatar"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Reynaldo Mimis" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvDescription"
                 style="@style/CartiTextDescription"
                 android:layout_width="0dp"

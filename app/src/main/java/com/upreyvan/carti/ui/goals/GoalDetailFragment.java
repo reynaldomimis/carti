@@ -70,7 +70,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
                     @Override public boolean areContentsTheSame(@NonNull HistoryItem oldItem, @NonNull HistoryItem newItem) { return oldItem.equals(newItem); }
                 },
                 (inflater, parent) -> ItemGoalHistoryBinding.inflate(inflater, parent, false),
-                (binding, item) -> {
+                (binding, item, pos, count) -> {
                     binding.tvHistoryDate.setText(item.date);
                     binding.tvHistoryAmount.setText(item.amount);
                 }
@@ -79,9 +79,9 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     }
 
     private void observeViewModel() {
-        viewModel.getGoal(goalId).observe(getViewLifecycleOwner(), goal -> {
-            if (goal != null) {
-                this.goal = goal;
+        viewModel.getGoal(goalId).observe(getViewLifecycleOwner(), g -> {
+            if (g != null) {
+                this.goal = g;
                 updateUI();
             }
         });

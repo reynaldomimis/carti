@@ -13,23 +13,21 @@
         android:layout_height="@dimen/spacing_small"
         android:background="@drawable/badge_dot" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvCategory"
+        style="@style/CartiTextDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_small"
         android:layout_weight="1"
-        style="@style/CartiTextDescription"
-        android:textColor="@color/text_secondary"
         tools:text="@string/label_food" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvPercentage"
+        style="@style/CartiHeaderSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_small"
-        style="@style/CartiHeaderSmall"
-        android:textColor="@color/text_primary"
         tools:text="@string/placeholder_percentage" />
 
 </LinearLayout>

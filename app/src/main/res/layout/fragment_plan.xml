@@ -1,254 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/rootScroll"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+    style="@style/CartiContainer">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:id="@+id/headerContainer"
+        style="@style/CartiHeaderContainer"
         android:orientation="vertical"
-        android:paddingBottom="@dimen/spacing_xl">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
-            android:id="@+id/headerContainer"
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvTitle"
+            style="@style/CartiHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/gap_section_title"
+            android:text="@string/title_financial_plan" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            style="@style/CartiTabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="@dimen/spacing_medium"
-            android:paddingTop="@dimen/spacing_medium"
-            android:paddingBottom="@dimen/spacing_small">
+            android:background="@color/white"
+            app:tabMode="fixed"
+            app:tabGravity="fill"
+            app:tabInlineLabel="true">
 
-            <TextView
-                style="@style/DashAmountLarge"
+            <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_medium"
-                android:text="@string/nav_plan" />
+                android:icon="@drawable/ic_chart"
+                android:text="@string/label_budget" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="4dp"
-                android:background="@drawable/bg_tab_container">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/tabBudget"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="0dp"
-                    android:layout_height="52dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="@color/white"
-                    android:text="Budget"
-                    android:textSize="14sp"
-                    android:textAllCaps="false"
-                    android:textColor="@color/carti_primary_green"
-                    app:cornerRadius="24dp"
-                    app:icon="@drawable/ic_chart"
-                    app:iconSize="20dp"
-                    app:iconPadding="2dp"
-                    app:iconTint="@color/carti_primary_green" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/tabBills"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="0dp"
-                    android:layout_height="52dp"
-                    android:layout_weight="1"
-                    android:text="Bills"
-                    android:textSize="14sp"
-                    android:textAllCaps="false"
-                    android:textColor="@color/text_secondary"
-                    app:cornerRadius="24dp"
-                    app:icon="@drawable/ic_calendar"
-                    app:iconSize="20dp"
-                    app:iconPadding="2dp"
-                    app:iconTint="@color/text_secondary" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/tabGoals"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="0dp"
-                    android:layout_height="52dp"
-                    android:layout_weight="1"
-                    android:text="Goals"
-                    android:textSize="14sp"
-                    android:textAllCaps="false"
-                    android:textColor="@color/text_secondary"
-                    app:cornerRadius="24dp"
-                    app:icon="@drawable/ic_trophy"
-                    app:iconSize="20dp"
-                    app:iconPadding="2dp"
-                    app:iconTint="@color/text_secondary" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-        
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="@dimen/spacing_medium"
-            android:paddingVertical="@dimen/spacing_medium">
-
-            <TextView
-                android:id="@+id/tvBudgetTitle"
-                style="@style/CartiTextTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/budget_setup_header"
-                app:layout_constraintEnd_toStartOf="@id/btnAddBudget"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/tvCurrentMonth"
-                style="@style/CartiTextDescription"
+            <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvBudgetTitle"
-                tools:text="For the month of October 2026" />
+                android:icon="@drawable/ic_calendar"
+                android:text="@string/bills_title" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddBudget"
-                style="@style/CartiButton.Primary"
+            <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingHorizontal="@dimen/spacing_medium"
-                android:paddingVertical="8dp"
-                android:text="+ Add"
-                app:cornerRadius="20dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:icon="@drawable/ic_trophy"
+                android:text="@string/goal_title" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvBudgets"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="@dimen/spacing_small"
-            android:clipToPadding="false"
-            android:nestedScrollingEnabled="false"
-            tools:itemCount="6"
-            tools:listitem="@layout/item_budget_card"
-            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="3" />
-
-        <!-- Fallback for No Budgets -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardEmptyBudgets"
-            style="@style/DashCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/spacing_medium"
-            android:layout_marginVertical="@dimen/spacing_small"
-            android:visibility="gone"
-            app:cardBackgroundColor="@color/white"
-            app:strokeColor="@color/border_subtle"
-            tools:visibility="visible">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_large">
-
-                <ImageView
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/ic_chart"
-                    app:tint="@color/carti_primary_green" />
-
-                <TextView
-                    style="@style/CartiHeaderSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_medium"
-                    android:text="No budgets yet" />
-
-                <TextView
-                    style="@style/CartiTextDescription"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Start planning your monthly spending."
-                    android:textAlignment="center" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Categories Header -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:paddingHorizontal="@dimen/spacing_medium"
-            android:paddingVertical="@dimen/spacing_medium">
-
-            <TextView
-                android:id="@+id/tvCategoriesTitle"
-                style="@style/CartiTextTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Set Up Categories"
-                app:layout_constraintEnd_toStartOf="@id/btnAddCategory"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/tvCategoriesDescription"
-                style="@style/CartiTextDescription"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/manage_expense_categories_used_for_transactions_and_budgets"
-                app:layout_constraintEnd_toStartOf="@id/btnAddCategory"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvCategoriesTitle" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddCategory"
-                style="@style/CartiButton.Primary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingHorizontal="@dimen/spacing_medium"
-                android:paddingVertical="8dp"
-                android:text="+ Category"
-                app:cornerRadius="20dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <com.google.android.material.card.MaterialCardView
-            style="@style/CartiCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/spacing_medium">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvCategories"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                tools:itemCount="4"
-                tools:listitem="@layout/item_category_row" />
-
-        </com.google.android.material.card.MaterialCardView>
-
+        </com.google.android.material.tabs.TabLayout>
     </LinearLayout>
 
-</androidx.core.widget.NestedScrollView>
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerContainer" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

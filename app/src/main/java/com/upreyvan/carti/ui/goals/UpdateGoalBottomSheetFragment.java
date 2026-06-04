@@ -66,11 +66,11 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
     }
 
     private void setupMemberSelection() {
-        memberAdapter = new GenericAdapter<>(Member.DIFF_CALLBACK, (i, p) -> ItemMemberAvatarSelectBinding.inflate(i, p, false), (b, item) -> {
+        memberAdapter = new GenericAdapter<>(Member.DIFF_CALLBACK, (i, p) -> ItemMemberAvatarSelectBinding.inflate(i, p, false), (b, item, pos, count) -> {
             b.ivAvatar.setImageResource(item.getAvatarRes()); b.tvName.setText(item.getTitle()); boolean sel = selectedMemberIds.contains(item.getId());
             b.vOverlay.setVisibility(sel ? View.GONE : View.VISIBLE); b.ivSelected.setVisibility(sel ? View.VISIBLE : View.GONE);
             b.cvAvatar.setStrokeColor(requireContext().getColor(sel ? R.color.carti_primary_green : R.color.border_subtle)); b.cvAvatar.setStrokeWidth(Utils.dpToPx(requireContext(), 2));
-            b.getRoot().setOnClickListener(v -> { if (selectedMemberIds.contains(item.getId())) selectedMemberIds.remove(item.getId()); else selectedMemberIds.add(item.getId()); memberAdapter.notifyItemChanged(memberAdapter.getCurrentList().indexOf(item)); });
+            b.getRoot().setOnClickListener(v -> { if (selectedMemberIds.contains(item.getId())) selectedMemberIds.remove(item.getId()); else selectedMemberIds.add(item.getId()); memberAdapter.notifyItemChanged(pos); });
         });
         getBinding().rvFamilyMembers.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)); getBinding().rvFamilyMembers.setAdapter(memberAdapter);
     }

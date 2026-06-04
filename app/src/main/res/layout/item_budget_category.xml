@@ -2,10 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingHorizontal="@dimen/spacing_medium"
-    android:paddingVertical="@dimen/spacing_small">
+    style="@style/CartiListItemContainer">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cvIcon"
@@ -29,21 +26,20 @@
             android:contentDescription="@null" />
     </com.google.android.material.card.MaterialCardView>
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvCategoryName"
-        style="@style/CartiHeader"
+        style="@style/CartiHeaderSmall"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_medium"
-        android:textSize="@dimen/text_size_body"
         app:layout_constraintEnd_toStartOf="@id/tvAmount"
         app:layout_constraintStart_toEndOf="@id/cvIcon"
         app:layout_constraintTop_toTopOf="@id/cvIcon"
         tools:text="Bills &amp; Utilities" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvAmount"
-        style="@style/CartiHeader"
+        style="@style/CartiHeaderSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/spacing_small"
@@ -53,12 +49,11 @@
         app:layout_constraintTop_toTopOf="@id/tvCategoryName"
         tools:text="₱4k / ₱8k" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvPercentage"
-        style="@style/CartiSubHeader"
+        style="@style/CartiCaption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/text_size_xxs"
         app:layout_constraintBottom_toBottomOf="@id/tvCategoryName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tvCategoryName"

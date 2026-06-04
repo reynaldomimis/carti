@@ -1,11 +1,15 @@
 package com.upreyvan.carti.ui.allocate;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -19,14 +23,46 @@ import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.databinding.BottomSheetAddCategoryBinding;
 import com.upreyvan.carti.databinding.ItemIconPickerBinding;
 import com.upreyvan.carti.util.ToastHelper;
+import com.yalantis.ucrop.UCrop;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetAddCategoryBinding> {
 
     private int selectedIcon = R.drawable.ic_chart;
+    private Uri selectedImageUri = null;
     private GenericAdapter<Integer, ItemIconPickerBinding> adapter;
+    private final List<Integer> icons = Arrays.asList(
+            R.drawable.ic_chart, R.drawable.ic_calendar, R.drawable.ic_trophy,
+            R.drawable.ic_person, R.drawable.ic_bell, R.drawable.ic_home,
+            R.drawable.ic_lock, R.drawable.ic_send, R.drawable.ic_sync,
+            R.drawable.ic_email, R.drawable.ic_image, R.drawable.ic_filter
+    );
+
+    private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            uri -> {
+                if (uri != null) {
+                    startCrop(uri);
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<Intent> cropImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    selectedImageUri = UCrop.getOutput(result.getData());
+                    if (selectedImageUri != null) {
+                        selectedIcon = 0;
+                        adapter.submitList(new ArrayList<>(icons));
+                    }
+                }
+            }
+    );
 
     public static AddCategoryBottomSheet newInstance() {
         return new AddCategoryBottomSheet();
@@ -40,22 +76,32 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         setupIconPicker();
-
         getBinding().btnClose.setOnClickListener(v -> dismiss());
         getBinding().btnCancel.setOnClickListener(v -> dismiss());
         getBinding().btnSave.setOnClickListener(v -> saveCategory());
+        getBinding().btnUploadImage.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
+    }
+
+    private void startCrop(@NonNull Uri uri) {
+        String destinationFileName = "cropped_category_" + System.currentTimeMillis() + ".jpg";
+        UCrop.Options options = new UCrop.Options();
+        options.setCompressionFormat(android.graphics.Bitmap.CompressFormat.JPEG);
+        options.setCompressionQuality(90);
+        options.setCircleDimmedLayer(true);
+        options.setShowCropGrid(false);
+        options.setHideBottomControls(false);
+        options.setFreeStyleCropEnabled(true);
+
+        UCrop uCrop = UCrop.of(uri, Uri.fromFile(new File(requireContext().getCacheDir(), destinationFileName)))
+                .withAspectRatio(1, 1)
+                .withMaxResultSize(200, 200)
+                .withOptions(options);
+
+        cropImageLauncher.launch(uCrop.getIntent(requireContext()));
     }
 
     private void setupIconPicker() {
-        List<Integer> icons = Arrays.asList(
-                R.drawable.ic_chart, R.drawable.ic_calendar, R.drawable.ic_trophy,
-                R.drawable.ic_person, R.drawable.ic_bell, R.drawable.ic_home,
-                R.drawable.ic_lock, R.drawable.ic_send, R.drawable.ic_sync,
-                R.drawable.ic_email, R.drawable.ic_image, R.drawable.ic_filter
-        );
-
         adapter = new GenericAdapter<>(
                 new DiffUtil.ItemCallback<>() {
                     @Override public boolean areItemsTheSame(@NonNull Integer oldItem, @NonNull Integer newItem) { return oldItem.equals(newItem); }
@@ -64,7 +110,7 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
                 (inflater, parent) -> ItemIconPickerBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
                     binding.ivIcon.setImageResource(item);
-                    boolean isSelected = item == selectedIcon;
+                    boolean isSelected = (selectedImageUri == null && item == selectedIcon);
                     
                     if (isSelected) {
                         binding.cardIcon.setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
@@ -79,10 +125,9 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
                     }
 
                     binding.getRoot().setOnClickListener(v -> {
-                        int oldSelected = selectedIcon;
+                        selectedImageUri = null;
                         selectedIcon = item;
-                        adapter.notifyItemChanged(icons.indexOf(oldSelected));
-                        adapter.notifyItemChanged(icons.indexOf(selectedIcon));
+                        adapter.submitList(new ArrayList<>(icons));
                     });
                 }
         );
@@ -101,8 +146,6 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
             return;
         }
 
-        // Save to local SharedPreferences (BudgetManager) only.
-        // It stays "Internal" / "Per User" until used in a transaction.
         BudgetManager.getInstance(requireContext()).updateOrAddCategory(
                 name,
                 selectedIcon,

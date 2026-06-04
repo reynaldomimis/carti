@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+    xmlns:tools="http://schemas.tools.com/tools"
+    style="@style/CartiContainer">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:paddingHorizontal="@dimen/spacing_medium"
-        android:paddingTop="@dimen/spacing_xs"
-        android:paddingBottom="@dimen/spacing_small"
+        style="@style/CartiHeaderContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -29,16 +22,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_greeting_main"
                 style="@style/CartiSubHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_size_header_small"
                 tools:text="@string/default_greeting" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_username_main"
                 style="@style/CartiHeader"
                 android:layout_width="0dp"
@@ -47,28 +38,23 @@
                 android:layout_weight="1"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_size_header"
                 tools:text="@string/user" />
 
         </LinearLayout>
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_greeting_sub"
+            style="@style/CartiCaption.Primary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:fontFamily="@font/plus_jakarta_sans_medium"
-            android:textColor="@color/green_primary"
-            android:textSize="11sp"
+            android:layout_marginTop="@dimen/spacing_xxs"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/llGreeting"
             tools:text="Pay day 8 days to go • May 30" />
 
         <LinearLayout
             android:id="@+id/btn_container_top"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/CartiIconContainer"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             app:layout_constraintEnd_toEndOf="parent"
@@ -80,22 +66,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
-                <ImageButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_notif"
+                    style="@style/Widget.Material3.Button.IconButton"
                     android:layout_width="@dimen/icon_size_xl"
                     android:layout_height="@dimen/icon_size_xl"
-                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/notifications"
-                    android:src="@drawable/ic_bell"
-                    app:tint="@color/text_secondary" />
+                    app:icon="@drawable/ic_bell"
+                    app:iconTint="@color/text_secondary" />
 
                 <View
                     android:id="@+id/notif_badge"
                     android:layout_width="@dimen/icon_size_xxs"
                     android:layout_height="@dimen/icon_size_xxs"
                     android:layout_gravity="top|end"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:layout_marginEnd="@dimen/spacing_small"
                     android:background="@drawable/badge_dot" />
             </FrameLayout>
         </LinearLayout>
@@ -103,11 +89,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMainHome"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:paddingHorizontal="@dimen/spacing_medium"
-        android:paddingBottom="16dp"
+        style="@style/CartiRecyclerView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

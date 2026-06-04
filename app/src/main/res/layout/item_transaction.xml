@@ -10,8 +10,8 @@
         style="@style/CartiCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_xs"
-        android:layout_marginVertical="@dimen/spacing_small"
+        android:layout_marginHorizontal="@dimen/spacing_xxs"
+        android:layout_marginBottom="@dimen/gap_card"
         app:cardElevation="0dp"
         app:strokeColor="@color/surface_variant"
         app:strokeWidth="1dp">
@@ -33,48 +33,45 @@
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle"
                 tools:src="@tools:sample/avatars" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvUserAction"
                 style="@style/CartiTextDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_small"
                 android:layout_marginEnd="@dimen/spacing_small"
-                android:textSize="12sp"
                 android:includeFontPadding="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/ivAvatar"
                 app:layout_constraintTop_toTopOf="@id/ivAvatar"
                 tools:text="Mom added an expense" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTimestamp"
                 style="@style/CartiTextDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="10sp"
                 android:alpha="0.6"
                 android:includeFontPadding="false"
                 app:layout_constraintStart_toStartOf="@id/tvUserAction"
                 app:layout_constraintTop_toBottomOf="@id/tvUserAction"
                 tools:text="42mins ago" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTitle"
-                style="@style/CartiHeader"
+                style="@style/CartiTextTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_small"
                 android:layout_marginStart="0dp"
                 android:layout_marginEnd="8dp"
-                android:textSize="16sp"
                 android:includeFontPadding="false"
                 app:layout_constraintEnd_toStartOf="@+id/tvAmount"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvTimestamp"
                 tools:text="Food" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvDescription"
                 style="@style/CartiTextDescription"
                 android:layout_width="0dp"
@@ -83,7 +80,6 @@
                 android:layout_marginStart="0dp"
                 android:layout_marginEnd="0dp"
                 android:layout_marginBottom="@dimen/spacing_small"
-                android:textSize="13sp"
                 android:includeFontPadding="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -91,13 +87,12 @@
                 tools:text="Jollibee Dinner"
                 tools:visibility="visible" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvAmount"
                 style="@style/CartiHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="0dp"
-                android:textSize="17sp"
                 android:includeFontPadding="false"
                 app:layout_constraintBottom_toBottomOf="@+id/tvTitle"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -105,7 +100,6 @@
                 tools:text="₱2,350"
                 tools:textColor="@color/status_red" />
 
-            <!-- Reactions Summary Row -->
             <LinearLayout
                 android:id="@+id/layoutReactionsSummary"
                 android:layout_width="0dp"
@@ -118,22 +112,20 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvDescription">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvReactionEmoji"
+                    style="@style/CartiCaption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="👍"
-                    android:textSize="10sp" />
+                    android:text="👍" />
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvLikesCount"
                     style="@style/CartiTextDescription"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
                     android:textColor="@color/text_primary"
-                    android:textSize="10sp"
-                    android:fontFamily="@font/plus_jakarta_sans_medium"
                     android:includeFontPadding="false"
                     tools:text="3 others" />
 
@@ -142,12 +134,11 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvCommentsCountSummary"
                     style="@style/CartiTextDescription"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="10sp"
                     android:includeFontPadding="false"
                     android:visibility="gone"
                     tools:visibility="visible"
@@ -164,7 +155,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/layoutReactionsSummary" />
 
-            <!-- Action Buttons Row -->
             <LinearLayout
                 android:id="@+id/layoutFooter"
                 android:layout_width="0dp"
@@ -175,7 +165,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/divider">
 
-                <!-- Like Button -->
                 <LinearLayout
                     android:id="@+id/btnLike"
                     android:layout_width="0dp"
@@ -187,14 +176,14 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <TextView
+                    <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvBtnLikeIcon"
+                        style="@style/CartiTextBody"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="👍"
-                        android:textSize="14sp" />
+                        android:text="👍" />
 
-                    <TextView
+                    <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvBtnLikeText"
                         style="@style/CartiTextDescription"
                         android:layout_width="wrap_content"
@@ -202,7 +191,6 @@
                         android:layout_marginStart="4dp"
                         android:text="Like"
                         android:textColor="@color/text_secondary"
-                        android:textSize="12sp"
                         android:fontFamily="@font/plus_jakarta_sans_semibold" />
                 </LinearLayout>
 
@@ -212,7 +200,6 @@
                     android:layout_gravity="center_vertical"
                     android:background="@color/border_subtle" />
 
-                <!-- Comment Button -->
                 <LinearLayout
                     android:id="@+id/btnComment"
                     android:layout_width="0dp"
@@ -231,7 +218,7 @@
                         android:src="@android:drawable/ic_menu_send"
                         app:tint="@color/text_tertiary" />
 
-                    <TextView
+                    <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvCommentsCount"
                         style="@style/CartiTextDescription"
                         android:layout_width="wrap_content"
@@ -239,7 +226,6 @@
                         android:layout_marginStart="4dp"
                         android:text="Comment"
                         android:textColor="@color/text_secondary"
-                        android:textSize="12sp"
                         android:fontFamily="@font/plus_jakarta_sans_semibold" />
                 </LinearLayout>
 

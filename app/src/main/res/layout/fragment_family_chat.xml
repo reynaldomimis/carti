@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/chatRoot"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+    style="@style/CartiContainer">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:paddingHorizontal="@dimen/spacing_medium"
-        android:paddingTop="@dimen/spacing_small"
-        android:paddingBottom="@dimen/spacing_small"
+        style="@style/CartiHeaderContainer"
+        android:paddingVertical="@dimen/gap_section_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.card.MaterialCardView
@@ -22,7 +19,6 @@
             android:layout_height="@dimen/back_button_size"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
             app:cardBackgroundColor="@color/surface_variant"
             app:cardCornerRadius="@dimen/radius_medium"
             app:cardElevation="0dp"
@@ -41,7 +37,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvTitle"
             style="@style/CartiHeader"
             android:layout_width="0dp"
@@ -55,15 +51,14 @@
             app:layout_constraintStart_toEndOf="@id/btnBackContainer"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvSessionStatus"
+            style="@style/CartiCaption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/spacing_small"
             android:fontFamily="@font/plus_jakarta_sans_bold"
             android:text="@string/carti_ai_offline"
-            android:textColor="@color/text_tertiary"
-            android:textSize="12sp"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/layoutActions"
@@ -71,8 +66,7 @@
 
         <LinearLayout
             android:id="@+id/layoutActions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/CartiIconContainer"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -84,7 +78,6 @@
                 android:layout_height="@dimen/back_button_size"
                 android:clickable="true"
                 android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/surface_variant"
                 app:cardCornerRadius="@dimen/radius_medium"
                 app:cardElevation="0dp"
@@ -95,7 +88,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@android:color/transparent"
-                    android:contentDescription="@null"
                     android:padding="8dp"
                     android:src="@android:drawable/ic_menu_manage"
                     app:tint="@color/text_primary" />
@@ -114,7 +106,6 @@
         app:trackThickness="1.5dp"
         app:indicatorColor="@array/chat_progress_colors"
         app:trackColor="@color/chat_progress_track"
-        app:indeterminateAnimationType="contiguous"
         app:layout_constraintTop_toBottomOf="@id/layoutHeader" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -122,7 +113,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingVertical="8dp"
+        android:paddingVertical="@dimen/gap_section_title"
         android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/layoutInputContainer"
@@ -180,7 +171,6 @@
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:contentDescription="@null"
                         android:scaleType="fitXY"
                         android:src="@drawable/ai_holder" />
 
@@ -195,27 +185,25 @@
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp">
 
-                    <TextView
-                        style="@style/CartiTextDescription"
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/CartiTextBody"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingHorizontal="@dimen/spacing_medium"
                         android:paddingVertical="@dimen/radius_medium"
                         android:text="@string/ai_greeting"
-                        android:textColor="@color/carti_primary_green"
-                        android:textSize="@dimen/text_size_body_large" />
+                        android:textColor="@color/carti_primary_green" />
 
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
+                style="@style/CartiHeaderSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xl"
                 android:text="Try asking me:"
-                android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_size_body"
-                android:textStyle="bold" />
+                android:textColor="@color/text_secondary" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvSuggestions"
@@ -234,9 +222,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:paddingHorizontal="@dimen/spacing_medium"
-        android:paddingTop="@dimen/spacing_small"
-        android:paddingBottom="@dimen/spacing_small"
+        android:paddingHorizontal="@dimen/screen_padding"
+        android:paddingVertical="@dimen/gap_section_title"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <include
@@ -274,7 +261,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             style="@style/CartiHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -282,7 +269,7 @@
             android:text="@string/error_connection_required"
             android:textSize="22sp" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             style="@style/CartiTextDescription"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -293,7 +280,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRetry"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_xl"

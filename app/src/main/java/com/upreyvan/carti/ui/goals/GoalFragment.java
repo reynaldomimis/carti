@@ -19,16 +19,18 @@ import com.upreyvan.carti.databinding.FragmentGoalBinding;
 import com.upreyvan.carti.databinding.ItemGoalBinding;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.ui.allocate.PlanViewModel;
 import com.upreyvan.carti.util.SwipeToDeleteHelper;
 import com.upreyvan.carti.util.Utils;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
 
     private GenericAdapter<TransactionWithUser, ItemGoalBinding> adapter;
     private List<TransactionWithUser> allGoals = new ArrayList<>();
-    private GoalViewModel viewModel;
+    private PlanViewModel viewModel;
     private RealtimeRepository realtimeRepo;
     private boolean isLoading = true;
 
@@ -40,24 +42,26 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(GoalViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
         realtimeRepo = RealtimeRepository.getInstance(requireContext());
         
-        setupDynamicPadding();
-        setupHeader();
+        setupUI();
         setupTabs();
         setupRecyclerView();
         observeViewModel();
         observeRealtimeChanges();
     }
 
-    private void observeRealtimeChanges() {
-        realtimeRepo.getGoalStream().observe(getViewLifecycleOwner(), payload -> viewModel.refresh());
+    private void setupUI() {
+        getBinding().layoutHeader.tvHeaderTitle.setText(R.string.label_setup_goals);
+        getBinding().layoutHeader.tvHeaderSubtitle.setText(Utils.formatMonthYear(Calendar.getInstance()));
+        getBinding().layoutHeader.btnHeaderAction.setText(R.string.btn_add_goal);
+        getBinding().layoutHeader.btnHeaderAction.setOnClickListener(v -> 
+                AddGoalBottomSheetFragment.newInstance().show(getChildFragmentManager(), "ADD_GOAL"));
     }
 
-    private void setupDynamicPadding() {
-        setupDynamicPadding(getBinding().layoutToolbar.getRoot(), getBinding().rvGoals, 0.3f);
-        Utils.applySystemBarInsets(getBinding().btnAddGoalFloating, getBinding().btnAddGoalFloating, 0f, 0);
+    private void observeRealtimeChanges() {
+        realtimeRepo.getGoalStream().observe(getViewLifecycleOwner(), payload -> viewModel.refresh());
     }
 
     private void observeViewModel() {
@@ -71,30 +75,19 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         viewModel.refresh();
     }
 
-    private void setupHeader() {
-        setupToolbar(getBinding().layoutToolbar, R.string.goal_title);
-        getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnAction.setVisibility(View.GONE); 
-        
-        getBinding().btnAddGoalFloating.setOnClickListener(v -> 
-                startActivity(new Intent(requireContext(), AddGoalActivity.class)));
-    }
-
     private void setupTabs() {
         getBinding().tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) { filterGoals(tab.getPosition()); }
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+            @Override public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override public void onTabReselected(TabLayout.Tab tab) {}
         });
     }
 
     private void filterGoals(int position) {
         List<TransactionWithUser> filteredList = new ArrayList<>();
-        int titleRes = R.string.no_goals_title;
-        int descRes = R.string.no_goals_desc;
+        int titleRes;
+        int descRes;
 
         switch (position) {
             case 1 -> {
@@ -107,8 +100,23 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                 titleRes = R.string.no_completed_goals_title;
                 descRes = R.string.no_completed_goals_desc;
             }
-            default -> filteredList.addAll(allGoals);
+            default -> {
+                filteredList.addAll(allGoals);
+                titleRes = R.string.no_goals_title;
+                descRes = R.string.no_goals_desc;
+            }
         }
+        
+        filteredList.sort((a, b) -> {
+            String n1 = a.getTransaction().getName();
+            String n2 = b.getTransaction().getName();
+            boolean aOther = "others".equalsIgnoreCase(n1);
+            boolean bOther = "others".equalsIgnoreCase(n2);
+            if (aOther && bOther) return 0;
+            if (aOther) return 1;
+            if (bOther) return -1;
+            return n1.compareToIgnoreCase(n2);
+        });
 
         boolean isEmpty = filteredList.isEmpty() && !isLoading;
         getBinding().rvGoals.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
@@ -126,14 +134,14 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         adapter = new GenericAdapter<>(
                 TransactionWithUser.DIFF_CALLBACK,
                 (inflater, parent) -> ItemGoalBinding.inflate(inflater, parent, false),
-                (binding, itemWithUser) -> {
+                (binding, itemWithUser, position, totalCount) -> {
                     Transaction goal = itemWithUser.getTransaction();
-                    View shimmer = binding.getRoot().findViewById(R.id.shimmerView);
+                    View shimmer = binding.shimmerView.getRoot();
                     if (isLoading) {
-                        if (shimmer != null) shimmer.setVisibility(View.VISIBLE);
+                        shimmer.setVisibility(View.VISIBLE);
                         binding.layoutContent.setVisibility(View.INVISIBLE);
                     } else {
-                        if (shimmer != null) shimmer.setVisibility(View.GONE);
+                        shimmer.setVisibility(View.GONE);
                         binding.layoutContent.setVisibility(View.VISIBLE);
                         binding.tvGoalTitle.setText(goal.getName());
                         binding.ivGoalIcon.setImageResource(goal.getIconRes());
@@ -158,16 +166,16 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         getBinding().rvGoals.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvGoals.setAdapter(adapter);
 
-        SwipeToDeleteHelper.attach(getBinding().rvGoals, position -> {
-            TransactionWithUser goalToDelete = adapter.getItem(position);
+        SwipeToDeleteHelper.attach(getBinding().rvGoals, pos -> {
+            TransactionWithUser goalToDelete = adapter.getItem(pos);
             List<TransactionWithUser> currentList = new ArrayList<>(adapter.getCurrentList());
-            currentList.remove(position);
+            currentList.remove(pos);
             adapter.submitList(currentList);
 
-            String message = String.format("Goal '%s' deleted", goalToDelete.getTransaction().getName());
-            SwipeToDeleteHelper.showUndoSnackbar(getBinding().getRoot(), message, () -> {
+            String msg = String.format("Goal '%s' deleted", goalToDelete.getTransaction().getName());
+            SwipeToDeleteHelper.showUndoSnackbar(getBinding().getRoot(), msg, () -> {
                 List<TransactionWithUser> restoredList = new ArrayList<>(adapter.getCurrentList());
-                restoredList.add(position, goalToDelete);
+                restoredList.add(pos, goalToDelete);
                 adapter.submitList(restoredList);
             }, () -> viewModel.deleteGoal(goalToDelete.getTransaction().getId()));
         });

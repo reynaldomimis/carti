@@ -109,13 +109,25 @@ public class NotificationRepository {
                 if (createdAt != null) date = Utils.formatTimestamp(createdAt.toString());
             }
 
+            double amount = 0;
+            Object amtObj = data.get("amount");
+            if (amtObj instanceof Number) amount = ((Number) amtObj).doubleValue();
+            else if (amtObj instanceof String) {
+                try { amount = Double.parseDouble((String) amtObj); } catch (Exception ignored) {}
+            }
+
+            String category = (String) data.get("category");
+            if (category == null) category = "Bill";
+
             return new Bill(
                     id,
                     (String) data.get("familyId"),
                     name,
                     date,
                     "Upcoming",
-                    R.drawable.ic_calendar
+                    R.drawable.ic_calendar,
+                    amount,
+                    category
             );
         }
         return null;

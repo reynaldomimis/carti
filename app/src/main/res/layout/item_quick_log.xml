@@ -5,7 +5,7 @@
     style="@style/CartiCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/spacing_xs">
+    android:layout_margin="@dimen/spacing_xxs">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,12 +29,13 @@
                 android:layout_height="@dimen/icon_size_small"
                 android:layout_gravity="center"
                 android:src="@android:drawable/ic_menu_gallery"
-                app:tint="@color/icon_food" />
+                app:tint="@color/icon_food"
+                android:contentDescription="@null" />
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvLabel"
-            style="@style/CartiHeader"
+            style="@style/CartiHeaderSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_small"

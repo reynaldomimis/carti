@@ -13,6 +13,7 @@
     <string name="quick_log_subtitle">Tap once to record</string>
     <string name="customize">Customize</string>
     <string name="recent_activity">Recents Activity</string>
+    <string name="recent_expenses">Recent Expenses</string>
     <string name="recent_transactions">Recents transactions</string>
     <string name="track_summary">Track Summary</string>
     <string name="see_all">See all</string>
@@ -36,7 +37,8 @@
     <string name="nav_debt">Debt</string>
     <string name="nav_ranking">Ranking</string>
     <string name="nav_profile">Profile</string>
-    <string name="nav_plan">Financial Planning</string>
+    <string name="nav_plan">Plan</string>
+    <string name="title_financial_plan">Financial Plan</string>
     <string name="label_add">Add</string>
     <string name="menu_ai">Chat</string>
     <string name="notifications">Notifications</string>
@@ -745,4 +747,25 @@
     <string name="manage_expense_categories_used_for_transactions_and_budgets">Organize your family spending.</string>
     <string name="budget_setup_header">Set Up Budget</string>
     <string name="for_the_month_of">For the Month of %s</string>
+    <string name="label_budget">Budget</string>
+    <string name="label_add_plus">+ Add</string>
+    <string name="no_budgets_title">No budgets yet</string>
+    <string name="no_budgets_desc">Start planning your monthly spending.</string>
+    <string name="set_up_categories_title">Set Up Categories</string>
+    <string name="label_add_category_plus">+ Category</string>
+    <string name="label_balance">balance</string>
+    <string name="label_unpaid_bills">UNPAID BILLS</string>
+    <string name="label_paid_bills">PAID BILLS</string>
+    <string name="label_overdue">OVERDUE</string>
+    <string name="label_debts_summary">DEBTS</string>
+    <string name="label_tap_to_view">Tap to view</string>
+    <string name="no_upcoming_bills_desc">Your scheduled bill reminders will appear here.</string>
+    <string name="label_bills_debts">Bills &amp; Debts</string>
+    <string name="label_add_bill_plus">+ Add Bill</string>
+    <string name="label_due_soon">Due soon</string>
+    <string name="label_action_needed">Action needed</string>
+    <string name="label_active">Active</string>
+    <string name="label_upcoming_bills">Upcoming Bills</string>
+    <string name="label_setup_bills_debts">Setup Bills &amp; Debts</string>
+    <string name="label_setup_goals">Setup Financial Goals</string>
 </resources>

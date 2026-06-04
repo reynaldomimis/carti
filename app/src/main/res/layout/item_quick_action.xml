@@ -20,19 +20,18 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="center"
-            android:scaleType="centerInside" />
+            android:scaleType="centerInside"
+            android:contentDescription="@null" />
 
     </com.google.android.material.card.MaterialCardView>
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvLabel"
+        style="@style/CartiCaption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_xs"
-        android:fontFamily="@font/plus_jakarta_sans_semibold"
+        android:layout_marginTop="@dimen/spacing_xxs"
         android:gravity="center"
-        android:textColor="@color/text_secondary"
-        android:textSize="@dimen/text_size_xxs"
         android:maxLines="1"
         android:ellipsize="end" />
 

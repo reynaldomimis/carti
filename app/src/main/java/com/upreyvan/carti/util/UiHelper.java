@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -14,28 +15,25 @@ import androidx.recyclerview.widget.RecyclerView;
 public class UiHelper {
 
     public static void applySystemBarInsets(View topView, View bottomView, float topMultiplier, int customBarHeight) {
-        int originalTopPadding = topView.getPaddingTop();
-
-        ViewCompat.setOnApplyWindowInsetsListener(topView, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            int adjustedTop = (int) (systemBars.top * topMultiplier);
-            v.setPadding(v.getPaddingLeft(), originalTopPadding + adjustedTop, v.getPaddingRight(), v.getPaddingBottom());
-            return insets;
-        });
+        if (topView != null) {
+            int originalTopPadding = topView.getPaddingTop();
+            ViewCompat.setOnApplyWindowInsetsListener(topView, (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(v.getPaddingLeft(), originalTopPadding + (int) (systemBars.top * topMultiplier), v.getPaddingRight(), v.getPaddingBottom());
+                return insets;
+            });
+        }
 
         if (bottomView != null) {
-            final int originalBottomPadding = bottomView.getPaddingBottom();
-            final ViewGroup.LayoutParams layoutParams = bottomView.getLayoutParams();
-            final int originalBottomMargin = (layoutParams instanceof ViewGroup.MarginLayoutParams) ?
-                    ((ViewGroup.MarginLayoutParams) layoutParams).bottomMargin : 0;
-
+            int originalBottomPadding = bottomView.getPaddingBottom();
             ViewCompat.setOnApplyWindowInsetsListener(bottomView, (v, insets) -> {
-                int systemNavHeight = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                int bottomInset = systemBars.bottom;
                 if (v instanceof NestedScrollView || v instanceof RecyclerView) {
-                    v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), originalBottomPadding + systemNavHeight + customBarHeight);
+                    v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), originalBottomPadding + bottomInset + customBarHeight);
                 } else if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
                     ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-                    lp.bottomMargin = originalBottomMargin + systemNavHeight + customBarHeight;
+                    lp.bottomMargin = bottomInset + customBarHeight;
                     v.setLayoutParams(lp);
                 }
                 return insets;
