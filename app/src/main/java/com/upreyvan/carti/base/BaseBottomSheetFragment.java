@@ -10,7 +10,7 @@ import androidx.viewbinding.ViewBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.util.NetworkMonitor;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 
 public abstract class BaseBottomSheetFragment<VB extends ViewBinding> extends BottomSheetDialogFragment {
     private VB binding;
@@ -25,9 +25,9 @@ public abstract class BaseBottomSheetFragment<VB extends ViewBinding> extends Bo
 
     protected VB getBinding() { return binding; }
 
-    protected void showToast(String m, ToastHelper.Status s) { ToastHelper.show(getContext(), m, s); }
+    protected void showToast(String m, UiHelper.Status s) { UiHelper.showSnackbar(getView(), m, s); }
 
-    protected void showToast(int res, ToastHelper.Status s) { ToastHelper.show(getContext(), res, s); }
+    protected void showToast(int res, UiHelper.Status s) { UiHelper.showSnackbar(getView(), res, s); }
 
     protected void showLoading(boolean l) { if (getActivity() instanceof BaseActivity) ((BaseActivity<?>) getActivity()).showLoading(l); }
 

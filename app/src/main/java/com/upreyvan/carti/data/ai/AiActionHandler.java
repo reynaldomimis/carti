@@ -6,6 +6,7 @@ import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.util.CategoryMapper;
 import com.upreyvan.carti.util.Utils;
 import org.json.JSONObject;
 import java.util.Map;
@@ -38,7 +39,8 @@ public class AiActionHandler {
                 case "EXPENSE" -> {
                     double amount = data.optDouble("amount", 0.0);
                     String item = data.optString("item", data.optString("description", "Miscellaneous"));
-                    String category = CategoryMapper.getCategory(item, data.optString("category", "Others"));
+                    String category = CategoryMapper.map(context, item);
+                    if (category == null) category = data.optString("category", "Others");
                     Transaction expense = new Transaction();
                     expense.setAmount(amount);
                     expense.setType("EXPENSE"); 

@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/CartiContainer"
+    app:useStatusBarPadding="true"
     app:useImePadding="true"
-    app:useBottomNavPadding="false">
+    app:imeGap="12dp">
 
-    <!-- Header Section -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutHeader"
         android:layout_width="match_parent"
@@ -68,7 +68,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Chat Content -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -187,7 +186,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/screen_padding"
-            android:layout_marginBottom="@dimen/spacing_medium" />
+            android:layout_marginBottom="@dimen/spacing_xs" />
 
     </LinearLayout>
 

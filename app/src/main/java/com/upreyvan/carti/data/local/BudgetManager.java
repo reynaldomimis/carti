@@ -94,6 +94,13 @@ public class BudgetManager {
         budgetPlanLiveData.postValue(items);
     }
 
+    public void saveBudgetPlanFromJson(String json) {
+        if (json == null || json.isEmpty()) return;
+        Type type = new TypeToken<ArrayList<BudgetCategoryItem>>() {}.getType();
+        List<BudgetCategoryItem> items = gson.fromJson(json, type);
+        if (items != null) saveBudgetPlan(items);
+    }
+
     public LiveData<List<BudgetCategoryItem>> getBudgetPlanLiveData() {
         if (budgetPlanLiveData.getValue() == null) {
             budgetPlanLiveData.postValue(getBudgetPlan());

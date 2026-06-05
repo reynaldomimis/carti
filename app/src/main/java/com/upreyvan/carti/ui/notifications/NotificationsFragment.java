@@ -18,7 +18,7 @@ import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentNotificationsBinding;
 import com.upreyvan.carti.model.Notification;
 import com.upreyvan.carti.util.Constants;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -204,7 +204,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
             public void onSuccess(Map<String, Object> result) {
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
-                    showToast(getString(R.string.msg_member_approved), ToastHelper.Status.SUCCESS);
+                    showToast(getString(R.string.msg_member_approved), UiHelper.Status.SUCCESS);
                     loadAllNotifications();
                 });
             }
@@ -212,7 +212,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
             @Override
             public void onError(Throwable error) {
                 if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> showToast(error.getMessage(), ToastHelper.Status.ERROR));
+                requireActivity().runOnUiThread(() -> showToast(error.getMessage(), UiHelper.Status.ERROR));
             }
         });
     }
@@ -223,7 +223,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
             public void onSuccess(Map<String, Object> result) {
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
-                    showToast(getString(R.string.msg_member_rejected), ToastHelper.Status.INFO);
+                    showToast(getString(R.string.msg_member_rejected), UiHelper.Status.INFO);
                     loadAllNotifications();
                 });
             }
@@ -231,7 +231,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
             @Override
             public void onError(Throwable error) {
                 if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> showToast(error.getMessage(), ToastHelper.Status.ERROR));
+                requireActivity().runOnUiThread(() -> showToast(error.getMessage(), UiHelper.Status.ERROR));
             }
         });
     }
@@ -251,3 +251,4 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
         super.onDestroyView();
     }
 }
+

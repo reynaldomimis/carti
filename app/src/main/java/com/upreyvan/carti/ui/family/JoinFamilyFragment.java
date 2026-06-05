@@ -17,6 +17,7 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentJoinFamilyBinding;
 import com.upreyvan.carti.ui.onboarding.OnboardingStatusFragment;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.Map;
@@ -41,9 +42,10 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
         getBinding().btnJoin.setOnClickListener(v -> {
             if (isJoining) return;
             
-            String inviteCode = getBinding().etFamilyId.getText().toString().trim();
+            android.text.Editable text = getBinding().etFamilyId.getText();
+            String inviteCode = (text != null) ? text.toString().trim() : "";
             if (inviteCode.isEmpty()) {
-                showToast(R.string.error_empty_invite_code, com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                showToast(R.string.error_empty_invite_code, UiHelper.Status.WARNING);
                 return;
             }
             joinFamily(inviteCode);
@@ -69,6 +71,7 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
 
                     Map<String, Object> data = result;
                     if (result.containsKey("data") && result.get("data") instanceof Map) {
+                        //noinspection unchecked
                         data = (Map<String, Object>) result.get("data");
                     }
 
@@ -91,7 +94,7 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
                 isJoining = false;
                 if (isAdded()) {
                     setLoading(false);
-                    showToast(error.getMessage(), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                    showToast(error.getMessage(), UiHelper.Status.ERROR);
                 }
             }
         });
@@ -101,7 +104,7 @@ public class JoinFamilyFragment extends BaseFragment<FragmentJoinFamilyBinding> 
         pref.setFamilyId(familyId);
         pref.setOnboardingFinished(true);
         
-        showToast(R.string.msg_join_success, com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+        showToast(R.string.msg_join_success, UiHelper.Status.SUCCESS);
         Intent intent = new Intent(requireActivity(), MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

@@ -117,25 +117,26 @@ public class AppwriteManager {
 
     private void postError(AppwriteCallback<?> callback, Throwable error) {
         String message = error.getMessage();
-        String userFriendlyMessage = Constants.ErrorCodes.GENERIC_ERROR;
+        String userFriendlyMessage;
 
         if (error instanceof io.appwrite.exceptions.AppwriteException ae) {
             int code = ae.getCode() != null ? ae.getCode() : 0;
-            switch (code) {
-                case 401: userFriendlyMessage = Constants.ErrorCodes.UNAUTHORIZED; break;
-                case 404: userFriendlyMessage = Constants.ErrorCodes.NOT_FOUND; break;
-                case 429: userFriendlyMessage = Constants.ErrorCodes.RATE_LIMIT; break;
-                case 500:
-                case 502:
-                case 503: userFriendlyMessage = Constants.ErrorCodes.SERVER_ERROR; break;
-                default:
+            userFriendlyMessage = switch (code) {
+                case 401 -> Constants.ErrorCodes.UNAUTHORIZED;
+                case 404 -> Constants.ErrorCodes.NOT_FOUND;
+                case 429 -> Constants.ErrorCodes.RATE_LIMIT;
+                case 500, 502, 503 -> Constants.ErrorCodes.SERVER_ERROR;
+                default -> {
                     if (message != null && (message.contains("Network") || message.contains("hostname"))) {
-                        userFriendlyMessage = Constants.ErrorCodes.NETWORK_ERROR;
+                        yield Constants.ErrorCodes.NETWORK_ERROR;
                     }
-                    break;
-            }
+                    yield Constants.ErrorCodes.GENERIC_ERROR;
+                }
+            };
         } else if (error instanceof java.net.UnknownHostException || error instanceof java.net.ConnectException) {
             userFriendlyMessage = Constants.ErrorCodes.NETWORK_ERROR;
+        } else {
+            userFriendlyMessage = Constants.ErrorCodes.GENERIC_ERROR;
         }
 
         android.util.Log.e("AppwriteManager", "Error: " + message, error);

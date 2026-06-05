@@ -1,23 +1,23 @@
 package com.upreyvan.carti.ui.common;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
 import com.upreyvan.carti.R;
 
 public class RootLayout extends ConstraintLayout {
 
-    private boolean useBottomNavPadding = true;
     private boolean useImePadding = false;
-    private Integer originalFirstChildTopPadding = null;
-    private Integer originalBottomPadding = null;
+    private boolean useBottomNavPadding = false;
+    private int imeGap = 0;
 
     public RootLayout(@NonNull Context context) {
         this(context, null);
@@ -29,62 +29,43 @@ public class RootLayout extends ConstraintLayout {
 
     public RootLayout(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+
+        boolean useStatusBarPadding = false;
         if (attrs != null) {
-            android.content.res.TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RootLayout);
-            useBottomNavPadding = a.getBoolean(R.styleable.RootLayout_useBottomNavPadding, true);
-            useImePadding = a.getBoolean(R.styleable.RootLayout_useImePadding, false);
-            a.recycle();
+            try (TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RootLayout, defStyleAttr, 0)) {
+                useImePadding = a.getBoolean(R.styleable.RootLayout_useImePadding, false);
+                useBottomNavPadding = a.getBoolean(R.styleable.RootLayout_useBottomNavPadding, false);
+                useStatusBarPadding = a.getBoolean(R.styleable.RootLayout_useStatusBarPadding, false);
+                imeGap = a.getDimensionPixelSize(R.styleable.RootLayout_imeGap, 0);
+            }
         }
-        init();
-    }
 
-    private void init() {
+        if (useStatusBarPadding) {
+            setPadding(getPaddingLeft(), getStatusBarHeight(), getPaddingRight(), getPaddingBottom());
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(this, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
-
-            if (originalBottomPadding == null) {
-                originalBottomPadding = getPaddingBottom();
-            }
-
-            if (getChildCount() > 0) {
-                View firstChild = getChildAt(0);
-                if (originalFirstChildTopPadding == null) {
-                    originalFirstChildTopPadding = firstChild.getPaddingTop();
-                }
-
-                int topGap = getResources().getDimensionPixelSize(R.dimen.spacing_xs);
-                firstChild.setPadding(
-                    firstChild.getPaddingLeft(),
-                    systemBars.top + topGap,
-                    firstChild.getPaddingRight(),
-                    firstChild.getPaddingBottom()
-                );
-            }
-
-            int bottomInset = systemBars.bottom;
-            int imeInset = useImePadding ? ime.bottom : 0;
-
-            int navPadding = (useBottomNavPadding && imeInset == 0) ? getResources().getDimensionPixelSize(R.dimen.scroll_bottom_padding) : 0;
+            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+            Insets navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
             
-            setPadding(
-                getPaddingLeft(),
-                getPaddingTop(),
-                getPaddingRight(),
-                originalBottomPadding + bottomInset + imeInset + navPadding
-            );
+            int bottomPadding = 0;
+            if (useImePadding && imeInsets.bottom > 0) {
+                bottomPadding = imeInsets.bottom + imeGap;
+            } else if (useBottomNavPadding) {
+                bottomPadding = navInsets.bottom;
+            }
 
-            return WindowInsetsCompat.CONSUMED;
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottomPadding);
+            return insets;
         });
     }
 
-    public void setUseBottomNavPadding(boolean use) {
-        this.useBottomNavPadding = use;
-        ViewCompat.requestApplyInsets(this);
-    }
-
-    public void setUseImePadding(boolean use) {
-        this.useImePadding = use;
-        ViewCompat.requestApplyInsets(this);
+    @android.annotation.SuppressLint({"InternalInsetResource", "DiscouragedApi"})
+    private int getStatusBarHeight() {
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            return getResources().getDimensionPixelSize(resourceId);
+        }
+        return 0;
     }
 }

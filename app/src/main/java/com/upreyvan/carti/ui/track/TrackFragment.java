@@ -73,6 +73,18 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> implements
     @Override public void onViewLikes(TransactionWithUser item) { com.upreyvan.carti.ui.home.ReactionsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Reactions"); }
     @Override public void onTransactionClick(TransactionWithUser item) {}
     
+    @Override public void onTransactionEdit(TransactionWithUser item) {
+        // Edit logic
+    }
+
+    @Override public void onTransactionDelete(TransactionWithUser item) {
+        viewModel.deleteTransaction(item);
+    }
+
+    @Override public String getCurrentUserId() {
+        return com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getUserId();
+    }
+
     @Override public Category findCategory(String name) {
         for (Category cat : CategoryManager.getInstance(requireContext()).getCategories()) {
             if (cat.getName().equalsIgnoreCase(name)) return cat;

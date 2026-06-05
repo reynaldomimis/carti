@@ -26,7 +26,7 @@ import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.ui.goals.MemberPickerBottomSheet;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
-import com.upreyvan.carti.util.ToastHelper.Status;
+import com.upreyvan.carti.util.UiHelper.Status;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -182,3 +182,4 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         });
     }
 }
+

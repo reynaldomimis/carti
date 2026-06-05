@@ -11,7 +11,7 @@ import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.databinding.ActivityResetPasswordBinding;
 import com.upreyvan.carti.util.Constants.ErrorCodes;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Validator;
 
 public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBinding> {
@@ -35,7 +35,7 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
         secret = getIntent().getStringExtra(EXTRA_SECRET);
 
         if (Validator.isEmpty(userId) || Validator.isEmpty(secret)) {
-            showToast(R.string.err_invalid_reset_link, ToastHelper.Status.ERROR);
+            showToast(R.string.err_invalid_reset_link, UiHelper.Status.ERROR);
             finish();
             return;
         }
@@ -79,20 +79,20 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
         }
 
         getBinding().btnReset.setEnabled(false);
-        showToast(R.string.msg_updating_password, ToastHelper.Status.INFO);
+        showToast(R.string.msg_updating_password, UiHelper.Status.INFO);
 
         AppwriteManager.getInstance(this).updatePasswordRecovery(userId, secret, newPassword, new AppwriteCallback<>() {
             @Override public void onSuccess(Object result) {
-                showToast(R.string.msg_password_updated, ToastHelper.Status.SUCCESS);
+                showToast(R.string.msg_password_updated, UiHelper.Status.SUCCESS);
                 finish();
             }
             @Override public void onError(Throwable error) {
                 getBinding().btnReset.setEnabled(true);
                 String message = error.getMessage();
                 if (message != null && message.contains("similar to your previous password")) {
-                    showToast(ErrorCodes.PASSWORD_RECENTLY_USED, ToastHelper.Status.ERROR);
+                    showToast(ErrorCodes.PASSWORD_RECENTLY_USED, UiHelper.Status.ERROR);
                 } else {
-                    showToast("Error: " + (message != null ? message : "Unknown error"), ToastHelper.Status.ERROR);
+                    showToast("Error: " + (message != null ? message : "Unknown error"), UiHelper.Status.ERROR);
                 }
             }
         });

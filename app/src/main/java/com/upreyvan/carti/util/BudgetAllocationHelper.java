@@ -14,20 +14,27 @@ public class BudgetAllocationHelper {
     public static void getRemainingBalance(Context context, String categoryName, AllocationCallback callback) {
         TransactionRepository repository = TransactionRepository.getInstance(context);
         
-        repository.getAllTransactions().observeForever(transactions -> {
-            if (transactions == null) {
-                callback.onBalanceLoaded(0.0);
-                return;
+        androidx.lifecycle.LiveData<com.upreyvan.carti.model.TransactionWithUser> dummy = new androidx.lifecycle.MutableLiveData<>(); // Just to get access to observer
+        repository.getAllTransactions().observeForever(new androidx.lifecycle.Observer<java.util.List<com.upreyvan.carti.model.TransactionWithUser>>() {
+            @Override
+            public void onChanged(java.util.List<com.upreyvan.carti.model.TransactionWithUser> transactions) {
+                repository.getAllTransactions().removeObserver(this);
+                if (transactions == null) {
+                    callback.onBalanceLoaded(0.0);
+                    return;
+                }
+
+                double allocated = 5000.0;
+                double spent = 0;
+                for (com.upreyvan.carti.model.TransactionWithUser tWithU : transactions) {
+                    com.upreyvan.carti.model.Transaction t = tWithU.getTransaction();
+                    if ("EXPENSE".equalsIgnoreCase(t.getType()) && categoryName.equalsIgnoreCase(t.getCategory())) {
+                        spent += t.getAmount();
+                    }
+                }
+
+                callback.onBalanceLoaded(allocated - spent);
             }
-
-            double allocated = 5000.0;
-            double spent = transactions.stream()
-                    .map(TransactionWithUser::getTransaction)
-                    .filter(t -> "EXPENSE".equalsIgnoreCase(t.getType()) && categoryName.equalsIgnoreCase(t.getCategory()))
-                    .mapToDouble(Transaction::getAmount)
-                    .sum();
-
-            callback.onBalanceLoaded(allocated - spent);
         });
     }
 }

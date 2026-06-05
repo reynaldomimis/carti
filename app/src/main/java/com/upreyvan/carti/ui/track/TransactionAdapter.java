@@ -1,8 +1,10 @@
 package com.upreyvan.carti.ui.track;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
@@ -10,11 +12,11 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.databinding.ItemTransactionBinding;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.util.AvatarHelper;
 import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.Utils;
 import java.util.Locale;
 import java.util.Objects;
-import androidx.core.content.ContextCompat;
 
 public class TransactionAdapter extends ListAdapter<TransactionWithUser, TransactionAdapter.ViewHolder> {
 
@@ -30,6 +32,8 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
         void onReactionClick(TransactionWithUser item, String emoji);
         void onCommentClick(Transaction transaction);
         void onViewLikesClick(Transaction transaction, String reactorNames);
+        void onEditClick(Transaction transaction);
+        void onDeleteClick(Transaction transaction);
     }
 
     public interface OnItemClickListener {
@@ -65,7 +69,20 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
 
         void bind(TransactionWithUser itemWithUser, OnTransactionInteractionListener interactionListener, OnItemClickListener itemClickListener) {
             Transaction item = itemWithUser.getTransaction();
+            String currentUserId = com.upreyvan.carti.data.local.PreferenceManager.getInstance(binding.getRoot().getContext()).getUserId();
             
+            boolean isOwner = item.getUserId() != null && item.getUserId().equalsIgnoreCase(currentUserId);
+            binding.layoutOwnerActions.setVisibility(isOwner ? View.VISIBLE : View.GONE);
+
+            if (isOwner) {
+                binding.btnEdit.setOnClickListener(v -> {
+                    if (interactionListener != null) interactionListener.onEditClick(item);
+                });
+                binding.btnDelete.setOnClickListener(v -> {
+                    if (interactionListener != null) interactionListener.onDeleteClick(item);
+                });
+            }
+
             String username = itemWithUser.getUsername() != null && !itemWithUser.getUsername().isEmpty() 
                     ? itemWithUser.getUsername() : "Someone";
             
@@ -118,27 +135,17 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
             binding.tvAmount.setText(binding.getRoot().getContext().getString(amountFormatRes, formattedAmount));
             binding.tvAmount.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), amountColor));
 
-            if (itemWithUser.getUserAvatarUrl() != null && !itemWithUser.getUserAvatarUrl().isEmpty()) {
-                Glide.with(binding.getRoot().getContext())
-                        .load(itemWithUser.getUserAvatarUrl())
-                        .placeholder(R.drawable.ai_holder)
-                        .error(R.drawable.ai_holder)
-                        .into(binding.ivAvatar);
-            } else if (itemWithUser.getUserAvatarRes() != 0) {
-                binding.ivAvatar.setImageResource(itemWithUser.getUserAvatarRes());
-            } else {
-                binding.ivAvatar.setImageResource(R.drawable.ai_holder);
-            }
+            AvatarHelper.loadUserAvatar(binding.getRoot().getContext(), binding.ivAvatar, username, itemWithUser.getUserAvatarUrl());
 
             String myReaction = itemWithUser.getMyReaction();
             String lastEmoji = item.getLastEmoji();
 
             if (myReaction != null && !myReaction.isEmpty()) {
                 binding.tvBtnLikeIcon.setText(myReaction);
-                binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.carti_primary_green));
+                binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.carti_primary_blue));
             } else {
                 binding.tvBtnLikeIcon.setText("👍");
-                binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.text_secondary));
+                binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.icon_electricity));
             }
 
             binding.tvReactionEmoji.setText(myReaction != null && !myReaction.isEmpty() ? myReaction : (lastEmoji != null && !lastEmoji.isEmpty() ? lastEmoji : "👍"));
@@ -147,26 +154,25 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
             int commentCount = item.getCommentCount();
             String rNames = itemWithUser.getReactorNames();
 
-            if (likesCount > 0 || commentCount > 0) {
-                binding.layoutReactionsSummary.setVisibility(android.view.View.VISIBLE);
-                if (likesCount > 0) {
-                    binding.tvReactionEmoji.setVisibility(android.view.View.VISIBLE);
-                    binding.tvLikesCount.setVisibility(android.view.View.VISIBLE);
-                    binding.tvLikesCount.setText(rNames != null && !rNames.isEmpty() ? rNames : String.valueOf(likesCount));
-                } else {
-                    binding.tvReactionEmoji.setVisibility(android.view.View.GONE);
-                    binding.tvLikesCount.setVisibility(android.view.View.GONE);
-                }
 
-                if (commentCount > 0) {
-                    binding.tvCommentsCountSummary.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-                    binding.tvCommentsCountSummary.setVisibility(android.view.View.VISIBLE);
-                } else {
-                    binding.tvCommentsCountSummary.setVisibility(android.view.View.GONE);
-                }
+            if (likesCount > 0) {
+                binding.layoutLikesSummaryClickable.setVisibility(View.VISIBLE);
+                binding.tvLikesCount.setText(rNames != null && !rNames.isEmpty() ? rNames : String.valueOf(likesCount));
             } else {
-                binding.layoutReactionsSummary.setVisibility(android.view.View.GONE);
+                binding.layoutLikesSummaryClickable.setVisibility(View.GONE);
             }
+
+
+            if (commentCount > 0) {
+                binding.tvCommentsCountSummary.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                binding.tvCommentsCountSummary.setVisibility(View.VISIBLE);
+            } else {
+                binding.tvCommentsCountSummary.setVisibility(View.GONE);
+            }
+
+            // Divider and Wrapper Alignment Consistency
+            binding.divider.setVisibility((likesCount > 0 || commentCount > 0) ? View.VISIBLE : View.GONE);
+
 
             binding.btnLike.setOnClickListener(v -> {
                 if (interactionListener != null) interactionListener.onLikeClick(itemWithUser);
@@ -177,12 +183,14 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
                 });
                 return true;
             });
-            binding.layoutReactionsSummary.setOnClickListener(v -> {
+            
+            binding.layoutLikesSummaryClickable.setOnClickListener(v -> {
                 if (interactionListener != null) interactionListener.onViewLikesClick(item, itemWithUser.getReactorNames());
             });
-            binding.tvLikesCount.setOnClickListener(v -> {
-                if (interactionListener != null) interactionListener.onViewLikesClick(item, itemWithUser.getReactorNames());
-            });
+            
+            binding.tvLikesCount.setClickable(false);
+            binding.tvReactionEmoji.setClickable(false);
+
             binding.tvCommentsCountSummary.setOnClickListener(v -> {
                 if (interactionListener != null) interactionListener.onCommentClick(item);
             });

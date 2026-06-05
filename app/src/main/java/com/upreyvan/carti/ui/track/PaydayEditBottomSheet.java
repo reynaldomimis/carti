@@ -1,5 +1,7 @@
 package com.upreyvan.carti.ui.track;
 
+import com.upreyvan.carti.util.ToastHelper;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,25 +57,25 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
             manager.setIsMonthly(isMonthly);
 
             if (Validator.isEmpty(getBinding().etPayday1)) {
-                showToast(getString(R.string.msg_enter_payday), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                showToast(getString(R.string.msg_enter_payday), com.upreyvan.carti.util.UiHelper.Status.WARNING);
                 return;
             }
 
             try {
                 int p1 = Integer.parseInt(getBinding().etPayday1.getText().toString().trim());
                 if (p1 < 1 || p1 > 31) {
-                    showToast(getString(R.string.msg_day_range), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                    showToast(getString(R.string.msg_day_range), com.upreyvan.carti.util.UiHelper.Status.WARNING);
                     return;
                 }
 
                 if (!isMonthly) {
                     if (Validator.isEmpty(getBinding().etPayday2)) {
-                        showToast(getString(R.string.msg_enter_payday_second), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                        showToast(getString(R.string.msg_enter_payday_second), com.upreyvan.carti.util.UiHelper.Status.WARNING);
                         return;
                     }
                     int p2 = Integer.parseInt(getBinding().etPayday2.getText().toString().trim());
                     if (p2 < 1 || p2 > 31) {
-                        showToast(getString(R.string.msg_day_range), com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                        showToast(getString(R.string.msg_day_range), com.upreyvan.carti.util.UiHelper.Status.WARNING);
                         return;
                     }
                     manager.setFirstPayday(p1);
@@ -82,7 +84,7 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
                     manager.setFirstPayday(p1);
                 }
             } catch (NumberFormatException e) {
-                showToast(getString(R.string.msg_invalid_day_format), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                showToast(getString(R.string.msg_invalid_day_format), com.upreyvan.carti.util.UiHelper.Status.ERROR);
                 return;
             }
 
@@ -107,7 +109,9 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
         }
     }
 
-    protected void showToast(String message, com.upreyvan.carti.util.ToastHelper.Status status) {
+    protected void showToast(String message, com.upreyvan.carti.util.UiHelper.Status status) {
         com.upreyvan.carti.util.ToastHelper.show(requireContext(), message, status);
     }
 }
+
+

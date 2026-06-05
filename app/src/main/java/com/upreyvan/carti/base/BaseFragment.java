@@ -4,18 +4,16 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewbinding.ViewBinding;
+
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.NetworkMonitor;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
 
 public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
@@ -77,9 +75,9 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
 
     protected VB getBinding() { return binding; }
 
-    protected void showToast(String m, ToastHelper.Status s) { ToastHelper.show(getContext(), m, s); }
+    protected void showToast(String m, UiHelper.Status s) { UiHelper.showSnackbar(getView(), m, s); }
 
-    protected void showToast(int res, ToastHelper.Status s) { ToastHelper.show(getContext(), res, s); }
+    protected void showToast(int res, UiHelper.Status s) { UiHelper.showSnackbar(getView(), res, s); }
 
     protected void showLoading(boolean l) { if (getActivity() instanceof BaseActivity) ((BaseActivity<?>) getActivity()).showLoading(l); }
 
@@ -94,7 +92,7 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
             if (msg.contains("401")) m = "Session expired. Please login again.";
             else if (msg.contains("NETWORK")) m = "No internet connection.";
         }
-        showToast(m, ToastHelper.Status.ERROR);
+        showToast(m, UiHelper.Status.ERROR);
     }
 
     @Override public void onDestroyView() { super.onDestroyView(); binding = null; }

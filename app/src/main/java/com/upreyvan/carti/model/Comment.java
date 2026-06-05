@@ -2,9 +2,15 @@ package com.upreyvan.carti.model;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.util.Objects;
 
+@Entity(tableName = "comments")
 public class Comment {
+    @PrimaryKey
+    @NonNull
     private String id;
     private String transactionId;
     private String userId;
@@ -14,7 +20,7 @@ public class Comment {
     private String createdAt;
     private String updatedAt;
 
-    public Comment(String id, String transactionId, String userId, String username, String text, String parentId, String createdAt, String updatedAt) {
+    public Comment(@NonNull String id, String transactionId, String userId, String username, String text, String parentId, String createdAt, String updatedAt) {
         this.id = id;
         this.transactionId = transactionId;
         this.userId = userId;

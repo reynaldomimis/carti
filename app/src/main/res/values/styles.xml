@@ -81,7 +81,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">@color/white</item>
         <item name="android:paddingHorizontal">@dimen/screen_padding</item>
-        <item name="android:paddingTop">@dimen/spacing_xs</item>
+        <item name="android:paddingTop">@dimen/spacing_medium</item>
         <item name="android:paddingBottom">@dimen/gap_section_title</item>
     </style>
 

@@ -4,7 +4,7 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.ToastHelper.Status;
+import com.upreyvan.carti.util.UiHelper.Status;
 import com.upreyvan.carti.util.Validator;
 import java.util.ArrayList;
 import java.util.Map;
@@ -57,3 +57,4 @@ public class AddGoalActivity extends BaseGoalActivity {
         });
     }
 }
+

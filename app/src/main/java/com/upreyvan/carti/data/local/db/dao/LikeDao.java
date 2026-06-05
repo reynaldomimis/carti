@@ -5,6 +5,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Upsert;
 
 import com.upreyvan.carti.model.Like;
 
@@ -12,6 +13,12 @@ import java.util.List;
 
 @Dao
 public interface LikeDao {
+    @Upsert
+    void upsert(Like like);
+
+    @Upsert
+    void upsertAll(List<Like> likes);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Like like);
 
@@ -27,10 +34,13 @@ public interface LikeDao {
     @Query("DELETE FROM likes WHERE transactionId = :transactionId AND userId = :userId")
     void deleteUserLike(String transactionId, String userId);
 
+    @Query("SELECT * FROM likes WHERE transactionId = :transactionId AND userId = :userId LIMIT 1")
+    Like getLikeByUserAndTransaction(String transactionId, String userId);
+
     @Query("SELECT * FROM likes WHERE transactionId = :transactionId")
     List<Like> getLikesForTransaction(String transactionId);
 
-    @Query("SELECT group_concat(username, ', ') FROM likes WHERE transactionId = :transactionId")
+    @Query("SELECT group_concat(DISTINCT username) FROM likes WHERE transactionId = :transactionId")
     String getReactorNames(String transactionId);
 
     @Query("SELECT l.username as username, l.emojiType as emoji, l.userId as userId, m.avatarRes as avatarRes, m.avatarUrl as avatarUrl " +

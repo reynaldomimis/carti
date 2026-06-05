@@ -19,12 +19,22 @@ import com.upreyvan.carti.base.BaseMultiItem;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.SalaryManager;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
+import com.upreyvan.carti.model.Bill;
+import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.bills.BillDetailsBottomSheet;
 import com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment;
+import com.upreyvan.carti.ui.goals.UpdateGoalBottomSheetFragment;
 import com.upreyvan.carti.ui.track.AddBudgetPlanActivity;
 import com.upreyvan.carti.ui.track.AllTransactionsFragment;
+import com.upreyvan.carti.ui.track.ExpenseEditBottomSheet;
+import com.upreyvan.carti.ui.track.IncomeEditBottomSheet;
+import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.util.DialogHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements HomeListItem.OnHomeInteractionListener {
@@ -80,22 +90,52 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
     }
 
     @Override public void onBudgetPromptClick() { startActivity(new Intent(requireContext(), AddBudgetPlanActivity.class)); }
-    @Override public void onBillClick(com.upreyvan.carti.model.Bill bill) { BillDetailsBottomSheet.newInstance(bill.getId(), bill.getName()).show(getChildFragmentManager(), "BillDetails"); }
+    @Override public void onBillClick(Bill bill) { BillDetailsBottomSheet.newInstance(bill.getId(), bill.getName()).show(getChildFragmentManager(), "BillDetails"); }
     @Override public void onActionClick(com.upreyvan.carti.model.QuickLogItem item) {
         MainActivity main = (MainActivity) getActivity(); if (main == null) return;
         String t = item.getTitle();
-        if (t.equals(getString(R.string.add_options_expense))) main.navigateTo(com.upreyvan.carti.util.Constants.Navigation.TRACK);
-        else if (t.equals(getString(R.string.action_add_income))) main.navigateTo(com.upreyvan.carti.util.Constants.Navigation.TRACK);
-        else if (t.equals(getString(R.string.action_family_chat))) main.navigateTo(com.upreyvan.carti.util.Constants.Navigation.CHAT);
-        else if (t.equals(getString(R.string.action_manage_goals))) main.navigateTo(com.upreyvan.carti.util.Constants.Navigation.PLAN);
+        if (Objects.equals(t, getString(R.string.add_options_expense))) {
+            main.navigateTo(Constants.Navigation.TRACK);
+        } else if (Objects.equals(t, getString(R.string.action_add_income))) {
+            main.navigateTo(Constants.Navigation.TRACK);
+        } else if (Objects.equals(t, getString(R.string.action_family_chat))) {
+            main.navigateTo(Constants.Navigation.CHAT);
+        } else if (Objects.equals(t, getString(R.string.action_manage_goals))) {
+            main.navigateTo(Constants.Navigation.PLAN);
+        }
     }
     @Override public void onQuickLogClick(com.upreyvan.carti.model.QuickLogItem item) { QuickLogsBottomSheetFragment.newInstance(item.getTitle()).show(getChildFragmentManager(), "QUICK_LOG"); }
     @Override public void onQuickLogLongClick(com.upreyvan.carti.model.QuickLogItem item) { startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class)); }
-    @Override public void onTransactionClick(com.upreyvan.carti.model.TransactionWithUser item) {}
-    @Override public void onTransactionLike(com.upreyvan.carti.model.TransactionWithUser item) { viewModel.toggleLike(item); }
-    @Override public void onTransactionReaction(com.upreyvan.carti.model.TransactionWithUser item, String emoji) { viewModel.toggleReaction(item, emoji); }
-    @Override public void onTransactionComment(com.upreyvan.carti.model.TransactionWithUser item) { com.upreyvan.carti.ui.home.CommentsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Comments"); }
-    @Override public void onViewLikes(com.upreyvan.carti.model.TransactionWithUser item) { ReactionsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Reactions"); }
+    @Override public void onTransactionClick(TransactionWithUser item) {}
+    @Override public void onTransactionLike(TransactionWithUser item) { viewModel.toggleLike(item); }
+    @Override public void onTransactionReaction(TransactionWithUser item, String emoji) { viewModel.toggleReaction(item, emoji); }
+    @Override public void onTransactionComment(TransactionWithUser item) { CommentsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Comments"); }
+    @Override public void onViewLikes(TransactionWithUser item) { ReactionsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Reactions"); }
     @Override public void onSeeAllTransactions() { navigateTo(AllTransactionsFragment.newInstance(null)); }
+    @Override public void onTransactionEdit(TransactionWithUser item) {
+        Transaction t = item.getTransaction();
+        String type = t.getType();
+        if ("INCOME".equals(type)) {
+            IncomeEditBottomSheet.newInstance(t).show(getChildFragmentManager(), "EditIncome");
+        } else if ("GOAL".equals(type)) {
+            UpdateGoalBottomSheetFragment.newInstance(t.getId()).show(getChildFragmentManager(), "EditGoal");
+        } else if ("EXPENSE".equals(type) || "BILL".equals(type) || "DEBT".equals(type)) {
+            ExpenseEditBottomSheet.newInstance(t).show(getChildFragmentManager(), "EditExpense");
+        } else {
+            showToast("Edit for " + type + " coming soon", UiHelper.Status.INFO);
+        }
+    }
+    @Override public void onTransactionDelete(TransactionWithUser item) {
+        DialogHelper.showConfirmation(requireContext(), 
+            "Delete Transaction?", 
+            "Are you sure you want to delete this " + (item.getTransaction().getTitle() != null ? item.getTransaction().getTitle() : "transaction") + "?", 
+            "Delete", () -> {
+            viewModel.deleteTransaction(item);
+            showToast(R.string.msg_deleted_balance_updated, UiHelper.Status.SUCCESS);
+        });
+    }
+    @Override public String getCurrentUserId() {
+        return PreferenceManager.getInstance(requireContext()).getUserId();
+    }
     @Override public void onResume() { super.onResume(); if (!isHidden()) viewModel.refreshData(); }
 }

@@ -133,4 +133,8 @@ public class HomeViewModel extends BaseViewModel {
     public void toggleReaction(TransactionWithUser item, String emoji) {
         transRepo.toggleLike(item, emoji);
     }
+
+    public void deleteTransaction(TransactionWithUser item) {
+        transRepo.deleteTransaction(item.getTransaction().getId(), null);
+    }
 }

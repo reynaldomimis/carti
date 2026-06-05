@@ -24,7 +24,7 @@ import com.upreyvan.carti.model.IconChoice;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
 import com.upreyvan.carti.util.Constants;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Validator;
 import com.yalantis.ucrop.UCrop;
 
@@ -145,7 +145,7 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
     private void onSaveClicked() {
         if (!checkNetwork()) return;
         if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) {
-            showToast(R.string.msg_fill_all_fields, ToastHelper.Status.WARNING);
+            showToast(R.string.msg_fill_all_fields, UiHelper.Status.WARNING);
             return;
         }
 
@@ -187,7 +187,7 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
                     @Override
                     public void onError(Throwable error) {
                         showLoading(false);
-                        showToast("Failed to upload image: " + error.getMessage(), ToastHelper.Status.ERROR);
+                        showToast("Failed to upload image: " + error.getMessage(), UiHelper.Status.ERROR);
                     }
                 }
         );
@@ -208,7 +208,7 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
             public void onSuccess(java.util.Map<String, Object> result) {
                 if (isAdded()) {
                     showLoading(false);
-                    showToast(R.string.msg_goal_saved_success, ToastHelper.Status.SUCCESS);
+                    showToast(R.string.msg_goal_saved_success, UiHelper.Status.SUCCESS);
                     dismiss();
                 }
             }
@@ -217,9 +217,10 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
             public void onError(Throwable error) {
                 if (isAdded()) {
                     showLoading(false);
-                    showToast(getString(R.string.err_generic, error.getMessage()), ToastHelper.Status.ERROR);
+                    showToast(getString(R.string.err_generic, error.getMessage()), UiHelper.Status.ERROR);
                 }
             }
         });
     }
 }
+

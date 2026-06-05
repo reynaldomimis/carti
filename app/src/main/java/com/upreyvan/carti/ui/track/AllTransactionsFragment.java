@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -18,6 +19,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.remote.ApiHelper;
@@ -28,11 +30,11 @@ import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
 import com.upreyvan.carti.ui.home.ReactionsBottomSheetFragment;
+import com.upreyvan.carti.ui.goals.UpdateGoalBottomSheetFragment;
 import com.upreyvan.carti.util.DialogHelper;
-import com.upreyvan.carti.util.ToastHelper.Status;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.util.UiHelper;
+
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class AllTransactionsFragment extends BaseFragment<FragmentAllTransactionsBinding> {
@@ -46,7 +48,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     private String filterUserId;
     private String filterUserName;
     private List<TransactionWithUser> fullList = new ArrayList<>();
-    private List<TransactionWithUser> displayList = new ArrayList<>();
+    private final List<TransactionWithUser> displayList = new ArrayList<>();
     private String currentQuery = "";
     
     private int currentPage = 0;
@@ -222,6 +224,39 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
             @Override public void onReactionClick(TransactionWithUser item, String emoji) { transactionRepository.toggleLike(item, emoji); }
             @Override public void onCommentClick(Transaction transaction) { CommentsBottomSheetFragment.newInstance(transaction.getId()).show(getChildFragmentManager(), "CommentsBottomSheet"); }
             @Override public void onViewLikesClick(Transaction transaction, String reactorNames) { ReactionsBottomSheetFragment.newInstance(transaction.getId()).show(getChildFragmentManager(), "ReactionsBottomSheet"); }
+
+            @Override
+            public void onEditClick(Transaction transaction) {
+                String type = transaction.getType();
+                if ("INCOME".equals(type)) {
+                    IncomeEditBottomSheet.newInstance(transaction).show(getChildFragmentManager(), "EditIncome");
+                } else if ("GOAL".equals(type)) {
+                    UpdateGoalBottomSheetFragment.newInstance(transaction.getId()).show(getChildFragmentManager(), "EditGoal");
+                } else if ("EXPENSE".equals(type) || "BILL".equals(type) || "DEBT".equals(type)) {
+                    ExpenseEditBottomSheet.newInstance(transaction).show(getChildFragmentManager(), "EditExpense");
+                } else {
+                    showToast("Edit for " + type + " coming soon", UiHelper.Status.INFO);
+                }
+            }
+
+            @Override
+            public void onDeleteClick(Transaction transaction) {
+                DialogHelper.showConfirmation(requireContext(), "Delete Transaction?", 
+                    "Are you sure you want to delete this " + (transaction.getTitle() != null ? transaction.getTitle() : "transaction") + "?", 
+                    "Delete", () -> {
+                    new ApiHelper(requireContext()).deleteTransaction(transaction.getId(), new AppwriteCallback<Object>() {
+                        @Override public void onSuccess(Object result) {
+                            requireActivity().runOnUiThread(() -> {
+                                transactionRepository.deleteLocally(transaction.getId());
+                                showToast(getString(R.string.msg_deleted_balance_updated), UiHelper.Status.SUCCESS);
+                            });
+                        }
+                        @Override public void onError(Throwable error) { 
+                            requireActivity().runOnUiThread(() -> showToast(getString(R.string.err_generic, error.getMessage()), UiHelper.Status.ERROR));
+                        }
+                    });
+                });
+            }
         });
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
@@ -244,18 +279,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         });
 
         adapter.setOnItemClickListener(itemWithUser -> {
-            Transaction item = itemWithUser.getTransaction();
-            DialogHelper.showConfirmation(requireContext(), "Delete Transaction?", "Are you sure you want to delete this " + item.getTitle() + "?", "Delete", () -> {
-                new ApiHelper(requireContext()).deleteTransaction(item.getId(), new AppwriteCallback<Object>() {
-                    @Override public void onSuccess(Object result) {
-                        requireActivity().runOnUiThread(() -> {
-                            transactionRepository.deleteLocally(item.getId());
-                            showToast(getString(R.string.msg_deleted_balance_updated), Status.SUCCESS);
-                        });
-                    }
-                    @Override public void onError(Throwable error) { requireActivity().runOnUiThread(() -> showToast(getString(R.string.err_generic, error.getMessage()), Status.ERROR)); }
-                });
-            });
+            // Already handled via buttons
         });
     }
 

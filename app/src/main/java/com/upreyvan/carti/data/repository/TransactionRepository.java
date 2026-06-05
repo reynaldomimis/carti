@@ -6,6 +6,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.db.AppDatabase;
+import com.upreyvan.carti.data.local.db.dao.LikeDao;
+import com.upreyvan.carti.data.local.db.dao.TransactionDao;
 import com.upreyvan.carti.data.local.source.TransactionLocalDataSource;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.remote.source.TransactionRemoteDataSource;
@@ -22,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import io.appwrite.models.Document;
@@ -36,6 +40,10 @@ public class TransactionRepository {
     private final PreferenceManager pref;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final MutableLiveData<Boolean> isSyncing = new MutableLiveData<>(false);
+
+    private final Map<String, Long> requestCooldowns = new ConcurrentHashMap<>();
+    private final java.util.Set<String> pendingToggles = Collections.synchronizedSet(new java.util.HashSet<>());
+    private static final long COOLDOWN_MS = 1000;
 
     private TransactionRepository(Context context) {
         this.localDataSource = new TransactionLocalDataSource(context);
@@ -213,12 +221,63 @@ public class TransactionRepository {
     public void likeTransaction(String transId, String emoji, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) { remoteDataSource.addLike(transId, emoji, callback); }
 
     public void toggleLike(TransactionWithUser item, String emoji) {
-        String myId = pref.getUserId(); String transId = item.getTransaction().getId();
-        if (Objects.equals(item.getMyReaction(), emoji)) {
-            executor.execute(() -> {
-                List<Like> likes = AppDatabase.getInstance(pref.getContext()).likeDao().getLikesForTransaction(transId);
-                for (Like l : likes) if (Objects.equals(l.getUserId(), myId)) { unlikeTransaction(l.getId(), null); break; }
-            });
-        } else likeTransaction(transId, emoji, null);
+        String myId = pref.getUserId(); 
+        String transId = item.getTransaction().getId();
+        String myUsername = pref.getUsername();
+        
+        // Anti-Spam & Request Locking
+        long now = System.currentTimeMillis();
+        Long lastRequest = requestCooldowns.get(transId);
+        if ((lastRequest != null && now - lastRequest < COOLDOWN_MS) || pendingToggles.contains(transId)) {
+            Log.d(TAG, "Like toggle throttled or pending for: " + transId);
+            return;
+        }
+        
+        requestCooldowns.put(transId, now);
+        pendingToggles.add(transId);
+        
+        executor.execute(() -> {
+            try {
+                LikeDao likeDao = AppDatabase.getInstance(pref.getContext()).likeDao();
+                TransactionDao transDao = AppDatabase.getInstance(pref.getContext()).transactionDao();
+                
+                Like existing = likeDao.getLikeByUserAndTransaction(transId, myId);
+                Transaction trans = transDao.getTransactionByIdRawSync(transId);
+
+                if (existing != null && Objects.equals(existing.getEmojiType(), emoji)) {
+                    // UNLIKE
+                    likeDao.deleteUserLike(transId, myId);
+                    if (trans != null) {
+                        trans.setLikesCount(Math.max(0, trans.getLikesCount() - 1));
+                        transDao.insert(trans);
+                    }
+                    unlikeTransaction(existing.getId(), createToggleCallback(transId));
+                } else {
+                    // LIKE or CHANGE REACTION
+                    String likeId = (existing != null) ? existing.getId() : "like_" + UUID.randomUUID().toString().substring(0, 8);
+                    Like newLike = new Like(likeId, transId, myId, myUsername, emoji);
+                    
+                    likeDao.insert(newLike);
+                    if (trans != null && existing == null) { // Only increment if it's a new like, not a change
+                        trans.setLikesCount(trans.getLikesCount() + 1);
+                        transDao.insert(trans);
+                    }
+                    likeTransaction(transId, emoji, createToggleCallback(transId));
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to toggle reaction: " + e.getMessage());
+                pendingToggles.remove(transId);
+            }
+        });
+    }
+
+    private AppwriteManager.AppwriteCallback<Map<String, Object>> createToggleCallback(String transId) {
+        return new AppwriteManager.AppwriteCallback<>() {
+            @Override public void onSuccess(Map<String, Object> result) { pendingToggles.remove(transId); }
+            @Override public void onError(Throwable error) { 
+                pendingToggles.remove(transId);
+                Log.e(TAG, "Remote toggle failed for " + transId + ": " + error.getMessage());
+            }
+        };
     }
 }

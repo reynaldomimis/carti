@@ -72,7 +72,7 @@ public class Utils {
     public static boolean isNetworkAvailable(Context ctx) { return NetworkHelper.isNetworkAvailable(ctx); }
 
     public static void showToast(Context context, String message) {
-        ToastHelper.show(context, message, ToastHelper.Status.INFO);
+        ToastHelper.show(context, message, UiHelper.Status.INFO);
     }
 
     public static void applySystemBarInsets(View t, View b, float m, int h) { UiHelper.applySystemBarInsets(t, b, m, h); }
@@ -128,3 +128,5 @@ public class Utils {
         return ctx.getColor(resId);
     }
 }
+
+

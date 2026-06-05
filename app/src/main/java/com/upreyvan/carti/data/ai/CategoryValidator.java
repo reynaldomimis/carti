@@ -2,6 +2,7 @@ package com.upreyvan.carti.data.ai;
 
 import android.content.Context;
 import android.util.Log;
+import com.upreyvan.carti.util.CategoryMapper;
 import com.upreyvan.carti.data.repository.AiRepository;
 import org.json.JSONObject;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class CategoryValidator {
             return;
         }
 
-        String localRemap = CategoryMapper.getCategory(item, null);
+        String localRemap = CategoryMapper.map(context, item);
         if (localRemap != null && SYSTEM_CATEGORIES.contains(localRemap)) {
             callback.onValidated(localRemap);
             return;

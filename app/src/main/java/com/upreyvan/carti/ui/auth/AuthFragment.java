@@ -17,7 +17,7 @@ import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentAuthBinding;
 import com.upreyvan.carti.ui.onboarding.StartActivity;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Validator;
 import java.util.Map;
 
@@ -65,45 +65,63 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
     }
 
     private boolean validate() {
-        String email = getBinding().etEmail.getText().toString().trim();
-        String password = getBinding().etPassword.getText().toString().trim();
-        if (Validator.isEmpty(email) || !Validator.isValidEmail(email)) return false;
-        if (Validator.isEmpty(password) || !Validator.isValidPassword(password)) return false;
-        return true;
+        android.text.Editable emailText = getBinding().etEmail.getText();
+        android.text.Editable passwordText = getBinding().etPassword.getText();
+        String email = (emailText != null) ? emailText.toString().trim() : "";
+        String password = (passwordText != null) ? passwordText.toString().trim() : "";
+        return Validator.isValidEmail(email) && Validator.isValidPassword(password);
     }
 
     private void performLogin() {
         setLoading(true);
-        AppwriteManager.getInstance(requireContext()).login(getBinding().etEmail.getText().toString().trim(), getBinding().etPassword.getText().toString().trim(), new AppwriteManager.AppwriteCallback<io.appwrite.models.Session>() {
+        android.text.Editable emailText = getBinding().etEmail.getText();
+        android.text.Editable passwordText = getBinding().etPassword.getText();
+        String email = (emailText != null) ? emailText.toString().trim() : "";
+        String password = (passwordText != null) ? passwordText.toString().trim() : "";
+
+        AppwriteManager.getInstance(requireContext()).login(email, password, new AppwriteManager.AppwriteCallback<>() {
             @Override public void onSuccess(io.appwrite.models.Session result) { fetchContext(); }
-            @Override public void onError(Throwable e) { setLoading(false); showToast(e.getMessage(), ToastHelper.Status.ERROR); }
+            @Override public void onError(Throwable e) { setLoading(false); showToast(e.getMessage(), UiHelper.Status.ERROR); }
         });
     }
 
     private void performRegister() {
         setLoading(true);
-        new ApiHelper(requireContext()).register(getBinding().etEmail.getText().toString().trim(), getBinding().etPassword.getText().toString().trim(), getBinding().etUsername.getText().toString().trim(), getBinding().cbIsEmployee.isChecked(), getBinding().actvRole.getText().toString(), new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        android.text.Editable emailText = getBinding().etEmail.getText();
+        android.text.Editable passwordText = getBinding().etPassword.getText();
+        android.text.Editable usernameText = getBinding().etUsername.getText();
+        android.text.Editable roleText = getBinding().actvRole.getText();
+
+        String email = (emailText != null) ? emailText.toString().trim() : "";
+        String password = (passwordText != null) ? passwordText.toString().trim() : "";
+        String username = (usernameText != null) ? usernameText.toString().trim() : "";
+        String role = (roleText != null) ? roleText.toString() : "";
+
+        new ApiHelper(requireContext()).register(email, password, username, getBinding().cbIsEmployee.isChecked(), role, new AppwriteManager.AppwriteCallback<>() {
             @Override public void onSuccess(Map<String, Object> r) { performLogin(); }
-            @Override public void onError(Throwable e) { setLoading(false); showToast(e.getMessage(), ToastHelper.Status.ERROR); }
+            @Override public void onError(Throwable e) { setLoading(false); showToast(e.getMessage(), UiHelper.Status.ERROR); }
         });
     }
 
     private void fetchContext() {
-        new ApiHelper(requireContext()).getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        new ApiHelper(requireContext()).getUser(new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> user) {
                 PreferenceManager pref = PreferenceManager.getInstance(requireContext());
-                String familyId = (user.get("familyId") != null && !"null".equals(String.valueOf(user.get("familyId")))) ? String.valueOf(user.get("familyId")) : "";
-                String userId = String.valueOf(user.getOrDefault("$id", user.getOrDefault("userId", "")));
-                if (userId.isEmpty() || "null".equals(userId)) userId = "";
+                Object familyIdObj = user.get("familyId");
+                String familyId = (familyIdObj != null && !"null".equals(String.valueOf(familyIdObj))) ? String.valueOf(familyIdObj) : "";
+                
+                Object idObj = user.getOrDefault("$id", user.getOrDefault("userId", ""));
+                String userId = String.valueOf(idObj);
+                if ("null".equals(userId)) userId = "";
                 
                 pref.setUserData(String.valueOf(user.getOrDefault("username", "User")), String.valueOf(user.getOrDefault("email", "")), String.valueOf(user.getOrDefault("role", "Member")), Boolean.parseBoolean(String.valueOf(user.getOrDefault("isEmployed", false))), familyId, String.valueOf(user.getOrDefault("inviteCode", "")), userId);
                 setLoading(false);
-                if (userId.isEmpty()) { showToast("Login failed: Session error.", ToastHelper.Status.ERROR); return; }
+                if (userId.isEmpty()) { showToast("Login failed: Session error.", UiHelper.Status.ERROR); return; }
                 startActivity(new Intent(requireActivity(), familyId.isEmpty() ? StartActivity.class : MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 requireActivity().finish();
             }
-            @Override public void onError(Throwable e) { setLoading(false); showToast(e.getMessage(), ToastHelper.Status.ERROR); }
+            @Override public void onError(Throwable e) { setLoading(false); showToast(e.getMessage(), UiHelper.Status.ERROR); }
         });
     }
 

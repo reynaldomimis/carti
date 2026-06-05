@@ -1,5 +1,7 @@
 package com.upreyvan.carti.ui.track;
 
+import com.upreyvan.carti.util.ToastHelper;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import androidx.core.content.ContextCompat;
@@ -15,7 +17,7 @@ import com.upreyvan.carti.databinding.ItemBudgetCategoryBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.ui.allocate.AddCategoryBottomSheet;
 import com.upreyvan.carti.util.StringHelper;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,11 +57,11 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
         getBinding().btnCreateBudgetPlan.setOnClickListener(v -> {
             List<BudgetCategoryItem> items = adapter.getCurrentList();
             if (items.isEmpty()) {
-                ToastHelper.show(this, R.string.msg_fill_all_fields, ToastHelper.Status.ERROR);
+                ToastHelper.show(this, R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
                 return;
             }
             BudgetManager.getInstance(this).saveBudgetPlan(items);
-            ToastHelper.show(this, R.string.msg_goal_saved_success, ToastHelper.Status.SUCCESS);
+            ToastHelper.show(this, R.string.msg_goal_saved_success, UiHelper.Status.SUCCESS);
             finish();
         });
     }
@@ -121,3 +123,5 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
         adapter.submitList(items);
     }
 }
+
+

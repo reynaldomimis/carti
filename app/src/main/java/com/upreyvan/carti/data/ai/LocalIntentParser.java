@@ -1,6 +1,8 @@
 package com.upreyvan.carti.data.ai;
 
+import android.content.Context;
 import android.util.Log;
+import com.upreyvan.carti.util.CategoryMapper;
 import org.json.JSONObject;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +25,7 @@ public class LocalIntentParser {
     private static final String[] KW_ADVICE = {"tips", "advice", "paano", "bakit", "help", "coach", "tipid", "analysis"};
     private static final String[] KW_PROFANITY = {"gago", "tarantado", "puta", "tangina", "bakla", "bading", "tomboy", "t-bird", "tanga", "bobu", "bobo", "stupid", "idiot", "pangit", "panget", "sino ka", "ano ka", "lalaki ka", "babae ka", "lesbian", "gay"};
 
-    public static JSONObject parse(String rawInput) {
+    public static JSONObject parse(Context context, String rawInput) {
         try {
             String input = rawInput.toLowerCase().trim();
 
@@ -51,7 +53,7 @@ public class LocalIntentParser {
             boolean hasItem = !cleanedItem.isEmpty() && cleanedItem.length() > 2;
 
             if (hasAmount && hasItem) {
-                String localCat = CategoryMapper.getCategory(cleanedItem, null);
+                String localCat = CategoryMapper.map(context, cleanedItem);
 
                 if (localCat == null && !containsAny(input, KW_INCOME_ACTION) && !containsAny(input, KW_GOAL) && !containsAny(input, KW_DEBT) && !containsAny(input, KW_ALLOCATION)) {
                     return buildResult(IntentType.UNKNOWN, "UNKNOWN", false, 0.0, cleanedItem, null, "unknown", amountValue);

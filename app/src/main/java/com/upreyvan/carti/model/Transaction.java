@@ -166,9 +166,9 @@ public class Transaction {
     public static Transaction fromPayload(Map<String, Object> payload, String familyId, Context context, String userId) {
         if (payload == null) return null;
 
-        String id = (String) payload.get("$id");
-        String createdAt = (String) payload.get("$createdAt");
-        String updatedAt = (String) payload.get("$updatedAt");
+        String id = String.valueOf(payload.get("$id"));
+        String createdAt = String.valueOf(payload.get("$createdAt"));
+        String updatedAt = String.valueOf(payload.get("$updatedAt"));
 
         Transaction t = TransactionHelper.parse(payload, id, createdAt, updatedAt);
 

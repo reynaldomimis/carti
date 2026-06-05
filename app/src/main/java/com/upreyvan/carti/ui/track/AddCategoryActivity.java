@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import com.upreyvan.carti.R;
@@ -79,12 +78,12 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
         getBinding().btnSave.setOnClickListener(v -> {
             String name = getBinding().etCategoryName.getText().toString().trim();
             if (name.isEmpty()) {
-                Toast.makeText(this, "Please enter a category name", Toast.LENGTH_SHORT).show();
+                showToast("Please enter a category name", com.upreyvan.carti.util.UiHelper.Status.WARNING);
                 return;
             }
             Category newCategory = new Category(UUID.randomUUID().toString(), name, selectedIconRes, R.color.icon_others, R.color.log_others, false);
             CategoryManager.getInstance(this).addCategory(newCategory);
-            Toast.makeText(this, "Category Saved!", Toast.LENGTH_SHORT).show();
+            showToast("Category Saved!", com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
             finish();
         });
     }

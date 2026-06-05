@@ -16,6 +16,7 @@ import com.upreyvan.carti.databinding.ItemChatRightBinding;
 import com.upreyvan.carti.databinding.ItemChatSummaryBinding;
 import com.upreyvan.carti.databinding.ItemChatThinkingBinding;
 import com.upreyvan.carti.model.ChatMessage;
+import com.upreyvan.carti.util.AvatarHelper;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
 import org.json.JSONObject;
@@ -116,16 +117,7 @@ public class ChatAdapter extends BaseAdapter<ChatMessage, ViewBinding> {
 
             b.tvTime.setText(message.getTime());
             
-            boolean isAi = Constants.Roles.AI_NAME.equalsIgnoreCase(message.getSenderName()) 
-                    || Constants.Roles.AI_ID.equals(message.getSenderId());
-
-            if (isAi) {
-                b.ivAvatar.setImageResource(R.drawable.ai_holder);
-                b.ivAvatar.setImageTintList(null);
-            } else {
-                b.ivAvatar.setImageResource(R.drawable.ic_person);
-                b.ivAvatar.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(b.getRoot().getContext(), R.color.gray)));
-            }
+            AvatarHelper.loadUserAvatar(b.getRoot().getContext(), b.ivAvatar, message.getSenderName());
 
             if (message.isCancelable() && !message.isCanceled()) {
                 b.layoutCancel.setVisibility(View.VISIBLE);

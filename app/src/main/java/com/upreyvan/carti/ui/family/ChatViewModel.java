@@ -13,14 +13,14 @@ import com.upreyvan.carti.data.repository.AiRepository;
 import com.upreyvan.carti.data.repository.ChatRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.ChatMessage;
-import com.upreyvan.carti.data.ai.CategoryMapper;
+import com.upreyvan.carti.util.CategoryMapper;
 import com.upreyvan.carti.data.ai.CategoryValidator;
+import com.upreyvan.carti.util.MessageHelper;
 import com.upreyvan.carti.util.Utils;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
 import org.json.JSONObject;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,18 +35,18 @@ public class ChatViewModel extends BaseViewModel {
     private final TransactionRepository transRepo;
     private final PreferenceManager pref;
     
-    private final MutableLiveData<List<ChatMessage>> messages = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isAiThinking = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMsg = new MutableLiveData<>(null);
     private final MutableLiveData<Long> sessionTimeRemaining = new MutableLiveData<>(0L);
+    private final LiveData<List<ChatMessage>> messages;
     
     private long oldestTimestamp = Long.MAX_VALUE;
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 50;
     private JSONObject pendingTransaction = null;
     private boolean isClarifying = false;
     private CountDownTimer sessionTimer;
     private static final long SESSION_DURATION = 60000;
-    private static final Pattern MENTION_PATTERN = Pattern.compile("(?i)@\\s*\\w+");
+    private static final Pattern AI_TRIGGER_PATTERN = Pattern.compile("(?i)(@carti|/carti)");
 
     public ChatViewModel(@NonNull Application application) {
         super(application);
@@ -54,6 +54,7 @@ public class ChatViewModel extends BaseViewModel {
         aiRepo = AiRepository.getInstance(application);
         transRepo = TransactionRepository.getInstance(application);
         pref = PreferenceManager.getInstance(application);
+        messages = com.upreyvan.carti.data.local.db.AppDatabase.getInstance(application).messageDao().getMessages(pref.getFamilyId());
     }
 
     public LiveData<List<ChatMessage>> getMessages() { return messages; }
@@ -72,7 +73,7 @@ public class ChatViewModel extends BaseViewModel {
             public void onSuccess(DocumentList<Map<String, Object>> result) {
                 List<ChatMessage> batch = new ArrayList<>();
                 for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                    batch.add(mapToChatMessage(doc.getData(), doc.getId()));
+                    batch.add(MessageHelper.mapToChatMessage(doc.getData(), doc.getId(), pref.getUserId(), pref.getUsername()));
                 }
 
                 if (batch.isEmpty()) {
@@ -82,17 +83,12 @@ public class ChatViewModel extends BaseViewModel {
 
                 ChatMessage oldestInBatch = batch.get(batch.size() - 1);
                 oldestTimestamp = oldestInBatch.getTimestamp();
-                Collections.reverse(batch);
-
-                List<ChatMessage> currentMessages = new ArrayList<>(Objects.requireNonNullElse(messages.getValue(), new ArrayList<>()));
-                if (loadMore) {
-                    List<ChatMessage> newList = new ArrayList<>(batch);
-                    newList.addAll(currentMessages);
-                    messages.postValue(newList);
-                } else {
-                    messages.postValue(batch);
-                }
-                setLoading(false);
+                
+                new Thread(() -> {
+                    com.upreyvan.carti.data.local.db.AppDatabase.getInstance(getApplication())
+                        .messageDao().insertAll(batch);
+                    setLoading(false);
+                }).start();
             }
             @Override public void onError(Throwable error) {
                 errorMsg.postValue(error.getMessage());
@@ -107,27 +103,46 @@ public class ChatViewModel extends BaseViewModel {
         String uuid = UUID.randomUUID().toString().replace("-", ""); 
         String clientSideId = "msg_" + uuid;
 
-        addMessage(new ChatMessage(clientSideId, pref.getUserId(), pref.getFamilyId(), pref.getUsername(), text, System.currentTimeMillis(), true));
+        ChatMessage localMsg = new ChatMessage(clientSideId, pref.getUserId(), pref.getFamilyId(), pref.getUsername(), text, System.currentTimeMillis(), true);
+        new Thread(() -> com.upreyvan.carti.data.local.db.AppDatabase.getInstance(getApplication()).messageDao().insert(localMsg)).start();
         
         chatRepo.sendMessage(clientSideId, text, new AppwriteCallback<>() {
             @Override public void onSuccess(Document<Map<String, Object>> result) {
-                boolean hasMention = MENTION_PATTERN.matcher(text).find();
+                boolean isAiTriggered = AI_TRIGGER_PATTERN.matcher(text).find();
                 boolean isSessionActive = sessionTimeRemaining.getValue() != null && sessionTimeRemaining.getValue() > 0;
 
-                if (hasMention) {
+                if (isAiTriggered) {
                     startSession();
-                    if (text.trim().replaceAll("\\s+", "").equalsIgnoreCase("@carti") && pref.isAiIntroDone()) {
-                        sendAiResponse("Yes?");
+                    String cleanText = text.trim().toLowerCase();
+                    if ((cleanText.equals("@carti") || cleanText.equals("/carti")) && pref.isAiIntroDone()) {
+                        sendAiResponse("Yes? How can I help you with your family budget today? 🐧");
                         return;
                     }
                 }
 
-                if (hasMention || isSessionActive) {
-                    startSession();
+                // AI processing logic: Local-First
+                if (isAiTriggered || isSessionActive) {
+                    if (isAiTriggered) startSession();
+                    
                     if (pendingTransaction != null) {
                         handleClarificationReply(text);
                     } else {
-                        processIntent(text);
+                        // 1. Try Local Parser First
+                        JSONObject localResult = LocalIntentParser.parse(getApplication(), text);
+                        String status = localResult != null ? localResult.optString("status") : "UNKNOWN";
+                        
+                        if ("LOG".equals(status)) {
+                            isClarifying = false;
+                            handleParsedIntent(localResult);
+                        } else if ("PENDING".equals(status)) {
+                            pendingTransaction = localResult;
+                            sendAiResponse(localResult.optString("message"));
+                        } else if ("BLOCK".equals(status)) {
+                            sendAiResponse("I can only help with financial tracking.");
+                        } else if (isAiTriggered) {
+                            // 2. If specifically asked and local failed, go to AI
+                            processAiChat(text);
+                        }
                     }
                 }
             }
@@ -138,28 +153,34 @@ public class ChatViewModel extends BaseViewModel {
     }
 
     private void processIntent(String text) {
-        JSONObject freshParse = LocalIntentParser.parse(text);
+        JSONObject freshParse = LocalIntentParser.parse(getApplication(), text);
         String status = freshParse != null ? freshParse.optString("status") : "UNKNOWN";
         
-        if (status.equals("LOG")) {
-            isClarifying = false;
-            handleParsedIntent(freshParse);
-        } else if (status.equals("BLOCK")) {
-            isClarifying = false;
-            sendAiResponse("I can only help with financial tracking. Please send an expense, income, or transaction.");
-        } else if (status.equals("PENDING")) {
-            pendingTransaction = freshParse;
-            sendAiResponse(freshParse.optString("message"));
-        } else if (status.equals("INSIGHT")) {
-            isClarifying = false;
-            processAiChat("Task: Provide insight for " + freshParse.optString("type"));
-        } else {
-            if (!isClarifying) {
-                isClarifying = true;
-                sendAiResponse("I couldn't identify those words. Could you please clarify?");
-            } else {
+        switch (status) {
+            case "LOG" -> {
                 isClarifying = false;
-                processAiChat(text); 
+                handleParsedIntent(freshParse);
+            }
+            case "BLOCK" -> {
+                isClarifying = false;
+                sendAiResponse("I can only help with financial tracking. Please send an expense, income, or transaction.");
+            }
+            case "PENDING" -> {
+                pendingTransaction = freshParse;
+                sendAiResponse(freshParse.optString("message"));
+            }
+            case "INSIGHT" -> {
+                isClarifying = false;
+                processAiChat("Task: Provide insight for " + freshParse.optString("type"));
+            }
+            default -> {
+                if (!isClarifying) {
+                    isClarifying = true;
+                    sendAiResponse("I couldn't identify those words. Could you please clarify?");
+                } else {
+                    isClarifying = false;
+                    processAiChat(text);
+                }
             }
         }
     }
@@ -181,7 +202,7 @@ public class ChatViewModel extends BaseViewModel {
             if (Objects.equals(state, "NEED_ITEM")) {
                 item = reply;
             } else if (Objects.equals(state, "NEED_AMOUNT")) {
-                JSONObject p = LocalIntentParser.parse(reply);
+                JSONObject p = LocalIntentParser.parse(getApplication(), reply);
                 amount = (p != null) ? p.optDouble("amount", 0) : 0;
                 if (amount <= 0) amount = extractAmountFromText(reply);
             }
@@ -189,7 +210,7 @@ public class ChatViewModel extends BaseViewModel {
             if (amount > 0 && !item.isEmpty() && item.length() >= 2) {
                 final double finalAmt = amount;
                 final String finalItem = item;
-                String initialCategory = CategoryMapper.getCategory(item, null);
+                String initialCategory = CategoryMapper.map(getApplication(), item);
                 
                 CategoryValidator.validate(getApplication(), item, initialCategory, validatedCategory -> {
                     try {
@@ -244,7 +265,7 @@ public class ChatViewModel extends BaseViewModel {
         }
 
         final double amt = finalAmount;
-        performAddTransaction(amt, type, category != null ? category : "Others", item);
+        performAddTransaction(amt, type, Objects.requireNonNullElse(category, "Others"), item);
     }
 
     private void performAddTransaction(double amt, String type, String category, String item) {
@@ -297,49 +318,6 @@ public class ChatViewModel extends BaseViewModel {
                 Log.e("ChatViewModel", "AI response failed", e);
             }
         });
-    }
-
-    public void handleIncomingMessage(Map<String, Object> payload) {
-        ChatMessage msg = mapToChatMessage(payload, String.valueOf(payload.get("$id")));
-        List<ChatMessage> currentList = new ArrayList<>(Objects.requireNonNullElse(messages.getValue(), new ArrayList<>()));
-        
-        int index = -1;
-        for (int i = 0; i < currentList.size(); i++) {
-            if (Objects.equals(currentList.get(i).getId(), msg.getId())) {
-                index = i;
-                break;
-            }
-        }
-
-        if (index != -1) {
-            currentList.set(index, msg);
-        } else {
-            currentList.add(msg);
-        }
-        messages.postValue(currentList);
-    }
-
-    private void addMessage(ChatMessage msg) {
-        List<ChatMessage> list = new ArrayList<>(Objects.requireNonNullElse(messages.getValue(), new ArrayList<>()));
-        list.add(msg);
-        messages.setValue(list);
-    }
-
-    private ChatMessage mapToChatMessage(Map<String, Object> map, String docId) {
-        String id = (docId == null || docId.equals("null")) ? "msg_" + UUID.randomUUID() : docId;
-        String senderId = map.get("senderId") != null ? String.valueOf(map.get("senderId")).trim() : "";
-        String senderName = map.get("senderName") != null ? String.valueOf(map.get("senderName")).trim() : "";
-        String familyId = String.valueOf(map.get("familyId"));
-        String text = String.valueOf(map.get("text"));
-        long ts = 0;
-        Object tsObj = map.get("timestamp");
-        if (tsObj instanceof Number n) ts = n.longValue();
-        else if (tsObj instanceof String s) {
-            try { ts = Long.parseLong(s); } catch (Exception ignored) {}
-        }
-        if (ts == 0) ts = System.currentTimeMillis();
-        boolean isMe = senderId.equalsIgnoreCase(pref.getUserId()) || senderName.equalsIgnoreCase(pref.getUsername());
-        return new ChatMessage(id, senderId, familyId, senderName, text, ts, isMe);
     }
 
     @Override

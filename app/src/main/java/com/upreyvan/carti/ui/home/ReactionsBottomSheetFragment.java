@@ -85,9 +85,8 @@ public class ReactionsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
                         String username = String.valueOf(data.get("username"));
                         String emoji = String.valueOf(data.get("emojiType"));
                         String userId = String.valueOf(data.get("userId"));
-                        String avatarUrl = "https://cloud.appwrite.io/v1/avatars/initials?name=" + username + "&project=carti";
                         
-                        reactors.add(new Reactor(username, emoji, 0, avatarUrl, userId));
+                        reactors.add(new Reactor(username, emoji, 0, null, userId));
                     }
                     adapter.submitList(reactors);
                 });

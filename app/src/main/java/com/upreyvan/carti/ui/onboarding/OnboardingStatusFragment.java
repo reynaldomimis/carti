@@ -68,7 +68,7 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
         ClipData clip = ClipData.newPlainText("Invite Code", text);
         if (clipboard != null) {
             clipboard.setPrimaryClip(clip);
-            showToast("Invite code copied!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+            showToast("Invite code copied!", com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
         }
     }
 
@@ -130,7 +130,7 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
                 } else if ("declined".equals(pendingFamilyId)) {
                     handleDeclined();
                 } else {
-                    showToast("Still pending approval...", com.upreyvan.carti.util.ToastHelper.Status.INFO);
+                    showToast("Still pending approval...", com.upreyvan.carti.util.UiHelper.Status.INFO);
                 }
             }
             
@@ -187,3 +187,4 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
         requireActivity().finish();
     }
 }
+

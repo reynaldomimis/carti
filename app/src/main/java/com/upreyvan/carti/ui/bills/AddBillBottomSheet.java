@@ -1,5 +1,7 @@
 package com.upreyvan.carti.ui.bills;
 
+import com.upreyvan.carti.util.ToastHelper;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +17,7 @@ import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.databinding.LayoutBottomSheetAddBillBinding;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
 import java.util.Map;
 
@@ -87,7 +89,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             String category = getBinding().actCategory.getText().toString();
 
             if (billName.isEmpty() || amount.isEmpty()) {
-                ToastHelper.show(requireContext(), R.string.msg_fill_all_fields, ToastHelper.Status.ERROR);
+                ToastHelper.show(requireContext(), R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
                 return;
             }
 
@@ -99,8 +101,10 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
                 @Override public void onError(Throwable error) {}
             });
 
-            ToastHelper.show(requireContext(), R.string.msg_bill_saved, ToastHelper.Status.SUCCESS);
+            ToastHelper.show(requireContext(), R.string.msg_bill_saved, UiHelper.Status.SUCCESS);
             dismiss();
         });
     }
 }
+
+

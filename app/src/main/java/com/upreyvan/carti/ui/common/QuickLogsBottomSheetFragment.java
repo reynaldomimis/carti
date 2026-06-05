@@ -19,7 +19,7 @@ import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.BudgetAllocationHelper;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.StringHelper;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.TransactionHandler;
 import com.upreyvan.carti.util.Validator;
 
@@ -151,12 +151,12 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             if (!checkNetwork()) return;
 
             if (selectedCategory == null) {
-                showToast(getString(R.string.err_no_category_selected), ToastHelper.Status.WARNING);
+                showToast(getString(R.string.err_no_category_selected), UiHelper.Status.WARNING);
                 return;
             }
 
             if (Validator.isEmpty(getBinding().layoutForm.etAmount)) {
-                showToast(getString(R.string.msg_fill_all_fields), ToastHelper.Status.WARNING);
+                showToast(getString(R.string.msg_fill_all_fields), UiHelper.Status.WARNING);
                 return;
             }
 
@@ -165,7 +165,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             String sourceOrPerson = getBinding().layoutForm.actvSource.getText().toString();
 
             if (amountVal <= 0) {
-                showToast(getString(R.string.msg_invalid_amount), ToastHelper.Status.WARNING);
+                showToast(getString(R.string.msg_invalid_amount), UiHelper.Status.WARNING);
                 return;
             }
 
@@ -194,13 +194,13 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
                 else if (logType == LogType.DEBT) successMsg = getString(R.string.msg_debt_saved_simple);
                 else if (logType == LogType.GOAL) successMsg = getString(R.string.msg_goal_updated);
                 
-                showToast(successMsg, ToastHelper.Status.SUCCESS);
+                showToast(successMsg, UiHelper.Status.SUCCESS);
                 dismiss();
             }
 
             @Override
             public void onError(String message) {
-                showToast(getString(R.string.err_failed_save, message), ToastHelper.Status.ERROR);
+                showToast(getString(R.string.err_failed_save, message), UiHelper.Status.ERROR);
             }
         };
 
@@ -217,3 +217,4 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         }
     }
 }
+

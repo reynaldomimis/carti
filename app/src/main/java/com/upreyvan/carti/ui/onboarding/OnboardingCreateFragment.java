@@ -88,13 +88,13 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
                     setLoading(false);
                     String message = error.getMessage();
                     if ("ALREADY_IN_A_FAMILY".equals(message)) {
-                        showToast(R.string.err_already_in_family, com.upreyvan.carti.util.ToastHelper.Status.WARNING);
+                        showToast(R.string.err_already_in_family, com.upreyvan.carti.util.UiHelper.Status.WARNING);
                         startActivity(new Intent(requireActivity(), MainActivity.class));
                         requireActivity().finish();
                     } else if ("PARENTS_ONLY".equals(message)) {
-                        showToast(R.string.err_parents_only, com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                        showToast(R.string.err_parents_only, com.upreyvan.carti.util.UiHelper.Status.ERROR);
                     } else {
-                        showToast(getString(R.string.err_error_prefix, message), com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                        showToast(getString(R.string.err_error_prefix, message), com.upreyvan.carti.util.UiHelper.Status.ERROR);
                     }
                 }
             }
@@ -131,3 +131,4 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
         );
     }
 }
+

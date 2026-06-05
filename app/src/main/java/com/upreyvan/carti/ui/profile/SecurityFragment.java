@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -69,12 +68,12 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
             String newPass = etNewPassword.getText().toString().trim();
 
             if (oldPass.isEmpty() || newPass.isEmpty()) {
-                Toast.makeText(requireContext(), R.string.err_required, Toast.LENGTH_SHORT).show();
+                showToast(R.string.err_required, com.upreyvan.carti.util.UiHelper.Status.WARNING);
                 return;
             }
 
             if (newPass.length() < 8) {
-                Toast.makeText(requireContext(), R.string.msg_password_short, Toast.LENGTH_SHORT).show();
+                showToast(R.string.msg_password_short, com.upreyvan.carti.util.UiHelper.Status.WARNING);
                 return;
             }
 
@@ -92,14 +91,14 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
             public void onSuccess(io.appwrite.models.User<java.util.Map<String, Object>> result) {
                 if (!isAdded()) return;
                 getBinding().btnResetPassword.setEnabled(true);
-                Toast.makeText(requireContext(), R.string.msg_password_updated, Toast.LENGTH_SHORT).show();
+                showToast(R.string.msg_password_updated, com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
             }
 
             @Override
             public void onError(Throwable error) {
                 if (!isAdded()) return;
                 getBinding().btnResetPassword.setEnabled(true);
-                Toast.makeText(requireContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.UiHelper.Status.ERROR);
             }
         });
     }
@@ -125,7 +124,7 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
         if (!isAdded()) return;
         pref.clear();
         showLoading(false);
-        Toast.makeText(requireContext(), R.string.msg_sign_out_all_success, Toast.LENGTH_SHORT).show();
+        showToast(R.string.msg_sign_out_all_success, com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
         navigateToLogin();
     }
 
@@ -146,7 +145,7 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
             public void onSuccess(java.util.Map<String, Object> result) {
                 if (!isAdded()) return;
                 pref.clear();
-                Toast.makeText(requireContext(), R.string.msg_account_deleted, Toast.LENGTH_SHORT).show();
+                showToast(R.string.msg_account_deleted, com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
                 navigateToLogin();
             }
 
@@ -154,7 +153,7 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
             public void onError(Throwable error) {
                 if (!isAdded()) return;
                 getBinding().btnDeleteAccount.setEnabled(true);
-                Toast.makeText(requireContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.UiHelper.Status.ERROR);
             }
         });
     }

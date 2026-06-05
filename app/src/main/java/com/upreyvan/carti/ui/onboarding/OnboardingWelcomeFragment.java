@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -89,7 +88,7 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
                 setLoading(false);
                 PreferenceManager pref = PreferenceManager.getInstance(requireContext());
                 boolean isEmployed = pref.isEmployed();
-                Toast.makeText(requireContext(), getString(R.string.debug_fallback_is_employed, isEmployed), Toast.LENGTH_LONG).show();
+                showToast(getString(R.string.debug_fallback_is_employed, isEmployed), com.upreyvan.carti.util.UiHelper.Status.INFO);
                 if (isEmployed) navigateTo(new OnboardingOptionsFragment());
                 else navigateTo(new JoinFamilyFragment());
             }

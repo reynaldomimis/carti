@@ -13,10 +13,10 @@ import java.util.List;
 
 @Dao
 public interface TransactionDao {
+    @androidx.room.Transaction
     @Query("""
         SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl,
-        my_likes.emojiType as myReaction,
-        (SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames
+        my_likes.emojiType as myReaction
         FROM transactions
         LEFT JOIN members ON transactions.userId = members.id
         LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId
@@ -24,10 +24,10 @@ public interface TransactionDao {
         """)
     LiveData<List<TransactionWithUser>> getAllTransactions(String familyId, String currentUserId);
 
+    @androidx.room.Transaction
     @Query("""
         SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl,
-        my_likes.emojiType as myReaction,
-        (SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames
+        my_likes.emojiType as myReaction
         FROM transactions
         LEFT JOIN members ON transactions.userId = members.id
         LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId
@@ -35,10 +35,10 @@ public interface TransactionDao {
         """)
     LiveData<List<TransactionWithUser>> getTransactionsByType(String familyId, String type, String currentUserId);
 
+    @androidx.room.Transaction
     @Query("""
         SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl,
-        my_likes.emojiType as myReaction,
-        (SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames
+        my_likes.emojiType as myReaction
         FROM transactions
         LEFT JOIN members ON transactions.userId = members.id
         LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId
@@ -47,10 +47,10 @@ public interface TransactionDao {
         """)
     LiveData<List<TransactionWithUser>> getTransactionsInRange(String familyId, long start, long end, String currentUserId);
 
+    @androidx.room.Transaction
     @Query("""
         SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl,
-        my_likes.emojiType as myReaction,
-        (SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames
+        my_likes.emojiType as myReaction
         FROM transactions
         LEFT JOIN members ON transactions.userId = members.id
         LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId
@@ -58,10 +58,10 @@ public interface TransactionDao {
         """)
     LiveData<List<TransactionWithUser>> getRecentTransactions(String familyId, int limit, String currentUserId);
 
+    @androidx.room.Transaction
     @Query("""
         SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl,
-        my_likes.emojiType as myReaction,
-        (SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames
+        my_likes.emojiType as myReaction
         FROM transactions
         LEFT JOIN members ON transactions.userId = members.id
         LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId
@@ -75,10 +75,10 @@ public interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE id = :id")
     Transaction getTransactionByIdRawSync(String id);
 
+    @androidx.room.Transaction
     @Query("""
         SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl,
-        my_likes.emojiType as myReaction,
-        (SELECT group_concat(username, ', ') FROM likes WHERE likes.transactionId = transactions.id) as reactorNames
+        my_likes.emojiType as myReaction
         FROM transactions
         LEFT JOIN members ON transactions.userId = members.id
         LEFT JOIN likes AS my_likes ON transactions.id = my_likes.transactionId AND my_likes.userId = :currentUserId

@@ -13,9 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentFamilyChatBinding;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.VoiceToTextHelper;
 
@@ -92,13 +91,9 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
         viewModel.getError().observe(getViewLifecycleOwner(), error -> {
             if (error != null) {
-                ToastHelper.show(requireContext(), error, com.upreyvan.carti.util.ToastHelper.Status.ERROR);
+                showToast(error, UiHelper.Status.ERROR);
                 viewModel.clearError();
             }
-        });
-
-        RealtimeRepository.getInstance(requireContext()).getChatStream().observe(getViewLifecycleOwner(), payload -> {
-            if (payload != null) viewModel.handleIncomingMessage(payload);
         });
     }
 

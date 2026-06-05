@@ -68,7 +68,8 @@ public class TrackViewModel extends BaseViewModel {
                     if ("INCOME".equals(t.getTransaction().getType())) inc += t.getTransaction().getAmount();
                     else if ("EXPENSE".equals(t.getTransaction().getType())) {
                         exp += t.getTransaction().getAmount();
-                        catTotals.merge(ValueHelper.toStr(t.getTransaction().getCategory()), t.getTransaction().getAmount(), Double::sum);
+                        String normCat = normalizeCategory(t.getTransaction().getCategory());
+                        catTotals.merge(normCat, t.getTransaction().getAmount(), Double::sum);
                         filteredExp.add(t);
                     }
                 }
@@ -137,6 +138,18 @@ public class TrackViewModel extends BaseViewModel {
         });
     }
 
+    private String normalizeCategory(String cat) {
+        if (cat == null || cat.trim().isEmpty()) return "Others";
+        String s = cat.trim().toLowerCase();
+        if (s.contains("food") || s.contains("fooo")) return "Food";
+        if (s.contains("tran") || s.contains("fare") || s.contains("grab")) return "Transportation";
+        if (s.contains("bill") || s.contains("util")) return "Bills";
+        if (s.contains("shop") || s.contains("buy")) return "Shopping";
+        if (s.contains("health") || s.contains("med")) return "Health";
+        if (s.contains("school") || s.contains("educ")) return "Education";
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+
     public void sync() { repo.syncTransactionsIfNeeded(); }
 
     public void toggleLike(TransactionWithUser item) {
@@ -145,5 +158,9 @@ public class TrackViewModel extends BaseViewModel {
 
     public void toggleReaction(TransactionWithUser item, String emoji) {
         repo.toggleLike(item, emoji);
+    }
+
+    public void deleteTransaction(TransactionWithUser item) {
+        repo.deleteTransaction(item.getTransaction().getId(), null);
     }
 }

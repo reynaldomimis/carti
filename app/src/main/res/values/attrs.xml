@@ -3,5 +3,7 @@
     <declare-styleable name="RootLayout">
         <attr name="useBottomNavPadding" format="boolean" />
         <attr name="useImePadding" format="boolean" />
+        <attr name="useStatusBarPadding" format="boolean" />
+        <attr name="imeGap" format="dimension" />
     </declare-styleable>
 </resources>

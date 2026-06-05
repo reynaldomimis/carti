@@ -1,5 +1,7 @@
 package com.upreyvan.carti.ui.home;
 
+import com.upreyvan.carti.util.ToastHelper;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,8 +74,10 @@ public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQui
     private void setupListeners() {
         getBinding().btnSaveOrder.setOnClickListener(v -> {
             com.upreyvan.carti.data.local.BudgetManager.getInstance(this).saveBudgetPlan(adapter.getCategories());
-            com.upreyvan.carti.util.ToastHelper.show(this, "Quick Log order updated!", com.upreyvan.carti.util.ToastHelper.Status.SUCCESS);
+            com.upreyvan.carti.util.ToastHelper.show(this, "Quick Log order updated!", com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
             finish();
         });
     }
 }
+
+

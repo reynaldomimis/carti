@@ -25,6 +25,7 @@ import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.TrackCategory;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.util.AvatarHelper;
 import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.ValueHelper;
@@ -44,6 +45,9 @@ public interface TrackListItem extends BaseMultiItem {
         void onTransactionComment(TransactionWithUser item);
         void onViewLikes(TransactionWithUser item);
         void onTransactionClick(TransactionWithUser item);
+        void onTransactionEdit(TransactionWithUser item);
+        void onTransactionDelete(TransactionWithUser item);
+        String getCurrentUserId();
         Category findCategory(String name);
         List<BudgetCategoryItem> getAllocations();
     }
@@ -327,13 +331,7 @@ public interface TrackListItem extends BaseMultiItem {
             b.tvAmount.setText(b.getRoot().getContext().getString(amountFormatRes, formattedAmount));
             b.tvAmount.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), amountColor));
 
-            if (transaction.getUserAvatarUrl() != null && !transaction.getUserAvatarUrl().isEmpty()) {
-                Glide.with(b.getRoot().getContext()).load(transaction.getUserAvatarUrl()).placeholder(R.drawable.ai_holder).error(R.drawable.ai_holder).into(b.ivAvatar);
-            } else if (transaction.getUserAvatarRes() != 0) {
-                b.ivAvatar.setImageResource(transaction.getUserAvatarRes());
-            } else {
-                b.ivAvatar.setImageResource(R.drawable.ai_holder);
-            }
+            AvatarHelper.loadUserAvatar(b.getRoot().getContext(), b.ivAvatar, username, transaction.getUserAvatarUrl());
 
             String myReaction = transaction.getMyReaction();
             if (myReaction != null && !myReaction.isEmpty()) {
@@ -349,7 +347,7 @@ public interface TrackListItem extends BaseMultiItem {
             String rNames = transaction.getReactorNames();
 
             if (likesCount > 0 || commentCount > 0) {
-                b.layoutReactionsSummary.setVisibility(View.VISIBLE);
+                b.layoutLikesSummaryClickable.setVisibility(View.VISIBLE);
                 b.divider.setVisibility(View.VISIBLE);
                 if (likesCount > 0) {
                     b.tvReactionEmoji.setVisibility(View.VISIBLE);
@@ -369,7 +367,7 @@ public interface TrackListItem extends BaseMultiItem {
                     b.tvCommentsCountSummary.setVisibility(View.GONE);
                 }
             } else {
-                b.layoutReactionsSummary.setVisibility(View.GONE);
+                b.layoutLikesSummaryClickable.setVisibility(View.GONE);
                 b.divider.setVisibility(View.GONE);
             }
 
@@ -380,12 +378,19 @@ public interface TrackListItem extends BaseMultiItem {
                 return true;
             });
 
-            b.layoutReactionsSummary.setOnClickListener(v -> listener.onViewLikes(transaction));
+            b.layoutLikesSummaryClickable.setOnClickListener(v -> listener.onViewLikes(transaction));
             b.tvLikesCount.setOnClickListener(v -> listener.onViewLikes(transaction));
             b.tvCommentsCountSummary.setOnClickListener(v -> listener.onTransactionComment(transaction));
 
             b.btnComment.setOnClickListener(v -> listener.onTransactionComment(transaction));
             b.getRoot().setOnClickListener(v -> listener.onTransactionClick(transaction));
+
+            boolean isOwner = Objects.equals(t.getUserId(), listener.getCurrentUserId());
+            b.layoutOwnerActions.setVisibility(isOwner ? View.VISIBLE : View.GONE);
+            if (isOwner) {
+                b.btnEdit.setOnClickListener(v -> listener.onTransactionEdit(transaction));
+                b.btnDelete.setOnClickListener(v -> listener.onTransactionDelete(transaction));
+            }
         }
     }
 }

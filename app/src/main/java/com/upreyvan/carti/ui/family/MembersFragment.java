@@ -17,10 +17,12 @@ import com.upreyvan.carti.databinding.FragmentMembersBinding;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ItemMemberHorizontalBinding;
 import com.upreyvan.carti.databinding.ItemMemberContributionBinding;
+import com.upreyvan.carti.util.AvatarHelper;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
@@ -135,15 +137,7 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                         binding.tvRole.setVisibility(View.VISIBLE);
                         binding.tvRole.setText(member.getDescription());
                         
-                        if (member.getAvatarUrl() != null && !member.getAvatarUrl().isEmpty()) {
-                            com.bumptech.glide.Glide.with(requireContext())
-                                    .load(member.getAvatarUrl())
-                                    .placeholder(R.drawable.ai_holder)
-                                    .error(R.drawable.ai_holder)
-                                    .into(binding.ivAvatar);
-                        } else {
-                            binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
-                        }
+                        AvatarHelper.loadUserAvatar(requireContext(), binding.ivAvatar, member.getTitle(), member.getAvatarUrl());
                         binding.cvAvatar.setStrokeColor(androidx.core.content.ContextCompat.getColor(requireContext(), isMe ? R.color.carti_primary_green : R.color.border_light));
                     }
                 }
@@ -167,20 +161,19 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                     binding.tvName.setText(displayName);
                     binding.tvContributionLabel.setText(getString(R.string.label_profile_contribution_format, Utils.formatCurrency(member.getAmount())));
                     
-                    if (member.getAvatarUrl() != null && !member.getAvatarUrl().isEmpty()) {
-                        com.bumptech.glide.Glide.with(requireContext())
-                                .load(member.getAvatarUrl())
-                                .placeholder(R.drawable.ai_holder)
-                                .error(R.drawable.ai_holder)
-                                .into(binding.ivAvatar);
-                    } else {
-                        binding.ivAvatar.setImageResource(member.getAvatarRes() != 0 ? member.getAvatarRes() : R.drawable.ai_holder);
-                    }
-                    binding.tvBtnViewExpenses.setOnClickListener(v -> navigateTo(new com.upreyvan.carti.ui.track.BreakdownExpenseFragment()));
+                    AvatarHelper.loadUserAvatar(requireContext(), binding.ivAvatar, member.getTitle(), member.getAvatarUrl());
+                    
+                    Calendar now = Calendar.getInstance();
+                    binding.tvBtnViewExpenses.setOnClickListener(v -> navigateTo(com.upreyvan.carti.ui.track.BreakdownExpenseFragment.newInstance(
+                            now.get(Calendar.MONTH), now.get(Calendar.YEAR), member.getId(), member.getTitle())));
                 }
         );
 
-        contributionAdapter.setOnItemClickListener(item -> navigateTo(new com.upreyvan.carti.ui.track.BreakdownExpenseFragment()));
+        contributionAdapter.setOnItemClickListener(item -> {
+            Calendar now = Calendar.getInstance();
+            navigateTo(com.upreyvan.carti.ui.track.BreakdownExpenseFragment.newInstance(
+                    now.get(Calendar.MONTH), now.get(Calendar.YEAR), item.getId(), item.getTitle()));
+        });
 
         getBinding().rvContributions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvContributions.setAdapter(contributionAdapter);

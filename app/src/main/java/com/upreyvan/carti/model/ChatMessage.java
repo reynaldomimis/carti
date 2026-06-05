@@ -3,24 +3,33 @@ package com.upreyvan.carti.model;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
 import com.upreyvan.carti.data.ai.IntentType;
 
 import org.json.JSONObject;
 
 import java.util.Objects;
 
+@Entity(tableName = "messages")
 public class ChatMessage {
 
-    private final String senderName;
-    private final String message;
-    private final String time;
-    private final boolean isMe;
-    private final int imageResId;
+    private String senderName;
+    private String message;
+    private String time;
+    private boolean isMe;
+    private int imageResId;
+    @Ignore
     private IntentType intent;
     private boolean isCanceled = false;
     private boolean isShimmer = false;
+    @Ignore
     private boolean isSummary = false;
+    @Ignore
     private JSONObject pendingAction;
+    @Ignore
     private JSONObject summaryData;
 
     public boolean isSummary() { return isSummary; }
@@ -28,12 +37,16 @@ public class ChatMessage {
     public JSONObject getSummaryData() { return summaryData; }
     public void setSummaryData(JSONObject summaryData) { this.summaryData = summaryData; }
 
+    @PrimaryKey
+    @NonNull
     private String id;
     private String senderId;
     private String familyId;
     private long timestamp;
 
+    @Ignore
     public ChatMessage(boolean isShimmer, boolean isMe) {
+        this.id = "shimmer_" + System.currentTimeMillis();
         this.senderName = "";
         this.message = "";
         this.time = "";
@@ -43,7 +56,9 @@ public class ChatMessage {
         this.isShimmer = isShimmer;
     }
 
+    @Ignore
     public ChatMessage(String senderName, String message, String time, boolean isMe, int imageResId) {
+        this.id = "msg_" + System.currentTimeMillis();
         this.senderName = senderName;
         this.message = message;
         this.time = time;
@@ -52,16 +67,13 @@ public class ChatMessage {
         this.intent = IntentType.UNKNOWN;
     }
 
+    @Ignore
     public ChatMessage(String senderName, String message, String time, boolean isMe, int imageResId, IntentType intent) {
-        this.senderName = senderName;
-        this.message = message;
-        this.time = time;
-        this.isMe = isMe;
-        this.imageResId = imageResId;
+        this(senderName, message, time, isMe, imageResId);
         this.intent = intent;
     }
 
-    public ChatMessage(String id, String senderId, String familyId, String senderName, String message, long timestamp, boolean isMe) {
+    public ChatMessage(@NonNull String id, String senderId, String familyId, String senderName, String message, long timestamp, boolean isMe) {
         this.id = id;
         this.senderId = senderId;
         this.familyId = familyId;
@@ -81,26 +93,47 @@ public class ChatMessage {
     public long getTimestamp() { return timestamp; }
 
     public void setSenderId(String senderId) { this.senderId = senderId; }
+    public void setFamilyId(String familyId) { this.familyId = familyId; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
     public String getSenderName() {
         return senderName;
     }
 
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
     public String getMessage() {
         return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public String getTime() {
         return time;
     }
 
+    public void setTime(String time) {
+        this.time = time;
+    }
+
     public boolean isMe() {
         return isMe;
     }
 
+    public void setMe(boolean me) {
+        isMe = me;
+    }
+
     public int getImageResId() {
         return imageResId;
+    }
+
+    public void setImageResId(int imageResId) {
+        this.imageResId = imageResId;
     }
 
     public IntentType getIntent() {
@@ -115,8 +148,16 @@ public class ChatMessage {
         return isCanceled;
     }
 
+    public void setCanceled(boolean canceled) {
+        isCanceled = canceled;
+    }
+
     public boolean isShimmer() {
         return isShimmer;
+    }
+
+    public void setShimmer(boolean shimmer) {
+        isShimmer = shimmer;
     }
 
     public org.json.JSONObject getPendingAction() {
@@ -125,10 +166,6 @@ public class ChatMessage {
 
     public void setPendingAction(org.json.JSONObject pendingAction) {
         this.pendingAction = pendingAction;
-    }
-
-    public void setCanceled(boolean canceled) {
-        isCanceled = canceled;
     }
 
     public boolean isCancelable() {

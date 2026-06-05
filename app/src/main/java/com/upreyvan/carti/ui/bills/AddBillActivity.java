@@ -10,7 +10,7 @@ import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityAddBillBinding;
 import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.ToastHelper.Status;
+import com.upreyvan.carti.util.UiHelper.Status;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
 import java.util.Calendar;
@@ -84,3 +84,4 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
         getBinding().actCategory.setText(categories[0], false);
     }
 }
+

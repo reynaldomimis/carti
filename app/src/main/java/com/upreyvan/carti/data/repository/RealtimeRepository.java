@@ -6,15 +6,22 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.db.AppDatabase;
+import com.upreyvan.carti.data.local.db.dao.CommentDao;
 import com.upreyvan.carti.data.local.db.dao.LikeDao;
+import com.upreyvan.carti.data.local.db.dao.MessageDao;
+import com.upreyvan.carti.model.Comment;
+import com.upreyvan.carti.util.CommentHelper;
+import com.upreyvan.carti.util.MessageHelper;
 import com.upreyvan.carti.data.local.source.TransactionLocalDataSource;
 import com.upreyvan.carti.data.remote.RealtimeHelper;
+import com.upreyvan.carti.model.ChatMessage;
 import com.upreyvan.carti.model.Like;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Constants;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import io.appwrite.models.RealtimeSubscription;
@@ -26,6 +33,8 @@ public class RealtimeRepository {
     private final RealtimeHelper realtimeHelper;
     private final PreferenceManager pref;
     private final LikeDao likeDao;
+    private final MessageDao messageDao;
+    private final CommentDao commentDao;
     private final TransactionLocalDataSource localDataSource;
     private final Executor executor = Executors.newSingleThreadExecutor();
     private final Context context;
@@ -47,6 +56,8 @@ public class RealtimeRepository {
         this.pref = PreferenceManager.getInstance(context);
         AppDatabase db = AppDatabase.getInstance(context);
         this.likeDao = db.likeDao();
+        this.messageDao = db.messageDao();
+        this.commentDao = db.commentDao();
         this.localDataSource = new TransactionLocalDataSource(context);
     }
 
@@ -75,7 +86,7 @@ public class RealtimeRepository {
             if (payload == null || events.isEmpty()) return;
 
             String path = events.iterator().next();
-            String payloadFamilyId = (String) payload.get("familyId");
+            String payloadFamilyId = String.valueOf(payload.get("familyId"));
             boolean isGlobal = path.contains(Constants.Appwrite.COL_FAMILIES) || path.contains(Constants.Appwrite.COL_USERS);
 
             if (!isGlobal && !familyId.equals(payloadFamilyId)) return;
@@ -83,17 +94,71 @@ public class RealtimeRepository {
             if (path.contains(Constants.Appwrite.COL_LIKES)) {
                 handleLikeEvent(path, payload);
                 likeStream.postValue(payload);
+            } else if (path.contains(Constants.Appwrite.COL_FAMILIES)) {
+                handleFamilyEvent(path, payload);
+            } else if (isTransactionCollection(path)) {
+                handleTransactionEvent(path, payload);
+            } else if (path.contains(Constants.Appwrite.COL_NOTIFICATIONS)) {
+                notificationStream.postValue(payload);
+            } else if (path.contains(Constants.Appwrite.COL_MESSAGES)) {
+                handleChatMessageEvent(path, payload);
+                chatStream.postValue(payload);
+            } else if (path.contains(Constants.Appwrite.COL_USERS)) {
+                userUpdateStream.postValue(payload);
+            } else if (path.contains(Constants.Appwrite.COL_COMMENTS)) {
+                handleCommentEvent(path, payload);
+                commentStream.postValue(payload);
             }
-            else if (isTransactionCollection(path)) handleTransactionEvent(path, payload);
-            else if (path.contains(Constants.Appwrite.COL_NOTIFICATIONS)) notificationStream.postValue(payload);
-            else if (path.contains(Constants.Appwrite.COL_MESSAGES)) chatStream.postValue(payload);
-            else if (path.contains(Constants.Appwrite.COL_USERS)) userUpdateStream.postValue(payload);
-            else if (path.contains(Constants.Appwrite.COL_COMMENTS)) commentStream.postValue(payload);
+        });
+    }
+
+    private void handleCommentEvent(String path, Map<String, Object> payload) {
+        executor.execute(() -> {
+            try {
+                String id = String.valueOf(payload.get("$id"));
+                if (path.endsWith(".delete")) {
+                    commentDao.deleteById(id);
+                } else {
+                    Comment comment = CommentHelper.parse(payload);
+                    if (comment != null) commentDao.insert(comment);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Comment event error", e);
+            }
         });
     }
 
     private boolean isTransactionCollection(String path) {
         return path.contains(Constants.Appwrite.COL_TRANSACTIONS);
+    }
+
+    private void handleChatMessageEvent(String path, Map<String, Object> payload) {
+        executor.execute(() -> {
+            try {
+                String id = String.valueOf(payload.get("$id"));
+                if (path.endsWith(".delete")) {
+                    messageDao.deleteById(id);
+                } else {
+                    ChatMessage msg = MessageHelper.mapToChatMessage(payload, id, pref.getUserId(), pref.getUsername());
+                    if (msg != null) messageDao.insert(msg);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Chat event error", e);
+            }
+        });
+    }
+
+    private void handleFamilyEvent(String path, Map<String, Object> payload) {
+        executor.execute(() -> {
+            try {
+                Object bp = payload.get("budgetPlan");
+                if (bp != null) {
+                    com.upreyvan.carti.data.local.BudgetManager.getInstance(context).saveBudgetPlanFromJson(String.valueOf(bp));
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Family event error", e);
+            }
+        });
     }
 
     private void handleTransactionEvent(String path, Map<String, Object> payload) {
@@ -131,17 +196,30 @@ public class RealtimeRepository {
     private void handleLikeEvent(String path, Map<String, Object> payload) {
         executor.execute(() -> {
             try {
-                String id = (String) payload.get("$id");
+                String id = String.valueOf(payload.get("$id"));
                 if (path.endsWith(".delete")) {
                     likeDao.deleteById(id);
                 } else {
-                    String txnId = (String) payload.get("transactionId");
-                    String userId = (String) payload.get("userId");
-                    String username = (String) payload.get("username");
-                    if (username == null) username = (String) payload.get("userName");
-                    if (username != null) username = username.toLowerCase();
-                    String emoji = (String) payload.get("emojiType");
-                    if (id != null && txnId != null) likeDao.insert(new Like(id, txnId, userId, username, emoji));
+                    String txnId = String.valueOf(payload.get("transactionId"));
+                    String userId = String.valueOf(payload.get("userId"));
+                    String remoteUpdated = String.valueOf(payload.get("$updatedAt"));
+                    
+                    Like existing = likeDao.getLikeByUserAndTransaction(txnId, userId);
+                    if (existing != null && existing.getUpdatedAt() != null && 
+                        remoteUpdated != null && !remoteUpdated.equals("null") &&
+                        remoteUpdated.compareTo(existing.getUpdatedAt()) < 0) {
+                        return;
+                    }
+
+                    String username = String.valueOf(payload.get("username") != null ? payload.get("username") : payload.get("userName"));
+                    if (username != null && !username.equals("null")) username = username.toLowerCase();
+                    String emoji = String.valueOf(payload.get("emojiType"));
+                    
+                    if (id != null && !id.equals("null") && txnId != null && !txnId.equals("null")) {
+                        Like like = new Like(id, txnId, userId, username, emoji);
+                        like.setUpdatedAt(remoteUpdated);
+                        likeDao.insert(like);
+                    }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Like event error", e);

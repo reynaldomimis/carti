@@ -14,7 +14,7 @@ import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.BudgetAllocationHelper;
 import com.upreyvan.carti.util.StringHelper;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.TransactionHandler;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
@@ -61,14 +61,15 @@ public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
         getBinding().btnSave.setOnClickListener(v -> {
             if (!checkNetwork()) return;
             if (Validator.isEmpty(getBinding().layoutForm.etAmount) || Validator.isEmpty(getBinding().actvCategory) || Validator.isEmpty(getBinding().layoutForm.etDescription)) {
-                showToast(R.string.msg_fill_all_fields, ToastHelper.Status.WARNING); return;
+                showToast(R.string.msg_fill_all_fields, UiHelper.Status.WARNING); return;
             }
             double val = StringHelper.parseDouble(getBinding().layoutForm.etAmount.getText().toString());
             TransactionHandler.saveTrack(this, val, getBinding().actvCategory.getText().toString(), getBinding().layoutForm.etDescription.getText().toString(), getBinding().layoutForm.actvSource.getText().toString(), new TransactionHandler.TransactionCallback() {
                 @Override public void onLoading(boolean l) { showLoading(l, getString(R.string.msg_saving_expense)); }
                 @Override public void onSuccess(Transaction t) { startActivity(new Intent(AddTrackActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)); finish(); }
-                @Override public void onError(String m) { showToast(getString(R.string.err_failed_save, m), ToastHelper.Status.ERROR); }
+                @Override public void onError(String m) { showToast(getString(R.string.err_failed_save, m), UiHelper.Status.ERROR); }
             });
         });
     }
 }
+

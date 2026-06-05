@@ -14,7 +14,7 @@ import com.upreyvan.carti.model.Transaction;
 import java.util.Map;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.util.Validator;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.ValueHelper;
 
 public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditIncomeBinding> {
@@ -93,12 +93,12 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         if (!checkNetwork()) return;
 
         if (Validator.isEmpty(getBinding().etSalaryAmount)) {
-            showToast("Please enter an amount", ToastHelper.Status.WARNING);
+            showToast("Please enter an amount", UiHelper.Status.WARNING);
             return;
         }
 
         if (Validator.isEmpty(getBinding().etIncomeSource)) {
-            showToast("Please enter a source", ToastHelper.Status.WARNING);
+            showToast("Please enter a source", UiHelper.Status.WARNING);
             return;
         }
 
@@ -113,7 +113,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
             }
 
         } catch (NumberFormatException e) {
-            showToast("Invalid amount", ToastHelper.Status.ERROR);
+            showToast("Invalid amount", UiHelper.Status.ERROR);
         }
     }
 
@@ -171,16 +171,12 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         if (!isAdded()) return;
         requireActivity().runOnUiThread(() -> {
             setLoading(false);
-            showToast("Error: " + error.getMessage(), ToastHelper.Status.ERROR);
+            showToast("Error: " + error.getMessage(), UiHelper.Status.ERROR);
         });
     }
 
     private void setLoading(boolean loading) {
         getBinding().btnSave.setEnabled(!loading);
         getBinding().btnSave.setText(loading ? R.string.label_saving : (mode == Mode.ADD_INCOME ? R.string.label_add_income : R.string.label_save));
-    }
-
-    protected void showToast(String message, ToastHelper.Status status) {
-        ToastHelper.show(requireContext(), message, status);
     }
 }

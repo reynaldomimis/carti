@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.upreyvan.carti.R;
@@ -68,10 +67,10 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
         getBinding().btnSave.setOnClickListener(v -> {
             String amountStr = getBinding().etAmount.getText().toString();
             if (amountStr.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter an amount", Toast.LENGTH_SHORT).show();
+                showToast("Please enter an amount", com.upreyvan.carti.util.UiHelper.Status.WARNING);
                 return;
             }
-            Toast.makeText(requireContext(), "Saved successfully!", Toast.LENGTH_SHORT).show();
+            showToast("Saved successfully!", com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
             if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }

@@ -64,6 +64,7 @@ public class Constants {
         public static final String PREF_SALARY = "salary_prefs";
         public static final String PREF_CATEGORY = "carti_categories";
         public static final String PREF_DEBT = "debt_prefs";
+        public static final String PREF_BUDGET_PLAN = "pref_budget_plan";
 
         // Main Preference Keys
         public static final String KEY_ONBOARDING_FINISHED = "onboarding_finished";
@@ -79,9 +80,14 @@ public class Constants {
         public static final String KEY_TOTAL_EXPENSE = "total_expense";
         public static final String KEY_CHAT_AUTO_DELETE_DAYS = "chat_auto_delete_days";
         public static final String KEY_LAST_SYNC_TIME = "last_sync_time";
+        public static final String KEY_LAST_SYNC_MILLIS = "last_sync_millis";
         public static final String KEY_BUDGET_PLAN_DISMISSED_MONTH = "budget_plan_dismissed_month";
         public static final String KEY_HAS_NOTIFICATIONS = "has_notifications";
         public static final String KEY_LAST_NOTIF_CHECK = "last_notif_check";
+        public static final String KEY_ADMIN_ID = "admin_id";
+        public static final String KEY_AI_INTRO_DONE = "ai_intro_done";
+        public static final String KEY_LAST_RECURRING_CHECK = "last_recurring_check";
+        public static final String KEY_BUDGET_PLAN_ITEMS = "key_budget_plan_items";
 
         // Manager Keys
         public static final String KEY_CATEGORIES = "categories_list";
@@ -92,6 +98,37 @@ public class Constants {
         // Intent/Bundle Keys
         public static final String KEY_TRANSACTION_ID = "transaction_id";
         public static final String KEY_PARENT_ID = "parentId";
+        public static final String KEY_CATEGORY_NAME = "category_name";
+        public static final String KEY_MODE = "mode";
+        public static final String KEY_TYPE = "type";
+        public static final String KEY_USER_ID_ARG = "arg_user_id";
+        public static final String KEY_USER_NAME_ARG = "arg_user_name";
+        public static final String KEY_MONTH = "arg_month";
+        public static final String KEY_YEAR = "arg_year";
+    }
+
+    public static final class Types {
+        public static final String INCOME = "INCOME";
+        public static final String EXPENSE = "EXPENSE";
+        public static final String ALLOCATION = "ALLOCATION";
+        public static final String DEBT = "DEBT";
+        public static final String GOAL = "GOAL";
+        public static final String GOAL_FUNDS = "GOAL_FUNDS";
+        public static final String BILL = "BILL";
+    }
+
+    public static final class Categories {
+        public static final String FOOD = "Food";
+        public static final String TRANSPORTATION = "Transportation";
+        public static final String BILLS = "Bills";
+        public static final String SHOPPING = "Shopping";
+        public static final String HEALTH = "Health";
+        public static final String EDUCATION = "Education";
+        public static final String OTHERS = "Others";
+        public static final String ELECTRICITY = "Electricity";
+        public static final String WATER = "Water";
+        public static final String RENT = "Rent";
+        public static final String INTERNET = "Internet";
     }
 
     public static final class Navigation {

@@ -41,10 +41,46 @@
                 android:layout_marginStart="@dimen/spacing_small"
                 android:layout_marginEnd="@dimen/spacing_small"
                 android:includeFontPadding="false"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/layoutOwnerActions"
                 app:layout_constraintStart_toEndOf="@id/ivAvatar"
                 app:layout_constraintTop_toTopOf="@id/ivAvatar"
                 tools:text="Mom added an expense" />
+
+            <LinearLayout
+                android:id="@+id/layoutOwnerActions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/ivAvatar"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/btnEdit"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:padding="4dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="@color/text_tertiary"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Edit"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <ImageView
+                    android:id="@+id/btnDelete"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    android:padding="4dp"
+                    android:src="@android:drawable/ic_menu_delete"
+                    app:tint="@color/status_red"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Delete"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTimestamp"
@@ -76,11 +112,12 @@
                 style="@style/CartiTextDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginStart="0dp"
                 android:layout_marginEnd="0dp"
-                android:layout_marginBottom="@dimen/spacing_small"
+                android:layout_marginBottom="12dp"
                 android:includeFontPadding="false"
+                android:lineSpacingExtra="2dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvTitle"
@@ -101,14 +138,16 @@
                 tools:textColor="@color/status_red" />
 
             <LinearLayout
-                android:id="@+id/layoutReactionsSummary"
-                android:layout_width="0dp"
+                android:id="@+id/layoutLikesSummaryClickable"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:gravity="center_vertical"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal"
-                android:paddingBottom="4dp"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingBottom="8dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvDescription">
 
@@ -128,22 +167,21 @@
                     android:textColor="@color/text_primary"
                     android:includeFontPadding="false"
                     tools:text="3 others" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvCommentsCountSummary"
-                    style="@style/CartiTextDescription"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:includeFontPadding="false"
-                    android:visibility="gone"
-                    tools:visibility="visible"
-                    tools:text="2 comments" />
             </LinearLayout>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvCommentsCountSummary"
+                style="@style/CartiTextDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:visibility="gone"
+                android:paddingBottom="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/layoutLikesSummaryClickable"
+                app:layout_constraintBottom_toBottomOf="@id/layoutLikesSummaryClickable"
+                tools:visibility="visible"
+                tools:text="2 comments" />
 
             <View
                 android:id="@+id/divider"
@@ -153,7 +191,7 @@
                 android:background="@color/border_subtle"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/layoutReactionsSummary" />
+                app:layout_constraintTop_toBottomOf="@id/layoutLikesSummaryClickable" />
 
             <LinearLayout
                 android:id="@+id/layoutFooter"

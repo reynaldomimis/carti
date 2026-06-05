@@ -1,6 +1,7 @@
 package com.upreyvan.carti.base;
 
 import android.os.Bundle;
+import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,12 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.upreyvan.carti.databinding.LayoutBaseActionBottomSheetBinding;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 
-/**
- * A reusable Base Bottom Sheet for common actions like "Mark as Paid" or "Update Amount".
- * Centralizes the UI for title, amount input, and notes.
- */
 public abstract class BaseActionBottomSheet extends BaseBottomSheetFragment<LayoutBaseActionBottomSheetBinding> {
 
     @Override
@@ -30,14 +27,15 @@ public abstract class BaseActionBottomSheet extends BaseBottomSheetFragment<Layo
         onSetupUI(getBinding());
         
         getBinding().btnAction.setOnClickListener(v -> {
-            String amount = getBinding().etAmount.getText().toString().trim();
-            String notes = getBinding().etNotes.getText().toString().trim();
+            Editable amountText = getBinding().etAmount.getText();
+            Editable notesText = getBinding().etNotes.getText();
+            String amount = (amountText != null) ? amountText.toString().trim() : "";
+            String notes = (notesText != null) ? notesText.toString().trim() : "";
             onActionClicked(amount, notes);
         });
     }
 
     private void setupBaseUI() {
-        // Default visibility settings
         getBinding().tilAmount.setVisibility(isAmountRequired() ? View.VISIBLE : View.GONE);
         getBinding().tilNotes.setVisibility(isNotesVisible() ? View.VISIBLE : View.GONE);
         
@@ -50,29 +48,21 @@ public abstract class BaseActionBottomSheet extends BaseBottomSheetFragment<Layo
         getBinding().btnAction.setText(getButtonText());
     }
 
-    // Configuration methods to be overridden by child classes
     protected abstract String getTitle();
     protected String getSubtitle() { return null; }
     protected abstract String getButtonText();
     protected boolean isAmountRequired() { return false; }
     protected boolean isNotesVisible() { return false; }
-
-    /**
-     * Optional hook for additional UI setup
-     */
     protected void onSetupUI(LayoutBaseActionBottomSheetBinding binding) {}
 
-    /**
-     * Action to perform when the primary button is clicked
-     */
     protected abstract void onActionClicked(String amount, String notes);
 
     protected void showSuccess(String message) {
-        ToastHelper.show(requireContext(), message, ToastHelper.Status.SUCCESS);
+        UiHelper.showSnackbar(getView(), message, UiHelper.Status.SUCCESS);
         dismiss();
     }
 
     protected void showError(String message) {
-        ToastHelper.show(requireContext(), message, ToastHelper.Status.ERROR);
+        UiHelper.showSnackbar(getView(), message, UiHelper.Status.ERROR);
     }
 }

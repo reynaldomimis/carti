@@ -223,6 +223,7 @@
 
     <!-- Expenses -->
     <string name="add_expense_title">New Record</string>
+    <string name="title_edit_expense">Edit Record</string>
     <string name="label_what_bought">What did you buy?</string>
     <string name="hint_what_bought">e.g. Starbucks Coffee</string>
     <string name="hint_select_category">Select Category</string>

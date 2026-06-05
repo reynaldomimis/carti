@@ -19,6 +19,7 @@ import com.upreyvan.carti.model.Bill;
 import com.upreyvan.carti.model.QuickLogItem;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.util.AvatarHelper;
 import com.upreyvan.carti.util.Utils;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,9 @@ public interface HomeListItem extends BaseMultiItem {
         void onTransactionComment(TransactionWithUser item);
         void onViewLikes(TransactionWithUser item);
         void onSeeAllTransactions();
+        void onTransactionEdit(TransactionWithUser item);
+        void onTransactionDelete(TransactionWithUser item);
+        String getCurrentUserId();
     }
 
     int TYPE_DASHBOARD = 1;
@@ -297,13 +301,7 @@ public interface HomeListItem extends BaseMultiItem {
             b.tvAmount.setText(b.getRoot().getContext().getString(amountFormatRes, formattedAmount));
             b.tvAmount.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), amountColor));
 
-            if (transaction.getUserAvatarUrl() != null && !transaction.getUserAvatarUrl().isEmpty()) {
-                Glide.with(b.getRoot().getContext()).load(transaction.getUserAvatarUrl()).placeholder(R.drawable.ai_holder).into(b.ivAvatar);
-            } else if (transaction.getUserAvatarRes() != 0) {
-                b.ivAvatar.setImageResource(transaction.getUserAvatarRes());
-            } else {
-                b.ivAvatar.setImageResource(R.drawable.ai_holder);
-            }
+            AvatarHelper.loadUserAvatar(b.getRoot().getContext(), b.ivAvatar, username, transaction.getUserAvatarUrl());
 
             String myReaction = transaction.getMyReaction();
             if (myReaction != null && !myReaction.isEmpty()) {
@@ -319,7 +317,7 @@ public interface HomeListItem extends BaseMultiItem {
             String rNames = transaction.getReactorNames();
 
             if (likesCount > 0 || commentCount > 0) {
-                b.layoutReactionsSummary.setVisibility(View.VISIBLE);
+                b.layoutLikesSummaryClickable.setVisibility(View.VISIBLE);
                 b.divider.setVisibility(View.VISIBLE);
                 if (likesCount > 0) {
                     b.tvReactionEmoji.setVisibility(View.VISIBLE);
@@ -339,7 +337,7 @@ public interface HomeListItem extends BaseMultiItem {
                     b.tvCommentsCountSummary.setVisibility(View.GONE);
                 }
             } else {
-                b.layoutReactionsSummary.setVisibility(View.GONE);
+                b.layoutLikesSummaryClickable.setVisibility(View.GONE);
                 b.divider.setVisibility(View.GONE);
             }
 
@@ -350,12 +348,19 @@ public interface HomeListItem extends BaseMultiItem {
                 return true;
             });
             
-            b.layoutReactionsSummary.setOnClickListener(v -> listener.onViewLikes(transaction));
+            b.layoutLikesSummaryClickable.setOnClickListener(v -> listener.onViewLikes(transaction));
             b.tvLikesCount.setOnClickListener(v -> listener.onViewLikes(transaction));
             b.tvCommentsCountSummary.setOnClickListener(v -> listener.onTransactionComment(transaction));
 
             b.btnComment.setOnClickListener(v -> listener.onTransactionComment(transaction));
             b.getRoot().setOnClickListener(v -> listener.onTransactionClick(transaction));
+
+            boolean isOwner = Objects.equals(t.getUserId(), listener.getCurrentUserId());
+            b.layoutOwnerActions.setVisibility(isOwner ? View.VISIBLE : View.GONE);
+            if (isOwner) {
+                b.btnEdit.setOnClickListener(v -> listener.onTransactionEdit(transaction));
+                b.btnDelete.setOnClickListener(v -> listener.onTransactionDelete(transaction));
+            }
         }
 
         @Override public Object getChangePayload(@NonNull BaseMultiItem newItem) {
@@ -366,6 +371,7 @@ public interface HomeListItem extends BaseMultiItem {
                 if (t.getLikesCount() != ot.getLikesCount()) diff.putInt("likes", ot.getLikesCount());
                 if (t.getCommentCount() != ot.getCommentCount()) diff.putInt("comments", ot.getCommentCount());
                 if (!Objects.equals(transaction.getMyReaction(), other.transaction.getMyReaction())) diff.putString("myReaction", other.transaction.getMyReaction());
+                if (!Objects.equals(transaction.getReactorNames(), other.transaction.getReactorNames())) diff.putString("reactorNames", other.transaction.getReactorNames());
                 return !diff.isEmpty() ? diff : null;
             }
             return null;
@@ -379,6 +385,11 @@ public interface HomeListItem extends BaseMultiItem {
                         int likes = b.getInt("likes");
                         vb.tvLikesCount.setText(String.valueOf(likes));
                         vb.tvLikesCount.setVisibility(likes > 0 ? View.VISIBLE : View.GONE);
+                    }
+                    if (b.containsKey("reactorNames")) {
+                        String names = b.getString("reactorNames");
+                        vb.tvLikesCount.setText(names != null && !names.isEmpty() ? names : String.valueOf(transaction.getTransaction().getLikesCount()));
+                        vb.tvLikesCount.setVisibility((names != null && !names.isEmpty()) || transaction.getTransaction().getLikesCount() > 0 ? View.VISIBLE : View.GONE);
                     }
                     if (b.containsKey("myReaction")) {
                         String reaction = b.getString("myReaction");

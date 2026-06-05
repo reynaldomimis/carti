@@ -20,7 +20,7 @@ import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.databinding.BottomSheetAddCategoryBinding;
 import com.upreyvan.carti.model.IconChoice;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -118,14 +118,17 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
     }
 
     private void saveCategory() {
-        if (getBinding().etCategoryName.getText() == null) return;
+        android.text.Editable nameText = getBinding().etCategoryName.getText();
+        android.text.Editable amountText = getBinding().etAmount.getText();
+        
+        if (nameText == null) return;
 
-        String name = getBinding().etCategoryName.getText().toString().trim();
-        String amountStr = getBinding().etAmount.getText().toString().trim();
+        String name = nameText.toString().trim();
+        String amountStr = (amountText != null) ? amountText.toString().trim() : "";
         boolean isRecurring = getBinding().switchRecurring.isChecked();
         
         if (name.isEmpty()) {
-            ToastHelper.show(requireContext(), R.string.msg_fill_all_fields, ToastHelper.Status.ERROR);
+            showToast(R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
             return;
         }
 

@@ -19,7 +19,7 @@ import com.upreyvan.carti.databinding.ItemMemberAvatarSelectBinding;
 import com.upreyvan.carti.databinding.LayoutBottomSheetUpdateGoalBinding;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.Member;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
 import com.upreyvan.carti.util.ValueHelper;
@@ -78,12 +78,12 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
 
     private void onUpdateClicked() {
         if (!checkNetwork() || currentGoal == null) return;
-        if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) { showToast(R.string.msg_fill_all_fields, ToastHelper.Status.WARNING); return; }
+        if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) { showToast(R.string.msg_fill_all_fields, UiHelper.Status.WARNING); return; }
         showLoading(true, "Updating goal..."); currentGoal.setTitle(getBinding().etGoalName.getText().toString().trim()); currentGoal.setTargetAmount(Double.parseDouble(getBinding().etTargetAmount.getText().toString().trim()));
         currentGoal.setTargetDate(getBinding().etTargetDate.getText().toString().trim()); currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
         transactionRepository.updateTransaction(currentGoal, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
-            @Override public void onSuccess(Map<String, Object> r) { if (isAdded()) { showLoading(false); showToast("Goal updated successfully", ToastHelper.Status.SUCCESS); dismiss(); } }
-            @Override public void onError(Throwable e) { if (isAdded()) { showLoading(false); showToast(getString(R.string.err_generic, e.getMessage()), ToastHelper.Status.ERROR); } }
+            @Override public void onSuccess(Map<String, Object> r) { if (isAdded()) { showLoading(false); showToast("Goal updated successfully", UiHelper.Status.SUCCESS); dismiss(); } }
+            @Override public void onError(Throwable e) { if (isAdded()) { showLoading(false); showToast(getString(R.string.err_generic, e.getMessage()), UiHelper.Status.ERROR); } }
         });
     }
 }

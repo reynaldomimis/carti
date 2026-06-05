@@ -4,24 +4,29 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.PopupMenu;
+
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.FragmentCommentsBottomSheetBinding;
+import com.upreyvan.carti.util.AvatarHelper;
 import com.upreyvan.carti.model.Comment;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
+
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<FragmentCommentsBottomSheetBinding> {
 
@@ -66,20 +71,21 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
     }
 
     private void setupRealtime() {
-        RealtimeRepository.getInstance(requireContext()).getCommentStream().observe(getViewLifecycleOwner(), payload -> {
-            String txnId = String.valueOf(payload.get("transactionId"));
-            if (Objects.equals(transactionId, txnId)) {
-                loadComments();
-            }
-        });
+        com.upreyvan.carti.data.local.db.AppDatabase.getInstance(requireContext())
+            .commentDao().getCommentsForTransaction(transactionId)
+            .observe(getViewLifecycleOwner(), comments -> {
+                adapter.setAllComments(comments);
+                getBinding().tvEmpty.setVisibility(comments.isEmpty() ? View.VISIBLE : View.GONE);
+                getBinding().progressBar.setVisibility(View.GONE);
+            });
     }
 
     private void setupUI() {
         adapter = new CommentAdapter(pref.getUserId(), pref.isAdmin());
         adapter.setOnCommentInteractionListener(new CommentAdapter.OnCommentInteractionListener() {
             @Override
-            public void onCommentClicked(Comment comment, View view) {
-                showCommentOptions(comment, view);
+            public void onReplyComment(Comment comment) {
+                startReplyMode(comment);
             }
 
             @Override
@@ -89,42 +95,28 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
         });
         getBinding().rvComments.setAdapter(adapter);
 
-        Glide.with(this)
-                .load("https://cloud.appwrite.io/v1/avatars/initials?name=" + pref.getUsername() + "&project=carti")
-                .placeholder(R.drawable.ai_holder)
-                .into(getBinding().ivCurrentUserAvatar);
+        AvatarHelper.loadUserAvatar(requireContext(), getBinding().ivCurrentUserAvatar, pref.getUsername());
+
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().cardInput, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            int bottom = Math.max(systemBars.bottom, ime.bottom);
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottom);
+            return insets;
+        });
 
         getBinding().btnSend.setOnClickListener(v -> postComment());
-    }
+        getBinding().btnClose.setOnClickListener(v -> dismiss());
 
-    private void showCommentOptions(Comment comment, View view) {
-        PopupMenu popup = new PopupMenu(requireContext(), view);
-        
-        String currentUserId = Objects.requireNonNullElse(pref.getUserId(), "").trim();
-        if (currentUserId.equalsIgnoreCase("null")) currentUserId = "";
-
-        String commentUserId = Objects.requireNonNullElse(comment.getUserId(), "").trim();
-        if (commentUserId.equalsIgnoreCase("null")) commentUserId = "";
-        
-        boolean isMine = !currentUserId.isEmpty() && currentUserId.equalsIgnoreCase(commentUserId);
-        boolean isAdmin = pref.isAdmin();
-
-        popup.getMenu().add(0, 1, 0, "Reply");
-        if (isMine || isAdmin) {
-            popup.getMenu().add(0, 2, 1, "Delete");
-        }
-
-        popup.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case 1 -> startReplyMode(comment);
-                case 2 -> confirmDelete(comment);
-            }
-            return true;
-        });
-        popup.show();
+        getBinding().etComment.requestFocus();
+        Utils.showKeyboard(requireContext(), getBinding().etComment);
     }
 
     private void startReplyMode(Comment comment) {
+        if (comment.getId().startsWith("temp_")) {
+            showToast("Wait for the comment to sync before replying", UiHelper.Status.WARNING);
+            return;
+        }
         selectedParentId = comment.getId();
         getBinding().etComment.setHint(String.format("Replying to @%s...", comment.getUsername()));
         getBinding().etComment.requestFocus();
@@ -136,17 +128,14 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
                 .setTitle("Delete Comment")
                 .setMessage("Are you sure you want to delete this comment?")
                 .setCancelable(false)
-                .setPositiveButton("Delete", (dialog, which) -> repository.removeComment(comment.getId(), new AppwriteCallback<>() {
-                    @Override
-                    public void onSuccess(Map<String, Object> result) {
-                        loadComments();
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        showToast("Failed to delete comment", ToastHelper.Status.ERROR);
-                    }
-                }))
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    new Thread(() -> com.upreyvan.carti.data.local.db.AppDatabase.getInstance(requireContext()).commentDao().deleteById(comment.getId())).start();
+                    repository.removeComment(comment.getId(), new AppwriteCallback<>() {
+                        @Override public void onSuccess(Map<String, Object> result) {}
+                        @Override public void onError(Throwable error) {
+                            showToast("Failed to delete comment", UiHelper.Status.ERROR);}
+                    });
+                })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
@@ -157,14 +146,14 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
             @Override
             public void onSuccess(List<Comment> result) {
                 getBinding().progressBar.setVisibility(View.GONE);
-                adapter.submitList(result);
+                adapter.setAllComments(result);
                 getBinding().tvEmpty.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
             }
 
             @Override
             public void onError(Throwable error) {
                 getBinding().progressBar.setVisibility(View.GONE);
-                showToast("Failed to load comments", ToastHelper.Status.ERROR);
+                showToast("Failed to load comments", UiHelper.Status.ERROR);
             }
         });
     }
@@ -174,6 +163,10 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
         if (text.isEmpty()) return;
 
         getBinding().btnSend.setEnabled(false);
+        String tempId = "temp_" + System.currentTimeMillis();
+        Comment tempComment = new Comment(tempId, transactionId, pref.getUserId(), pref.getUsername(), text, selectedParentId, Utils.getCurrentTimestamp(), Utils.getCurrentTimestamp());
+        new Thread(() -> com.upreyvan.carti.data.local.db.AppDatabase.getInstance(requireContext()).commentDao().insert(tempComment)).start();
+
         repository.postComment(transactionId, text, selectedParentId, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
@@ -181,13 +174,13 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
                 getBinding().btnSend.setEnabled(true);
                 selectedParentId = null;
                 getBinding().etComment.setHint("Write a comment...");
-                loadComments();
             }
 
             @Override
             public void onError(Throwable error) {
                 getBinding().btnSend.setEnabled(true);
-                showToast("Failed to post comment", ToastHelper.Status.ERROR);
+                showToast("Failed to post comment", UiHelper.Status.ERROR);
+                new Thread(() -> com.upreyvan.carti.data.local.db.AppDatabase.getInstance(requireContext()).commentDao().deleteById(tempId)).start();
             }
         });
     }

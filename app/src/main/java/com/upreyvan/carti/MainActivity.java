@@ -7,12 +7,9 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
@@ -34,7 +31,7 @@ import com.upreyvan.carti.ui.profile.ProfileFragment;
 import com.upreyvan.carti.ui.track.TrackFragment;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.SecurityGuard;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 
 public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private MainViewModel viewModel;
@@ -51,7 +48,6 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        EdgeToEdge.enable(this);
         SecurityGuard.checkIntegrity(this);
         super.onCreate(savedInstanceState);
         setupViewModel();
@@ -71,7 +67,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                     navigateToOnboarding();
                     break;
                 case ERROR:
-                    showToast("Connection required for first-time sync", ToastHelper.Status.ERROR);
+                    showToast("Connection required for first-time sync", UiHelper.Status.ERROR);
                     break;
             }
         });
@@ -97,7 +93,9 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private void proceed() {
         if (isInit) return;
         isInit = true;
-        setupEdgeToEdge();
+        
+        setupDynamicPadding(getBinding().fragmentContainer, getBinding().bottomNavContainer);
+
         navTabs = new LayoutNavItemBinding[]{
                 getBinding().tabHome,
                 getBinding().tabExpenses,
@@ -174,15 +172,6 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         if (intent.getBooleanExtra("show_home", false)) {
             navigateTo(Constants.Navigation.HOME);
         }
-    }
-
-    private void setupEdgeToEdge() {
-        ViewCompat.setOnApplyWindowInsetsListener(getBinding().bottomNavContainer, (v, insets) -> {
-            int bottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
-            int extraPadding = getResources().getDimensionPixelSize(R.dimen.spacing_small);
-            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottom + extraPadding);
-            return insets;
-        });
     }
 
     private void setupTabs() {

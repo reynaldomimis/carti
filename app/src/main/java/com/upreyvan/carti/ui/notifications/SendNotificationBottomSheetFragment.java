@@ -1,5 +1,7 @@
 package com.upreyvan.carti.ui.notifications;
 
+import com.upreyvan.carti.util.ToastHelper;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +16,7 @@ import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.LayoutSendNotificationBottomSheetBinding;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Validator;
 
 import java.util.Map;
@@ -68,7 +70,7 @@ public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragme
                     public void onSuccess(Map<String, Object> result) {
                         if (isAdded()) {
                             requireActivity().runOnUiThread(() -> {
-                                ToastHelper.show(requireContext(), "Announcement sent!", ToastHelper.Status.SUCCESS);
+                                ToastHelper.show(requireContext(), "Announcement sent!", UiHelper.Status.SUCCESS);
                                 dismiss();
                             });
                         }
@@ -80,7 +82,7 @@ public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragme
                             requireActivity().runOnUiThread(() -> {
                                 binding.btnSend.setEnabled(true);
                                 binding.btnSend.setText(R.string.action_send_announcement);
-                                ToastHelper.show(requireContext(), error.getMessage(), ToastHelper.Status.ERROR);
+                                ToastHelper.show(requireContext(), error.getMessage(), UiHelper.Status.ERROR);
                             });
                         }
                     }
@@ -99,3 +101,5 @@ public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragme
         return R.style.CustomBottomSheetDialogTheme;
     }
 }
+
+

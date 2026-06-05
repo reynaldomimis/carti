@@ -3,7 +3,6 @@ package com.upreyvan.carti.ui.family;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Toast;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
@@ -78,7 +77,6 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
                     Object code = result.getData().get("inviteCode");
                     if (code != null) {
                         String inviteCode = String.valueOf(code);
-                        // Save to prefs for next time
                         PreferenceManager.getInstance(InviteFamilyActivity.this).setInviteCode(inviteCode);
                         runOnUiThread(() -> updateInviteUI(inviteCode));
                     }
@@ -119,7 +117,7 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
         ClipData clip = ClipData.newPlainText(getString(R.string.label_family_id), text);
         if (clipboard != null) {
             clipboard.setPrimaryClip(clip);
-            Toast.makeText(this, R.string.msg_invite_copied, Toast.LENGTH_SHORT).show();
+            showToast(R.string.msg_invite_copied, com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
         }
     }
 

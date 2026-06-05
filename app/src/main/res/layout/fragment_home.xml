@@ -2,7 +2,8 @@
 <com.upreyvan.carti.ui.common.RootLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/CartiContainer">
+    style="@style/CartiContainer"
+    app:useStatusBarPadding="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutHeader"
@@ -27,6 +28,7 @@
                 style="@style/CartiSubHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:includeFontPadding="false"
                 tools:text="@string/default_greeting" />
 
             <com.google.android.material.textview.MaterialTextView
@@ -38,6 +40,7 @@
                 android:layout_weight="1"
                 android:ellipsize="end"
                 android:maxLines="1"
+                android:includeFontPadding="false"
                 tools:text="@string/user" />
 
         </LinearLayout>
@@ -47,7 +50,8 @@
             style="@style/CartiCaption.Primary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xxs"
+            android:layout_marginTop="2dp"
+            android:includeFontPadding="false"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/llGreeting"
             tools:text="Pay day 8 days to go • May 30" />

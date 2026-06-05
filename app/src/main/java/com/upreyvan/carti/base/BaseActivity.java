@@ -9,19 +9,22 @@ import android.view.Window;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.viewbinding.ViewBinding;
 import com.google.android.material.snackbar.Snackbar;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.util.LoadingDialog;
 import com.upreyvan.carti.util.NetworkMonitor;
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
 
 
 public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActivity {
-    
+
     private VB binding;
     private LoadingDialog loadingDialog;
     private Snackbar networkSnackbar;
@@ -33,7 +36,7 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
         super.onCreate(savedInstanceState);
         binding = inflateBinding(getLayoutInflater());
         setContentView(binding.getRoot());
-        
+
         applyEdgeToEdge();
         initNetworkMonitoring();
     }
@@ -51,16 +54,16 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
 
     private void showNetworkSnackbar() {
         if (networkSnackbar == null) {
-            networkSnackbar = Snackbar.make(findViewById(android.R.id.content), 
-                R.string.title_no_internet, 
-                Snackbar.LENGTH_INDEFINITE);
-            
+            networkSnackbar = Snackbar.make(findViewById(android.R.id.content),
+                    R.string.title_no_internet,
+                    Snackbar.LENGTH_INDEFINITE);
+
             networkSnackbar.setBackgroundTint(ContextCompat.getColor(this, R.color.status_red))
                     .setTextColor(Color.WHITE)
                     .setActionTextColor(Color.WHITE)
                     .setAction("CLOSE", v -> networkSnackbar.dismiss());
         }
-        
+
         if (!networkSnackbar.isShown()) {
             networkSnackbar.show();
         }
@@ -72,12 +75,12 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
         return online;
     }
 
-    protected void showToast(String message, ToastHelper.Status status) {
-        ToastHelper.show(this, message, status);
+    protected void showToast(String message, UiHelper.Status status) {
+        UiHelper.showSnackbar(this, message, status);
     }
 
-    protected void showToast(int resId, ToastHelper.Status status) {
-        ToastHelper.show(this, resId, status);
+    protected void showToast(int resId, UiHelper.Status status) {
+        UiHelper.showSnackbar(findViewById(android.R.id.content), resId, status);
     }
 
     protected void showLoading(boolean isLoading) {
@@ -98,7 +101,20 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
     protected VB getBinding() { return binding; }
 
     protected void setupDynamicPadding(View topView, View bottomView) {
-        Utils.applySystemBarInsets(topView, bottomView, 1.0f, 0);
+        if (topView != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(topView, (v, insets) -> {
+                v.setPadding(v.getPaddingLeft(), 0, v.getPaddingRight(), v.getPaddingBottom());
+                return insets;
+            });
+        }
+        if (bottomView != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(bottomView, (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                int extraBottom = getResources().getDimensionPixelSize(R.dimen.spacing_small);
+                v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), systemBars.bottom + extraBottom);
+                return insets;
+            });
+        }
     }
 
     private void applyEdgeToEdge() {
@@ -106,7 +122,7 @@ public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActi
         WindowCompat.setDecorFitsSystemWindows(window, false);
         window.setStatusBarColor(Color.TRANSPARENT);
         window.setNavigationBarColor(Color.TRANSPARENT);
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.setStatusBarContrastEnforced(false);
             window.setNavigationBarContrastEnforced(false);

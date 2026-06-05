@@ -83,4 +83,49 @@
         app:layout_constraintTop_toTopOf="@id/tvTime"
         tools:visibility="visible" />
 
+    <TextView
+        android:id="@+id/btnReply"
+        style="@style/CartiTextDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_large"
+        android:text="Reply"
+        android:textSize="10sp"
+        app:layout_constraintStart_toEndOf="@id/btnDelete"
+        app:layout_constraintTop_toTopOf="@id/tvTime" />
+
+    <LinearLayout
+        android:id="@+id/layoutRepliesContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/cardComment"
+        app:layout_constraintTop_toBottomOf="@id/tvTime"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/tvViewReplies"
+            style="@style/CartiTextDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/carti_primary_blue"
+            android:textSize="11sp"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
+            tools:text="View 3 replies" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvReplies"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="2"
+            tools:listitem="@layout/item_comment" />
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

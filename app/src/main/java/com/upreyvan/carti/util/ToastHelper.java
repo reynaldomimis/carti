@@ -1,68 +1,43 @@
 package com.upreyvan.carti.util;
 
+import android.app.Activity;
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
-import android.widget.Toast;
-
 import androidx.annotation.StringRes;
 
-import java.util.HashMap;
-import java.util.Map;
-
-
+@Deprecated
 public class ToastHelper {
 
     public enum Status {
         SUCCESS, ERROR, INFO, WARNING
     }
 
-    private static final long DEBOUNCE_INTERVAL = 2500;
-    private static final long GLOBAL_THROTTLE = 1000;
-    private static final Map<String, Long> lastShownMessages = new HashMap<>();
-    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private static Toast currentToast;
-    private static long lastGlobalTime = 0;
-
     public static void show(Context context, String message, Status status) {
-        if (context == null || message == null || message.trim().isEmpty()) return;
+        show(context, message, mapStatus(status));
+    }
 
-        long now = System.currentTimeMillis();
-
-        if (now - lastGlobalTime < GLOBAL_THROTTLE) {
-            return;
+    public static void show(Context context, String message, UiHelper.Status status) {
+        if (context instanceof Activity) {
+            UiHelper.showSnackbar((Activity) context, message, status);
+        } else {
+            android.util.Log.i("ToastHelper", "Redirected Toast to Snackbar: " + message);
         }
-
-        synchronized (lastShownMessages) {
-            if (lastShownMessages.containsKey(message)) {
-                long lastTime = lastShownMessages.get(message);
-                if (now - lastTime < DEBOUNCE_INTERVAL) {
-                    return;
-                }
-            }
-            lastShownMessages.put(message, now);
-            lastGlobalTime = now;
-
-            if (lastShownMessages.size() > 20) {
-                lastShownMessages.entrySet().removeIf(entry -> now - entry.getValue() > DEBOUNCE_INTERVAL * 2);
-            }
-        }
-
-        mainHandler.post(() -> {
-            try {
-                if (currentToast != null) {
-                    currentToast.cancel();
-                }
-                currentToast = Toast.makeText(context.getApplicationContext(), message, Toast.LENGTH_SHORT);
-                currentToast.show();
-            } catch (Exception e) {
-                android.util.Log.e("ToastHelper", "Error showing toast", e);
-            }
-        });
     }
 
     public static void show(Context context, @StringRes int messageRes, Status status) {
+        show(context, messageRes, mapStatus(status));
+    }
+
+    public static void show(Context context, @StringRes int messageRes, UiHelper.Status status) {
         if (context == null) return;
         show(context, context.getString(messageRes), status);
+    }
+
+    private static UiHelper.Status mapStatus(Status status) {
+        return switch (status) {
+            case SUCCESS -> UiHelper.Status.SUCCESS;
+            case ERROR -> UiHelper.Status.ERROR;
+            case WARNING -> UiHelper.Status.WARNING;
+            default -> UiHelper.Status.INFO;
+        };
     }
 }

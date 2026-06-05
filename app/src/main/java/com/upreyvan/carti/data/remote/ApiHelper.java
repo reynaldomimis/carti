@@ -188,9 +188,11 @@ public class ApiHelper {
         Map<String, Object> params = new HashMap<>();
         params.put("transactionId", transactionId);
         params.put("text", text);
-        if (parentId != null) {
+        if (parentId != null && !parentId.isEmpty() && !parentId.equalsIgnoreCase("null")) {
             params.put(Constants.Keys.KEY_PARENT_ID, parentId);
         }
+        
+        android.util.Log.d("ApiHelper", "addComment | params: " + gson.toJson(params));
         callAction(Constants.Actions.ADD_COMMENT, params, callback);
     }
 

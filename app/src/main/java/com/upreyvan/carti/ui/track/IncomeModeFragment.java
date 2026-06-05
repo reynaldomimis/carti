@@ -45,7 +45,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         transactionRepository = TransactionRepository.getInstance(requireContext());
         realtimeRepo = RealtimeRepository.getInstance(requireContext());
         
-        setupToolbar(getBinding().layoutToolbar, R.string.income_mode_title);
+        setupToolbar(getBinding().layoutToolbar, "Allocation Mode");
         setupRecyclerView();
         observeIncomes();
         observeRealtime();
@@ -91,14 +91,18 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     }
 
     private void observeIncomes() {
+        String myUserId = com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getUserId();
         transactionRepository.getIncome().observe(getViewLifecycleOwner(), incomesWithUser -> {
             List<Transaction> incomes = new ArrayList<>();
             if (incomesWithUser != null) {
                 for (TransactionWithUser t : incomesWithUser) {
-                    incomes.add(t.getTransaction());
+                    if (Objects.equals(t.getTransaction().getUserId(), myUserId)) {
+                        incomes.add(t.getTransaction());
+                    }
                 }
             }
             boolean hasIncomes = !incomes.isEmpty();
+            getBinding().tvIncomeHistoryLabel.setText("Contribution History");
             getBinding().tvIncomeHistoryLabel.setVisibility(hasIncomes ? View.VISIBLE : View.GONE);
             getBinding().rvIncomeHistory.setVisibility(hasIncomes ? View.VISIBLE : View.GONE);
 

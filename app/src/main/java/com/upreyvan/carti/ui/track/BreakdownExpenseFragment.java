@@ -27,17 +27,27 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
 
     private static final String ARG_MONTH = "arg_month";
     private static final String ARG_YEAR = "arg_year";
+    private static final String ARG_USER_ID = "arg_user_id";
+    private static final String ARG_USER_NAME = "arg_user_name";
 
     private TransactionRepository transactionRepository;
     private GenericAdapter<TransactionWithUser, ItemCategoryBreakdownBinding> adapter;
     private int selectedMonth;
     private int selectedYear;
+    private String filterUserId;
+    private String filterUserName;
 
     public static BreakdownExpenseFragment newInstance(int month, int year) {
+        return newInstance(month, year, null, null);
+    }
+
+    public static BreakdownExpenseFragment newInstance(int month, int year, String userId, String userName) {
         BreakdownExpenseFragment fragment = new BreakdownExpenseFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_MONTH, month);
         args.putInt(ARG_YEAR, year);
+        args.putString(ARG_USER_ID, userId);
+        args.putString(ARG_USER_NAME, userName);
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,6 +58,8 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
         if (getArguments() != null) {
             selectedMonth = getArguments().getInt(ARG_MONTH);
             selectedYear = getArguments().getInt(ARG_YEAR);
+            filterUserId = getArguments().getString(ARG_USER_ID);
+            filterUserName = getArguments().getString(ARG_USER_NAME);
         }
     }
 
@@ -64,7 +76,9 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
         }
         transactionRepository = TransactionRepository.getInstance(requireContext());
         
-        setupToolbar(getBinding().layoutToolbar, "Expense Breakdown");
+        String title = "Expense Breakdown";
+        if (filterUserName != null) title = filterUserName + "'s Expenses";
+        setupToolbar(getBinding().layoutToolbar, title);
         setupRecyclerView();
         observeBreakdown();
     }
@@ -111,7 +125,10 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
             if (transactions != null) {
                 List<TransactionWithUser> expenseList = new ArrayList<>();
                 for (TransactionWithUser tWithU : transactions) {
-                    if ("EXPENSE".equals(tWithU.getTransaction().getType())) {
+                    boolean isExpense = "EXPENSE".equals(tWithU.getTransaction().getType());
+                    boolean matchesUser = filterUserId == null || filterUserId.equals(tWithU.getTransaction().getUserId());
+                    
+                    if (isExpense && matchesUser) {
                         expenseList.add(tWithU);
                     }
                 }

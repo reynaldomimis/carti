@@ -3,7 +3,8 @@ package com.upreyvan.carti.model;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.room.Embedded;
-
+import androidx.room.Relation;
+import java.util.List;
 import java.util.Objects;
 
 public class TransactionWithUser {
@@ -15,7 +16,12 @@ public class TransactionWithUser {
     private int userAvatarRes;
     private String userAvatarUrl;
     private String myReaction;
-    private String reactorNames;
+
+    @Relation(
+            parentColumn = "id",
+            entityColumn = "transactionId"
+    )
+    private List<Like> reactions;
 
     public Transaction getTransaction() {
         return transaction;
@@ -61,12 +67,24 @@ public class TransactionWithUser {
         this.myReaction = myReaction;
     }
 
-    public String getReactorNames() {
-        return reactorNames;
+    public List<Like> getReactions() {
+        return reactions;
     }
 
-    public void setReactorNames(String reactorNames) {
-        this.reactorNames = reactorNames;
+    public void setReactions(List<Like> reactions) {
+        this.reactions = reactions;
+    }
+
+    public String getReactorNames() {
+        if (reactions == null || reactions.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < reactions.size(); i++) {
+            String name = reactions.get(i).getUsername();
+            if (name == null || name.isEmpty()) name = "Someone";
+            sb.append(name);
+            if (i < reactions.size() - 1) sb.append(", ");
+        }
+        return sb.toString();
     }
 
     @Override
@@ -79,12 +97,12 @@ public class TransactionWithUser {
                 Objects.equals(userRole, that.userRole) &&
                 Objects.equals(userAvatarUrl, that.userAvatarUrl) &&
                 Objects.equals(myReaction, that.myReaction) &&
-                Objects.equals(reactorNames, that.reactorNames);
+                Objects.equals(reactions, that.reactions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(transaction, memberUsername, userRole, userAvatarUrl, myReaction, reactorNames);
+        return Objects.hash(transaction, memberUsername, userRole, userAvatarUrl, myReaction, reactions);
     }
 
     public static final DiffUtil.ItemCallback<TransactionWithUser> DIFF_CALLBACK = new DiffUtil.ItemCallback<TransactionWithUser>() {
