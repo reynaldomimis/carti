@@ -1,6 +1,7 @@
 package com.upreyvan.carti.util;
 
 import com.upreyvan.carti.model.Transaction;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,16 +30,31 @@ public class TransactionHelper {
         t.setAllocationMonth((String) data.get("allocationMonth"));
         t.setIconUrl((String) data.get("iconUrl"));
         
-        if (data.get("iconRes") != null) {
-            t.setIconRes(((Number) data.get("iconRes")).intValue());
+        Object iconResObj = data.get("iconRes");
+        if (iconResObj instanceof Number) {
+            t.setIconRes(((Number) iconResObj).intValue());
         }
 
-        if (data.get("members") instanceof List) {
-            t.setMembers((List<String>) data.get("members"));
+        Object membersObj = data.get("members");
+        if (membersObj instanceof List<?>) {
+            List<String> members = new ArrayList<>();
+            for (Object item : (List<?>) membersObj) {
+                if (item instanceof String) {
+                    members.add((String) item);
+                }
+            }
+            t.setMembers(members);
         }
         
-        if (data.get("likesCount") != null) t.setLikesCount(((Number) data.get("likesCount")).intValue());
-        if (data.get("commentCount") != null) t.setCommentCount(((Number) data.get("commentCount")).intValue());
+        Object likesCountObj = data.get("likesCount");
+        if (likesCountObj instanceof Number) {
+            t.setLikesCount(((Number) likesCountObj).intValue());
+        }
+
+        Object commentCountObj = data.get("commentCount");
+        if (commentCountObj instanceof Number) {
+            t.setCommentCount(((Number) commentCountObj).intValue());
+        }
 
         try {
             if (createdAt != null) {

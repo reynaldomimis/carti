@@ -3,7 +3,6 @@ package com.upreyvan.carti.ui.track;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
@@ -11,8 +10,10 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.databinding.ItemTransactionBinding;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.Utils;
 import java.util.Locale;
+import java.util.Objects;
 import androidx.core.content.ContextCompat;
 
 public class TransactionAdapter extends ListAdapter<TransactionWithUser, TransactionAdapter.ViewHolder> {
@@ -85,7 +86,7 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
                     amountFormatRes = R.string.format_expense;
                 }
                 case "GOAL", "GOAL_FUNDS" -> {
-                    actionLabel = type.equals("GOAL") ? "Started a goal" : "Added funds to goal";
+                    actionLabel = Objects.equals(type, "GOAL") ? "Started a goal" : "Added funds to goal";
                     amountColor = R.color.carti_primary_green;
                     amountFormatRes = R.string.format_income;
                 }
@@ -170,8 +171,20 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
             binding.btnLike.setOnClickListener(v -> {
                 if (interactionListener != null) interactionListener.onLikeClick(itemWithUser);
             });
+            binding.btnLike.setOnLongClickListener(v -> {
+                DialogHelper.showEmojiPicker(binding.btnLike, emoji -> {
+                    if (interactionListener != null) interactionListener.onReactionClick(itemWithUser, emoji);
+                });
+                return true;
+            });
+            binding.layoutReactionsSummary.setOnClickListener(v -> {
+                if (interactionListener != null) interactionListener.onViewLikesClick(item, itemWithUser.getReactorNames());
+            });
             binding.tvLikesCount.setOnClickListener(v -> {
                 if (interactionListener != null) interactionListener.onViewLikesClick(item, itemWithUser.getReactorNames());
+            });
+            binding.tvCommentsCountSummary.setOnClickListener(v -> {
+                if (interactionListener != null) interactionListener.onCommentClick(item);
             });
             binding.btnComment.setOnClickListener(v -> {
                 if (interactionListener != null) interactionListener.onCommentClick(item);

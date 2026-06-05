@@ -55,6 +55,15 @@ public class ReactionsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         apiHelper = new ApiHelper(requireContext());
         setupRecyclerView();
         loadReactions();
+        setupRealtime();
+    }
+
+    private void setupRealtime() {
+        com.upreyvan.carti.data.repository.RealtimeRepository.getInstance(requireContext()).getLikeStream().observe(getViewLifecycleOwner(), payload -> {
+            if (payload != null && transactionId.equals(payload.get("transactionId"))) {
+                loadReactions();
+            }
+        });
     }
 
     private void setupRecyclerView() {

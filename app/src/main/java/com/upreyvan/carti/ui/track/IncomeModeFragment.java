@@ -41,15 +41,18 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
         transactionRepository = TransactionRepository.getInstance(requireContext());
         realtimeRepo = RealtimeRepository.getInstance(requireContext());
-        setupDynamicPadding(getBinding().layoutToolbar.getRoot(), null, 0.3f);
-        setupHeader();
+        
+        setupToolbar(getBinding().layoutToolbar, R.string.income_mode_title);
         setupRecyclerView();
         observeIncomes();
-        updateUI();
-        setupListeners();
         observeRealtime();
+        updateUI();
+        setupHeaderActions();
+        setupListeners();
+        setupDynamicPadding(getBinding().layoutToolbar.getRoot(), null, 0.3f);
     }
 
     private void observeRealtime() {
@@ -62,7 +65,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
             incomeAdapter = new GenericAdapter<>(
                     Transaction.DIFF_CALLBACK,
                     (inflater, parent) -> ItemIncomeBinding.inflate(inflater, parent, false),
-                    (binding, income) -> {
+                    (binding, income, position, count) -> {
                         binding.tvSource.setText(income.getTitle());
                         binding.tvAmount.setText(String.format(Locale.getDefault(), "+₱%,.2f", income.getAmount()));
                         binding.tvDate.setText(Utils.getTimeAgo(income.getTimestampMillis()));
@@ -117,8 +120,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     }
     
 
-    private void setupHeader() {
-        setupToolbar(getBinding().layoutToolbar, R.string.income_mode_title);
+    private void setupHeaderActions() {
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnAction.setText(R.string.label_add);

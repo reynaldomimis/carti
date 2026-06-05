@@ -79,6 +79,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     }
 
     private void forceLogout() {
+        RealtimeRepository.getInstance(this).stopListening();
         viewModel.forceLogout();
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -111,9 +112,23 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         RealtimeRepository.getInstance(this).startListening();
         setupBackPress();
 
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                setBottomNavVisibility(false);
+            } else {
+                boolean show = activeFragment != chatFragment && activeFragment != profileFragment;
+                setBottomNavVisibility(show);
+            }
+        });
+
         if (getIntent().getBooleanExtra("show_home", false)) {
             navigateTo(Constants.Navigation.HOME);
         }
+
+        getBinding().bottomNavContainer.setVisibility(View.INVISIBLE);
+        getBinding().bottomNavContainer.setAlpha(0f);
+        getBinding().bottomNavContainer.setTranslationY(200f);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> setBottomNavVisibility(true), 200);
     }
 
     private void setupFragments() {
@@ -214,12 +229,14 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             } else if (id == Constants.Navigation.CHAT) {
                 target = chatFragment;
                 setTabActive(getBinding().tabChat);
+                showBottomNav = false;
             } else if (id == Constants.Navigation.PLAN) {
                 target = planFragment;
                 setTabActive(getBinding().tabPlan);
             } else if (id == Constants.Navigation.PROFILE) {
                 target = profileFragment;
                 setTabActive(getBinding().tabProfile);
+                showBottomNav = false;
             } else if (id == Constants.Navigation.INCOME) {
                 target = new com.upreyvan.carti.ui.track.IncomeModeFragment();
                 setTabActive(getBinding().tabExpenses);
@@ -230,6 +247,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         }
 
         if (target != null && target != activeFragment) {
+            getSupportFragmentManager().popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
             int enterAnim, exitAnim;
@@ -259,13 +277,10 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     public void setBottomNavVisibility(boolean show) {
         if (getBinding().bottomNavContainer == null) return;
 
-        boolean isCurrentlyVisible = getBinding().bottomNavContainer.getVisibility() == android.view.View.VISIBLE;
-        if (show == isCurrentlyVisible) return;
-
         if (show) {
+            if (getBinding().bottomNavContainer.getVisibility() == android.view.View.VISIBLE && getBinding().bottomNavContainer.getAlpha() == 1f) return;
+            
             getBinding().bottomNavContainer.setVisibility(android.view.View.VISIBLE);
-            getBinding().bottomNavContainer.setAlpha(0f);
-            getBinding().bottomNavContainer.setTranslationY(100f);
             getBinding().bottomNavContainer.animate()
                     .alpha(1f)
                     .translationY(0)
@@ -273,6 +288,8 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                     .setInterpolator(new android.view.animation.OvershootInterpolator(1.1f))
                     .start();
         } else {
+            if (getBinding().bottomNavContainer.getVisibility() == android.view.View.GONE) return;
+
             getBinding().bottomNavContainer.animate()
                     .alpha(0f)
                     .translationY(100f)
@@ -282,15 +299,33 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isInit) {
+            RealtimeRepository.getInstance(this).stopListening();
+        }
+    }
+
     private void setupBackPress() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (activeFragment == profileFragment || activeFragment == chatFragment) {
+                if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
+                    return;
+                }
+
+                if (activeFragment != homeFragment) {
                     navigateTo(Constants.Navigation.HOME);
-                } else if (activeFragment != homeFragment) {
-                    navigateTo(Constants.Navigation.HOME);
-                } else {
+                    getSupportFragmentManager().beginTransaction()
+                            .hide(activeFragment)
+                            .show(homeFragment)
+                            .commit();
+                    activeFragment = homeFragment;
+                    setTabActive(getBinding().tabHome);
+                    setBottomNavVisibility(true);
+                } else if (activeFragment == homeFragment) {
                     new MaterialAlertDialogBuilder(MainActivity.this)
                             .setTitle("Exit")
                             .setMessage("Are you sure you want to exit?")

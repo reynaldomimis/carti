@@ -41,6 +41,7 @@ public class DateHelper {
         } catch (Exception e) {
             try {
                 SimpleDateFormat parser = new SimpleDateFormat(ISO_FORMAT_SHORT, Locale.US);
+                parser.setTimeZone(TimeZone.getTimeZone("UTC"));
                 return parser.parse(isoDate);
             } catch (Exception e2) {
                 return null;

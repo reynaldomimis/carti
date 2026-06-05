@@ -1,6 +1,5 @@
 package com.upreyvan.carti.ui.home;
 
-import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -16,7 +15,7 @@ public class ReactorAdapter extends BaseAdapter<Reactor, ItemReactorBinding> {
     public ReactorAdapter() {
         super(Reactor.DIFF_CALLBACK,
                 (inflater, parent) -> ItemReactorBinding.inflate(inflater, parent, false),
-                (binding, item) -> {
+                (binding, item, position, count) -> {
                     binding.tvUsername.setText(item.getUsername());
                     binding.tvEmoji.setText(item.getEmoji());
 

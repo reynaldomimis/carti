@@ -59,6 +59,9 @@ public class BreakdownExpenseFragment extends BaseFragment<FragmentBreakdownExpe
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (getActivity() instanceof com.upreyvan.carti.MainActivity main) {
+            main.setBottomNavVisibility(false);
+        }
         transactionRepository = TransactionRepository.getInstance(requireContext());
         
         setupToolbar(getBinding().layoutToolbar, "Expense Breakdown");

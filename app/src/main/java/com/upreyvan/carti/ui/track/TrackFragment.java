@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.BaseMultiItem;
 import com.upreyvan.carti.data.local.CategoryManager;
+import com.upreyvan.carti.databinding.FragmentTrackBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.TransactionWithUser;
@@ -23,13 +24,13 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TrackFragment extends BaseFragment<com.upreyvan.carti.databinding.FragmentTrackBinding> implements TrackListItem.OnTrackInteractionListener {
+public class TrackFragment extends BaseFragment<FragmentTrackBinding> implements TrackListItem.OnTrackInteractionListener {
     private com.upreyvan.carti.base.BaseMultiAdapter trackAdapter;
     private TrackViewModel viewModel;
     private final RecyclerView.RecycledViewPool sharedPool = new RecyclerView.RecycledViewPool();
 
-    @Override protected com.upreyvan.carti.databinding.FragmentTrackBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
-        return com.upreyvan.carti.databinding.FragmentTrackBinding.inflate(inflater, container, false);
+    @Override protected FragmentTrackBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        return FragmentTrackBinding.inflate(inflater, container, false);
     }
 
     @Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -67,7 +68,9 @@ public class TrackFragment extends BaseFragment<com.upreyvan.carti.databinding.F
     @Override public void onToggleAllocation() { viewModel.toggleExpansion(); }
     @Override public void onSeeAllTransactions() { navigateTo(AllTransactionsFragment.newInstance("EXPENSE")); }
     @Override public void onTransactionLike(TransactionWithUser item) { viewModel.toggleLike(item); }
+    @Override public void onTransactionReaction(TransactionWithUser item, String emoji) { viewModel.toggleReaction(item, emoji); }
     @Override public void onTransactionComment(TransactionWithUser item) { CommentsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Comments"); }
+    @Override public void onViewLikes(TransactionWithUser item) { com.upreyvan.carti.ui.home.ReactionsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Reactions"); }
     @Override public void onTransactionClick(TransactionWithUser item) {}
     
     @Override public Category findCategory(String name) {

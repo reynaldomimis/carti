@@ -45,7 +45,7 @@ public class HomeViewModel extends BaseViewModel {
     private List<TransactionWithUser> currentTransactions;
     private List<BudgetCategoryItem> currentPlan;
 
-    private Double curInc = 0.0, curExp = 0.0, lstInc = 0.0, lstExp = 0.0;
+    private Double curInc = 0.0, curExp = 0.0, lstInc = 0.0, lstExp = 0.0, totalBal = 0.0;
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
@@ -74,6 +74,7 @@ public class HomeViewModel extends BaseViewModel {
         long lstStart = Utils.getMonthStartMillis(lastMonth);
         long lstEnd = Utils.getMonthEndMillis(lastMonth);
 
+        dataTrigger.addSource(transRepo.getBalance(), v -> { totalBal = v; updateDash(); rebuild(); });
         dataTrigger.addSource(transRepo.getTotalIncomeInRange(curStart, curEnd), v -> { curInc = v; updateDash(); rebuild(); });
         dataTrigger.addSource(transRepo.getTotalExpenseInRange(curStart, curEnd), v -> { curExp = v; updateDash(); rebuild(); });
         dataTrigger.addSource(transRepo.getTotalIncomeInRange(lstStart, lstEnd), v -> { lstInc = v; updateDash(); rebuild(); });
@@ -88,7 +89,8 @@ public class HomeViewModel extends BaseViewModel {
         double exp = curExp != null ? curExp : 0.0;
         double lInc = lstInc != null ? lstInc : 0.0;
         double lExp = lstExp != null ? lstExp : 0.0;
-        this.currentDash = new DashboardState(pref.getBalance(), inc, exp, inc - exp, calculateTrend(inc, lInc), calculateTrend(exp, lExp), calculateTrend(inc - exp, lInc - lExp));
+        double bal = totalBal != null ? totalBal : 0.0;
+        this.currentDash = new DashboardState(bal, inc, exp, inc - exp, calculateTrend(inc, lInc), calculateTrend(exp, lExp), calculateTrend(inc - exp, lInc - lExp));
     }
 
     private void rebuild() {
@@ -126,5 +128,9 @@ public class HomeViewModel extends BaseViewModel {
 
     public void toggleLike(TransactionWithUser item) {
         transRepo.toggleLike(item, "👍");
+    }
+
+    public void toggleReaction(TransactionWithUser item, String emoji) {
+        transRepo.toggleLike(item, emoji);
     }
 }

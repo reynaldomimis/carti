@@ -25,6 +25,7 @@ import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.TrackCategory;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.ValueHelper;
 import java.util.ArrayList;
@@ -39,7 +40,9 @@ public interface TrackListItem extends BaseMultiItem {
         void onToggleAllocation();
         void onSeeAllTransactions();
         void onTransactionLike(TransactionWithUser item);
+        void onTransactionReaction(TransactionWithUser item, String emoji);
         void onTransactionComment(TransactionWithUser item);
+        void onViewLikes(TransactionWithUser item);
         void onTransactionClick(TransactionWithUser item);
         Category findCategory(String name);
         List<BudgetCategoryItem> getAllocations();
@@ -359,7 +362,8 @@ public interface TrackListItem extends BaseMultiItem {
                 }
 
                 if (commentCount > 0) {
-                    b.tvCommentsCountSummary.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                    String commentText = commentCount == 1 ? "1 comment" : commentCount + " comments";
+                    b.tvCommentsCountSummary.setText(commentText);
                     b.tvCommentsCountSummary.setVisibility(View.VISIBLE);
                 } else {
                     b.tvCommentsCountSummary.setVisibility(View.GONE);
@@ -370,6 +374,16 @@ public interface TrackListItem extends BaseMultiItem {
             }
 
             b.btnLike.setOnClickListener(v -> listener.onTransactionLike(transaction));
+            b.btnLike.setOnLongClickListener(v -> {
+                DialogHelper.showEmojiPicker(b.btnLike, emoji ->
+                    listener.onTransactionReaction(transaction, emoji));
+                return true;
+            });
+
+            b.layoutReactionsSummary.setOnClickListener(v -> listener.onViewLikes(transaction));
+            b.tvLikesCount.setOnClickListener(v -> listener.onViewLikes(transaction));
+            b.tvCommentsCountSummary.setOnClickListener(v -> listener.onTransactionComment(transaction));
+
             b.btnComment.setOnClickListener(v -> listener.onTransactionComment(transaction));
             b.getRoot().setOnClickListener(v -> listener.onTransactionClick(transaction));
         }

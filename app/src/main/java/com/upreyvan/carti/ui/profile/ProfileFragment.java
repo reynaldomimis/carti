@@ -17,6 +17,7 @@ import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.db.AppDatabase;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentProfileBinding;
 import com.upreyvan.carti.model.ProfileMenuItem;
 import com.upreyvan.carti.ui.auth.LoginActivity;
@@ -47,7 +48,7 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
         super.onViewCreated(view, savedInstanceState);
 
         if (getActivity() instanceof MainActivity main) {
-            main.setBottomNavVisibility(true);
+            main.setBottomNavVisibility(false);
         }
 
         apiHelper = new ApiHelper(requireContext());
@@ -73,6 +74,7 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
     }
 
     private void finishLogout() {
+        RealtimeRepository.getInstance(requireContext()).stopListening();
         new Thread(() -> {
             AppDatabase.getInstance(requireContext()).clearAllTables();
             requireActivity().runOnUiThread(() -> {
@@ -86,11 +88,10 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
     }
 
     private void setupToolbar() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.profile_title);
-        getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            requireActivity().onBackPressed();
-        });
+        com.upreyvan.carti.databinding.LayoutCustomToolbarBinding b = getBinding().layoutToolbar;
+        b.tvToolbarTitle.setText(R.string.profile_title);
+        b.backButtonContainer.setVisibility(View.VISIBLE);
+        b.backButtonContainer.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
     }
 
     private void setupMenuItems() {
@@ -103,13 +104,20 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
         menuItems.add(new ProfileMenuItem(android.R.drawable.ic_menu_info_details, R.string.menu_about, getString(R.string.menu_about_sub), AboutFragment.class, false));
 
         adapter = new ProfileMenuAdapter(item -> {
-            if (item.getFragmentClass() != null) {
-                try {
-                    navigateTo(item.getFragmentClass().getDeclaredConstructor().newInstance());
-                } catch (Exception e) {
-                    android.util.Log.e("CARTI_DEBUG", "Fragment creation failed", e);
-                }
-            }
+            if (item.getFragmentClass() == null) return;
+            
+            androidx.fragment.app.Fragment target;
+            Class<?> cls = item.getFragmentClass();
+            
+            if (cls == MembersFragment.class) target = new MembersFragment();
+            else if (cls == IncomeModeFragment.class) target = new IncomeModeFragment();
+            else if (cls == SecurityFragment.class) target = new SecurityFragment();
+            else if (cls == SettingsFragment.class) target = new SettingsFragment();
+            else if (cls == HelpFragment.class) target = new HelpFragment();
+            else if (cls == AboutFragment.class) target = new AboutFragment();
+            else return;
+
+            navigateTo(target);
         });
         adapter.submitList(menuItems);
         getBinding().rvProfileMenu.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -143,7 +151,8 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
         }
         getParentFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right)
-                .replace(R.id.fragment_container, fragment)
+                .add(R.id.fragment_container, fragment)
+                .hide(this)
                 .addToBackStack(null)
                 .commit();
     }

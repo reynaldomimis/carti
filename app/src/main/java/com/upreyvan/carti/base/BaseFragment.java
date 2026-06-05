@@ -37,7 +37,7 @@ public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
 
     protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding b, String t) {
         b.tvToolbarTitle.setText(t);
-        b.btnBack.setOnClickListener(v -> { if (getActivity() != null) getActivity().onBackPressed(); });
+        b.backButtonContainer.setOnClickListener(v -> { if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed(); });
     }
 
     protected void setupToolbar(com.upreyvan.carti.databinding.LayoutCustomToolbarBinding b, int res) { setupToolbar(b, getString(res)); }

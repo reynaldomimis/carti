@@ -28,6 +28,12 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] = "$projectDir/schemas"
+            }
+        }
+
         buildConfigField("String", "APPWRITE_PROJECT_ID", "\"${secrets.getProperty("APPWRITE_PROJECT_ID", "")}\"")
         buildConfigField("String", "APPWRITE_ENDPOINT", "\"${secrets.getProperty("APPWRITE_ENDPOINT", "")}\"")
         buildConfigField("String", "APPWRITE_ENDPOINT_FUNCTION", "\"${secrets.getProperty("APPWRITE_ENDPOINT_FUNCTION", "")}\"")

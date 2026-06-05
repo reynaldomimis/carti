@@ -15,15 +15,35 @@ import com.upreyvan.carti.model.BudgetAllocation;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.Utils;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AllocateAdapter extends ListAdapter<BudgetAllocation, AllocateAdapter.ParentViewHolder> {
     private boolean isTrackMode = false;
 
     public AllocateAdapter() { super(BudgetAllocation.DIFF_CALLBACK); }
-    public void setTrackMode(boolean track) { this.isTrackMode = track; notifyDataSetChanged(); }
 
-    @NonNull @Override public ParentViewHolder onCreateViewHolder(@NonNull ViewGroup p, int vt) { return new ParentViewHolder(ItemAllocationParentBinding.inflate(LayoutInflater.from(p.getContext()), p, false)); }
-    @Override public void onBindViewHolder(@NonNull ParentViewHolder h, int pos) { h.bind(getItem(pos)); }
+    public void setTrackMode(boolean track) { 
+        this.isTrackMode = track; 
+        submitList(new ArrayList<>(getCurrentList()));
+    }
+
+    @NonNull @Override public ParentViewHolder onCreateViewHolder(@NonNull ViewGroup p, int vt) { 
+        return new ParentViewHolder(ItemAllocationParentBinding.inflate(LayoutInflater.from(p.getContext()), p, false)); 
+    }
+
+    @Override public void onBindViewHolder(@NonNull ParentViewHolder h, int pos) { 
+        h.bind(getItem(pos)); 
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ParentViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads);
+        } else {
+            holder.bind(getItem(position));
+        }
+    }
 
     class ParentViewHolder extends RecyclerView.ViewHolder {
         private final ItemAllocationParentBinding b;
@@ -34,7 +54,9 @@ public class AllocateAdapter extends ListAdapter<BudgetAllocation, AllocateAdapt
             b.ivIcon.setImageResource(item.getIconRes());
             b.cvIcon.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), item.getThemeColor()));
             b.tvAmountLabel.setText(String.format("%s / %s", StringHelper.formatCompactCurrency(item.getCurrentSpent()), StringHelper.formatCompactCurrency(item.getAllocatedAmount())));
-            b.pbAllocation.setProgress((int) ((item.getCurrentSpent() / item.getAllocatedAmount()) * 100));
+            
+            int progress = item.getAllocatedAmount() > 0 ? (int) ((item.getCurrentSpent() / item.getAllocatedAmount()) * 100) : 0;
+            b.pbAllocation.setProgress(progress);
 
             boolean expandable = isTrackMode ? item.hasExpenses() : item.hasSubAllocations();
             b.ivArrow.setVisibility(expandable ? View.VISIBLE : View.GONE);
@@ -44,16 +66,24 @@ public class AllocateAdapter extends ListAdapter<BudgetAllocation, AllocateAdapt
                 if (item.isExpanded()) {
                     if (isTrackMode) setupExpenseChildren(item); else setupSubChildren(item);
                 }
-            } else b.rvSubAllocations.setVisibility(View.GONE);
+            } else {
+                b.rvSubAllocations.setVisibility(View.GONE);
+            }
 
-            b.cardParent.setOnClickListener(v -> { if (expandable) { item.setExpanded(!item.isExpanded()); notifyItemChanged(getAdapterPosition()); } });
+            b.cardParent.setOnClickListener(v -> { 
+                if (expandable) { 
+                    item.setExpanded(!item.isExpanded()); 
+                    notifyItemChanged(getAdapterPosition(), "EXPAND"); 
+                } 
+            });
         }
 
         private void setupSubChildren(BudgetAllocation p) {
             GenericAdapter<BudgetAllocation, ItemAllocationChildBinding> adapter = new GenericAdapter<>(BudgetAllocation.DIFF_CALLBACK, (i, c) -> ItemAllocationChildBinding.inflate(i, c, false), (bi, child) -> {
                 bi.tvTitle.setText(child.getTitle());
                 bi.tvAmount.setText(Utils.formatCurrency(child.getAllocatedAmount()));
-                bi.pbAllocation.setProgress((int) ((child.getCurrentSpent() / child.getAllocatedAmount()) * 100));
+                int progress = child.getAllocatedAmount() > 0 ? (int) ((child.getCurrentSpent() / child.getAllocatedAmount()) * 100) : 0;
+                bi.pbAllocation.setProgress(progress);
             });
             b.rvSubAllocations.setLayoutManager(new LinearLayoutManager(itemView.getContext())); b.rvSubAllocations.setAdapter(adapter);
             adapter.submitList(p.getSubAllocations());

@@ -106,61 +106,79 @@ public class TransactionRepository {
 
     public LiveData<TransactionWithUser> getTransactionById(String id) { return localDataSource.getTransactionById(id, pref.getUserId()); }
 
-    public void addTransaction(Transaction transaction, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("amount", transaction.getAmount());
-        params.put("type", transaction.getType());
-        params.put("category", transaction.getCategory());
-        params.put("title", transaction.getTitle());
-        params.put("note", transaction.getNote());
-        params.put("userId", pref.getUserId());
-        params.put("familyId", pref.getFamilyId());
-        params.put("username", pref.getUsername());
-        params.put("status", transaction.getStatus());
-        params.put("isPaid", transaction.isPaid());
-        params.put("iconRes", transaction.getIconRes());
-        params.put("iconUrl", transaction.getIconUrl());
-        
-        if (transaction.getTargetAmount() > 0) params.put("targetAmount", transaction.getTargetAmount());
-        if (transaction.getTargetDate() != null) params.put("targetDate", transaction.getTargetDate());
-        if (transaction.getMembers() != null && !transaction.getMembers().isEmpty()) params.put("members", transaction.getMembers());
-        if (transaction.getAllocatedTo() != null) params.put("allocatedTo", transaction.getAllocatedTo());
-        if (transaction.getAllocationMonth() != null) params.put("allocationMonth", transaction.getAllocationMonth());
-        
-        remoteDataSource.addTransaction(params, callback);
+    public void addTransaction(Transaction t, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        remoteDataSource.addTransaction(mapTransactionFields(t), callback);
     }
 
     public void addTransaction(double amount, String type, String category, String note, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Transaction t = new Transaction(); 
-        t.setAmount(amount); 
-        t.setType(type); 
-        t.setCategory(category); 
+        Transaction t = new Transaction();
+        t.setAmount(amount);
+        t.setType(type);
+        t.setCategory(category);
         t.setTitle(note != null && !note.isEmpty() ? note : category);
         t.setNote(note);
         addTransaction(t, callback);
     }
 
-    public void updateTransaction(Transaction transaction, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("title", transaction.getTitle());
-        data.put("amount", transaction.getAmount());
-        data.put("type", transaction.getType());
-        data.put("category", transaction.getCategory());
-        data.put("note", transaction.getNote());
-        data.put("targetAmount", transaction.getTargetAmount());
-        data.put("targetDate", transaction.getTargetDate());
-        data.put("members", transaction.getMembers());
-        data.put("status", transaction.getStatus());
-        data.put("isPaid", transaction.isPaid());
-        data.put("iconRes", transaction.getIconRes());
-        data.put("iconUrl", transaction.getIconUrl());
-        data.put("allocatedTo", transaction.getAllocatedTo());
-        data.put("allocationMonth", transaction.getAllocationMonth());
-
-        remoteDataSource.updateTransaction(transaction.getId(), data, new AppwriteManager.AppwriteCallback<>() {
-            @Override public void onSuccess(Map<String, Object> result) { executor.execute(() -> localDataSource.saveTransactions(Collections.singletonList(transaction))); if (callback != null) callback.onSuccess(result); }
+    public void updateTransaction(Transaction t, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        remoteDataSource.updateTransaction(t.getId(), mapTransactionFields(t), new AppwriteManager.AppwriteCallback<>() {
+            @Override public void onSuccess(Map<String, Object> result) {
+                executor.execute(() -> localDataSource.saveTransactions(Collections.singletonList(t)));
+                if (callback != null) callback.onSuccess(result);
+            }
             @Override public void onError(Throwable error) { if (callback != null) callback.onError(error); }
         });
+    }
+
+    private Map<String, Object> mapTransactionFields(Transaction t) {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("amount", t.getAmount());
+        fields.put("type", t.getType());
+        fields.put("title", t.getTitle());
+        fields.put("note", t.getNote());
+        fields.put("userId", pref.getUserId());
+        fields.put("familyId", pref.getFamilyId());
+        fields.put("username", pref.getUsername());
+        fields.put("startDate", t.getStartDate() != null ? t.getStartDate() : Utils.getCurrentTimestamp());
+
+        String type = t.getType() != null ? t.getType().toUpperCase() : "EXPENSE";
+
+        switch (type) {
+            case "INCOME" -> {
+                fields.put("category", t.getCategory() != null ? t.getCategory() : "Income");
+                fields.put("iconRes", t.getIconRes());
+                fields.put("iconUrl", t.getIconUrl());
+            }
+            case "ALLOCATION" -> {
+                fields.put("category", t.getCategory() != null ? t.getCategory() : "Allocation");
+                fields.put("allocatedTo", t.getAllocatedTo());
+                fields.put("allocationMonth", t.getAllocationMonth());
+            }
+            case "GOAL" -> {
+                fields.put("targetAmount", t.getTargetAmount());
+                fields.put("targetDate", t.getTargetDate());
+                fields.put("status", t.getStatus() != null ? t.getStatus() : "active");
+                fields.put("iconRes", t.getIconRes());
+                fields.put("iconUrl", t.getIconUrl());
+            }
+            case "DEBT" -> {
+                fields.put("category", t.getCategory() != null ? t.getCategory() : "Debt");
+                fields.put("targetDate", t.getTargetDate());
+                fields.put("isPaid", t.isPaid());
+                fields.put("status", t.getStatus() != null ? t.getStatus() : "unpaid");
+            }
+            default -> {
+                fields.put("category", t.getCategory() != null ? t.getCategory() : "General");
+                fields.put("iconRes", t.getIconRes());
+                fields.put("iconUrl", t.getIconUrl());
+            }
+        }
+
+        if (t.getMembers() != null && !t.getMembers().isEmpty()) {
+            fields.put("members", t.getMembers());
+        }
+
+        return fields;
     }
 
     public void deleteTransaction(String id, AppwriteManager.AppwriteCallback<Object> callback) {
@@ -187,6 +205,8 @@ public class TransactionRepository {
 
     public void refreshTransactions() { performIncrementalSync(); }
     public LiveData<Double> getTotalIncome() { return AppDatabase.getInstance(pref.getContext()).transactionDao().getTotalIncome(pref.getFamilyId()); }
+    public LiveData<Double> getTotalExpense() { return AppDatabase.getInstance(pref.getContext()).transactionDao().getTotalExpense(pref.getFamilyId()); }
+    public LiveData<Double> getBalance() { return AppDatabase.getInstance(pref.getContext()).transactionDao().getBalance(pref.getFamilyId()); }
     public LiveData<Double> getTotalIncomeInRange(long start, long end) { return AppDatabase.getInstance(pref.getContext()).transactionDao().getTotalIncomeInRange(pref.getFamilyId(), start, end); }
     public LiveData<Double> getTotalExpenseInRange(long start, long end) { return AppDatabase.getInstance(pref.getContext()).transactionDao().getTotalExpenseInRange(pref.getFamilyId(), start, end); }
     public void unlikeTransaction(String likeId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) { remoteDataSource.removeLike(likeId, callback); }

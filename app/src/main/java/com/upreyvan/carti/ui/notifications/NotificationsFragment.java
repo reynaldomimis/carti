@@ -175,7 +175,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.notifications_title);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
+            if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
         
         if (pref.isAdmin()) {

@@ -2,9 +2,10 @@ package com.upreyvan.carti.model;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "likes")
+@Entity(tableName = "likes", indices = {@Index("transactionId")})
 public class Like {
     @PrimaryKey
     @NonNull

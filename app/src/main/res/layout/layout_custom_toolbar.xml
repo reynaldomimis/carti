@@ -14,6 +14,7 @@
         android:layout_height="@dimen/back_button_size"
         android:clickable="true"
         android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         app:cardBackgroundColor="@color/surface_variant"
         app:cardCornerRadius="@dimen/radius_medium"
         app:cardElevation="0dp"
@@ -22,14 +23,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.button.MaterialButton
+        <ImageView
             android:id="@+id/btn_back"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@null"
-            app:icon="@drawable/ic_back"
-            app:iconTint="@color/text_primary" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_back"
+            app:tint="@color/text_primary" />
 
     </com.google.android.material.card.MaterialCardView>
 

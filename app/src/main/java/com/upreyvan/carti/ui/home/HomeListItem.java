@@ -32,7 +32,9 @@ public interface HomeListItem extends BaseMultiItem {
         void onQuickLogLongClick(QuickLogItem item);
         void onTransactionClick(TransactionWithUser item);
         void onTransactionLike(TransactionWithUser item);
+        void onTransactionReaction(TransactionWithUser item, String emoji);
         void onTransactionComment(TransactionWithUser item);
+        void onViewLikes(TransactionWithUser item);
         void onSeeAllTransactions();
     }
 
@@ -330,7 +332,8 @@ public interface HomeListItem extends BaseMultiItem {
                 }
 
                 if (commentCount > 0) {
-                    b.tvCommentsCountSummary.setText(String.format(java.util.Locale.getDefault(), "%d comments", commentCount));
+                    String commentText = commentCount == 1 ? "1 comment" : commentCount + " comments";
+                    b.tvCommentsCountSummary.setText(commentText);
                     b.tvCommentsCountSummary.setVisibility(View.VISIBLE);
                 } else {
                     b.tvCommentsCountSummary.setVisibility(View.GONE);
@@ -341,6 +344,16 @@ public interface HomeListItem extends BaseMultiItem {
             }
 
             b.btnLike.setOnClickListener(v -> listener.onTransactionLike(transaction));
+            b.btnLike.setOnLongClickListener(v -> {
+                com.upreyvan.carti.util.DialogHelper.showEmojiPicker(b.btnLike, emoji ->
+                    listener.onTransactionReaction(transaction, emoji));
+                return true;
+            });
+            
+            b.layoutReactionsSummary.setOnClickListener(v -> listener.onViewLikes(transaction));
+            b.tvLikesCount.setOnClickListener(v -> listener.onViewLikes(transaction));
+            b.tvCommentsCountSummary.setOnClickListener(v -> listener.onTransactionComment(transaction));
+
             b.btnComment.setOnClickListener(v -> listener.onTransactionComment(transaction));
             b.getRoot().setOnClickListener(v -> listener.onTransactionClick(transaction));
         }

@@ -93,7 +93,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
     @Override public void onQuickLogLongClick(com.upreyvan.carti.model.QuickLogItem item) { startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class)); }
     @Override public void onTransactionClick(com.upreyvan.carti.model.TransactionWithUser item) {}
     @Override public void onTransactionLike(com.upreyvan.carti.model.TransactionWithUser item) { viewModel.toggleLike(item); }
+    @Override public void onTransactionReaction(com.upreyvan.carti.model.TransactionWithUser item, String emoji) { viewModel.toggleReaction(item, emoji); }
     @Override public void onTransactionComment(com.upreyvan.carti.model.TransactionWithUser item) { com.upreyvan.carti.ui.home.CommentsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Comments"); }
+    @Override public void onViewLikes(com.upreyvan.carti.model.TransactionWithUser item) { ReactionsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Reactions"); }
     @Override public void onSeeAllTransactions() { navigateTo(AllTransactionsFragment.newInstance(null)); }
     @Override public void onResume() { super.onResume(); if (!isHidden()) viewModel.refreshData(); }
 }

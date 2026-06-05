@@ -14,6 +14,7 @@ import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.Constants;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import io.appwrite.models.RealtimeSubscription;
@@ -35,10 +36,10 @@ public class RealtimeRepository {
     private final MutableLiveData<Map<String, Object>> debtStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> notificationStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> userUpdateStream = new MutableLiveData<>();
-    private final MutableLiveData<Map<String, Object>> familyStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> chatStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> incomeStream = new MutableLiveData<>();
     private final MutableLiveData<Map<String, Object>> commentStream = new MutableLiveData<>();
+    private final MutableLiveData<Map<String, Object>> likeStream = new MutableLiveData<>();
 
     private RealtimeRepository(Context context) {
         this.context = context.getApplicationContext();
@@ -79,12 +80,14 @@ public class RealtimeRepository {
 
             if (!isGlobal && !familyId.equals(payloadFamilyId)) return;
 
-            if (path.contains(Constants.Appwrite.COL_LIKES)) handleLikeEvent(path, payload);
+            if (path.contains(Constants.Appwrite.COL_LIKES)) {
+                handleLikeEvent(path, payload);
+                likeStream.postValue(payload);
+            }
             else if (isTransactionCollection(path)) handleTransactionEvent(path, payload);
             else if (path.contains(Constants.Appwrite.COL_NOTIFICATIONS)) notificationStream.postValue(payload);
             else if (path.contains(Constants.Appwrite.COL_MESSAGES)) chatStream.postValue(payload);
             else if (path.contains(Constants.Appwrite.COL_USERS)) userUpdateStream.postValue(payload);
-            else if (path.contains(Constants.Appwrite.COL_FAMILIES)) familyStream.postValue(payload);
             else if (path.contains(Constants.Appwrite.COL_COMMENTS)) commentStream.postValue(payload);
         });
     }
@@ -96,9 +99,17 @@ public class RealtimeRepository {
     private void handleTransactionEvent(String path, Map<String, Object> payload) {
         executor.execute(() -> {
             try {
+                String id = String.valueOf(payload.get("$id"));
                 if (path.endsWith(".delete")) {
-                    localDataSource.deleteTransactionById(String.valueOf(payload.get("$id")));
+                    localDataSource.deleteTransactionById(id);
                 } else {
+                    String remoteUpdated = String.valueOf(payload.get("$updatedAt"));
+                    Transaction existing = AppDatabase.getInstance(context).transactionDao().getTransactionByIdRawSync(id);
+                    
+                    if (existing != null && Objects.equals(existing.getUpdatedAt(), remoteUpdated)) {
+                        return;
+                    }
+
                     Transaction t = Transaction.fromPayload(payload, pref.getFamilyId(), context, pref.getUserId());
                     if (t != null) localDataSource.saveTransactions(java.util.Collections.singletonList(t));
                 }
@@ -143,10 +154,10 @@ public class RealtimeRepository {
     public LiveData<Map<String, Object>> getDebtStream() { return debtStream; }
     public LiveData<Map<String, Object>> getNotificationStream() { return notificationStream; }
     public LiveData<Map<String, Object>> getUserUpdateStream() { return userUpdateStream; }
-    public LiveData<Map<String, Object>> getFamilyStream() { return familyStream; }
     public LiveData<Map<String, Object>> getChatStream() { return chatStream; }
     public LiveData<Map<String, Object>> getIncomeStream() { return incomeStream; }
     public LiveData<Map<String, Object>> getCommentStream() { return commentStream; }
+    public LiveData<Map<String, Object>> getLikeStream() { return likeStream; }
 
     public Context getContext() { return context; }
 

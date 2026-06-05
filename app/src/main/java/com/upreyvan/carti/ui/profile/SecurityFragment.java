@@ -35,17 +35,18 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
         appwriteManager = AppwriteManager.getInstance(requireContext());
         apiHelper = new ApiHelper(requireContext());
         pref = PreferenceManager.getInstance(requireContext());
-
+        
         setupToolbar();
         setupListeners();
     }
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.security_title);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
     }
 
     private void setupListeners() {
@@ -92,32 +93,6 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
                 if (!isAdded()) return;
                 getBinding().btnResetPassword.setEnabled(true);
                 Toast.makeText(requireContext(), R.string.msg_password_updated, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (!isAdded()) return;
-                getBinding().btnResetPassword.setEnabled(true);
-                Toast.makeText(requireContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void sendResetLink() {
-        String email = pref.getUserEmail();
-        if (email.isEmpty()) {
-            Toast.makeText(requireContext(), "Email not found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        getBinding().btnResetPassword.setEnabled(false);
-        
-        appwriteManager.createPasswordRecovery(email, new AppwriteManager.AppwriteCallback<Object>() {
-            @Override
-            public void onSuccess(Object result) {
-                if (!isAdded()) return;
-                getBinding().btnResetPassword.setEnabled(true);
-                Toast.makeText(requireContext(), R.string.msg_reset_link_sent, Toast.LENGTH_LONG).show();
             }
 
             @Override

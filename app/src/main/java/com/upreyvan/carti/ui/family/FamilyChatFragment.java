@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
@@ -45,7 +44,9 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
 
         getBinding().btnBackContainer.setOnClickListener(v -> {
             Utils.hideKeyboard(requireContext(), getBinding().layoutInput.etInput);
-            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+            if (getActivity() != null) {
+                getActivity().getOnBackPressedDispatcher().onBackPressed();
+            }
         });
     }
 
@@ -217,8 +218,5 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
     public void onDestroyView() {
         super.onDestroyView();
         if (voiceToTextHelper != null) voiceToTextHelper.destroy();
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).setBottomNavVisibility(true);
-        }
     }
 }

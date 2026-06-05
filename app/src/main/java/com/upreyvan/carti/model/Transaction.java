@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.room.Entity;
 import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
@@ -19,7 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@Entity(tableName = "transactions")
+@Entity(tableName = "transactions", indices = {
+        @Index("familyId"),
+        @Index("userId"),
+        @Index("type")
+})
 @TypeConverters(Converters.class)
 public class Transaction {
     @PrimaryKey
@@ -198,6 +203,8 @@ public class Transaction {
         return Double.compare(that.amount, amount) == 0 &&
                 Double.compare(that.targetAmount, targetAmount) == 0 &&
                 isPaid == that.isPaid &&
+                likesCount == that.likesCount &&
+                commentCount == that.commentCount &&
                 Objects.equals(id, that.id) &&
                 Objects.equals(type, that.type) &&
                 Objects.equals(title, that.title) &&
@@ -208,7 +215,7 @@ public class Transaction {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, amount, title, note, category, status);
+        return Objects.hash(id, type, amount, title, note, category, status, likesCount, commentCount);
     }
 
     public static final DiffUtil.ItemCallback<Transaction> DIFF_CALLBACK = new DiffUtil.ItemCallback<Transaction>() {

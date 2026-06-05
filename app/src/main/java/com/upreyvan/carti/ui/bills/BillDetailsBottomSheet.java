@@ -6,6 +6,8 @@ import com.upreyvan.carti.base.BaseActionBottomSheet;
 import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.LayoutBaseActionBottomSheetBinding;
+import com.upreyvan.carti.util.Constants;
+
 import java.util.Map;
 
 public class BillDetailsBottomSheet extends BaseActionBottomSheet {
@@ -70,15 +72,13 @@ public class BillDetailsBottomSheet extends BaseActionBottomSheet {
 
         double amountVal = Double.parseDouble(amount);
         ApiHelper apiHelper = new ApiHelper(requireContext());
-        
-        // 1. Create the transaction
+
         apiHelper.addTransaction(amountVal, "EXPENSE", "Bills", billName + ": " + notes, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
-                // 2. Delete the notification after successful payment
                 AppwriteManager.getInstance(requireContext()).deleteDocument(
-                    com.upreyvan.carti.util.Constants.Appwrite.DATABASE_ID,
-                    com.upreyvan.carti.util.Constants.Appwrite.COL_NOTIFICATIONS,
+                    Constants.Appwrite.DATABASE_ID,
+                    Constants.Appwrite.COL_NOTIFICATIONS,
                     notificationId,
                     new AppwriteManager.AppwriteCallback<Object>() {
                         @Override

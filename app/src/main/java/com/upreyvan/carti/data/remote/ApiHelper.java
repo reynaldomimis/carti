@@ -32,7 +32,7 @@ public class ApiHelper {
     public Context getContext() { return context; }
 
     public void callAction(String action, Map<String, Object> params, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        appwriteManager.callGateway(action, params, new AppwriteManager.AppwriteCallback<Execution>() {
+        appwriteManager.callGateway(action, params, new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(Execution result) {
                 try {
@@ -46,40 +46,40 @@ public class ApiHelper {
 
                     if (isSuccess) {
                         Object data = response.get("data");
-                        if (data instanceof Map) {
-                            callback.onSuccess((Map<String, Object>) data);
-                        } else if (data instanceof List) {
-                            Map<String, Object> wrapper = new HashMap<>();
-                            wrapper.put("list", data);
-                            callback.onSuccess(wrapper);
-                        } else {
-                            callback.onSuccess(new HashMap<>());
-                        }
-                    } else {
-                        String errorMsg = Constants.ErrorCodes.GENERIC_ERROR;
-                        if (response != null && response.containsKey("error")) {
-                            Object errorObj = response.get("error");
-                            if (errorObj instanceof Map) {
-                                Object msg = ((Map<?, ?>) errorObj).get("message");
-                                if (msg != null) errorMsg = String.valueOf(msg);
+                        if (callback != null) {
+                            if (data instanceof Map) {
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> mapData = (Map<String, Object>) data;
+                                callback.onSuccess(mapData);
+                            } else if (data instanceof List) {
+                                Map<String, Object> wrapper = new HashMap<>();
+                                wrapper.put("list", data);
+                                callback.onSuccess(wrapper);
+                            } else {
+                                callback.onSuccess(new HashMap<>());
                             }
                         }
-                        callback.onError(new Exception(errorMsg));
+                    } else {
+                        String msgStr = Constants.ErrorCodes.GENERIC_ERROR;
+                        if (response != null && response.get("error") instanceof Map<?, ?> errorObj) {
+                            Object msg = errorObj.get("message");
+                            if (msg != null) msgStr = String.valueOf(msg);
+                        }
+                        if (callback != null) callback.onError(new Exception(msgStr));
                     }
                 } catch (Exception e) {
                     android.util.Log.e("ApiHelper", "Parse Error", e);
-                    callback.onError(new Exception(Constants.ErrorCodes.PARSE_ERROR));
+                    if (callback != null) callback.onError(new Exception(Constants.ErrorCodes.PARSE_ERROR));
                 }
             }
 
             @Override
             public void onError(Throwable error) {
-                callback.onError(error);
+                if (callback != null) callback.onError(error);
             }
         });
     }
 
-    // ─── AUTH ────────────────────────────────────────────────────────────────
     public void register(String email, String password, String username, boolean isEmployed, String role, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("email", email);
@@ -94,8 +94,6 @@ public class ApiHelper {
         callAction(Constants.Actions.GET_USER, new HashMap<>(), callback);
     }
 
-    // ─── FAMILY ──────────────────────────────────────────────────────────────
-
     public void createFamily(String familyName, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("name", familyName);
@@ -104,7 +102,7 @@ public class ApiHelper {
 
     public void joinFamily(String inviteCode, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("inviteCode", inviteCode.toUpperCase()); // Para laging uppercase
+        params.put("inviteCode", inviteCode.toUpperCase());
         callAction(Constants.Actions.JOIN_FAMILY, params, callback);
     }
 
@@ -122,15 +120,14 @@ public class ApiHelper {
         callAction(Constants.Actions.APPROVE_JOIN, params, callback);
     }
 
-    public void leaveFamily(AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        callAction(Constants.Actions.LEAVE_FAMILY, new HashMap<>(), callback);
-    }
-
     public void deleteAccount(AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         callAction(Constants.Actions.DELETE_ACCOUNT, new HashMap<>(), callback);
     }
 
-    // ─── TRANSACTIONS ────────────────────────────────────────────────────────
+    public void deleteTransaction(String transactionId, AppwriteManager.AppwriteCallback<Object> callback) {
+        appwriteManager.deleteDocument(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, transactionId, callback);
+    }
+
     public void addTransaction(double amount, String type, String category, String note, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("username", pref.getUsername());
@@ -148,25 +145,23 @@ public class ApiHelper {
         callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
     }
 
-    public void deleteTransaction(String transactionId, AppwriteManager.AppwriteCallback<Object> callback) {
-        appwriteManager.deleteDocument(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, transactionId, callback);
-    }
-
     public void getTransactionsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
-        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+        if (familyId.isEmpty()) { if (callback != null) callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
 
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
-        queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
-        queries.add(Query.Companion.orderDesc("$createdAt"));
+        if (sinceTimestamp != null && !sinceTimestamp.isEmpty()) {
+            queries.add(Query.Companion.greaterThan("$updatedAt", sinceTimestamp));
+        }
+        queries.add(Query.Companion.orderDesc("$updatedAt"));
         queries.add(Query.Companion.limit(1000));
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
     public void getTransactionsRange(String startDate, String endDate, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
-        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+        if (familyId.isEmpty()) { if (callback != null) callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
 
         List<String> queries = new ArrayList<>();
         queries.add(Query.Companion.equal("familyId", familyId));
@@ -176,7 +171,6 @@ public class ApiHelper {
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }
 
-    // ─── SOCIAL INTERACTIONS ─────────────────────────────────────────────────
     public void addLike(String transactionId, String emojiType, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("transactionId", transactionId);
@@ -200,6 +194,12 @@ public class ApiHelper {
         callAction(Constants.Actions.ADD_COMMENT, params, callback);
     }
 
+    public void deleteComment(String commentId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("commentId", commentId);
+        callAction(Constants.Actions.DELETE_COMMENT, params, callback);
+    }
+
     public void updateComment(String commentId, String text, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("commentId", commentId);
@@ -207,10 +207,26 @@ public class ApiHelper {
         callAction(Constants.Actions.UPDATE_COMMENT, params, callback);
     }
 
-    public void deleteComment(String commentId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+    public void updateGoalAmount(String goalId, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
-        params.put("commentId", commentId);
-        callAction(Constants.Actions.DELETE_COMMENT, params, callback);
+        params.put("txnId", goalId);
+        params.put("amount", amount);
+        params.put("type", "GOAL");
+        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
+    }
+
+    public void deleteGoal(String goalId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("txnId", goalId);
+        callAction(Constants.Actions.DELETE_TRANSACTION, params, callback);
+    }
+
+    public void markDebtPaid(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("txnId", debtId);
+        params.put("isPaid", true);
+        params.put("type", "DEBT");
+        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
     }
 
     public void getComments(String transactionId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
@@ -226,13 +242,6 @@ public class ApiHelper {
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_LIKES, queries, callback);
     }
 
-    public void listAllLikes(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
-        List<String> queries = new ArrayList<>();
-        queries.add(Query.Companion.limit(100)); // Adjust limit as needed
-        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_LIKES, queries, callback);
-    }
-
-    // ─── MEMBERS ─────────────────────────────────────────────────────────────
     public void getMembers(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
@@ -251,151 +260,6 @@ public class ApiHelper {
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_USERS, queries, callback);
     }
 
-    // ─── GOALS ───────────────────────────────────────────────────────────────
-    public void addGoal(String name, double targetAmount, double currentAmount, int iconRes, String targetDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("username", pref.getUsername());
-        params.put("title", name);
-        params.put("type", "GOAL");
-        params.put("targetAmount", targetAmount);
-        params.put("amount", currentAmount);
-        params.put("iconRes", iconRes);
-        params.put("targetDate", targetDate);
-        params.put("startDate", Utils.getCurrentTimestamp());
-        callAction(Constants.Actions.CREATE_TRANSACTION, params, callback);
-    }
-
-    public void addGoal(String name, double targetAmount, String targetDate, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        addGoal(name, targetAmount, 0, 0, targetDate, callback);
-    }
-
-    public void updateGoalAmount(String goalId, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("txnId", goalId);
-        params.put("amount", amount);
-        params.put("type", "GOAL");
-        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
-    }
-
-    public void deleteGoal(String goalId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("txnId", goalId);
-        callAction(Constants.Actions.DELETE_TRANSACTION, params, callback);
-    }
-
-    public void getGoalsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
-        String familyId = pref.getFamilyId();
-        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
-        
-        List<String> queries = new ArrayList<>();
-        queries.add(Query.Companion.equal("familyId", familyId));
-        queries.add(Query.Companion.equal("type", "GOAL"));
-        queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
-        queries.add(Query.Companion.orderDesc("$createdAt"));
-        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
-    }
-
-    public void getGoals(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
-        getGoalsSince(pref.getLastSyncTime(), callback);
-    }
-
-    // ─── DEBTS ───────────────────────────────────────────────────────────────
-    public void addDebt(String personName, double amount, String type, String category, String targetDate, String reminder, String notes, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("personName", personName);
-        params.put("title", personName);
-        params.put("amount", amount);
-        params.put("type", "DEBT");
-        params.put("debtType", type); 
-        params.put("category", category);
-        params.put("targetDate", targetDate);
-        params.put("startDate", Utils.getCurrentTimestamp());
-        params.put("reminder", reminder);
-        params.put("note", notes);
-        callAction(Constants.Actions.CREATE_TRANSACTION, params, callback);
-    }
-
-    public void updateDebtAmount(String debtId, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("txnId", debtId);
-        params.put("amount", amount);
-        params.put("type", "DEBT");
-        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
-    }
-
-    public void markDebtPaid(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("txnId", debtId);
-        params.put("isPaid", true);
-        params.put("type", "DEBT");
-        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
-    }
-
-    public void deleteDebt(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("txnId", debtId);
-        callAction(Constants.Actions.DELETE_TRANSACTION, params, callback);
-    }
-
-    public void getDebtsSince(String sinceTimestamp, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
-        String familyId = pref.getFamilyId();
-        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
-
-        List<String> queries = new ArrayList<>();
-        queries.add(Query.Companion.equal("familyId", familyId));
-        queries.add(Query.Companion.equal("type", "DEBT"));
-        queries.add(Query.Companion.greaterThan("$createdAt", sinceTimestamp));
-        queries.add(Query.Companion.orderDesc("$createdAt"));
-        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
-    }
-
-    public void getDebts(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
-        getDebtsSince(pref.getLastSyncTime(), callback);
-    }
-
-    // ─── INCOMES ─────────────────────────────────────────────────────────────
-
-    public void addIncome(String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("username", pref.getUsername());
-        params.put("title", source);
-        params.put("source", source);
-        params.put("amount", amount);
-        params.put("type", "INCOME");
-        params.put("category", "Income");
-        params.put("startDate", Utils.getCurrentTimestamp());
-        callAction(Constants.Actions.CREATE_TRANSACTION, params, callback);
-    }
-
-    public void updateIncome(String incomeId, String source, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("txnId", incomeId);
-        params.put("title", source);
-        params.put("source", source);
-        params.put("amount", amount);
-        params.put("type", "INCOME");
-        callAction(Constants.Actions.UPDATE_TRANSACTION, params, callback);
-    }
-
-    public void deleteIncome(String incomeId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("txnId", incomeId);
-        callAction(Constants.Actions.DELETE_TRANSACTION, params, callback);
-    }
-
-    public void getIncomes(AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
-        String familyId = pref.getFamilyId();
-        if (familyId.isEmpty()) { callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
-
-        List<String> queries = new ArrayList<>();
-        queries.add(Query.Companion.equal("familyId", familyId));
-        queries.add(Query.Companion.equal("type", "INCOME"));
-        queries.add(Query.Companion.orderDesc("$createdAt"));
-        appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
-    }
-
-    // ─── FAMILY SUMMARY ──────────────────────────────────────────────────────
-
     public void getFamilySummary(AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
         String familyId = pref.getFamilyId();
         if (familyId == null || familyId.isEmpty() || "null".equals(familyId)) {
@@ -403,18 +267,6 @@ public class ApiHelper {
             return;
         }
         appwriteManager.getDocument(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_FAMILIES, familyId, callback);
-    }
-
-    public void updateFamilyTotals(double balance, double income, double expense, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("balance", balance);
-        params.put("totalIncome", income);
-        params.put("totalExpense", expense);
-        callAction(Constants.Actions.UPDATE_FAMILY_TOTALS, params, callback);
-    }
-
-    public void sendMessage(String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {
-        sendMessage(io.appwrite.ID.Companion.unique(0), text, pref.getUserId(), pref.getUsername(), callback);
     }
 
     public void sendMessageWithId(String id, String text, AppwriteManager.AppwriteCallback<Document<Map<String, Object>>> callback) {

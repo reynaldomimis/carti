@@ -44,7 +44,7 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.add_to_goal_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
+            if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }
 
@@ -72,7 +72,7 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
                 return;
             }
             Toast.makeText(requireContext(), "Saved successfully!", Toast.LENGTH_SHORT).show();
-            if (getActivity() != null) getActivity().onBackPressed();
+            if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }
 

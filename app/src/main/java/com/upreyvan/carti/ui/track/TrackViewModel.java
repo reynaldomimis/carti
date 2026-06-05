@@ -142,4 +142,8 @@ public class TrackViewModel extends BaseViewModel {
     public void toggleLike(TransactionWithUser item) {
         repo.toggleLike(item, "👍");
     }
+
+    public void toggleReaction(TransactionWithUser item, String emoji) {
+        repo.toggleLike(item, emoji);
+    }
 }

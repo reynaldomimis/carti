@@ -29,8 +29,8 @@ public class SettingsFragment extends BaseFragment<FragmentSettingsBinding> {
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.settings_title);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> {
+            if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }
 
