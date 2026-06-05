@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "c9471d5d16696f22f4452b0c9bfb6cc5",
+    "identityHash": "9c167af48a0ecc3ce5e5e9daf1f7d5f5",
     "entities": [
       {
         "tableName": "members",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `familyId` TEXT, `title` TEXT, `description` TEXT, `status` TEXT, `avatarRes` INTEGER NOT NULL, `avatarUrl` TEXT, `amount` REAL NOT NULL, `isSelected` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `familyId` TEXT, `title` TEXT, `description` TEXT, `status` TEXT, `avatarRes` INTEGER NOT NULL, `avatarUrl` TEXT, `amount` REAL NOT NULL, `totalExpense` REAL NOT NULL, `isSelected` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -53,6 +53,12 @@
           {
             "fieldPath": "amount",
             "columnName": "amount",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalExpense",
+            "columnName": "totalExpense",
             "affinity": "REAL",
             "notNull": true
           },
@@ -508,7 +514,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c9471d5d16696f22f4452b0c9bfb6cc5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9c167af48a0ecc3ce5e5e9daf1f7d5f5')"
     ]
   }
 }

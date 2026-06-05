@@ -110,8 +110,19 @@ public interface TransactionDao {
     @Query("SELECT category, SUM(amount) as total FROM transactions WHERE familyId = :familyId AND type = 'EXPENSE' GROUP BY category ORDER BY total DESC")
     List<CategorySum> getExpenseBreakdown(String familyId);
 
+    @Query("SELECT userId, SUM(amount) as total FROM transactions WHERE familyId = :familyId AND type = 'EXPENSE' AND timestampMillis >= :start AND timestampMillis <= :end GROUP BY userId")
+    LiveData<List<UserExpenseSum>> getExpenseSumPerUser(String familyId, long start, long end);
+
+    @Query("SELECT userId, SUM(amount) as total FROM transactions WHERE familyId = :familyId AND type = 'ALLOCATION' AND timestampMillis >= :start AND timestampMillis <= :end GROUP BY userId")
+    LiveData<List<UserExpenseSum>> getAllocationSumPerUser(String familyId, long start, long end);
+
     class CategorySum {
         public String category;
+        public double total;
+    }
+
+    class UserExpenseSum {
+        public String userId;
         public double total;
     }
 

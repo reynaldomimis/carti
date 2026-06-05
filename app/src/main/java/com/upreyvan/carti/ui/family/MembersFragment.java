@@ -159,14 +159,13 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                     String displayName = isMe ? getString(R.string.label_you) : member.getTitle();
                     binding.tvName.setText(displayName);
                     binding.tvContributionLabel.setText(getString(R.string.label_profile_contribution_format, Utils.formatCurrency(member.getAmount())));
+                    binding.tvTotalExpense.setText(Utils.formatCurrency(member.getTotalExpense()));
                     
                     AvatarHelper.loadUserAvatar(requireContext(), binding.ivAvatar, member.getTitle(), member.getAvatarUrl());
                 }
         );
 
-        contributionAdapter.setOnItemClickListener(item -> {
-            // Breakdown view removed
-        });
+        contributionAdapter.setOnItemClickListener(item -> navigateTo(com.upreyvan.carti.ui.track.AllTransactionsFragment.newInstance("EXPENSE", item.getId(), item.getTitle())));
 
         getBinding().rvContributions.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvContributions.setAdapter(contributionAdapter);

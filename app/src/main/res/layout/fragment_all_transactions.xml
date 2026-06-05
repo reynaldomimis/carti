@@ -70,7 +70,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:fontFamily="@font/plus_jakarta_sans_bold"
-                    android:text="@string/no_goals_title"
+                    android:text="@string/no_expenses_title"
                     android:textColor="@color/black"
                     android:textSize="18sp" />
 
@@ -79,7 +79,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:gravity="center"
-                    android:text="@string/no_active_goals_desc"
+                    android:text="@string/no_expenses_desc"
                     android:textColor="@color/text_secondary" />
             </LinearLayout>
         </FrameLayout>
