@@ -104,7 +104,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
             boolean hasIncomes = !incomes.isEmpty();
             getBinding().tvIncomeHistoryLabel.setText("Contribution History");
             getBinding().tvIncomeHistoryLabel.setVisibility(hasIncomes ? View.VISIBLE : View.GONE);
-            getBinding().rvIncomeHistory.setVisibility(hasIncomes ? View.VISIBLE : View.GONE);
+            getBinding().cardIncomeHistory.setVisibility(hasIncomes ? View.VISIBLE : View.GONE);
 
             incomeAdapter.submitList(incomes);
         });

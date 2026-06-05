@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/CartiContainer"
-    app:useStatusBarPadding="true">
+    app:useStatusBarPadding="true"
+    app:useBottomNavPadding="true">
 
     <include
         android:id="@+id/layoutToolbar"

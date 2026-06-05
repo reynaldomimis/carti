@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingTop="@dimen/gap_section_title">
-    
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardTotalBalance"
         style="@style/DashCard"
@@ -41,33 +41,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvBalanceLabel" />
 
-            <LinearLayout
-                android:id="@+id/btnViewDetails"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvTotalBalance">
-
-                <com.google.android.material.textview.MaterialTextView
-                    style="@style/CartiCaption"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_view"
-                    android:textColor="@color/carti_primary_green"
-                    android:fontFamily="@font/plus_jakarta_sans_semibold" />
-
-                <ImageView
-                    android:layout_width="@dimen/icon_size_xxs"
-                    android:layout_height="@dimen/icon_size_xxs"
-                    android:layout_marginStart="@dimen/spacing_xxs"
-                    android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/carti_primary_green"
-                    android:contentDescription="@null" />
-            </LinearLayout>
-
             <ImageView
                 android:layout_width="@dimen/icon_size_large"
                 android:layout_height="@dimen/icon_size_large"
@@ -80,7 +53,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
-    
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

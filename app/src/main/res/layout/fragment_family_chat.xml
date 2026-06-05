@@ -5,7 +5,8 @@
     style="@style/CartiContainer"
     app:useStatusBarPadding="true"
     app:useImePadding="true"
-    app:imeGap="12dp">
+    app:imeGap="12dp"
+    app:useBottomNavPadding="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutHeader"

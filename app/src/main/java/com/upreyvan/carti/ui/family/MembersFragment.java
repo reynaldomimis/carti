@@ -22,7 +22,6 @@ import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
@@ -162,17 +161,11 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
                     binding.tvContributionLabel.setText(getString(R.string.label_profile_contribution_format, Utils.formatCurrency(member.getAmount())));
                     
                     AvatarHelper.loadUserAvatar(requireContext(), binding.ivAvatar, member.getTitle(), member.getAvatarUrl());
-                    
-                    Calendar now = Calendar.getInstance();
-                    binding.tvBtnViewExpenses.setOnClickListener(v -> navigateTo(com.upreyvan.carti.ui.track.BreakdownExpenseFragment.newInstance(
-                            now.get(Calendar.MONTH), now.get(Calendar.YEAR), member.getId(), member.getTitle())));
                 }
         );
 
         contributionAdapter.setOnItemClickListener(item -> {
-            Calendar now = Calendar.getInstance();
-            navigateTo(com.upreyvan.carti.ui.track.BreakdownExpenseFragment.newInstance(
-                    now.get(Calendar.MONTH), now.get(Calendar.YEAR), item.getId(), item.getTitle()));
+            // Breakdown view removed
         });
 
         getBinding().rvContributions.setLayoutManager(new LinearLayoutManager(requireContext()));

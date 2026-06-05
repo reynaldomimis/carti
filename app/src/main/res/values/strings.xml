@@ -439,7 +439,7 @@
     <string name="hint_add_note">Add a note</string>
     <string name="label_remind_me">Remind Me</string>
     <string name="hint_add_reminder">Add Reminder</string>
-    <string name="expenses_title">Expenses</string>
+    <string name="expenses_title">All Expenses</string>
     <string name="label_total_spent">Total Spent</string>
     <string name="spending_overview">Spending Overview</string>
     <string name="this_month">This Month</string>

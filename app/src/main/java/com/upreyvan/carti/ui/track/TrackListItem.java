@@ -36,8 +36,6 @@ import java.util.Objects;
 
 public interface TrackListItem extends BaseMultiItem {
     interface OnTrackInteractionListener {
-        void onViewDetails();
-        void onTotalBalanceClick();
         void onToggleAllocation();
         void onSeeAllTransactions();
         void onTransactionLike(TransactionWithUser item);
@@ -78,8 +76,6 @@ public interface TrackListItem extends BaseMultiItem {
             b.tvSavingsAmount.setText(String.format(Locale.getDefault(), "%s / %s", Utils.formatCurrency(saved), Utils.formatCurrency(target)));
             b.tvSavingsPercent.setText(b.getRoot().getContext().getString(R.string.percentage_format, progress));
             b.progressSavings.setProgress(progress);
-            b.btnViewDetails.setOnClickListener(v -> listener.onViewDetails());
-            b.cardTotalBalance.setOnClickListener(v -> listener.onTotalBalanceClick());
         }
 
         @Override public Object getChangePayload(@NonNull BaseMultiItem newItem) {

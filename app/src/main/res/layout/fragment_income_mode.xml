@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    style="@style/CartiContainer">
+    style="@style/CartiContainer"
+    app:useStatusBarPadding="true"
+    app:useBottomNavPadding="true">
 
     <include
         android:id="@+id/layoutToolbar"
@@ -199,15 +201,24 @@
                 android:visibility="gone"
                 tools:visibility="visible" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvIncomeHistory"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardIncomeHistory"
+                style="@style/CartiCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
+                app:cardBackgroundColor="@color/white"
                 android:visibility="gone"
-                tools:itemCount="3"
-                tools:listitem="@layout/item_income"
-                tools:visibility="visible" />
+                tools:visibility="visible">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvIncomeHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_income" />
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

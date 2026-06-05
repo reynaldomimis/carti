@@ -76,10 +76,16 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_clear_search"
             style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             app:icon="@drawable/ic_close"
-            app:iconTint="@color/text_tertiary" />
+            app:iconSize="20dp"
+            app:iconTint="@color/text_tertiary"
+            android:padding="0dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp" />
 
     </LinearLayout>
 
@@ -91,6 +97,7 @@
         android:visibility="gone"
         android:contentDescription="@string/hint_search_transactions"
         app:icon="@android:drawable/ic_menu_search"
+        app:iconSize="26dp"
         app:iconTint="@color/text_primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

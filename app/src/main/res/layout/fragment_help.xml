@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    style="@style/CartiContainer">
+    style="@style/CartiContainer"
+    app:useStatusBarPadding="true"
+    app:useBottomNavPadding="true">
 
     <include
         android:id="@+id/layoutToolbar"

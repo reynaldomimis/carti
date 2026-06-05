@@ -20,7 +20,6 @@ import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
 
-import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,8 +62,6 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> implements
         return item;
     }
 
-    @Override public void onViewDetails() { navigateTo(IncomeContributorsFragment.newInstance(Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.YEAR))); }
-    @Override public void onTotalBalanceClick() { onViewDetails(); }
     @Override public void onToggleAllocation() { viewModel.toggleExpansion(); }
     @Override public void onSeeAllTransactions() { navigateTo(AllTransactionsFragment.newInstance("EXPENSE")); }
     @Override public void onTransactionLike(TransactionWithUser item) { viewModel.toggleLike(item); }

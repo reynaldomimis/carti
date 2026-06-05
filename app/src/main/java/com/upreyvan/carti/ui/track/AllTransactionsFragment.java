@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -206,12 +205,12 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     }
 
     private void setupToolbar() {
-        getBinding().layoutToolbar.backButtonContainer.setVisibility(View.GONE);
+        getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> {
+            if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
+        });
+
         TextView title = getBinding().layoutToolbar.tvToolbarTitle;
-        ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) title.getLayoutParams();
-        lp.horizontalBias = 0.0f;
-        lp.setMarginStart((int) getResources().getDimension(R.dimen.spacing_xs));
-        title.setLayoutParams(lp);
         if (filterUserName != null) title.setText(getString(R.string.label_user_expenses, filterUserName));
         else if ("EXPENSE".equals(filterType)) title.setText(R.string.expenses_title);
         else title.setText(R.string.all_transactions_title);
