@@ -51,9 +51,21 @@ public interface HomeListItem extends BaseMultiItem {
     int TYPE_TRANSACTION = 7;
     int TYPE_EMPTY_STATE = 8;
     int TYPE_AI_INSIGHT = 9;
+    int TYPE_SHIMMER = 10;
 
     @Override default int getViewType() { return 0; }
     @Override default String getItemUniqueId() { return ""; }
+
+    record ShimmerItem(String id) implements HomeListItem {
+        @Override public int getViewType() { return TYPE_SHIMMER; }
+        @Override public String getItemUniqueId() { return "SHIMMER_" + id; }
+        @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) {
+            return ItemTransactionShimmerBinding.inflate(inflater, parent, false);
+        }
+        @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
+            ((ItemTransactionShimmerBinding) binding).shimmerViewContainer.startShimmer();
+        }
+    }
 
     record DashboardItem(HomeViewModel.DashboardState state) implements HomeListItem {
         @Override public int getViewType() { return TYPE_DASHBOARD; }
@@ -406,21 +418,42 @@ public interface HomeListItem extends BaseMultiItem {
             for (Object p : payloads) {
                 if (p instanceof Bundle b) {
                     ItemTransactionBinding vb = (ItemTransactionBinding) binding;
+                    Transaction t = transaction.getTransaction();
+                    
                     if (b.containsKey("likes")) {
                         int likes = b.getInt("likes");
                         vb.tvLikesCount.setText(String.valueOf(likes));
-                        vb.tvLikesCount.setVisibility(likes > 0 ? View.VISIBLE : View.GONE);
+                        vb.layoutLikesSummaryClickable.setVisibility(likes > 0 || t.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
+                        vb.divider.setVisibility(vb.layoutLikesSummaryClickable.getVisibility());
                     }
+                    
                     if (b.containsKey("reactorNames")) {
                         String names = b.getString("reactorNames");
-                        vb.tvLikesCount.setText(names != null && !names.isEmpty() ? names : String.valueOf(transaction.getTransaction().getLikesCount()));
-                        vb.tvLikesCount.setVisibility((names != null && !names.isEmpty()) || transaction.getTransaction().getLikesCount() > 0 ? View.VISIBLE : View.GONE);
+                        vb.tvLikesCount.setText(names != null && !names.isEmpty() ? names : String.valueOf(t.getLikesCount()));
+                        vb.tvLikesCount.setVisibility((names != null && !names.isEmpty()) || t.getLikesCount() > 0 ? View.VISIBLE : View.GONE);
                     }
+                    
                     if (b.containsKey("myReaction")) {
                         String reaction = b.getString("myReaction");
-                        vb.tvBtnLikeIcon.setText(reaction != null && !reaction.isEmpty() ? reaction : "👍");
+                        boolean hasReac = reaction != null && !reaction.isEmpty();
+                        
+                        // Update Button
+                        vb.tvBtnLikeIcon.setText(hasReac ? reaction : "👍");
                         vb.tvBtnLikeText.setTextColor(ContextCompat.getColor(vb.getRoot().getContext(), 
-                            reaction != null && !reaction.isEmpty() ? R.color.carti_primary_green : R.color.text_secondary));
+                            hasReac ? R.color.carti_primary_green : R.color.text_secondary));
+                        
+                        // Update Summary Emoji
+                        vb.tvReactionEmoji.setText(hasReac ? reaction : "👍");
+                        vb.tvReactionEmoji.setVisibility(t.getLikesCount() > 0 ? View.VISIBLE : View.GONE);
+                    }
+
+                    if (b.containsKey("comments")) {
+                        int comments = b.getInt("comments");
+                        String commentText = comments == 1 ? "1 comment" : comments + " comments";
+                        vb.tvCommentsCountSummary.setText(commentText);
+                        vb.tvCommentsCountSummary.setVisibility(comments > 0 ? View.VISIBLE : View.GONE);
+                        vb.layoutLikesSummaryClickable.setVisibility(comments > 0 || t.getLikesCount() > 0 ? View.VISIBLE : View.GONE);
+                        vb.divider.setVisibility(vb.layoutLikesSummaryClickable.getVisibility());
                     }
                 }
             }

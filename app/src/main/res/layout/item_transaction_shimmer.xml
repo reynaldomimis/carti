@@ -1,64 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.facebook.shimmer.ShimmerFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/shimmerLayout"
+    android:id="@+id/shimmer_view_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:shimmer_auto_start="true"
     app:shimmer_duration="1200">
 
-    <com.google.android.material.card.MaterialCardView
-        style="@style/CartiCard"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_medium"
-        android:layout_marginVertical="@dimen/spacing_xs"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/surface_variant">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_card_white">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_medium">
+            android:orientation="horizontal">
 
             <View
-                android:id="@+id/vAvatar"
-                android:layout_width="@dimen/avatar_size_medium"
-                android:layout_height="@dimen/avatar_size_medium"
-                android:background="@drawable/bg_shimmer_circle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_circle"
+                android:backgroundTint="@color/shimmer_placeholder" />
 
-            <View
-                android:id="@+id/vTitle"
-                android:layout_width="100dp"
-                android:layout_height="@dimen/text_size_header_small"
-                android:layout_marginStart="@dimen/spacing_medium"
-                android:background="@drawable/bg_shimmer_rounded"
-                app:layout_constraintStart_toEndOf="@id/vAvatar"
-                app:layout_constraintTop_toTopOf="@id/vAvatar"
-                app:layout_constraintBottom_toTopOf="@+id/vDesc"
-                app:layout_constraintVertical_chainStyle="packed" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <View
-                android:id="@+id/vDesc"
-                android:layout_width="150dp"
-                android:layout_height="@dimen/text_size_body_small"
-                android:layout_marginTop="@dimen/spacing_xs"
-                android:background="@drawable/bg_shimmer_rounded"
-                android:alpha="0.6"
-                app:layout_constraintStart_toStartOf="@id/vTitle"
-                app:layout_constraintTop_toBottomOf="@id/vTitle"
-                app:layout_constraintBottom_toBottomOf="@id/vAvatar" />
+                <View
+                    android:layout_width="100dp"
+                    android:layout_height="14dp"
+                    android:background="@color/shimmer_placeholder" />
+
+                <View
+                    android:layout_width="60dp"
+                    android:layout_height="10dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@color/shimmer_placeholder" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="18dp"
+            android:layout_marginTop="12dp"
+            android:background="@color/shimmer_placeholder" />
+
+        <View
+            android:layout_width="150dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/shimmer_placeholder" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/divider_gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
 
             <View
                 android:layout_width="60dp"
-                android:layout_height="@dimen/text_size_body"
-                android:background="@drawable/bg_shimmer_rounded"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/vTitle" />
+                android:layout_height="24dp"
+                android:background="@color/shimmer_placeholder" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
+            <View
+                android:layout_width="80dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="16dp"
+                android:background="@color/shimmer_placeholder" />
+        </LinearLayout>
+
+    </LinearLayout>
 </com.facebook.shimmer.ShimmerFrameLayout>

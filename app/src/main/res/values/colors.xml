@@ -109,4 +109,6 @@
 
     <color name="card_dark_bg">#13191D</color>
     <color name="calendar_day_unselected">#2C2C2E</color>
+    <color name="shimmer_placeholder">#E0E0E0</color>
+    <color name="divider_gray">#F1F1F1</color>
 </resources>

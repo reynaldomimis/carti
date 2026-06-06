@@ -54,7 +54,7 @@ public class PreferenceManager {
                 .putString(Constants.Keys.KEY_FAMILY_ID, familyId)
                 .putString(Constants.Keys.KEY_INVITE_CODE, inviteCode)
                 .putBoolean(Constants.Keys.KEY_IS_EMPLOYED, isEmployed)
-                .commit();
+                .apply();
     }
 
     public String getUserId() {
@@ -228,6 +228,12 @@ public class PreferenceManager {
 
     public void saveUser(Map<String, Object> data) {
         if (data == null) return;
+        
+        // Handle both Appwrite standard '$id' and Cloud Function custom 'userId'
+        Object idObj = data.get("userId");
+        if (idObj == null) idObj = data.get("$id");
+        String finalId = String.valueOf(idObj);
+
         setUserData(
                 String.valueOf(data.get("username")),
                 String.valueOf(data.get("email")),
@@ -235,7 +241,7 @@ public class PreferenceManager {
                 Boolean.TRUE.equals(data.get("isEmployed")),
                 String.valueOf(data.get("familyId")),
                 String.valueOf(data.get("inviteCode")),
-                String.valueOf(data.get("$id"))
+                finalId
         );
         String pendingId = String.valueOf(data.get("pendingFamilyId"));
         getPrefs().edit().putString("pending_family_id", (pendingId == null || "null".equals(pendingId)) ? "" : pendingId).apply();

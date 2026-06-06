@@ -165,6 +165,12 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
             public void onSuccess(Map<String, Object> result) {
                 getBinding().etComment.setText("");
                 getBinding().btnSend.setEnabled(true);
+                
+                // Fix: Auto-expand the thread if we just replied
+                if (selectedParentId != null) {
+                    adapter.forceExpand(selectedParentId);
+                }
+
                 selectedParentId = null;
                 getBinding().etComment.setHint("Write a comment...");
                 loadComments();

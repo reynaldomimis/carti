@@ -15,6 +15,7 @@ public class Comment {
     private String parentId;
     private String createdAt;
     private String updatedAt;
+    private String childSignature; // Real-time helper for nested updates
 
     public Comment(@NonNull String id, String transactionId, String userId, String username, String text, String parentId, String createdAt, String updatedAt) {
         this.id = id;
@@ -35,6 +36,8 @@ public class Comment {
     public String getParentId() { return parentId; }
     public String getCreatedAt() { return createdAt; }
     public String getUpdatedAt() { return updatedAt; }
+    public String getChildSignature() { return childSignature; }
+    public void setChildSignature(String childSignature) { this.childSignature = childSignature; }
 
     @Override
     public boolean equals(Object o) {
@@ -44,12 +47,13 @@ public class Comment {
         return Objects.equals(id, comment.id) &&
                 Objects.equals(text, comment.text) &&
                 Objects.equals(parentId, comment.parentId) &&
-                Objects.equals(updatedAt, comment.updatedAt);
+                Objects.equals(updatedAt, comment.updatedAt) &&
+                Objects.equals(childSignature, comment.childSignature);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, text, parentId, updatedAt);
+        return Objects.hash(id, text, parentId, updatedAt, childSignature);
     }
 
     public static final DiffUtil.ItemCallback<Comment> DIFF_CALLBACK = new DiffUtil.ItemCallback<Comment>() {

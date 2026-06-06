@@ -64,9 +64,20 @@ public class TransactionRepository {
 
     public LiveData<Boolean> getSyncingStatus() { return isSyncing; }
 
+    private void postStableList(List<TransactionWithUser> list) {
+        if (list == null) return;
+        // Ensure the list is always sorted by timestamp descending (Newest first)
+        // This prevents the "jumping" behavior when server syncs out-of-order.
+        list.sort((a, b) -> Long.compare(b.getTransaction().getTimestampMillis(), a.getTransaction().getTimestampMillis()));
+        allTransactions.postValue(list);
+    }
+
     public void refreshTransactions() {
         if (isRefreshing.getAndSet(true)) return;
         
+        requestCooldowns.clear();
+        pendingToggles.clear();
+
         isSyncing.postValue(true);
         remoteDataSource.getTransactionsSince("", new AppwriteManager.AppwriteCallback<>() {
             @Override public void onSuccess(DocumentList<Map<String, Object>> result) {
@@ -78,9 +89,16 @@ public class TransactionRepository {
                         tu.setTransaction(t);
                         transactions.add(tu);
                     }
-                    allTransactions.postValue(transactions);
+                    postStableList(transactions);
                     pref.setLastSyncTime(Utils.getCurrentTimestamp());
                     pref.setLastSyncTimeMillis(System.currentTimeMillis());
+                    
+                    for (TransactionWithUser tu : transactions) {
+                        if (tu.getTransaction().getLikesCount() > 0) {
+                            hydrateMissingReactions(tu.getTransaction().getId());
+                        }
+                    }
+
                     isSyncing.postValue(false);
                     isRefreshing.set(false);
                 });
@@ -367,41 +385,31 @@ public class TransactionRepository {
         List<TransactionWithUser> updated = new ArrayList<>();
         boolean found = false;
         for (TransactionWithUser tu : current) {
-            if (tu.getTransaction().getId().equals(transId)) {
+                if (tu.getTransaction().getId().equals(transId)) {
                 TransactionWithUser tuCopy = tu.copy();
                 Transaction t = tuCopy.getTransaction();
                 List<Like> reactions = tuCopy.getReactions() != null ? new ArrayList<>(tuCopy.getReactions()) : new ArrayList<>();
                 
+                // Fix: Nuclear De-duplication (userId OR username)
+                String myUsername = pref.getUsername();
+                reactions.removeIf(l -> userId.equals(l.getUserId()) || myUsername.equalsIgnoreCase(l.getUsername()));
+
                 if (isUnlike) {
-                    reactions.removeIf(l -> userId.equals(l.getUserId()));
-                    t.setLikesCount(Math.max(0, t.getLikesCount() - 1));
                     tuCopy.setMyReaction(null);
                     tuCopy.setMyLikeId(null);
                     } else {
-                        Like existing = null;
-                        for (Like l : reactions) {
-                            if (userId.equals(l.getUserId())) {
-                                existing = l;
-                                break;
-                            }
-                        }
-                        
-                        if (existing != null) {
-                            existing.setEmojiType(emoji);
-                        } else {
-                            reactions.add(new Like("temp_" + UUID.randomUUID(), transId, userId, pref.getUsername(), emoji));
-                            t.setLikesCount(t.getLikesCount() + 1);
-                        }
+                        reactions.add(new Like("temp_" + UUID.randomUUID(), transId, userId, myUsername, emoji));
                         tuCopy.setMyReaction(emoji);
                     }
                 tuCopy.setReactions(reactions);
+                t.setLikesCount(reactions.size()); // Fix A: Computed Truth
                 updated.add(tuCopy);
                 found = true;
             } else {
                 updated.add(tu);
             }
         }
-        if (found) allTransactions.postValue(updated);
+        if (found) postStableList(updated);
     }
 
     public void handleLikeEventLocally(Map<String, Object> payload, boolean isDelete) {
@@ -439,7 +447,10 @@ public class TransactionRepository {
                     List<Like> reactions = tuCopy.getReactions() != null ? new ArrayList<>(tuCopy.getReactions()) : new ArrayList<>();
 
                     if (isDelete) {
-                        if (reactions.removeIf(l -> likeId.equals(l.getId()) || userId.equals(l.getUserId()))) {
+                        // Nuclear Purge (by ID, userId, or username) to prevent ghosts
+                        String myUsername = pref.getUsername();
+                        if (reactions.removeIf(l -> likeId.equals(l.getId()) || userId.equals(l.getUserId()) || (userId.equals(pref.getUserId()) && myUsername.equalsIgnoreCase(l.getUsername())))) {
+                            tuCopy.setReactions(reactions);
                             tuCopy.getTransaction().setLikesCount(reactions.size());
                             if (pref.getUserId().equals(userId)) {
                                 tuCopy.setMyReaction(null);
@@ -450,23 +461,15 @@ public class TransactionRepository {
                         String emoji = (String) payload.get("emojiType");
                         String username = (String) payload.get("username");
 
-                        Like existing = null;
-                        for (Like l : reactions) {
-                            if (userId.equals(l.getUserId())) {
-                                existing = l;
-                                break;
-                            }
-                        }
-
-                        if (existing != null) {
-                            existing.setId(likeId);
-                            existing.setEmojiType(emoji);
-                            existing.setUpdatedAt(updatedAt);
-                        } else {
-                            reactions.add(new Like(likeId, transId, userId, username, emoji));
-                        }
+                        // Nuclear De-duplication before injection
+                        reactions.removeIf(l -> userId.equals(l.getUserId()) || username.equalsIgnoreCase(l.getUsername()));
                         
-                        tuCopy.getTransaction().setLikesCount(reactions.size());
+                        Like newLike = new Like(likeId, transId, userId, username, emoji);
+                        newLike.setUpdatedAt(updatedAt);
+                        reactions.add(newLike);
+                        
+                        tuCopy.setReactions(reactions);
+                        tuCopy.getTransaction().setLikesCount(reactions.size()); // Fix A: Computed Truth
 
                         if (pref.getUserId().equals(userId)) {
                             tuCopy.setMyReaction(emoji);
@@ -483,7 +486,7 @@ public class TransactionRepository {
             }
             
             if (modified) {
-                allTransactions.postValue(updated);
+                postStableList(updated);
             } else {
                 hydrateMissingReactions(transId);
             }
@@ -503,30 +506,28 @@ public class TransactionRepository {
                         if (tu.getTransaction().getId().equals(transId)) {
                             TransactionWithUser tuCopy = tu.copy();
                             List<Like> currentReactions = tuCopy.getReactions() != null ? new ArrayList<>(tuCopy.getReactions()) : new ArrayList<>();
-                            
-                            // Fix B: Smart Merge Hydration
-                            // Loop through server results and only update/add if newer or missing
+
                             for (Document<Map<String, Object>> doc : result.getDocuments()) {
                                 String sUserId = (String) doc.getData().get("userId");
+                                String sUsername = (String) doc.getData().get("username");
                                 String sUpdatedAt = doc.getUpdatedAt();
-                                
-                                Like existing = null;
-                                for (Like l : currentReactions) {
-                                    if (sUserId.equals(l.getUserId())) {
-                                        existing = l;
+                                if (sUserId == null || sUsername == null) continue;
+
+                                boolean hasNewerLocal = false;
+                                for (Like existing : currentReactions) {
+                                    if (sUserId.equals(existing.getUserId()) || sUsername.equalsIgnoreCase(existing.getUsername())) {
+                                        if (existing.getUpdatedAt() != null && sUpdatedAt != null) {
+                                            if (sUpdatedAt.compareTo(existing.getUpdatedAt()) < 0) {
+                                                hasNewerLocal = true;
+                                            }
+                                        }
                                         break;
                                     }
                                 }
-                                
-                                if (existing != null) {
-                                    // Only update if server has newer info
-                                    if (sUpdatedAt != null && (existing.getUpdatedAt() == null || sUpdatedAt.compareTo(existing.getUpdatedAt()) > 0)) {
-                                        existing.setId(doc.getId());
-                                        existing.setEmojiType((String) doc.getData().get("emojiType"));
-                                        existing.setUpdatedAt(sUpdatedAt);
-                                    }
-                                } else {
-                                    Like newLike = new Like(doc.getId(), transId, sUserId, (String) doc.getData().get("username"), (String) doc.getData().get("emojiType"));
+
+                                if (!hasNewerLocal) {
+                                    currentReactions.removeIf(l -> sUserId.equals(l.getUserId()) || sUsername.equalsIgnoreCase(l.getUsername()));
+                                    Like newLike = new Like(doc.getId(), transId, sUserId, sUsername, (String) doc.getData().get("emojiType"));
                                     newLike.setUpdatedAt(sUpdatedAt);
                                     currentReactions.add(newLike);
                                 }
@@ -534,8 +535,7 @@ public class TransactionRepository {
                             
                             tuCopy.setReactions(currentReactions);
                             tuCopy.getTransaction().setLikesCount(currentReactions.size());
-                            
-                            // Sync current user state
+
                             for (Like l : currentReactions) {
                                 if (pref.getUserId().equals(l.getUserId())) {
                                     tuCopy.setMyReaction(l.getEmojiType());
@@ -549,7 +549,7 @@ public class TransactionRepository {
                             updated.add(tu);
                         }
                     }
-                    if (found) allTransactions.postValue(updated);
+                    if (found) postStableList(updated);
                 });
             }
             @Override public void onError(Throwable e) { Log.e(TAG, "Hydration failed", e); }
@@ -582,7 +582,7 @@ public class TransactionRepository {
                     updated.add(tu);
                 }
             }
-            if (modified) allTransactions.postValue(updated);
+            if (modified) postStableList(updated);
         });
     }
 

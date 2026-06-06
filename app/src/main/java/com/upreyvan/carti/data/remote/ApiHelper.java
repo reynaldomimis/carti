@@ -154,7 +154,7 @@ public class ApiHelper {
         if (sinceTimestamp != null && !sinceTimestamp.isEmpty()) {
             queries.add(Query.Companion.greaterThan("$updatedAt", sinceTimestamp));
         }
-        queries.add(Query.Companion.orderDesc("$updatedAt"));
+        queries.add(Query.Companion.orderDesc("$createdAt"));
         queries.add(Query.Companion.limit(1000));
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_TRANSACTIONS, queries, callback);
     }

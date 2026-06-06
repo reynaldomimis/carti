@@ -82,6 +82,7 @@ public class HomeViewModel extends BaseViewModel {
         dataTrigger.addSource(transRepo.getRecentTransactions(5), v -> { this.currentTransactions = v; rebuild(); });
         dataTrigger.addSource(notifRepo.getBills(pref.getFamilyId()), v -> { this.currentBills = v; rebuild(); });
         dataTrigger.addSource(BudgetManager.getInstance(getApplication()).getBudgetPlanLiveData(), v -> { this.currentPlan = v; rebuild(); });
+        dataTrigger.addSource(transRepo.getSyncingStatus(), v -> rebuild());
     }
 
     private void updateDash() {
@@ -124,8 +125,18 @@ public class HomeViewModel extends BaseViewModel {
                 items.add(new HomeListItem.QuickLogItemContainer(logs, null, null));
             }
             items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.recent_activity), null, currentTransactions != null && !currentTransactions.isEmpty(), "View All", null));
-            if (currentTransactions == null || currentTransactions.isEmpty()) items.add(new HomeListItem.EmptyStateItem(getApplication().getString(R.string.no_transactions_yet)));
-            else for (TransactionWithUser t : currentTransactions) items.add(new HomeListItem.TransactionItem(t, null));
+            
+            Boolean isSyncing = transRepo.getSyncingStatus().getValue();
+            if (Boolean.TRUE.equals(isSyncing) && (currentTransactions == null || currentTransactions.isEmpty())) {
+                items.add(new HomeListItem.ShimmerItem("1"));
+                items.add(new HomeListItem.ShimmerItem("2"));
+                items.add(new HomeListItem.ShimmerItem("3"));
+            } else if (currentTransactions == null || currentTransactions.isEmpty()) {
+                items.add(new HomeListItem.EmptyStateItem(getApplication().getString(R.string.no_transactions_yet)));
+            } else {
+                for (TransactionWithUser t : currentTransactions) items.add(new HomeListItem.TransactionItem(t, null));
+            }
+
             mainHandler.post(() -> uiState.setValue(items));
         });
     }

@@ -51,6 +51,11 @@ public class CommentAdapter extends BaseAdapter<Comment, ItemCommentBinding> {
             List<Comment> topLevel = comments.stream()
                     .filter(c -> c.getParentId() == null || c.getParentId().isEmpty() || c.getParentId().equalsIgnoreCase("null"))
                     .sorted(Comparator.comparing(Comment::getCreatedAt))
+                    .map(c -> {
+                        long replyCount = comments.stream().filter(r -> c.getId().equals(r.getParentId())).count();
+                        c.setChildSignature("v" + replyCount);
+                        return c;
+                    })
                     .collect(Collectors.toList());
             submitList(topLevel);
         } else {
@@ -60,6 +65,11 @@ public class CommentAdapter extends BaseAdapter<Comment, ItemCommentBinding> {
 
     public void setOnCommentInteractionListener(OnCommentInteractionListener listener) {
         this.interactionListener = listener;
+    }
+
+    public void forceExpand(String commentId) {
+        if (commentId == null) return;
+        expandedStates.put(commentId, true);
     }
 
     @Override
