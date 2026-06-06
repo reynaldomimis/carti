@@ -95,16 +95,35 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
             double amount = Double.parseDouble(amountStr);
             BudgetManager.getInstance(requireContext()).updateOrAddCategory(category, amount, null, isRecurring);
             
-            Transaction t = new Transaction();
+            Transaction t = (editingItem != null && editingItem.getParentCategory() != null) ? 
+                    new Transaction() : new Transaction(); // TODO: Find existing if editing
+            
+            if (editingItem != null) {
+                // We should ideally find the existing transaction ID if possible
+                // for now let's just create a new record as per "pag Add palang nyan ng Alloation masave nayan sa database"
+            }
+
             t.setAmount(amount);
             t.setType("ALLOCATION");
             t.setCategory(category);
             t.setTitle(category);
             t.setAllocatedTo(category);
-            t.setAllocationMonth(Utils.getCurrentTimestamp());
+            t.setAllocationMonth(Utils.formatMonthQuery(java.util.Calendar.getInstance()));
             
-            TransactionRepository.getInstance(requireContext()).addTransaction(t, null);
-            dismiss();
+            TransactionRepository.getInstance(requireContext()).addTransaction(t, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
+                @Override
+                public void onSuccess(java.util.Map<String, Object> result) {
+                    requireActivity().runOnUiThread(() -> {
+                        TransactionRepository.getInstance(requireContext()).refreshTransactions();
+                        dismiss();
+                    });
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    requireActivity().runOnUiThread(() -> showToast("Failed to save allocation", com.upreyvan.carti.util.UiHelper.Status.ERROR));
+                }
+            });
         } catch (NumberFormatException e) {
             showToast(R.string.msg_invalid_amount, UiHelper.Status.ERROR);
         }

@@ -1,25 +1,27 @@
 package com.upreyvan.carti.ui.allocate;
 
 import android.app.Application;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
 import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.local.db.AppDatabase;
 import com.upreyvan.carti.data.local.db.dao.TransactionDao;
+import com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum;
 import com.upreyvan.carti.data.repository.NotificationRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.Bill;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.RecurringBudgetStats;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.util.Utils;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -45,9 +47,11 @@ public class PlanViewModel extends BaseViewModel {
         
         budgetManager.getBudgetPlanLiveData().observeForever(observer);
         budgetManager.getRecurringStatsLiveData().observeForever(recurringStatsObserver);
+        getDbAllocations().observeForever(observer2);
     }
 
     private final androidx.lifecycle.Observer<List<BudgetCategoryItem>> observer = items -> loadData();
+    private final androidx.lifecycle.Observer<List<TransactionWithUser>> observer2 = items -> loadData();
     private final androidx.lifecycle.Observer<RecurringBudgetStats> recurringStatsObserver = recurringStats::postValue;
 
     public LiveData<List<BudgetCategoryItem>> getBudgets() { return budgets; }
@@ -56,44 +60,27 @@ public class PlanViewModel extends BaseViewModel {
     public LiveData<List<TransactionWithUser>> getGoals() { return transRepo.getGoals(); }
     public LiveData<List<Bill>> getBills() { return notifRepo.getBills(pref.getFamilyId()); }
     public LiveData<List<TransactionWithUser>> getDebts() { return transRepo.getTransactionsByType("DEBT"); }
+    public LiveData<List<TransactionWithUser>> getDbAllocations() {
+        return transRepo.getAllocationsByMonth(com.upreyvan.carti.util.Utils.formatMonthQuery(java.util.Calendar.getInstance()));
+    }
 
     public void loadData() {
         executor.execute(() -> {
             budgetManager.processRecurringBudgets();
             String familyId = pref.getFamilyId();
+
+            List<TransactionWithUser> databaseAllocations = db.transactionDao().getAllocationsByMonthSync(familyId, Utils.formatMonthQuery(java.util.Calendar.getInstance()));
+            List<CategorySum> expenseBreakdown = db.transactionDao().getExpenseBreakdown(familyId);
             
-            List<BudgetCategoryItem> plan = budgetManager.getBudgetPlan();
-            List<BudgetCategoryItem> defaults = budgetManager.getDefaultCategories();
-            List<TransactionDao.CategorySum> breakdown = db.transactionDao().getExpenseBreakdown(familyId);
-            
-            Map<String, Double> expenseMap = new HashMap<>();
-            for (TransactionDao.CategorySum sum : breakdown) {
-                if (sum.category != null) expenseMap.put(sum.category, sum.total);
-            }
+            List<BudgetCategoryItem> consolidated = budgetManager.getConsolidatedBudgets(databaseAllocations, expenseBreakdown);
 
             List<BudgetCategoryItem> budgetList = new ArrayList<>();
-            Map<String, BudgetCategoryItem> categoryMap = new HashMap<>();
-
-            for (BudgetCategoryItem d : defaults) {
-                if (d.getCategoryName() != null) categoryMap.put(d.getCategoryName().toLowerCase(Locale.ROOT), d);
-            }
-
-            for (BudgetCategoryItem item : plan) {
-                String catName = (item.getCategoryName() != null) ? item.getCategoryName() : "General";
-                Double spentVal = expenseMap.get(catName);
-                double spent = (spentVal != null) ? spentVal : 0.0;
-
-                BudgetCategoryItem updatedItem = new BudgetCategoryItem(
-                        item.getCategoryName(), item.getIconRes(), item.getIconColor(), 
-                        item.getBgColor(), item.getAmount(), item.getPercentage(), 
-                        item.getParentCategory(), spent, item.isRecurring());
-                
-                if (item.getAmount() > 0) budgetList.add(updatedItem);
-                categoryMap.put(catName.toLowerCase(Locale.ROOT), updatedItem);
+            for (BudgetCategoryItem item : consolidated) {
+                if (item.getAmount() > 0) budgetList.add(item);
             }
 
             budgets.postValue(sortBudgetItems(budgetList));
-            categories.postValue(sortBudgetItems(new ArrayList<>(categoryMap.values())));
+            categories.postValue(sortBudgetItems(consolidated));
         });
     }
 

@@ -313,8 +313,8 @@ public interface TrackListItem extends BaseMultiItem {
                     amountFormatRes = R.string.format_expense;
                 }
                 case "ALLOCATION" -> {
-                    actionLabel = "Set a budget limit";
-                    amountColor = R.color.carti_primary_blue;
+                    actionLabel = "Planned budget set";
+                    amountColor = R.color.carti_primary_green;
                     amountFormatRes = R.string.format_income;
                 }
                 default -> {

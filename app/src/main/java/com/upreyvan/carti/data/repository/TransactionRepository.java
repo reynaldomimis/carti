@@ -105,6 +105,10 @@ public class TransactionRepository {
     public LiveData<List<TransactionWithUser>> getTransactionsByType(String type) { return localDataSource.getTransactionsByType(pref.getFamilyId(), type, pref.getUserId()); }
     public LiveData<List<TransactionWithUser>> getGoals() { return getTransactionsByType("GOAL"); }
     public LiveData<List<TransactionWithUser>> getIncome() { return getTransactionsByType("INCOME"); }
+    public LiveData<List<TransactionWithUser>> getAllocations() { return getTransactionsByType("ALLOCATION"); }
+    public LiveData<List<TransactionWithUser>> getAllocationsByMonth(String month) {
+        return AppDatabase.getInstance(pref.getContext()).transactionDao().getAllocationsByMonth(pref.getFamilyId(), month);
+    }
     public LiveData<List<TransactionWithUser>> getTransactionsByAllocation(String goalId) { return localDataSource.getTransactionsByAllocation(pref.getFamilyId(), goalId, pref.getUserId()); }
 
     public LiveData<List<TransactionWithUser>> getTransactionsByMonth(int month, int year) {

@@ -276,6 +276,11 @@ public interface HomeListItem extends BaseMultiItem {
                     amountColor = R.color.status_red;
                     amountFormatRes = R.string.format_expense;
                 }
+                case "ALLOCATION" -> {
+                    actionLabel = "Planned budget set";
+                    amountColor = R.color.carti_primary_green;
+                    amountFormatRes = R.string.format_income;
+                }
                 default -> {
                     actionLabel = "Added an expense";
                     amountColor = R.color.status_red;

@@ -12,13 +12,18 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.RecurringBudgetStats;
+import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.SecurityManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 public class BudgetManager {
     private static BudgetManager instance;
@@ -119,12 +124,51 @@ public class BudgetManager {
         List<BudgetCategoryItem> items = new ArrayList<>();
         items.add(new BudgetCategoryItem("Food", R.drawable.ic_chart, R.color.icon_food, R.color.log_food, 0, 0));
         items.add(new BudgetCategoryItem("Transportation", R.drawable.ic_chart, R.color.icon_fare, R.color.log_fare, 0, 0));
-        items.add(new BudgetCategoryItem("Bills", R.drawable.ic_calendar, R.color.icon_water, R.color.log_water, 0, 0));
         items.add(new BudgetCategoryItem("Shopping", R.drawable.ic_chart, R.color.icon_store, R.color.log_store, 0, 0));
         items.add(new BudgetCategoryItem("Health", R.drawable.ic_chart, R.color.status_red, R.color.status_red_tonal, 0, 0));
-        items.add(new BudgetCategoryItem("Education", R.drawable.ic_chart, R.color.carti_primary_blue, R.color.log_fare, 0, 0));
         items.add(new BudgetCategoryItem("Others", R.drawable.ic_chart, R.color.icon_others, R.color.log_others, 0, 0));
         return items;
+    }
+
+    public List<BudgetCategoryItem> getConsolidatedBudgets(
+            List<TransactionWithUser> dbAllocations,
+            List<com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum> expenses) {
+        
+        List<BudgetCategoryItem> basePlan = getBudgetPlan();
+        
+        Map<String, Double> budgetMap = new HashMap<>();
+        if (dbAllocations != null) {
+            for (TransactionWithUser tu : dbAllocations) {
+                budgetMap.put(tu.getTransaction().getCategory().toLowerCase(Locale.ROOT), tu.getTransaction().getAmount());
+            }
+        }
+
+        Map<String, Double> expenseMap = new HashMap<>();
+        if (expenses != null) {
+            for (com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum e : expenses) {
+                expenseMap.put(e.category.toLowerCase(Locale.ROOT), e.total);
+            }
+        }
+
+        List<BudgetCategoryItem> consolidated = new ArrayList<>();
+        for (BudgetCategoryItem item : basePlan) {
+            String catName = item.getCategoryName();
+            String catLower = catName.toLowerCase(Locale.ROOT);
+            
+            Double budgetLimit = budgetMap.get(catLower);
+            double limit = (budgetLimit != null) ? budgetLimit : item.getAmount();
+            
+            Double totalSpent = expenseMap.get(catLower);
+            double spent = (totalSpent != null) ? totalSpent : 0.0;
+
+            int pct = limit > 0 ? (int)((spent / limit) * 100) : 0;
+            
+            consolidated.add(new BudgetCategoryItem(
+                    catName, item.getIconRes(), item.getIconColor(), item.getBgColor(),
+                    limit, pct, item.getParentCategory(), spent, item.isRecurring()
+            ));
+        }
+        return consolidated;
     }
 
     public void updateOrAddCategory(String name, double amount, String parent, boolean isRecurring) {
@@ -192,11 +236,8 @@ public class BudgetManager {
 
     public void deleteCategory(String name) {
         List<BudgetCategoryItem> items = getBudgetPlan();
-        // Remove the category itself and its sub-categories if it's a parent
-        items.removeIf(item -> item.getCategoryName().equalsIgnoreCase(name) 
-                || (item.getParentCategory() != null && item.getParentCategory().equalsIgnoreCase(name)));
+        items.removeIf(item -> item.getCategoryName().equalsIgnoreCase(name) || (item.getParentCategory() != null && item.getParentCategory().equalsIgnoreCase(name)));
         saveBudgetPlan(items);
-        // Ensure LiveData is updated immediately
         budgetPlanLiveData.postValue(items);
     }
 }

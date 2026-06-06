@@ -107,6 +107,29 @@ public interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE familyId = :familyId")
     List<Transaction> getAllTransactionsList(String familyId);
 
+    @androidx.room.Transaction
+    @Query("""
+        SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl,
+        NULL as myReaction
+        FROM transactions
+        LEFT JOIN members ON transactions.userId = members.id
+        WHERE transactions.familyId = :familyId AND transactions.type = 'ALLOCATION' AND transactions.allocationMonth = :month
+        """)
+    LiveData<List<TransactionWithUser>> getAllocationsByMonth(String familyId, String month);
+
+    @androidx.room.Transaction
+    @Query("""
+        SELECT transactions.*, members.title as memberUsername, members.description as userRole, members.avatarRes as userAvatarRes, members.avatarUrl as userAvatarUrl,
+        NULL as myReaction
+        FROM transactions
+        LEFT JOIN members ON transactions.userId = members.id
+        WHERE transactions.familyId = :familyId AND transactions.type = 'ALLOCATION' AND transactions.allocationMonth = :month
+        """)
+    List<TransactionWithUser> getAllocationsByMonthSync(String familyId, String month);
+
+    @Query("SELECT * FROM transactions WHERE familyId = :familyId AND type = 'ALLOCATION' AND category = :category AND allocationMonth = :month LIMIT 1")
+    Transaction getAllocationSync(String familyId, String category, String month);
+
     @Query("SELECT category, SUM(amount) as total FROM transactions WHERE familyId = :familyId AND type = 'EXPENSE' GROUP BY category ORDER BY total DESC")
     List<CategorySum> getExpenseBreakdown(String familyId);
 
@@ -116,7 +139,7 @@ public interface TransactionDao {
     @Query("SELECT userId, SUM(amount) as total FROM transactions WHERE familyId = :familyId AND type = 'ALLOCATION' AND timestampMillis >= :start AND timestampMillis <= :end GROUP BY userId")
     LiveData<List<UserExpenseSum>> getAllocationSumPerUser(String familyId, long start, long end);
 
-    class CategorySum {
+    public static class CategorySum {
         public String category;
         public double total;
     }
