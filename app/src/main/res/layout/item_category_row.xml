@@ -48,7 +48,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginEnd="@dimen/spacing_small"
-        app:icon="@android:drawable/ic_menu_more"
+        app:icon="@drawable/ic_more_vert"
         app:iconTint="@color/text_secondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

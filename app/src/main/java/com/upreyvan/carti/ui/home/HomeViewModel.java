@@ -114,6 +114,14 @@ public class HomeViewModel extends BaseViewModel {
                 items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.quick_log_title), getApplication().getString(R.string.quick_log_subtitle), false, null, null));
                 List<QuickLogItem> logs = new ArrayList<>();
                 for (BudgetCategoryItem p : currentPlan) logs.add(new QuickLogItem(p.getCategoryName(), p.getIconRes(), p.getBgColor(), p.getIconColor()));
+                
+                // Sort to keep "Others" always at the end
+                logs.sort((a, b) -> {
+                    if (a.getTitle().equalsIgnoreCase("Others")) return 1;
+                    if (b.getTitle().equalsIgnoreCase("Others")) return -1;
+                    return a.getTitle().compareToIgnoreCase(b.getTitle());
+                });
+
                 items.add(new HomeListItem.QuickLogItemContainer(logs, null, null));
             }
             items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.recent_activity), null, currentTransactions != null && !currentTransactions.isEmpty(), "View All", null));

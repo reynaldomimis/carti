@@ -25,8 +25,16 @@ import java.util.List;
 
 public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAddBudgetBinding> {
 
+    private BudgetCategoryItem editingItem;
+
     public static AddBudgetBottomSheet newInstance() {
         return new AddBudgetBottomSheet();
+    }
+
+    public static AddBudgetBottomSheet newInstance(BudgetCategoryItem item) {
+        AddBudgetBottomSheet fragment = new AddBudgetBottomSheet();
+        fragment.editingItem = item;
+        return fragment;
     }
 
     @Override
@@ -42,12 +50,27 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
         getBinding().btnClose.setOnClickListener(v1 -> dismiss());
         getBinding().btnCancel.setOnClickListener(v1 -> dismiss());
         getBinding().btnSave.setOnClickListener(v1 -> saveBudget());
+
+        if (editingItem != null) {
+            getBinding().tvTitle.setText(R.string.btn_edit);
+            getBinding().etCategory.setText(editingItem.getCategoryName());
+            getBinding().etCategory.setEnabled(false); // Usually don't want to change category name here
+            getBinding().etLimit.setText(String.valueOf(editingItem.getAmount()));
+            getBinding().switchRecurring.setChecked(editingItem.isRecurring());
+        }
     }
 
     private void setupCategoryDropdown() {
         List<BudgetCategoryItem> categories = BudgetManager.getInstance(requireContext()).getBudgetPlan();
         List<String> names = new ArrayList<>();
         for (BudgetCategoryItem item : categories) names.add(item.getCategoryName());
+        
+        // Sort to keep "Others" always at the end
+        names.sort((a, b) -> {
+            if (a.equalsIgnoreCase("Others")) return 1;
+            if (b.equalsIgnoreCase("Others")) return -1;
+            return a.compareToIgnoreCase(b);
+        });
         
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, names);
         getBinding().etCategory.setAdapter(adapter);

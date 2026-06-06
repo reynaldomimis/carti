@@ -14,7 +14,9 @@ import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentBudgetBinding;
 import com.upreyvan.carti.databinding.ItemBudgetCardBinding;
 import com.upreyvan.carti.databinding.ItemCategoryRowBinding;
+import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.model.BudgetCategoryItem;
+import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.Utils;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,6 +57,8 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
                     binding.tvCategoryName.setText(item.getCategoryName());
                     binding.tvRemainingText.setText(Utils.formatCurrency(Math.max(0, item.getAmount() - item.getCurrentSpent())));
                     binding.tvStatus.setText(getString(R.string.label_balance));
+                    
+                    binding.getRoot().setOnClickListener(v -> showEditBudgetBottomSheet(item));
                 });
 
         categoryAdapter = new GenericAdapter<>(BudgetCategoryItem.DIFF_CALLBACK,
@@ -66,6 +70,8 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
                     int iconColor = item.getIconColor() != 0 ? item.getIconColor() : R.color.carti_primary_green;
                     binding.cardIcon.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(getResources().getColor(bgColor, null)));
                     binding.ivCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(iconColor, null)));
+
+                    binding.btnOptions.setOnClickListener(v -> showCategoryOptions(item, v));
                 });
 
         getBinding().rvBudgets.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(requireContext(), 3));
@@ -86,7 +92,47 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
         AddBudgetBottomSheet.newInstance().show(getChildFragmentManager(), "AddBudget");
     }
 
+    private void showEditBudgetBottomSheet(BudgetCategoryItem item) {
+        AddBudgetBottomSheet.newInstance(item).show(getChildFragmentManager(), "EditBudget");
+    }
+
     private void showAddCategoryBottomSheet() {
         AddCategoryBottomSheet.newInstance().show(getChildFragmentManager(), "AddCategory");
+    }
+
+    private void showSubCategories(BudgetCategoryItem item) {
+        SubCategoriesBottomSheet.newInstance(item.getCategoryName())
+                .show(getChildFragmentManager(), "SubCategories");
+    }
+
+    private void showCategoryOptions(BudgetCategoryItem item, View anchor) {
+        androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
+        popup.getMenuInflater().inflate(R.menu.menu_category_options, popup.getMenu());
+        
+        popup.setOnMenuItemClickListener(menuItem -> {
+            int id = menuItem.getItemId();
+            if (id == R.id.action_show_sub) {
+                showSubCategories(item);
+                return true;
+            } else if (id == R.id.action_edit) {
+                AddCategoryBottomSheet.newInstance(item)
+                        .show(getChildFragmentManager(), "EditCategory");
+                return true;
+            } else if (id == R.id.action_delete) {
+                confirmDeleteCategory(item);
+                return true;
+            }
+            return false;
+        });
+        popup.show();
+    }
+
+    private void confirmDeleteCategory(BudgetCategoryItem item) {
+        DialogHelper.showConfirmation(requireContext(),
+                "Delete Category?",
+                "Are you sure you want to delete '" + item.getCategoryName() + "'? This will also delete all its sub-categories.",
+                "Delete",
+                () -> BudgetManager.getInstance(requireContext()).deleteCategory(item.getCategoryName())
+        );
     }
 }

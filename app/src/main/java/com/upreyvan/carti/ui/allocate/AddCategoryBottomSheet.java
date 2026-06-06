@@ -18,6 +18,7 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.databinding.BottomSheetAddCategoryBinding;
+import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.IconChoice;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
 import com.upreyvan.carti.util.UiHelper;
@@ -30,7 +31,10 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
 
     private int selectedIcon = R.drawable.ic_chart;
     private Uri selectedImageUri = null;
+    private String parentCategory = null;
+    private BudgetCategoryItem editingItem = null;
     private OnCategoryAddedListener listener;
+
     public interface OnCategoryAddedListener {
         void onCategoryAdded(String name, double amount, boolean isRecurring);
     }
@@ -66,6 +70,28 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         return new AddCategoryBottomSheet();
     }
 
+    public static AddCategoryBottomSheet newInstance(String parentCategory) {
+        AddCategoryBottomSheet fragment = new AddCategoryBottomSheet();
+        Bundle args = new Bundle();
+        args.putString("parent_category", parentCategory);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static AddCategoryBottomSheet newInstance(BudgetCategoryItem item) {
+        AddCategoryBottomSheet fragment = new AddCategoryBottomSheet();
+        fragment.editingItem = item;
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            parentCategory = getArguments().getString("parent_category");
+        }
+    }
+
     @Override
     protected BottomSheetAddCategoryBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
         return BottomSheetAddCategoryBinding.inflate(inflater, container, false);
@@ -78,6 +104,24 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         getBinding().btnCancel.setOnClickListener(v -> dismiss());
         getBinding().btnSave.setOnClickListener(v -> saveCategory());
         getBinding().cardIconContainer.setOnClickListener(v -> showIconPicker());
+
+        if (parentCategory != null) {
+            getBinding().tvTitle.setText(R.string.title_add_sub_category);
+            getBinding().tvSubtitle.setText(getString(R.string.desc_adding_sub_category, parentCategory));
+        }
+
+        if (editingItem != null) {
+            getBinding().tvTitle.setText(R.string.btn_edit);
+            getBinding().etCategoryName.setText(editingItem.getCategoryName());
+            getBinding().etAmount.setText(String.valueOf(editingItem.getAmount()));
+            getBinding().switchRecurring.setChecked(editingItem.isRecurring());
+            selectedIcon = editingItem.getIconRes();
+            if (selectedIcon != 0) {
+                getBinding().ivCategoryIcon.setImageResource(selectedIcon);
+                getBinding().ivCategoryIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
+            }
+            parentCategory = editingItem.getParentCategory();
+        }
     }
 
     private void showIconPicker() {
@@ -138,18 +182,23 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         } catch (NumberFormatException ignored) {}
 
         BudgetManager.getInstance(requireContext()).updateOrAddCategory(
+                editingItem != null ? editingItem.getCategoryName() : null,
                 name,
                 selectedIcon,
                 R.color.carti_primary_green,
                 R.color.mint_green_alpha,
                 amount,
-                null,
+                parentCategory,
                 isRecurring
         );
 
+        // Notify listener then dismiss
         if (listener != null) {
             listener.onCategoryAdded(name, amount, isRecurring);
         }
+
+        // Manually trigger a refresh in BudgetManager to update LiveData
+        BudgetManager.getInstance(requireContext()).getBudgetPlanLiveData();
 
         dismiss();
     }

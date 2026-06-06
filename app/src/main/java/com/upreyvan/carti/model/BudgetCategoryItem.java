@@ -48,6 +48,7 @@ public class BudgetCategoryItem {
     public void setIconColor(int iconColor) { this.iconColor = iconColor; }
     public void setBgColor(int bgColor) { this.bgColor = bgColor; }
     public void setAmount(double amount) { this.amount = amount; }
+    public void setParentCategory(String parentCategory) { this.parentCategory = parentCategory; }
     public void setCurrentSpent(double spent) { this.currentSpent = spent; }
     public void setRecurring(boolean recurring) { isRecurring = recurring; }
     public void setIconUrl(String iconUrl) { this.iconUrl = iconUrl; }

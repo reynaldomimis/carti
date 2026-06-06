@@ -132,16 +132,33 @@ public class BudgetManager {
     }
 
     public void updateOrAddCategory(String name, int icon, int iconColor, int bgColor, double amount, String parent, boolean isRecurring) {
+        updateOrAddCategory(null, name, icon, iconColor, bgColor, amount, parent, isRecurring);
+    }
+
+    public void updateOrAddCategory(String oldName, String name, int icon, int iconColor, int bgColor, double amount, String parent, boolean isRecurring) {
         List<BudgetCategoryItem> items = getBudgetPlan();
         boolean found = false;
+        String targetName = (oldName != null) ? oldName : name;
+
         for (BudgetCategoryItem item : items) {
-            if (item.getCategoryName().equalsIgnoreCase(name)) {
+            if (item.getCategoryName().equalsIgnoreCase(targetName)) {
+                item.setCategoryName(name); // Update name if it changed
                 item.setAmount(amount);
                 item.setIconRes(icon);
                 item.setIconColor(iconColor);
                 item.setBgColor(bgColor);
+                item.setParentCategory(parent);
                 item.setRecurring(isRecurring);
                 found = true;
+                
+                // If parent name changed, update all its sub-categories
+                if (oldName != null && !oldName.equalsIgnoreCase(name)) {
+                    for (BudgetCategoryItem sub : items) {
+                        if (oldName.equalsIgnoreCase(sub.getParentCategory())) {
+                            sub.setParentCategory(name);
+                        }
+                    }
+                }
                 break;
             }
         }
@@ -154,6 +171,7 @@ public class BudgetManager {
             if (def != null) {
                 def.setAmount(amount);
                 def.setRecurring(isRecurring);
+                def.setParentCategory(parent);
                 if (icon != R.drawable.ic_chart) {
                     def.setIconRes(icon);
                     def.setIconColor(iconColor);
@@ -165,5 +183,17 @@ public class BudgetManager {
             }
         }
         saveBudgetPlan(items);
+        // Ensure LiveData is updated immediately
+        budgetPlanLiveData.postValue(items);
+    }
+
+    public void deleteCategory(String name) {
+        List<BudgetCategoryItem> items = getBudgetPlan();
+        // Remove the category itself and its sub-categories if it's a parent
+        items.removeIf(item -> item.getCategoryName().equalsIgnoreCase(name) 
+                || (item.getParentCategory() != null && item.getParentCategory().equalsIgnoreCase(name)));
+        saveBudgetPlan(items);
+        // Ensure LiveData is updated immediately
+        budgetPlanLiveData.postValue(items);
     }
 }
