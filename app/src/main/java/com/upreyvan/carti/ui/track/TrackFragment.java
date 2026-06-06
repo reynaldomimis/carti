@@ -64,6 +64,7 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> implements
 
     @Override public void onToggleAllocation() { viewModel.toggleExpansion(); }
     @Override public void onSeeAllTransactions() { navigateTo(AllTransactionsFragment.newInstance("EXPENSE")); }
+    @Override public void onCategoryClick(String categoryName) { navigateTo(AllTransactionsFragment.newInstance("EXPENSE", null, null, categoryName)); }
     @Override public void onTransactionLike(TransactionWithUser item) { viewModel.toggleLike(item); }
     @Override public void onTransactionReaction(TransactionWithUser item, String emoji) { viewModel.toggleReaction(item, emoji); }
     @Override public void onTransactionComment(TransactionWithUser item) { CommentsBottomSheetFragment.newInstance(item.getTransaction().getId()).show(getChildFragmentManager(), "Comments"); }

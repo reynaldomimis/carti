@@ -41,11 +41,13 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     private static final String ARG_TYPE = "transaction_type";
     private static final String ARG_USER_ID = "user_id";
     private static final String ARG_USER_NAME = "user_name";
+    private static final String ARG_CATEGORY = "category_name";
     private TransactionAdapter adapter;
     private TransactionRepository transactionRepository;
     private String filterType;
     private String filterUserId;
     private String filterUserName;
+    private String filterCategory;
     private List<TransactionWithUser> fullList = new ArrayList<>();
     private final List<TransactionWithUser> displayList = new ArrayList<>();
     private String currentQuery = "";
@@ -60,11 +62,16 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     }
 
     public static AllTransactionsFragment newInstance(String type, String userId, String userName) {
+        return newInstance(type, userId, userName, null);
+    }
+
+    public static AllTransactionsFragment newInstance(String type, String userId, String userName, String category) {
         AllTransactionsFragment fragment = new AllTransactionsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_TYPE, type);
         args.putString(ARG_USER_ID, userId);
         args.putString(ARG_USER_NAME, userName);
+        args.putString(ARG_CATEGORY, category);
         fragment.setArguments(args);
         return fragment;
     }
@@ -76,6 +83,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
             filterType = getArguments().getString(ARG_TYPE);
             filterUserId = getArguments().getString(ARG_USER_ID);
             filterUserName = getArguments().getString(ARG_USER_NAME);
+            filterCategory = getArguments().getString(ARG_CATEGORY);
         }
     }
 
@@ -141,12 +149,14 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
             String type = t.getTransaction().getType();
             boolean matchesType = filterType == null || filterType.equalsIgnoreCase(type);
             boolean matchesUser = filterUserId == null || filterUserId.equals(t.getTransaction().getUserId());
+            boolean matchesCategory = filterCategory == null || filterCategory.equalsIgnoreCase(t.getTransaction().getCategory());
+            
             String username = t.getUsername() != null ? t.getUsername().toLowerCase() : "";
             String category = t.getTransaction().getCategory() != null ? t.getTransaction().getCategory().toLowerCase() : "";
             String note = t.getTransaction().getNote() != null ? t.getTransaction().getNote().toLowerCase() : "";
             String amount = String.valueOf(t.getTransaction().getAmount());
             boolean matchesSearch = currentQuery.isEmpty() || username.contains(currentQuery) || category.contains(currentQuery) || note.contains(currentQuery) || amount.contains(currentQuery);
-            if (matchesType && matchesUser && matchesSearch) filteredList.add(t);
+            if (matchesType && matchesUser && matchesCategory && matchesSearch) filteredList.add(t);
         }
         if (filteredList.isEmpty()) {
             getBinding().rvAllTransactions.setVisibility(View.GONE);

@@ -38,6 +38,7 @@ public interface TrackListItem extends BaseMultiItem {
     interface OnTrackInteractionListener {
         void onToggleAllocation();
         void onSeeAllTransactions();
+        void onCategoryClick(String categoryName);
         void onTransactionLike(TransactionWithUser item);
         void onTransactionReaction(TransactionWithUser item, String emoji);
         void onTransactionComment(TransactionWithUser item);
@@ -228,9 +229,16 @@ public interface TrackListItem extends BaseMultiItem {
             List<BudgetCategoryItem> allocations = listener.getAllocations();
             if (adapter == null) {
                 adapter = new GenericAdapter<>(BudgetCategoryItem.DIFF_CALLBACK, (i, p) -> ItemBudgetCategoryBinding.inflate(i, p, false), (bind, it, p, c) -> {
-                    bind.tvCategoryName.setText(it.getCategoryName()); bind.tvAmount.setText(Utils.formatCurrency(it.getAmount()));
-                    bind.tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", it.getPercentage()));
-                    bind.pbBudget.setProgress(it.getPercentage());
+                    bind.tvCategoryName.setText(it.getCategoryName());
+                    
+                    String spentStr = Utils.formatCompactCurrency(it.getCurrentSpent());
+                    String budgetStr = Utils.formatCompactCurrency(it.getAmount());
+                    bind.tvAmount.setText(String.format("%s / %s", spentStr, budgetStr));
+                    
+                    int percent = it.getAmount() > 0 ? (int) ((it.getCurrentSpent() / it.getAmount()) * 100) : 0;
+                    bind.tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", percent));
+                    bind.pbBudget.setProgress(Math.min(100, percent));
+
                     Category cat = listener.findCategory(it.getCategoryName());
                     if (cat != null) {
                         bind.ivIcon.setImageResource(cat.getIconRes());
@@ -241,6 +249,8 @@ public interface TrackListItem extends BaseMultiItem {
                         bind.ivIcon.setColorFilter(ContextCompat.getColor(bind.getRoot().getContext(), it.getIconColor()));
                         bind.cvIcon.setCardBackgroundColor(ContextCompat.getColor(bind.getRoot().getContext(), it.getBgColor()));
                     }
+
+                    bind.getRoot().setOnClickListener(v -> listener.onCategoryClick(it.getCategoryName()));
                 });
                 rv.setAdapter(adapter);
             }
@@ -301,6 +311,11 @@ public interface TrackListItem extends BaseMultiItem {
                     actionLabel = "Settled a bill";
                     amountColor = R.color.status_red;
                     amountFormatRes = R.string.format_expense;
+                }
+                case "ALLOCATION" -> {
+                    actionLabel = "Set a budget limit";
+                    amountColor = R.color.carti_primary_blue;
+                    amountFormatRes = R.string.format_income;
                 }
                 default -> {
                     actionLabel = "Added an expense";

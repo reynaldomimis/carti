@@ -67,6 +67,7 @@ public class Utils {
     public static long getStartOfDayMillis() { return DateHelper.getStartOfDayMillis(); }
 
     public static String formatCurrency(double amount) { return CurrencyHelper.format(amount); }
+    public static String formatCompactCurrency(double amount) { return CurrencyHelper.formatCompact(amount); }
     public static double getDouble(Object val) { return CurrencyHelper.parse(val); }
 
     public static boolean isNetworkAvailable(Context ctx) { return NetworkHelper.isNetworkAvailable(ctx); }

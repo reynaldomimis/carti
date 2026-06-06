@@ -96,7 +96,7 @@
                     android:id="@+id/barIncome"
                     android:layout_width="32dp"
                     android:layout_height="0dp"
-                    android:background="@drawable/bg_pill_green" />
+                    android:background="@color/carti_primary_green" />
             </LinearLayout>
 
             <View
@@ -112,7 +112,7 @@
                     android:id="@+id/barExpense"
                     android:layout_width="32dp"
                     android:layout_height="0dp"
-                    android:background="@drawable/bg_pill_red" />
+                    android:background="@color/status_red" />
             </LinearLayout>
 
         </LinearLayout>

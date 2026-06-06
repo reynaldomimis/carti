@@ -54,6 +54,7 @@ public class TrackViewModel extends BaseViewModel {
     private void setupDataStream() {
         dataTrigger.addSource(repo.getTransactionsByMonth(month, year), v -> { currentMonthTrans = v; rebuild(); });
         dataTrigger.addSource(repo.getGoals(), v -> { currentGoals = v; rebuild(); });
+        dataTrigger.addSource(BudgetManager.getInstance(getApplication()).getBudgetPlanLiveData(), v -> { rebuild(); });
     }
 
     private void rebuild() {
@@ -104,13 +105,14 @@ public class TrackViewModel extends BaseViewModel {
             List<BudgetCategoryItem> nextAllocations = new ArrayList<>();
             if (plan.isEmpty()) {
                 for (Map.Entry<String, Double> e : catTotals.entrySet()) {
-                    nextAllocations.add(new BudgetCategoryItem(e.getKey(), R.drawable.ic_chart, R.color.carti_primary_green, R.color.tonal_button_bg, e.getValue(), exp > 0 ? (int)(e.getValue()/exp*100) : 0));
+                    nextAllocations.add(new BudgetCategoryItem(e.getKey(), R.drawable.ic_chart, R.color.carti_primary_green, R.color.tonal_button_bg, 0, 0, null, e.getValue(), false));
                 }
             } else {
                 for (BudgetCategoryItem p : plan) {
                     Double sVal = catTotals.get(p.getCategoryName());
                     double s = sVal != null ? sVal : 0.0;
-                    nextAllocations.add(new BudgetCategoryItem(p.getCategoryName(), p.getIconRes(), p.getIconColor(), p.getBgColor(), p.getAmount(), p.getAmount() > 0 ? (int)((s/p.getAmount())*100) : 0));
+                    int pct = p.getAmount() > 0 ? (int)((s / p.getAmount()) * 100) : 0;
+                    nextAllocations.add(new BudgetCategoryItem(p.getCategoryName(), p.getIconRes(), p.getIconColor(), p.getBgColor(), p.getAmount(), pct, p.getParentCategory(), s, p.isRecurring()));
                 }
             }
             
@@ -123,8 +125,13 @@ public class TrackViewModel extends BaseViewModel {
                 return a.getCategoryName().compareToIgnoreCase(b.getCategoryName());
             });
 
+            double totalPlanAmount = 0;
+            for (BudgetCategoryItem p : nextAllocations) {
+                totalPlanAmount += p.getAmount();
+            }
+
             if (!nextAllocations.isEmpty()) {
-                items.add(new TrackListItem.AllocationHeaderItem(exp, isExpanded, nextAllocations.size(), null, null));
+                items.add(new TrackListItem.AllocationHeaderItem(totalPlanAmount, isExpanded, nextAllocations.size(), null, null));
             }
 
             items.add(new TrackListItem.SectionHeaderItem(getApplication().getString(R.string.recent_expenses), getApplication().getString(R.string.see_all), null));

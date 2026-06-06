@@ -137,32 +137,37 @@ public class BudgetManager {
 
     public void updateOrAddCategory(String oldName, String name, int icon, int iconColor, int bgColor, double amount, String parent, boolean isRecurring) {
         List<BudgetCategoryItem> items = getBudgetPlan();
-        boolean found = false;
         String targetName = (oldName != null) ? oldName : name;
+        BudgetCategoryItem foundItem = null;
 
-        for (BudgetCategoryItem item : items) {
+        java.util.Iterator<BudgetCategoryItem> it = items.iterator();
+        while (it.hasNext()) {
+            BudgetCategoryItem item = it.next();
             if (item.getCategoryName().equalsIgnoreCase(targetName)) {
-                item.setCategoryName(name); // Update name if it changed
-                item.setAmount(amount);
-                item.setIconRes(icon);
-                item.setIconColor(iconColor);
-                item.setBgColor(bgColor);
-                item.setParentCategory(parent);
-                item.setRecurring(isRecurring);
-                found = true;
-                
-                // If parent name changed, update all its sub-categories
-                if (oldName != null && !oldName.equalsIgnoreCase(name)) {
-                    for (BudgetCategoryItem sub : items) {
-                        if (oldName.equalsIgnoreCase(sub.getParentCategory())) {
-                            sub.setParentCategory(name);
+                if (foundItem == null) {
+                    foundItem = item;
+                    item.setCategoryName(name);
+                    item.setAmount(amount);
+                    item.setIconRes(icon);
+                    item.setIconColor(iconColor);
+                    item.setBgColor(bgColor);
+                    item.setParentCategory(parent);
+                    item.setRecurring(isRecurring);
+
+                    if (oldName != null && !oldName.equalsIgnoreCase(name)) {
+                        for (BudgetCategoryItem sub : items) {
+                            if (oldName.equalsIgnoreCase(sub.getParentCategory())) {
+                                sub.setParentCategory(name);
+                            }
                         }
                     }
+                } else {
+                    it.remove();
                 }
-                break;
             }
         }
-        if (!found) {
+
+        if (foundItem == null) {
             BudgetCategoryItem def = null;
             for (BudgetCategoryItem d : getDefaultCategories()) {
                 if (d.getCategoryName().equalsIgnoreCase(name)) { def = d; break; }
@@ -183,8 +188,6 @@ public class BudgetManager {
             }
         }
         saveBudgetPlan(items);
-        // Ensure LiveData is updated immediately
-        budgetPlanLiveData.postValue(items);
     }
 
     public void deleteCategory(String name) {
