@@ -8,18 +8,18 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentOnboardingWelcomeBinding;
 import com.upreyvan.carti.ui.family.JoinFamilyFragment;
 import com.upreyvan.carti.util.Utils;
 import java.util.Map;
 
 public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWelcomeBinding> {
+    private OnboardingViewModel viewModel;
 
     @Override
     protected FragmentOnboardingWelcomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -29,70 +29,54 @@ public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWe
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(OnboardingViewModel.class);
         setupDynamicPadding();
-        getBinding().btnStart.setOnClickListener(v -> fetchLatestUserStatus());
+        getBinding().btnStart.setOnClickListener(v -> viewModel.fetchUserStatus());
+        observeViewModel();
     }
 
-    private void fetchLatestUserStatus() {
-        setLoading(true);
-        ApiHelper apiHelper = new ApiHelper(requireContext());
-        apiHelper.getUser(new AppwriteManager.AppwriteCallback<>() {
-            @Override
-            public void onSuccess(Map<String, Object> userDoc) {
-                if (!isAdded()) return;
-                setLoading(false);
-
-                boolean isEmployed = false;
-                Object emp = userDoc.get("isEmployed");
-                if (emp != null) {
-                    if (emp instanceof Boolean) isEmployed = (Boolean) emp;
-                    else isEmployed = Boolean.parseBoolean(String.valueOf(emp));
-                }
-
-                String familyId = String.valueOf(userDoc.get("familyId"));
-                if (familyId == null || "null".equals(familyId)) familyId = "";
-                
-                String pendingFamilyId = String.valueOf(userDoc.get("pendingFamilyId"));
-                if (pendingFamilyId == null || "null".equals(pendingFamilyId)) pendingFamilyId = "";
-                
-                String userId = String.valueOf(userDoc.getOrDefault("$id", ""));
-
-                PreferenceManager pref = PreferenceManager.getInstance(requireContext());
-                pref.setUserData(
-                    String.valueOf(userDoc.get("username")),
-                    String.valueOf(userDoc.get("email")),
-                    String.valueOf(userDoc.get("role")),
-                    isEmployed,
-                    familyId,
-                    "",
-                    userId
-                );
-
-                if (!familyId.isEmpty()) {
-                    pref.setOnboardingFinished(true);
-                    Utils.showToast(requireContext(), "Welcome back!");
-                    startActivity(new Intent(requireActivity(), MainActivity.class));
-                    requireActivity().finish();
-                } else if ("declined".equals(pendingFamilyId) || !pendingFamilyId.isEmpty()) {
-                    navigateTo(OnboardingStatusFragment.newInstanceForWaiting());
-                } else if (isEmployed) {
-                    navigateTo(new OnboardingOptionsFragment());
-                } else {
-                    navigateTo(new JoinFamilyFragment());
-                }
+    private void observeViewModel() {
+        viewModel.getUserStatus().observe(getViewLifecycleOwner(), userDoc -> {
+            if (userDoc == null) return;
+            
+            boolean isEmployed = false;
+            Object emp = userDoc.get("isEmployed");
+            if (emp != null) {
+                if (emp instanceof Boolean) isEmployed = (Boolean) emp;
+                else isEmployed = Boolean.parseBoolean(String.valueOf(emp));
             }
 
-            @Override
-            public void onError(Throwable error) {
-                if (!isAdded()) return;
-                setLoading(false);
-                PreferenceManager pref = PreferenceManager.getInstance(requireContext());
-                boolean isEmployed = pref.isEmployed();
-                showToast(getString(R.string.debug_fallback_is_employed, isEmployed), com.upreyvan.carti.util.UiHelper.Status.INFO);
+            String familyId = String.valueOf(userDoc.get("familyId"));
+            if (familyId == null || "null".equals(familyId)) familyId = "";
+            
+            String pendingFamilyId = String.valueOf(userDoc.get("pendingFamilyId"));
+            if (pendingFamilyId == null || "null".equals(pendingFamilyId)) pendingFamilyId = "";
+
+            if (!familyId.isEmpty()) {
+                PreferenceManager.getInstance(requireContext()).setOnboardingFinished(true);
+                Utils.showToast(requireContext(), "Welcome back!");
+                startActivity(new Intent(requireActivity(), MainActivity.class));
+                requireActivity().finish();
+            } else if ("declined".equals(pendingFamilyId)) {
+                navigateTo(OnboardingStatusFragment.newInstanceForDeclined());
+            } else if (!pendingFamilyId.isEmpty()) {
+                navigateTo(OnboardingStatusFragment.newInstanceForWaiting());
+            } else if (isEmployed) {
+                navigateTo(new OnboardingOptionsFragment());
+            } else {
+                navigateTo(new JoinFamilyFragment());
+            }
+        });
+
+        viewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                boolean isEmployed = PreferenceManager.getInstance(requireContext()).isEmployed();
                 if (isEmployed) navigateTo(new OnboardingOptionsFragment());
                 else navigateTo(new JoinFamilyFragment());
             }
         });
+
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), this::setLoading);
     }
 
     private void setLoading(boolean isLoading) {

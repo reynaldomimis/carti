@@ -4,14 +4,12 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.local.db.AppDatabase;
-import com.upreyvan.carti.data.local.db.dao.TransactionDao;
-import com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum;
 import com.upreyvan.carti.data.repository.NotificationRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.Bill;
@@ -21,19 +19,21 @@ import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class PlanViewModel extends BaseViewModel {
-    private final MutableLiveData<List<BudgetCategoryItem>> budgets = new MutableLiveData<>();
-    private final MutableLiveData<List<BudgetCategoryItem>> categories = new MutableLiveData<>();
-    private final MutableLiveData<RecurringBudgetStats> recurringStats = new MutableLiveData<>();
+    private final MediatorLiveData<List<BudgetCategoryItem>> budgets = new MediatorLiveData<>();
+    private final MediatorLiveData<List<BudgetCategoryItem>> categories = new MediatorLiveData<>();
+    private final MediatorLiveData<RecurringBudgetStats> recurringStats = new MediatorLiveData<>();
     
     private final BudgetManager budgetManager;
     private final TransactionRepository transRepo;
     private final NotificationRepository notifRepo;
-    private final AppDatabase db;
     private final PreferenceManager pref;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -42,17 +42,16 @@ public class PlanViewModel extends BaseViewModel {
         budgetManager = BudgetManager.getInstance(application);
         transRepo = TransactionRepository.getInstance(application);
         notifRepo = NotificationRepository.getInstance(application);
-        db = AppDatabase.getInstance(application);
         pref = PreferenceManager.getInstance(application);
         
-        budgetManager.getBudgetPlanLiveData().observeForever(observer);
-        budgetManager.getRecurringStatsLiveData().observeForever(recurringStatsObserver);
-        getDbAllocations().observeForever(observer2);
+        budgets.addSource(budgetManager.getBudgetPlanLiveData(), items -> loadData());
+        budgets.addSource(transRepo.getAllTransactions(), items -> loadData());
+        
+        categories.addSource(budgetManager.getBudgetPlanLiveData(), items -> loadData());
+        categories.addSource(transRepo.getAllTransactions(), items -> loadData());
+        
+        recurringStats.addSource(budgetManager.getRecurringStatsLiveData(), recurringStats::postValue);
     }
-
-    private final androidx.lifecycle.Observer<List<BudgetCategoryItem>> observer = items -> loadData();
-    private final androidx.lifecycle.Observer<List<TransactionWithUser>> observer2 = items -> loadData();
-    private final androidx.lifecycle.Observer<RecurringBudgetStats> recurringStatsObserver = recurringStats::postValue;
 
     public LiveData<List<BudgetCategoryItem>> getBudgets() { return budgets; }
     public LiveData<List<BudgetCategoryItem>> getCategories() { return categories; }
@@ -60,17 +59,31 @@ public class PlanViewModel extends BaseViewModel {
     public LiveData<List<TransactionWithUser>> getGoals() { return transRepo.getGoals(); }
     public LiveData<List<Bill>> getBills() { return notifRepo.getBills(pref.getFamilyId()); }
     public LiveData<List<TransactionWithUser>> getDebts() { return transRepo.getTransactionsByType("DEBT"); }
-    public LiveData<List<TransactionWithUser>> getDbAllocations() {
-        return transRepo.getAllocationsByMonth(com.upreyvan.carti.util.Utils.formatMonthQuery(java.util.Calendar.getInstance()));
-    }
 
     public void loadData() {
         executor.execute(() -> {
             budgetManager.processRecurringBudgets();
-            String familyId = pref.getFamilyId();
-
-            List<TransactionWithUser> databaseAllocations = db.transactionDao().getAllocationsByMonthSync(familyId, Utils.formatMonthQuery(java.util.Calendar.getInstance()));
-            List<CategorySum> expenseBreakdown = db.transactionDao().getExpenseBreakdown(familyId);
+            
+            List<TransactionWithUser> all = transRepo.getAllTransactions().getValue();
+            if (all == null) all = new ArrayList<>();
+            
+            String currentMonth = Utils.formatMonthQuery(java.util.Calendar.getInstance());
+            List<TransactionWithUser> databaseAllocations = all.stream()
+                .filter(tu -> "ALLOCATION".equalsIgnoreCase(tu.getTransaction().getType()) && java.util.Objects.equals(currentMonth, tu.getTransaction().getAllocationMonth()))
+                .collect(Collectors.toList());
+                
+            Map<String, Double> expensesMap = new HashMap<>();
+            for (TransactionWithUser tu : all) {
+                if ("EXPENSE".equalsIgnoreCase(tu.getTransaction().getType())) {
+                    String cat = tu.getTransaction().getCategory();
+                    expensesMap.put(cat, expensesMap.getOrDefault(cat, 0.0) + tu.getTransaction().getAmount());
+                }
+            }
+            
+            List<TransactionRepository.CategorySum> expenseBreakdown = new ArrayList<>();
+            for (Map.Entry<String, Double> entry : expensesMap.entrySet()) {
+                expenseBreakdown.add(new TransactionRepository.CategorySum(entry.getKey(), entry.getValue()));
+            }
             
             List<BudgetCategoryItem> consolidated = budgetManager.getConsolidatedBudgets(databaseAllocations, expenseBreakdown);
 
@@ -89,9 +102,7 @@ public class PlanViewModel extends BaseViewModel {
     }
 
     public void refresh() {
-        transRepo.syncTransactionsIfNeeded();
         transRepo.refreshTransactions();
-        loadData();
     }
 
     private List<BudgetCategoryItem> sortBudgetItems(List<BudgetCategoryItem> list) {
@@ -111,8 +122,6 @@ public class PlanViewModel extends BaseViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        budgetManager.getBudgetPlanLiveData().removeObserver(observer);
-        budgetManager.getRecurringStatsLiveData().removeObserver(recurringStatsObserver);
         executor.shutdown();
     }
 }

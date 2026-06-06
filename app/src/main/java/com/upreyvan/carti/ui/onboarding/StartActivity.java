@@ -19,8 +19,23 @@ public class StartActivity extends BaseActivity<ActivityStartBinding> {
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState == null) {
+            boolean isWaiting = getIntent().getBooleanExtra("is_waiting", false);
+            boolean isDeclined = getIntent().getBooleanExtra("is_declined", false);
+            String inviteCode = getIntent().getStringExtra("invite_code");
+
+            androidx.fragment.app.Fragment initialFragment;
+            if (isDeclined) {
+                initialFragment = OnboardingStatusFragment.newInstanceForDeclined();
+            } else if (isWaiting) {
+                initialFragment = OnboardingStatusFragment.newInstanceForWaiting();
+            } else if (inviteCode != null) {
+                initialFragment = OnboardingStatusFragment.newInstance(inviteCode);
+            } else {
+                initialFragment = new OnboardingWelcomeFragment();
+            }
+
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.start_fragment_container, new OnboardingWelcomeFragment())
+                    .replace(R.id.start_fragment_container, initialFragment)
                     .commit();
         }
     }

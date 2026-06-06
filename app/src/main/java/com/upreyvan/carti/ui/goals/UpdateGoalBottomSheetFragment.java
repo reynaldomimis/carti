@@ -40,7 +40,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
 
     @Override public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState); if (getArguments() != null) goalId = getArguments().getString(com.upreyvan.carti.util.Constants.Keys.KEY_TRANSACTION_ID);
-        transactionRepository = TransactionRepository.getInstance(requireContext()); memberRepository = new MemberRepository(requireContext());
+        transactionRepository = TransactionRepository.getInstance(requireContext()); memberRepository = MemberRepository.getInstance(requireContext());
     }
 
     @Override protected LayoutBottomSheetUpdateGoalBinding inflateBinding(@NonNull LayoutInflater i, @Nullable ViewGroup c) { return LayoutBottomSheetUpdateGoalBinding.inflate(i, c, false); }

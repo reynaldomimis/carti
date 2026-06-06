@@ -1,14 +1,11 @@
 package com.upreyvan.carti.ui.bills;
 
 import android.os.Bundle;
+import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActionBottomSheet;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.LayoutBaseActionBottomSheetBinding;
-import com.upreyvan.carti.util.Constants;
-
-import java.util.Map;
+import com.upreyvan.carti.util.StringHelper;
 
 public class BillDetailsBottomSheet extends BaseActionBottomSheet {
 
@@ -17,6 +14,7 @@ public class BillDetailsBottomSheet extends BaseActionBottomSheet {
     
     private String notificationId;
     private String billName;
+    private BillsViewModel viewModel;
 
     public static BillDetailsBottomSheet newInstance(String notificationId, String name) {
         BillDetailsBottomSheet fragment = new BillDetailsBottomSheet();
@@ -29,13 +27,21 @@ public class BillDetailsBottomSheet extends BaseActionBottomSheet {
 
     @Override
     protected void onSetupUI(LayoutBaseActionBottomSheetBinding binding) {
+        viewModel = new ViewModelProvider(this).get(BillsViewModel.class);
         Bundle args = getArguments();
         if (args != null) {
             notificationId = args.getString(ARG_BILL_ID);
             billName = args.getString(ARG_BILL_NAME);
-            
             binding.etNotes.setText(String.format("Payment for %s", billName));
         }
+        
+        viewModel.getSaveSuccess().observe(this, success -> {
+            if (success) {
+                showSuccess("Bill paid and transaction recorded!");
+                dismiss();
+            }
+        });
+        viewModel.getIsLoading().observe(this, loading -> setActionEnabled(!loading));
     }
 
     @Override
@@ -70,36 +76,7 @@ public class BillDetailsBottomSheet extends BaseActionBottomSheet {
             return;
         }
 
-        double amountVal = Double.parseDouble(amount);
-        ApiHelper apiHelper = new ApiHelper(requireContext());
-
-        apiHelper.addTransaction(amountVal, "EXPENSE", "Bills", billName + ": " + notes, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
-            @Override
-            public void onSuccess(Map<String, Object> result) {
-                AppwriteManager.getInstance(requireContext()).deleteDocument(
-                    Constants.Appwrite.DATABASE_ID,
-                    Constants.Appwrite.COL_NOTIFICATIONS,
-                    notificationId,
-                    new AppwriteManager.AppwriteCallback<Object>() {
-                        @Override
-                        public void onSuccess(Object result) {
-                            showSuccess("Bill paid and transaction recorded!");
-                            dismiss();
-                        }
-
-                        @Override
-                        public void onError(Throwable error) {
-                            showSuccess("Bill paid, but notification clear failed.");
-                            dismiss();
-                        }
-                    }
-                );
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                showError("Failed to record transaction: " + error.getMessage());
-            }
-        });
+        double amountVal = StringHelper.parseDouble(amount);
+        viewModel.payBill(notificationId, billName, amountVal, notes);
     }
 }

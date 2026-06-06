@@ -1,7 +1,5 @@
 package com.upreyvan.carti.ui.profile;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,20 +9,19 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentSecurityBinding;
 import com.upreyvan.carti.ui.auth.LoginActivity;
+import com.upreyvan.carti.util.UiHelper;
 
 public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
 
-    private AppwriteManager appwriteManager;
-    private ApiHelper apiHelper;
-    private PreferenceManager pref;
+    private ProfileViewModel viewModel;
 
     @Override
     protected FragmentSecurityBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -34,23 +31,38 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
-        appwriteManager = AppwriteManager.getInstance(requireContext());
-        apiHelper = new ApiHelper(requireContext());
-        pref = PreferenceManager.getInstance(requireContext());
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         
         setupToolbar();
         setupListeners();
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+        viewModel.getLogoutSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) navigateToLogin();
+        });
+        
+        viewModel.getActionSuccess().observe(getViewLifecycleOwner(), msg -> {
+            if (msg != null) showToast(msg, UiHelper.Status.SUCCESS);
+        });
+        
+        viewModel.getError().observe(getViewLifecycleOwner(), err -> {
+            if (err != null) showToast(err, UiHelper.Status.ERROR);
+        });
+        
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> showLoading(loading));
     }
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.security_title);
+        getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
     }
 
     private void setupListeners() {
         getBinding().btnResetPassword.setOnClickListener(v -> showChangePasswordDialog());
-        getBinding().btnSignOutAll.setOnClickListener(v -> signOutAllDevices());
+        getBinding().btnSignOutAll.setOnClickListener(v -> viewModel.logoutAll());
         getBinding().btnDeleteAccount.setOnClickListener(v -> showDeleteConfirmation());
     }
 
@@ -78,54 +90,10 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
             }
 
             dialog.dismiss();
-            performUpdatePassword(newPass, oldPass);
+            viewModel.updatePassword(newPass, oldPass);
         });
 
         dialog.show();
-    }
-
-    private void performUpdatePassword(String newPassword, String oldPassword) {
-        getBinding().btnResetPassword.setEnabled(false);
-        appwriteManager.updatePassword(newPassword, oldPassword, new AppwriteManager.AppwriteCallback<io.appwrite.models.User<java.util.Map<String, Object>>>() {
-            @Override
-            public void onSuccess(io.appwrite.models.User<java.util.Map<String, Object>> result) {
-                if (!isAdded()) return;
-                getBinding().btnResetPassword.setEnabled(true);
-                showToast(R.string.msg_password_updated, com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (!isAdded()) return;
-                getBinding().btnResetPassword.setEnabled(true);
-                showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.UiHelper.Status.ERROR);
-            }
-        });
-    }
-
-    private void signOutAllDevices() {
-        showLoading(true, "Signing out all devices...");
-        getBinding().btnSignOutAll.setEnabled(false);
-
-        appwriteManager.logoutAll(new AppwriteManager.AppwriteCallback<Object>() {
-            @Override
-            public void onSuccess(Object result) {
-                finishSignOutAll();
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                finishSignOutAll();
-            }
-        });
-    }
-
-    private void finishSignOutAll() {
-        if (!isAdded()) return;
-        pref.clear();
-        showLoading(false);
-        showToast(R.string.msg_sign_out_all_success, com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
-        navigateToLogin();
     }
 
     private void showDeleteConfirmation() {
@@ -133,29 +101,9 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
                 .setTitle(R.string.section_delete_account)
                 .setMessage(R.string.msg_delete_account_confirm)
                 .setCancelable(false)
-                .setPositiveButton(R.string.btn_confirm_delete, (dialog, which) -> performDeleteAccount())
+                .setPositiveButton(R.string.btn_confirm_delete, (dialog, which) -> viewModel.deleteAccount())
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
-    }
-
-    private void performDeleteAccount() {
-        getBinding().btnDeleteAccount.setEnabled(false);
-        apiHelper.deleteAccount(new AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
-            @Override
-            public void onSuccess(java.util.Map<String, Object> result) {
-                if (!isAdded()) return;
-                pref.clear();
-                showToast(R.string.msg_account_deleted, com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
-                navigateToLogin();
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (!isAdded()) return;
-                getBinding().btnDeleteAccount.setEnabled(true);
-                showToast("Error: " + error.getMessage(), com.upreyvan.carti.util.UiHelper.Status.ERROR);
-            }
-        });
     }
 
     private void navigateToLogin() {

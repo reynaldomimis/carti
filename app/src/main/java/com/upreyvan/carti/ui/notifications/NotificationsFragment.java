@@ -7,32 +7,22 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentNotificationsBinding;
 import com.upreyvan.carti.model.Notification;
-import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.UiHelper;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import io.appwrite.models.Document;
-import io.appwrite.models.DocumentList;
 
 public class NotificationsFragment extends BaseFragment<FragmentNotificationsBinding> {
 
     private NotificationAdapter adapter;
-    private ApiHelper apiHelper;
+    private NotificationViewModel viewModel;
     private PreferenceManager pref;
-    private RealtimeRepository realtimeRepo;
 
     @Override
     protected FragmentNotificationsBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -42,132 +32,49 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        apiHelper = new ApiHelper(requireContext());
+        viewModel = new ViewModelProvider(this).get(NotificationViewModel.class);
         pref = PreferenceManager.getInstance(requireContext());
-        realtimeRepo = RealtimeRepository.getInstance(requireContext());
         
         pref.setHasNotifications(false);
         pref.setLastNotifCheck(com.upreyvan.carti.util.Utils.getCurrentTimestamp());
         
         setupToolbar();
         setupRecyclerView();
-
-        loadAllNotifications();
+        observeViewModel();
         observeRealtimeChanges();
+        
+        viewModel.loadAll();
+    }
+
+    private void observeViewModel() {
+        viewModel.getNotifications().observe(getViewLifecycleOwner(), list -> {
+            adapter.setNotifications(list);
+            checkEmptyState();
+        });
+        
+        viewModel.getActionSuccess().observe(getViewLifecycleOwner(), msg -> {
+            if (msg != null) showToast(msg, UiHelper.Status.SUCCESS);
+        });
+        
+        viewModel.getError().observe(getViewLifecycleOwner(), err -> {
+            if (err != null) showToast(err, UiHelper.Status.ERROR);
+        });
+        
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), this::showLoading);
     }
 
     private void observeRealtimeChanges() {
-        realtimeRepo.getNotificationStream().observe(getViewLifecycleOwner(), payload -> {
+        RealtimeRepository.getInstance(requireContext()).getNotificationStream().observe(getViewLifecycleOwner(), payload -> {
             if (payload != null) {
-                String title = String.valueOf(payload.get("title"));
-                String content = String.valueOf(payload.get("content"));
-                
-                Notification newNotif = new Notification(
-                        title, 
-                        content, 
-                        System.currentTimeMillis(), 
-                        Notification.Type.INFO, 
-                        null
-                );
-                
-                adapter.addNotificationAtTop(newNotif);
-                getBinding().rvNotifications.scrollToPosition(0);
-                checkEmptyState();
+                viewModel.loadAll();
             }
         });
 
         if (pref.isAdmin()) {
-            realtimeRepo.getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> {
+            RealtimeRepository.getInstance(requireContext()).getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> {
                 if (payload != null) {
-                    loadAllNotifications(); 
+                    viewModel.loadAll(); 
                 }
-            });
-        }
-    }
-
-    private void loadAllNotifications() {
-        List<Notification> allNotifications = new ArrayList<>();
-
-        allNotifications.add(new Notification(
-                "Welcome to Carti!",
-                "Start tracking your family expenses and reach your goals together.",
-                System.currentTimeMillis(),
-                Notification.Type.INFO,
-                null
-        ));
-
-        if (pref.isAdmin()) {
-            apiHelper.getPendingMembers(new AppwriteManager.AppwriteCallback<>() {
-                @Override
-                public void onSuccess(DocumentList<Map<String, Object>> result) {
-                    if (!isAdded()) return;
-                    for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                        String userName = String.valueOf(doc.getData().get("username"));
-                        String userId = doc.getId();
-                        
-                        allNotifications.add(new Notification(
-                                getString(R.string.notif_join_request_title),
-                                getString(R.string.notif_join_request_desc, userName),
-                                System.currentTimeMillis(),
-                                Notification.Type.JOIN_REQUEST,
-                                userId
-                        ));
-                    }
-                    loadFamilyAnnouncements(allNotifications);
-                }
-
-                @Override
-                public void onError(Throwable error) {
-                    loadFamilyAnnouncements(allNotifications);
-                }
-            });
-        } else {
-            loadFamilyAnnouncements(allNotifications);
-        }
-    }
-
-    private void loadFamilyAnnouncements(List<Notification> allNotifications) {
-        String familyId = pref.getFamilyId();
-        if (familyId.isEmpty()) {
-            updateUI(allNotifications);
-            return;
-        }
-
-        apiHelper.getNotifications(familyId, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                if (!isAdded()) return;
-                for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                    String title = String.valueOf(doc.getData().get("title"));
-                    String content = String.valueOf(doc.getData().get("content"));
-                    long timestamp = 0;
-                    try {
-                        timestamp = com.upreyvan.carti.util.Utils.getMillisFromIso(String.valueOf(doc.getData().get("$createdAt")));
-                    } catch (Exception ignored) {}
-
-                    allNotifications.add(new Notification(
-                            title,
-                            content,
-                            timestamp > 0 ? timestamp : System.currentTimeMillis(),
-                            Notification.Type.INFO,
-                            null
-                    ));
-                }
-                updateUI(allNotifications);
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                updateUI(allNotifications);
-            }
-        });
-    }
-
-    private void updateUI(List<Notification> list) {
-        if (isAdded()) {
-            requireActivity().runOnUiThread(() -> {
-                adapter.setNotifications(list);
-                checkEmptyState();
             });
         }
     }
@@ -192,48 +99,10 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
 
     private void setupRecyclerView() {
         adapter = new NotificationAdapter();
-        adapter.setOnAcceptListener(this::approveMember);
-        adapter.setOnDenyListener(this::rejectMember);
+        adapter.setOnAcceptListener(viewModel::approveMember);
+        adapter.setOnDenyListener(viewModel::rejectMember);
         getBinding().rvNotifications.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvNotifications.setAdapter(adapter);
-    }
-
-    private void approveMember(String userId) {
-        apiHelper.approveJoinRequest(userId, new AppwriteManager.AppwriteCallback<>() {
-            @Override
-            public void onSuccess(Map<String, Object> result) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    showToast(getString(R.string.msg_member_approved), UiHelper.Status.SUCCESS);
-                    loadAllNotifications();
-                });
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> showToast(error.getMessage(), UiHelper.Status.ERROR));
-            }
-        });
-    }
-
-    private void rejectMember(String userId) {
-        apiHelper.rejectJoinRequest(userId, new AppwriteManager.AppwriteCallback<>() {
-            @Override
-            public void onSuccess(Map<String, Object> result) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    showToast(getString(R.string.msg_member_rejected), UiHelper.Status.INFO);
-                    loadAllNotifications();
-                });
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> showToast(error.getMessage(), UiHelper.Status.ERROR));
-            }
-        });
     }
 
     private void checkEmptyState() {
@@ -245,10 +114,4 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
             getBinding().rvNotifications.setVisibility(View.VISIBLE);
         }
     }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
 }
-

@@ -9,20 +9,18 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.upreyvan.carti.MainActivity;
+import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentAuthBinding;
 import com.upreyvan.carti.ui.onboarding.StartActivity;
 import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Validator;
-import java.util.Map;
 
 public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
     private boolean isLoginMode = true;
+    private AuthViewModel viewModel;
 
     @Override
     protected FragmentAuthBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -32,8 +30,28 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
         setupUI();
         setupRoleDropdown();
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+        viewModel.getLoginSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                viewModel.consumeLoginSuccess();
+                startActivity(new Intent(requireActivity(), SplashActivity.class)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                requireActivity().finish();
+            }
+        });
+        viewModel.getRegisterSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) showToast("Registration successful!", UiHelper.Status.SUCCESS);
+        });
+        viewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) showToast(error, UiHelper.Status.ERROR);
+        });
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), this::setLoading);
     }
 
     private void setupRoleDropdown() {
@@ -45,10 +63,18 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         updateModeUI();
         getBinding().btnSubmit.setOnClickListener(v -> {
             if (validate()) {
-                if (isLoginMode) performLogin();
-                else performRegister();
+                String email = getBinding().etEmail.getText().toString().trim();
+                String password = getBinding().etPassword.getText().toString().trim();
+                if (isLoginMode) {
+                    viewModel.login(email, password);
+                } else {
+                    String username = getBinding().etUsername.getText().toString().trim();
+                    String role = getBinding().actvRole.getText().toString();
+                    viewModel.register(email, password, username, getBinding().cbIsEmployee.isChecked(), role);
+                }
             }
         });
+        
         getBinding().tvSwitchPrompt.setOnClickListener(v -> {
             isLoginMode = !isLoginMode;
             updateModeUI();
@@ -69,60 +95,28 @@ public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
         android.text.Editable passwordText = getBinding().etPassword.getText();
         String email = (emailText != null) ? emailText.toString().trim() : "";
         String password = (passwordText != null) ? passwordText.toString().trim() : "";
-        return Validator.isValidEmail(email) && Validator.isValidPassword(password);
-    }
-
-    private void performLogin() {
-        setLoading(true);
-        android.text.Editable emailText = getBinding().etEmail.getText();
-        android.text.Editable passwordText = getBinding().etPassword.getText();
-        String email = (emailText != null) ? emailText.toString().trim() : "";
-        String password = (passwordText != null) ? passwordText.toString().trim() : "";
-
-        AppwriteManager.getInstance(requireContext()).login(email, password, new AppwriteManager.AppwriteCallback<>() {
-            @Override public void onSuccess(io.appwrite.models.Session result) { fetchContext(); }
-            @Override public void onError(Throwable e) { setLoading(false); showToast(e.getMessage(), UiHelper.Status.ERROR); }
-        });
-    }
-
-    private void performRegister() {
-        setLoading(true);
-        android.text.Editable emailText = getBinding().etEmail.getText();
-        android.text.Editable passwordText = getBinding().etPassword.getText();
-        android.text.Editable usernameText = getBinding().etUsername.getText();
-        android.text.Editable roleText = getBinding().actvRole.getText();
-
-        String email = (emailText != null) ? emailText.toString().trim() : "";
-        String password = (passwordText != null) ? passwordText.toString().trim() : "";
-        String username = (usernameText != null) ? usernameText.toString().trim() : "";
-        String role = (roleText != null) ? roleText.toString() : "";
-
-        new ApiHelper(requireContext()).register(email, password, username, getBinding().cbIsEmployee.isChecked(), role, new AppwriteManager.AppwriteCallback<>() {
-            @Override public void onSuccess(Map<String, Object> r) { performLogin(); }
-            @Override public void onError(Throwable e) { setLoading(false); showToast(e.getMessage(), UiHelper.Status.ERROR); }
-        });
-    }
-
-    private void fetchContext() {
-        new ApiHelper(requireContext()).getUser(new AppwriteManager.AppwriteCallback<>() {
-            @Override
-            public void onSuccess(Map<String, Object> user) {
-                PreferenceManager pref = PreferenceManager.getInstance(requireContext());
-                Object familyIdObj = user.get("familyId");
-                String familyId = (familyIdObj != null && !"null".equals(String.valueOf(familyIdObj))) ? String.valueOf(familyIdObj) : "";
-                
-                Object idObj = user.getOrDefault("$id", user.getOrDefault("userId", ""));
-                String userId = String.valueOf(idObj);
-                if ("null".equals(userId)) userId = "";
-                
-                pref.setUserData(String.valueOf(user.getOrDefault("username", "User")), String.valueOf(user.getOrDefault("email", "")), String.valueOf(user.getOrDefault("role", "Member")), Boolean.parseBoolean(String.valueOf(user.getOrDefault("isEmployed", false))), familyId, String.valueOf(user.getOrDefault("inviteCode", "")), userId);
-                setLoading(false);
-                if (userId.isEmpty()) { showToast("Login failed: Session error.", UiHelper.Status.ERROR); return; }
-                startActivity(new Intent(requireActivity(), familyId.isEmpty() ? StartActivity.class : MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                requireActivity().finish();
+        
+        if (!Validator.isValidEmail(email)) {
+            showToast(getString(R.string.err_invalid_email), UiHelper.Status.WARNING);
+            return false;
+        }
+        if (!Validator.isValidPassword(password)) {
+            showToast("Password must be at least 8 characters", UiHelper.Status.WARNING);
+            return false;
+        }
+        
+        if (!isLoginMode) {
+            if (Validator.isEmpty(getBinding().etUsername)) {
+                showToast("Username is required", UiHelper.Status.WARNING);
+                return false;
             }
-            @Override public void onError(Throwable e) { setLoading(false); showToast(e.getMessage(), UiHelper.Status.ERROR); }
-        });
+            if (Validator.isEmpty(getBinding().actvRole)) {
+                showToast("Please select your role", UiHelper.Status.WARNING);
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     private void setLoading(boolean l) {

@@ -4,14 +4,8 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.local.db.Converters;
 import com.upreyvan.carti.util.TransactionHelper;
 import com.upreyvan.carti.util.Utils;
 
@@ -20,14 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@Entity(tableName = "transactions", indices = {
-        @Index("familyId"),
-        @Index("userId"),
-        @Index("type")
-})
-@TypeConverters(Converters.class)
 public class Transaction {
-    @PrimaryKey
     @NonNull
     private String id;
     private String userId;
@@ -61,7 +48,6 @@ public class Transaction {
     private String reminder;
     private String lastEmoji;
 
-    @Ignore
     private String reactorNames;
 
     public Transaction() {
@@ -163,6 +149,40 @@ public class Transaction {
     public String getReactorNames() { return reactorNames; }
     public void setReactorNames(String reactorNames) { this.reactorNames = reactorNames; }
 
+    public Transaction copy() {
+        Transaction t = new Transaction();
+        t.id = this.id;
+        t.userId = this.userId;
+        t.amount = this.amount;
+        t.category = this.category;
+        t.type = this.type;
+        t.note = this.note;
+        t.familyId = this.familyId;
+        t.username = this.username;
+        t.startDate = this.startDate;
+        t.targetDate = this.targetDate;
+        t.isPaid = this.isPaid;
+        t.targetAmount = this.targetAmount;
+        t.status = this.status;
+        t.members = this.members != null ? new ArrayList<>(this.members) : new ArrayList<>();
+        t.likesCount = this.likesCount;
+        t.commentCount = this.commentCount;
+        t.allocatedTo = this.allocatedTo;
+        t.allocationMonth = this.allocationMonth;
+        t.iconUrl = this.iconUrl;
+        t.iconRes = this.iconRes;
+        t.title = this.title;
+        t.createdAt = this.createdAt;
+        t.updatedAt = this.updatedAt;
+        t.iconBgColor = this.iconBgColor;
+        t.iconColor = this.iconColor;
+        t.timestampMillis = this.timestampMillis;
+        t.reminder = this.reminder;
+        t.lastEmoji = this.lastEmoji;
+        t.reactorNames = this.reactorNames;
+        return t;
+    }
+
     public static Transaction fromPayload(Map<String, Object> payload, String familyId, Context context, String userId) {
         if (payload == null) return null;
 
@@ -183,13 +203,11 @@ public class Transaction {
         return t;
     }
 
-    @Ignore
     public int getProgress() {
         if (targetAmount <= 0) return 0;
         return (int) Math.min(100, (amount / targetAmount) * 100);
     }
 
-    @Ignore
     public boolean isCompleted() {
         if ("GOAL".equals(type)) return amount >= targetAmount && targetAmount > 0;
         return isPaid;
@@ -210,12 +228,13 @@ public class Transaction {
                 Objects.equals(title, that.title) &&
                 Objects.equals(note, that.note) &&
                 Objects.equals(category, that.category) &&
-                Objects.equals(status, that.status);
+                Objects.equals(status, that.status) &&
+                Objects.equals(updatedAt, that.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, amount, title, note, category, status, likesCount, commentCount);
+        return Objects.hash(id, type, amount, title, note, category, status, likesCount, commentCount, updatedAt);
     }
 
     public static final DiffUtil.ItemCallback<Transaction> DIFF_CALLBACK = new DiffUtil.ItemCallback<Transaction>() {

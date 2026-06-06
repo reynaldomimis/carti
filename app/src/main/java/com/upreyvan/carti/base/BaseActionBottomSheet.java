@@ -48,6 +48,12 @@ public abstract class BaseActionBottomSheet extends BaseBottomSheetFragment<Layo
         getBinding().btnAction.setText(getButtonText());
     }
 
+    protected void setActionEnabled(boolean enabled) {
+        if (getBinding() != null) {
+            getBinding().btnAction.setEnabled(enabled);
+        }
+    }
+
     protected abstract String getTitle();
     protected String getSubtitle() { return null; }
     protected abstract String getButtonText();

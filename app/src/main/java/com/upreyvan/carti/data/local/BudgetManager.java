@@ -132,7 +132,7 @@ public class BudgetManager {
 
     public List<BudgetCategoryItem> getConsolidatedBudgets(
             List<TransactionWithUser> dbAllocations,
-            List<com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum> expenses) {
+            List<TransactionRepository.CategorySum> expenses) {
         
         List<BudgetCategoryItem> basePlan = getBudgetPlan();
         
@@ -145,7 +145,7 @@ public class BudgetManager {
 
         Map<String, Double> expenseMap = new HashMap<>();
         if (expenses != null) {
-            for (com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum e : expenses) {
+            for (TransactionRepository.CategorySum e : expenses) {
                 expenseMap.put(e.category.toLowerCase(Locale.ROOT), e.total);
             }
         }

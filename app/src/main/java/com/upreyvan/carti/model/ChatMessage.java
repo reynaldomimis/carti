@@ -3,17 +3,12 @@ package com.upreyvan.carti.model;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
-
 import com.upreyvan.carti.data.ai.IntentType;
 
 import org.json.JSONObject;
 
 import java.util.Objects;
 
-@Entity(tableName = "messages")
 public class ChatMessage {
 
     private String senderName;
@@ -21,15 +16,11 @@ public class ChatMessage {
     private String time;
     private boolean isMe;
     private int imageResId;
-    @Ignore
     private IntentType intent;
     private boolean isCanceled = false;
     private boolean isShimmer = false;
-    @Ignore
     private boolean isSummary = false;
-    @Ignore
     private JSONObject pendingAction;
-    @Ignore
     private JSONObject summaryData;
 
     public boolean isSummary() { return isSummary; }
@@ -37,14 +28,12 @@ public class ChatMessage {
     public JSONObject getSummaryData() { return summaryData; }
     public void setSummaryData(JSONObject summaryData) { this.summaryData = summaryData; }
 
-    @PrimaryKey
     @NonNull
     private String id;
     private String senderId;
     private String familyId;
     private long timestamp;
 
-    @Ignore
     public ChatMessage(boolean isShimmer, boolean isMe) {
         this.id = "shimmer_" + System.currentTimeMillis();
         this.senderName = "";
@@ -56,7 +45,6 @@ public class ChatMessage {
         this.isShimmer = isShimmer;
     }
 
-    @Ignore
     public ChatMessage(String senderName, String message, String time, boolean isMe, int imageResId) {
         this.id = "msg_" + System.currentTimeMillis();
         this.senderName = senderName;
@@ -67,7 +55,6 @@ public class ChatMessage {
         this.intent = IntentType.UNKNOWN;
     }
 
-    @Ignore
     public ChatMessage(String senderName, String message, String time, boolean isMe, int imageResId, IntentType intent) {
         this(senderName, message, time, isMe, imageResId);
         this.intent = intent;

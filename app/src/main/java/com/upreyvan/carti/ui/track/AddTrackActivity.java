@@ -5,45 +5,69 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.data.local.CategoryManager;
 import com.upreyvan.carti.databinding.ActivityAddTrackBinding;
 import com.upreyvan.carti.model.Category;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.BudgetAllocationHelper;
 import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.TransactionHandler;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
 import java.util.List;
 
 public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
+    private AddTrackViewModel viewModel;
+
     @Override protected ActivityAddTrackBinding inflateBinding(LayoutInflater inflater) { return ActivityAddTrackBinding.inflate(inflater); }
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(AddTrackViewModel.class);
         setupDynamicPadding(); setupToolbar(); setupDropdowns(); setupClickListeners();
+        observeViewModel();
         getBinding().layoutForm.cvBalanceInfo.setVisibility(View.GONE);
+    }
+
+    private void observeViewModel() {
+        viewModel.getRemainingBalance().observe(this, balance -> {
+            getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(balance));
+        });
+        
+        viewModel.getSaveSuccess().observe(this, success -> {
+            if (success) {
+                startActivity(new Intent(AddTrackActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                finish();
+            }
+        });
+        
+        viewModel.getError().observe(this, error -> {
+            if (error != null) showToast(getString(R.string.err_failed_save, error), UiHelper.Status.ERROR);
+        });
+        
+        viewModel.getIsLoading().observe(this, loading -> showLoading(loading, getString(R.string.msg_saving_expense)));
     }
 
     private void setupDropdowns() {
         List<Category> cats = CategoryManager.getInstance(this).getCategories();
         String[] names = cats.stream().map(Category::getName).toArray(String[]::new);
         getBinding().actvCategory.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, names));
-        if (names.length > 0) { getBinding().actvCategory.setText(names[0], false); updateBalanceInfo(names[0]); }
-        getBinding().actvCategory.setOnItemClickListener((p, v, pos, id) -> updateBalanceInfo((String) p.getItemAtPosition(pos)));
+        if (names.length > 0) { 
+            getBinding().actvCategory.setText(names[0], false); 
+            viewModel.setCategory(names[0]);
+            getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
+        }
+        getBinding().actvCategory.setOnItemClickListener((p, v, pos, id) -> {
+            String cat = (String) p.getItemAtPosition(pos);
+            viewModel.setCategory(cat);
+            getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
+        });
 
         String[] src = {"Cash", "GCash", "Maya", "Bank Transfer", "Credit Card"};
         getBinding().layoutForm.actvSource.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, src));
         getBinding().layoutForm.actvSource.setText(src[0], false);
-    }
-
-    private void updateBalanceInfo(String cat) {
-        getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
-        BudgetAllocationHelper.getRemainingBalance(this, cat, b -> getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(b)));
     }
 
     private void setupDynamicPadding() {
@@ -64,12 +88,11 @@ public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
                 showToast(R.string.msg_fill_all_fields, UiHelper.Status.WARNING); return;
             }
             double val = StringHelper.parseDouble(getBinding().layoutForm.etAmount.getText().toString());
-            TransactionHandler.saveTrack(this, val, getBinding().actvCategory.getText().toString(), getBinding().layoutForm.etDescription.getText().toString(), getBinding().layoutForm.actvSource.getText().toString(), new TransactionHandler.TransactionCallback() {
-                @Override public void onLoading(boolean l) { showLoading(l, getString(R.string.msg_saving_expense)); }
-                @Override public void onSuccess(Transaction t) { startActivity(new Intent(AddTrackActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)); finish(); }
-                @Override public void onError(String m) { showToast(getString(R.string.err_failed_save, m), UiHelper.Status.ERROR); }
-            });
+            String cat = getBinding().actvCategory.getText().toString();
+            String desc = getBinding().layoutForm.etDescription.getText().toString();
+            String source = getBinding().layoutForm.actvSource.getText().toString();
+            
+            viewModel.saveTrack(val, cat, desc, source);
         });
     }
 }
-

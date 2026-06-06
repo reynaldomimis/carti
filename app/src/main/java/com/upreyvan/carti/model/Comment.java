@@ -2,14 +2,10 @@ package com.upreyvan.carti.model;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 import java.util.Objects;
 
-@Entity(tableName = "comments")
 public class Comment {
-    @PrimaryKey
     @NonNull
     private String id;
     private String transactionId;

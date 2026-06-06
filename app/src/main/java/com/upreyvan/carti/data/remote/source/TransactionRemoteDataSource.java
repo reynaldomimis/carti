@@ -66,4 +66,12 @@ public class TransactionRemoteDataSource {
     public void getComments(String transactionId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
         apiHelper.getComments(transactionId, callback);
     }
+
+    public void getLikes(String transactionId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        apiHelper.getLikes(transactionId, callback);
+    }
+
+    public void markDebtPaid(String debtId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        apiHelper.markDebtPaid(debtId, callback);
+    }
 }

@@ -13,17 +13,15 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.LayoutBottomSheetAddGoalBinding;
 import com.upreyvan.carti.model.IconChoice;
-import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
-import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Validator;
 import com.yalantis.ucrop.UCrop;
@@ -31,6 +29,7 @@ import com.yalantis.ucrop.UCrop;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -38,6 +37,7 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
 
     private int selectedIcon = R.drawable.ic_chart;
     private Uri selectedImageUri = null;
+    private GoalViewModel viewModel;
 
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -74,8 +74,25 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(GoalViewModel.class);
         setupDatePicker();
         setupListeners();
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+        viewModel.getSaveSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                showToast(R.string.msg_goal_saved_success, UiHelper.Status.SUCCESS);
+                dismiss();
+            }
+        });
+        
+        viewModel.getError().observe(getViewLifecycleOwner(), err -> {
+            if (err != null) showToast(err, UiHelper.Status.ERROR);
+        });
+        
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> showLoading(loading, "Saving goal..."));
     }
 
     private void setupDatePicker() {
@@ -151,11 +168,9 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
 
         String name = getBinding().etGoalName.getText().toString().trim();
 
-        // Validate duplicates
-        androidx.lifecycle.LiveData<java.util.List<com.upreyvan.carti.model.TransactionWithUser>> goalsData = 
-                TransactionRepository.getInstance(requireContext()).getGoals();
-        if (goalsData.getValue() != null) {
-            for (com.upreyvan.carti.model.TransactionWithUser item : goalsData.getValue()) {
+        List<TransactionWithUser> goalsData = viewModel.getGoals().getValue();
+        if (goalsData != null) {
+            for (TransactionWithUser item : goalsData) {
                 if (item.getTransaction().getTitle().equalsIgnoreCase(name)) {
                     UiHelper.showSnackbar(getBinding().getRoot(), "This goal already exists", UiHelper.Status.WARNING);
                     return;
@@ -168,72 +183,6 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
         double savedAmount = savedAmountStr.isEmpty() ? 0 : Double.parseDouble(savedAmountStr);
         String date = getBinding().etTargetDate.getText().toString().trim();
 
-        showLoading(true, "Saving goal...");
-
-        if (selectedImageUri != null) {
-            uploadImageAndSave(name, targetAmount, savedAmount, date);
-        } else {
-            saveGoal(name, targetAmount, savedAmount, date, null);
-        }
-    }
-
-    private void uploadImageAndSave(String name, double targetAmount, double savedAmount, String date) {
-        File file = new File(selectedImageUri.getPath());
-        io.appwrite.models.InputFile inputFile = io.appwrite.models.InputFile.Companion.fromFile(file);
-        
-        AppwriteManager.getInstance(requireContext()).uploadFile(
-                Constants.Appwrite.BUCKET_ICONS,
-                io.appwrite.ID.Companion.unique(0),
-                inputFile,
-                null,
-                new AppwriteManager.AppwriteCallback<>() {
-                    @Override
-                    public void onSuccess(io.appwrite.models.File result) {
-                        String fileUrl = String.format("%s/storage/buckets/%s/files/%s/view?project=%s",
-                                com.upreyvan.carti.BuildConfig.APPWRITE_ENDPOINT,
-                                Constants.Appwrite.BUCKET_ICONS,
-                                result.getId(),
-                                com.upreyvan.carti.BuildConfig.APPWRITE_PROJECT_ID);
-                        saveGoal(name, targetAmount, savedAmount, date, fileUrl);
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        showLoading(false);
-                        showToast("Failed to upload image: " + error.getMessage(), UiHelper.Status.ERROR);
-                    }
-                }
-        );
-    }
-
-    private void saveGoal(String name, double targetAmount, double savedAmount, String date, String iconUrl) {
-        Transaction t = new Transaction();
-        t.setTitle(name);
-        t.setTargetAmount(targetAmount);
-        t.setAmount(savedAmount);
-        t.setType("GOAL");
-        t.setTargetDate(date);
-        t.setIconRes(selectedIcon);
-        t.setIconUrl(iconUrl);
-
-        TransactionRepository.getInstance(requireContext()).addTransaction(t, new AppwriteManager.AppwriteCallback<>() {
-            @Override
-            public void onSuccess(java.util.Map<String, Object> result) {
-                if (isAdded()) {
-                    showLoading(false);
-                    showToast(R.string.msg_goal_saved_success, UiHelper.Status.SUCCESS);
-                    dismiss();
-                }
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (isAdded()) {
-                    showLoading(false);
-                    showToast(getString(R.string.err_generic, error.getMessage()), UiHelper.Status.ERROR);
-                }
-            }
-        });
+        viewModel.saveGoal(name, targetAmount, savedAmount, date, selectedIcon, selectedImageUri);
     }
 }
-

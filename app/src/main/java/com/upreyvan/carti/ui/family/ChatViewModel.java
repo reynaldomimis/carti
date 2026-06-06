@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.data.ai.LocalIntentParser;
@@ -21,6 +22,7 @@ import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
 import org.json.JSONObject;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,7 +40,9 @@ public class ChatViewModel extends BaseViewModel {
     private final MutableLiveData<Boolean> isAiThinking = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMsg = new MutableLiveData<>(null);
     private final MutableLiveData<Long> sessionTimeRemaining = new MutableLiveData<>(0L);
-    private final LiveData<List<ChatMessage>> messages;
+
+    private final Map<String, ChatMessage> messageMap = new LinkedHashMap<>();
+    private final MediatorLiveData<List<ChatMessage>> messagesLiveData = new MediatorLiveData<>();
     
     private long oldestTimestamp = Long.MAX_VALUE;
     private static final int PAGE_SIZE = 50;
@@ -50,14 +54,40 @@ public class ChatViewModel extends BaseViewModel {
 
     public ChatViewModel(@NonNull Application application) {
         super(application);
-        chatRepo = ChatRepository.getInstance(application);
-        aiRepo = AiRepository.getInstance(application);
-        transRepo = TransactionRepository.getInstance(application);
-        pref = PreferenceManager.getInstance(application);
-        messages = com.upreyvan.carti.data.local.db.AppDatabase.getInstance(application).messageDao().getMessages(pref.getFamilyId());
+        this.pref = PreferenceManager.getInstance(application);
+        this.chatRepo = ChatRepository.getInstance(application);
+        this.aiRepo = AiRepository.getInstance(application);
+        this.transRepo = TransactionRepository.getInstance(application);
+        
+        messagesLiveData.addSource(chatRepo.getChatStream(), payload -> {
+            if (payload != null) {
+                String id = (String) payload.get("$id");
+                ChatMessage msg = MessageHelper.mapToChatMessage(payload, id, pref.getUserId(), pref.getUsername());
+                if (msg != null) {
+                    updateMessage(msg);
+                }
+            }
+        });
+        loadHistory(false);
     }
 
-    public LiveData<List<ChatMessage>> getMessages() { return messages; }
+    private synchronized void updateMessage(ChatMessage msg) {
+        messageMap.put(msg.getId(), msg);
+        List<ChatMessage> sorted = new ArrayList<>(messageMap.values());
+        sorted.sort((a, b) -> Long.compare(a.getTimestamp(), b.getTimestamp()));
+        messagesLiveData.postValue(sorted);
+    }
+
+    private synchronized void updateMessages(List<ChatMessage> batch) {
+        for (ChatMessage msg : batch) {
+            messageMap.put(msg.getId(), msg);
+        }
+        List<ChatMessage> sorted = new ArrayList<>(messageMap.values());
+        sorted.sort((a, b) -> Long.compare(a.getTimestamp(), b.getTimestamp()));
+        messagesLiveData.postValue(sorted);
+    }
+
+    public LiveData<List<ChatMessage>> getMessages() { return messagesLiveData; }
     public LiveData<Boolean> getIsAiThinking() { return isAiThinking; }
     public LiveData<String> getError() { return errorMsg; }
     public LiveData<Long> getSessionTimeRemaining() { return sessionTimeRemaining; }
@@ -83,12 +113,8 @@ public class ChatViewModel extends BaseViewModel {
 
                 ChatMessage oldestInBatch = batch.get(batch.size() - 1);
                 oldestTimestamp = oldestInBatch.getTimestamp();
-                
-                new Thread(() -> {
-                    com.upreyvan.carti.data.local.db.AppDatabase.getInstance(getApplication())
-                        .messageDao().insertAll(batch);
-                    setLoading(false);
-                }).start();
+                updateMessages(batch);
+                setLoading(false);
             }
             @Override public void onError(Throwable error) {
                 errorMsg.postValue(error.getMessage());
@@ -104,7 +130,7 @@ public class ChatViewModel extends BaseViewModel {
         String clientSideId = "msg_" + uuid;
 
         ChatMessage localMsg = new ChatMessage(clientSideId, pref.getUserId(), pref.getFamilyId(), pref.getUsername(), text, System.currentTimeMillis(), true);
-        new Thread(() -> com.upreyvan.carti.data.local.db.AppDatabase.getInstance(getApplication()).messageDao().insert(localMsg)).start();
+        updateMessage(localMsg);
         
         chatRepo.sendMessage(clientSideId, text, new AppwriteCallback<>() {
             @Override public void onSuccess(Document<Map<String, Object>> result) {
@@ -120,14 +146,12 @@ public class ChatViewModel extends BaseViewModel {
                     }
                 }
 
-                // AI processing logic: Local-First
                 if (isAiTriggered || isSessionActive) {
                     if (isAiTriggered) startSession();
                     
                     if (pendingTransaction != null) {
                         handleClarificationReply(text);
                     } else {
-                        // 1. Try Local Parser First
                         JSONObject localResult = LocalIntentParser.parse(getApplication(), text);
                         String status = localResult != null ? localResult.optString("status") : "UNKNOWN";
                         
@@ -140,7 +164,6 @@ public class ChatViewModel extends BaseViewModel {
                         } else if ("BLOCK".equals(status)) {
                             sendAiResponse("I can only help with financial tracking.");
                         } else if (isAiTriggered) {
-                            // 2. If specifically asked and local failed, go to AI
                             processAiChat(text);
                         }
                     }
@@ -231,8 +254,6 @@ public class ChatViewModel extends BaseViewModel {
                 pendingTransaction = null;
             } else {
                 pendingTransaction = null;
-                // Important: Don't call sendMessage(reply) again to avoid recursion/duplication.
-                // Just process the existing reply as a new intent.
                 processIntent(reply); 
             }
         } catch (Exception e) {
@@ -291,7 +312,7 @@ public class ChatViewModel extends BaseViewModel {
 
     private void processAiChat(String text) {
         isAiThinking.postValue(true);
-        aiRepo.processChat(text, "", messages.getValue(), true, new AiRepository.AiCallback() {
+        aiRepo.processChat(text, "", messagesLiveData.getValue(), true, new AiRepository.AiCallback() {
             @Override public void onSuccess(String response) {
                 sendAiResponse(response);
                 isAiThinking.postValue(false);

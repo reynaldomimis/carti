@@ -8,19 +8,15 @@ import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.databinding.FragmentQuickLogsBottomSheetBinding;
-import com.upreyvan.carti.databinding.LayoutExpenseFormBinding;
 import com.upreyvan.carti.model.Member;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.BudgetAllocationHelper;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.TransactionHandler;
 import com.upreyvan.carti.util.Validator;
 
 import java.util.ArrayList;
@@ -34,7 +30,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
 
     private String selectedCategory;
     private LogType logType = LogType.EXPENSE;
-    private MemberRepository memberRepository;
+    private QuickLogsViewModel viewModel;
 
     public static QuickLogsBottomSheetFragment newInstance(String categoryName) {
         QuickLogsBottomSheetFragment fragment = new QuickLogsBottomSheetFragment();
@@ -47,7 +43,6 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        memberRepository = new MemberRepository(requireContext());
         if (getArguments() != null) {
             selectedCategory = getArguments().getString("category_name");
             determineLogType();
@@ -78,9 +73,45 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(QuickLogsViewModel.class);
+        if (selectedCategory != null) viewModel.setCategory(selectedCategory);
+        
         setupDropdowns();
         setupClickListeners();
+        observeViewModel();
         updateUI();
+    }
+
+    private void observeViewModel() {
+        viewModel.getRemainingBalance().observe(getViewLifecycleOwner(), balance -> {
+            if (getBinding() != null && getBinding().layoutForm != null && logType == LogType.EXPENSE) {
+                getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(balance));
+            }
+        });
+        
+        viewModel.getSaveSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                String successMsg = getString(R.string.msg_save_success);
+                if (logType == LogType.EXPENSE) successMsg = getString(R.string.msg_expense_saved);
+                else if (logType == LogType.DEBT) successMsg = getString(R.string.msg_debt_saved_simple);
+                else if (logType == LogType.GOAL) successMsg = getString(R.string.msg_goal_updated);
+                showToast(successMsg, UiHelper.Status.SUCCESS);
+                dismiss();
+            }
+        });
+        
+        viewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) showToast(getString(R.string.err_failed_save, error), UiHelper.Status.ERROR);
+        });
+        
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            String msg = getString(R.string.msg_saving);
+            if (logType == LogType.EXPENSE) msg = getString(R.string.msg_saving_expense);
+            else if (logType == LogType.DEBT) msg = getString(R.string.msg_saving_debt);
+            else if (logType == LogType.GOAL) msg = getString(R.string.msg_saving_goal);
+            showLoading(loading, msg);
+            getBinding().btnSave.setEnabled(!loading);
+        });
     }
 
     private void updateUI() {
@@ -110,11 +141,6 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
                 
                 if (selectedCategory != null) {
                     getBinding().layoutForm.allocatedHeader.setText(getString(R.string.category_expense_label, selectedCategory));
-                    BudgetAllocationHelper.getRemainingBalance(requireContext(), selectedCategory, balance -> {
-                        if (getBinding() != null && getBinding().layoutForm != null) {
-                            getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(balance));
-                        }
-                    });
                 } else {
                     getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(0.0));
                 }
@@ -133,7 +159,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             getBinding().layoutForm.actvSource.setAdapter(adapter);
             getBinding().layoutForm.actvSource.setText(sources[0], false);
         } else if (logType == LogType.DEBT) {
-            memberRepository.getMembers().observe(getViewLifecycleOwner(), members -> {
+            viewModel.getMembers().observe(getViewLifecycleOwner(), members -> {
                 List<String> names = new ArrayList<>();
                 for (Member m : members) names.add(m.getTitle());
                 if (names.isEmpty()) names.add("Self");
@@ -169,52 +195,17 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
                 return;
             }
 
-            handleSave(amountVal, description, sourceOrPerson);
+            switch (logType) {
+                case EXPENSE:
+                    viewModel.saveTrack(amountVal, selectedCategory, description, sourceOrPerson);
+                    break;
+                case DEBT:
+                    viewModel.saveDebt(amountVal, sourceOrPerson, description);
+                    break;
+                case GOAL:
+                    viewModel.saveGoal(amountVal, selectedCategory);
+                    break;
+            }
         });
     }
-
-    private void handleSave(double amount, String description, String extra) {
-        TransactionHandler.TransactionCallback callback = new TransactionHandler.TransactionCallback() {
-            @Override
-            public void onLoading(boolean isLoading) {
-                String msg = getString(R.string.msg_saving);
-                if (logType == LogType.EXPENSE) msg = getString(R.string.msg_saving_expense);
-                else if (logType == LogType.DEBT) msg = getString(R.string.msg_saving_debt);
-                else if (logType == LogType.GOAL) msg = getString(R.string.msg_saving_goal);
-                showLoading(isLoading, msg);
-                if (getBinding() != null) {
-                    getBinding().btnSave.setEnabled(!isLoading);
-                }
-            }
-
-            @Override
-            public void onSuccess(Transaction transaction) {
-                String successMsg = getString(R.string.msg_save_success);
-                if (logType == LogType.EXPENSE) successMsg = getString(R.string.msg_expense_saved);
-                else if (logType == LogType.DEBT) successMsg = getString(R.string.msg_debt_saved_simple);
-                else if (logType == LogType.GOAL) successMsg = getString(R.string.msg_goal_updated);
-                
-                showToast(successMsg, UiHelper.Status.SUCCESS);
-                dismiss();
-            }
-
-            @Override
-            public void onError(String message) {
-                showToast(getString(R.string.err_failed_save, message), UiHelper.Status.ERROR);
-            }
-        };
-
-        switch (logType) {
-            case EXPENSE:
-                TransactionHandler.saveTrack(requireContext(), amount, selectedCategory, description, extra, callback);
-                break;
-            case DEBT:
-                TransactionHandler.saveDebt(requireContext(), amount, extra, description, callback);
-                break;
-            case GOAL:
-                TransactionHandler.saveGoal(requireContext(), amount, selectedCategory, callback);
-                break;
-        }
-    }
 }
-

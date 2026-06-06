@@ -31,7 +31,7 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(this);
-        memberRepository = new MemberRepository(this);
+        memberRepository = MemberRepository.getInstance(this);
         setupDynamicPadding(); setupToolbar(); setupDatePicker(); setupMemberSelection(); setupBaseListeners();
         initForm();
     }
@@ -77,7 +77,6 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
 
     protected void preSelectAllMembers() {
         memberRepository.getMembers().observe(this, members -> { if (members != null && !members.isEmpty() && selectedMemberIds.isEmpty()) { selectedMemberIds.clear(); for (Member m : members) selectedMemberIds.add(m.getId()); memberAdapter.submitList(new ArrayList<>(members)); } });
-        memberRepository.syncMembersIfNeeded();
     }
 
     protected abstract void onSaveClicked();

@@ -1,31 +1,31 @@
 package com.upreyvan.carti.ui.bills;
 
-import com.upreyvan.carti.util.ToastHelper;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 
-import android.widget.ArrayAdapter;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.databinding.LayoutBottomSheetAddBillBinding;
+import com.upreyvan.carti.model.Bill;
+import com.upreyvan.carti.util.StringHelper;
+import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
-import java.util.Map;
+
+import java.util.List;
 
 public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomSheetAddBillBinding> {
 
     private static final String ARG_DATE = "arg_date";
-    private ApiHelper apiHelper;
     private String formattedDate;
+    private BillsViewModel viewModel;
 
     public static AddBillBottomSheet newInstance(String formattedDate) {
         AddBillBottomSheet fragment = new AddBillBottomSheet();
@@ -43,7 +43,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        apiHelper = new ApiHelper(requireContext());
+        viewModel = new ViewModelProvider(this).get(BillsViewModel.class);
 
         if (getArguments() != null) {
             formattedDate = getArguments().getString(ARG_DATE);
@@ -52,6 +52,17 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
 
         setupDropdowns();
         setupListeners();
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+        viewModel.getSaveSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                ToastHelper.show(requireContext(), R.string.msg_bill_saved, UiHelper.Status.SUCCESS);
+                dismiss();
+            }
+        });
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> getBinding().btnSave.setEnabled(!loading));
     }
 
     private void setupDropdowns() {
@@ -85,20 +96,17 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
 
         getBinding().btnSave.setOnClickListener(v -> {
             String billName = getBinding().etBillName.getText() != null ? getBinding().etBillName.getText().toString().trim() : "";
-            String amount = getBinding().etAmount.getText() != null ? getBinding().etAmount.getText().toString().trim() : "";
+            String amountStr = getBinding().etAmount.getText() != null ? getBinding().etAmount.getText().toString().trim() : "";
             String category = getBinding().actCategory.getText().toString();
 
-            if (billName.isEmpty() || amount.isEmpty()) {
+            if (billName.isEmpty() || amountStr.isEmpty()) {
                 UiHelper.showSnackbar(getBinding().getRoot(), R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
                 return;
             }
 
-            // Validate duplicates
-            String familyId = PreferenceManager.getInstance(requireContext()).getFamilyId();
-            androidx.lifecycle.LiveData<java.util.List<com.upreyvan.carti.model.Bill>> billsData = 
-                    com.upreyvan.carti.data.repository.NotificationRepository.getInstance(requireContext()).getBills(familyId);
-            if (billsData.getValue() != null) {
-                for (com.upreyvan.carti.model.Bill b : billsData.getValue()) {
+            List<Bill> currentBills = viewModel.getBills().getValue();
+            if (currentBills != null) {
+                for (Bill b : currentBills) {
                     if (b.getName().equalsIgnoreCase(billName)) {
                         UiHelper.showSnackbar(getBinding().getRoot(), "This bill already exists", UiHelper.Status.WARNING);
                         return;
@@ -107,17 +115,9 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             }
 
             String title = "BILL: " + billName;
-            String content = "A new bill for " + category + " (" + Utils.formatCurrency(Double.parseDouble(amount)) + ") is due on " + formattedDate;
+            String content = "A new bill for " + category + " (" + Utils.formatCurrency(StringHelper.parseDouble(amountStr)) + ") is due on " + formattedDate;
 
-            apiHelper.sendAnnouncement(title, content, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
-                @Override public void onSuccess(Map<String, Object> result) {}
-                @Override public void onError(Throwable error) {}
-            });
-
-            ToastHelper.show(requireContext(), R.string.msg_bill_saved, UiHelper.Status.SUCCESS);
-            dismiss();
+            viewModel.saveBill(title, content);
         });
     }
 }
-
-

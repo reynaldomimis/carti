@@ -1,17 +1,9 @@
 package com.upreyvan.carti.model;
 
 import androidx.annotation.NonNull;
-import androidx.room.Entity;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
 import java.util.Objects;
 
-@Entity(tableName = "likes", indices = {
-        @Index(value = {"transactionId", "userId"}, unique = true),
-        @Index("transactionId")
-})
 public class Like {
-    @PrimaryKey
     @NonNull
     private String id;
     private String transactionId;

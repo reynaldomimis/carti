@@ -8,35 +8,28 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.local.db.AppDatabase;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentProfileBinding;
 import com.upreyvan.carti.model.ProfileMenuItem;
 import com.upreyvan.carti.ui.auth.LoginActivity;
 import com.upreyvan.carti.ui.family.MembersFragment;
 import com.upreyvan.carti.ui.track.IncomeModeFragment;
-import com.upreyvan.carti.util.Constants;
-import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import io.appwrite.models.DocumentList;
 
 public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
 
     private ProfileMenuAdapter adapter;
     private List<ProfileMenuItem> menuItems;
-    private ApiHelper apiHelper;
+    private ProfileViewModel viewModel;
 
     @Override
     protected FragmentProfileBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -46,45 +39,41 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
         if (getActivity() instanceof MainActivity main) {
             main.setBottomNavVisibility(false);
         }
 
-        apiHelper = new ApiHelper(requireContext());
         setupToolbar();
         setupUserInfo();
         setupMenuItems();
-        fetchMemberCount();
+        observeViewModel();
+        
+        viewModel.fetchMemberCount();
+    }
+
+    private void observeViewModel() {
+        viewModel.getMemberCount().observe(getViewLifecycleOwner(), this::updateFamilyMemberCount);
+        viewModel.getLogoutSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) finishLogout();
+        });
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> showLoading(loading, "Logging out..."));
     }
 
     private void setupUserInfo() {
         PreferenceManager pref = PreferenceManager.getInstance(requireContext());
         getBinding().tvUserName.setText(pref.getUsername());
         getBinding().tvUserEmail.setText(pref.getUserEmail());
-        getBinding().btnLogout.setOnClickListener(v -> performLogout());
-    }
-
-    private void performLogout() {
-        showLoading(true, "Logging out...");
-        AppwriteManager.getInstance(requireContext()).logout(new AppwriteManager.AppwriteCallback<>() {
-            @Override public void onSuccess(Object result) { finishLogout(); }
-            @Override public void onError(Throwable error) { finishLogout(); }
-        });
+        getBinding().btnLogout.setOnClickListener(v -> viewModel.logout());
     }
 
     private void finishLogout() {
         RealtimeRepository.getInstance(requireContext()).stopListening();
-        new Thread(() -> {
-            AppDatabase.getInstance(requireContext()).clearAllTables();
-            requireActivity().runOnUiThread(() -> {
-                PreferenceManager.getInstance(requireContext()).clear();
-                showLoading(false);
-                startActivity(new Intent(requireContext(), LoginActivity.class)
-                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                requireActivity().finish();
-            });
-        }).start();
+        PreferenceManager.getInstance(requireContext()).clear();
+        startActivity(new Intent(requireContext(), LoginActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+        requireActivity().finish();
     }
 
     private void setupToolbar() {
@@ -122,18 +111,6 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
         adapter.submitList(menuItems);
         getBinding().rvProfileMenu.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvProfileMenu.setAdapter(adapter);
-    }
-
-    private void fetchMemberCount() {
-        apiHelper.getMembers(new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                if (isAdded() && result.getDocuments() != null) {
-                    updateFamilyMemberCount(result.getDocuments().size());
-                }
-            }
-            @Override public void onError(Throwable error) {}
-        });
     }
 
     private void updateFamilyMemberCount(int count) {

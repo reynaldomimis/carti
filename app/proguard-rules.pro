@@ -27,12 +27,6 @@
     public static void checkIntegrity(android.content.Context);
 }
 
-# Room
--keep class * extends androidx.room.RoomDatabase
--keep class androidx.room.util.TableInfo$Column { *; }
--keep class androidx.room.util.TableInfo$ForeignKey { *; }
--keep class androidx.room.util.TableInfo$Index { *; }
-
 # MPAndroidChart
 -keep class com.github.mikephil.charting.** { *; }
 

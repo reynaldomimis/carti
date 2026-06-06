@@ -8,19 +8,18 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.databinding.FragmentOnboardingOptionsBinding;
 import com.upreyvan.carti.ui.family.JoinFamilyFragment;
 import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.data.remote.AppwriteManager;
-import io.appwrite.models.User;
-import java.util.Map;
-import android.widget.Toast;
 
 public class OnboardingOptionsFragment extends BaseFragment<FragmentOnboardingOptionsBinding> {
+    private OnboardingViewModel viewModel;
 
     @Override
     protected FragmentOnboardingOptionsBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -30,11 +29,14 @@ public class OnboardingOptionsFragment extends BaseFragment<FragmentOnboardingOp
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(OnboardingViewModel.class);
 
         setupDynamicPadding();
-        checkIfAlreadyInFamily();
+        observeViewModel();
         
-        com.upreyvan.carti.data.local.PreferenceManager pref = com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext());
+        viewModel.fetchUserStatus();
+        
+        PreferenceManager pref = PreferenceManager.getInstance(requireContext());
         if (!pref.isEmployed()) {
             getBinding().cardCreate.setVisibility(View.GONE);
         }
@@ -48,48 +50,18 @@ public class OnboardingOptionsFragment extends BaseFragment<FragmentOnboardingOp
         });
     }
 
-    private void checkIfAlreadyInFamily() {
-        setLoading(true);
-        AppwriteManager.getInstance(requireContext()).getCurrentUser(new AppwriteManager.AppwriteCallback<>() {
-            @Override
-            public void onSuccess(User<Map<String, Object>> result) {
-                if (isAdded()) {
-                    fetchUserDocument();
-                }
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (isAdded()) {
-                    setLoading(false);
-                }
+    private void observeViewModel() {
+        viewModel.getUserStatus().observe(getViewLifecycleOwner(), userDoc -> {
+            if (userDoc == null) return;
+            
+            String familyId = String.valueOf(userDoc.get("familyId"));
+            if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
+                startActivity(new Intent(requireActivity(), MainActivity.class));
+                requireActivity().finish();
             }
         });
-    }
 
-    private void fetchUserDocument() {
-        new com.upreyvan.carti.data.remote.ApiHelper(requireContext()).getUser(new AppwriteManager.AppwriteCallback<>() {
-            @Override
-            public void onSuccess(Map<String, Object> result) {
-                if (isAdded()) {
-                    setLoading(false);
-                    String familyId = (result.get("familyId") != null && !"null".equals(String.valueOf(result.get("familyId"))))
-                            ? String.valueOf(result.get("familyId")) : "";
-                    if (!familyId.isEmpty()) {
-                        // If familyId exists, it means the user is already in a family
-                        startActivity(new Intent(requireActivity(), MainActivity.class));
-                        requireActivity().finish();
-                    }
-                }
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (isAdded()) {
-                    setLoading(false);
-                }
-            }
-        });
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), this::setLoading);
     }
 
     private void setLoading(boolean isLoading) {

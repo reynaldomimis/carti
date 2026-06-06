@@ -51,7 +51,7 @@ public class HomeViewModel extends BaseViewModel {
         super(application);
         transRepo = TransactionRepository.getInstance(application);
         notifRepo = NotificationRepository.getInstance(application);
-        memberRepo = new MemberRepository(application);
+        memberRepo = MemberRepository.getInstance(application);
         pref = PreferenceManager.getInstance(application);
         setupDataStream();
         uiState.addSource(dataTrigger, v -> {});
@@ -60,7 +60,7 @@ public class HomeViewModel extends BaseViewModel {
     public LiveData<List<BaseMultiItem>> getUiState() { return uiState; }
 
     public void refreshData() {
-        transRepo.syncTransactionsIfNeeded();
+        transRepo.refreshTransactions();
         memberRepo.refreshMembers();
     }
 
@@ -114,8 +114,7 @@ public class HomeViewModel extends BaseViewModel {
                 items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.quick_log_title), getApplication().getString(R.string.quick_log_subtitle), false, null, null));
                 List<QuickLogItem> logs = new ArrayList<>();
                 for (BudgetCategoryItem p : currentPlan) logs.add(new QuickLogItem(p.getCategoryName(), p.getIconRes(), p.getBgColor(), p.getIconColor()));
-                
-                // Sort to keep "Others" always at the end
+
                 logs.sort((a, b) -> {
                     if (a.getTitle().equalsIgnoreCase("Others")) return 1;
                     if (b.getTitle().equalsIgnoreCase("Others")) return -1;

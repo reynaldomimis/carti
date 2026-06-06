@@ -7,10 +7,10 @@ import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.local.db.AppDatabase;
-import com.upreyvan.carti.data.local.db.dao.TransactionDao;
 import com.upreyvan.carti.data.repository.MemberRepository;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.Member;
+import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.Utils;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import io.appwrite.models.User;
 
 public class MembersViewModel extends BaseViewModel {
     private final MemberRepository repository;
-    private final TransactionDao transactionDao;
+    private final TransactionRepository transRepo;
     private final PreferenceManager pref;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     
@@ -36,8 +36,8 @@ public class MembersViewModel extends BaseViewModel {
 
     public MembersViewModel(@NonNull Application application) {
         super(application);
-        this.repository = new MemberRepository(application);
-        this.transactionDao = AppDatabase.getInstance(application).transactionDao();
+        this.repository = MemberRepository.getInstance(application);
+        this.transRepo = TransactionRepository.getInstance(application);
         this.pref = PreferenceManager.getInstance(application);
         this.currentUserId.setValue(pref.getUserId());
         
@@ -46,30 +46,36 @@ public class MembersViewModel extends BaseViewModel {
     }
 
     private void setupMembersMediator() {
+        LiveData<List<Member>> membersSource = repository.getMembers();
+        LiveData<List<TransactionWithUser>> transactionsSource = transRepo.getAllTransactions();
+
+        membersWithContributions.addSource(membersSource, members -> combine(members, transactionsSource.getValue()));
+        membersWithContributions.addSource(transactionsSource, transactions -> combine(membersSource.getValue(), transactions));
+    }
+
+    private void combine(List<Member> members, List<TransactionWithUser> transactions) {
+        if (members == null) return;
+        
         Calendar cal = Calendar.getInstance();
         long start = Utils.getMonthStartMillis(cal);
         long end = Utils.getMonthEndMillis(cal);
 
-        LiveData<List<Member>> membersSource = repository.getMembers();
-        LiveData<List<TransactionDao.UserExpenseSum>> expenseSumsSource = transactionDao.getExpenseSumPerUser(pref.getFamilyId(), start, end);
-        LiveData<List<TransactionDao.UserExpenseSum>> allocationSumsSource = transactionDao.getAllocationSumPerUser(pref.getFamilyId(), start, end);
-
-        membersWithContributions.addSource(membersSource, members -> combine(members, expenseSumsSource.getValue(), allocationSumsSource.getValue()));
-        membersWithContributions.addSource(expenseSumsSource, sums -> combine(membersSource.getValue(), sums, allocationSumsSource.getValue()));
-        membersWithContributions.addSource(allocationSumsSource, sums -> combine(membersSource.getValue(), expenseSumsSource.getValue(), sums));
-    }
-
-    private void combine(List<Member> members, List<TransactionDao.UserExpenseSum> expenseSums, List<TransactionDao.UserExpenseSum> allocationSums) {
-        if (members == null) return;
-        
         Map<String, Double> expMap = new HashMap<>();
-        if (expenseSums != null) {
-            for (TransactionDao.UserExpenseSum s : expenseSums) expMap.put(s.userId, s.total);
-        }
-
         Map<String, Double> allocMap = new HashMap<>();
-        if (allocationSums != null) {
-            for (TransactionDao.UserExpenseSum s : allocationSums) allocMap.put(s.userId, s.total);
+
+        if (transactions != null) {
+            for (TransactionWithUser tu : transactions) {
+                long t = tu.getTransaction().getTimestampMillis();
+                if (t >= start && t <= end) {
+                    String userId = tu.getTransaction().getUserId();
+                    double amount = tu.getTransaction().getAmount();
+                    if ("EXPENSE".equalsIgnoreCase(tu.getTransaction().getType())) {
+                        expMap.put(userId, expMap.getOrDefault(userId, 0.0) + amount);
+                    } else if ("ALLOCATION".equalsIgnoreCase(tu.getTransaction().getType())) {
+                        allocMap.put(userId, allocMap.getOrDefault(userId, 0.0) + amount);
+                    }
+                }
+            }
         }
 
         List<Member> updatedMembers = new ArrayList<>();
@@ -100,7 +106,7 @@ public class MembersViewModel extends BaseViewModel {
     public LiveData<Double> getTotalExpense() { return totalExpense; }
 
     public void refreshData() {
-        repository.syncMembersIfNeeded();
+        repository.refreshMembers();
         fetchCurrentUser();
         refreshBudget();
     }
@@ -114,8 +120,22 @@ public class MembersViewModel extends BaseViewModel {
         });
     }
 
+    public void approveMember(String userId) {
+        com.upreyvan.carti.data.repository.FamilyRepository.getInstance(getApplication()).approveJoinRequest(userId, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override public void onSuccess(Map<String, Object> result) { refreshData(); }
+            @Override public void onError(Throwable error) {}
+        });
+    }
+
+    public void rejectMember(String userId) {
+        com.upreyvan.carti.data.repository.FamilyRepository.getInstance(getApplication()).rejectJoinRequest(userId, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override public void onSuccess(Map<String, Object> result) { refreshData(); }
+            @Override public void onError(Throwable error) {}
+        });
+    }
+
     private void fetchCurrentUser() {
-        AppwriteManager.getInstance(getApplication()).getCurrentUser(new AppwriteManager.AppwriteCallback<User<Map<String, Object>>>() {
+        com.upreyvan.carti.data.repository.AuthRepository.getInstance(getApplication()).getCurrentUser(new AppwriteManager.AppwriteCallback<User<Map<String, Object>>>() {
             @Override
             public void onSuccess(User<Map<String, Object>> result) {
                 currentUserId.postValue(result.getId());

@@ -6,42 +6,55 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.local.db.AppDatabase;
-import com.upreyvan.carti.data.remote.ApiHelper;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import java.util.Map;
 
 public class MainViewModel extends AndroidViewModel {
     private final PreferenceManager pref;
-    private final ApiHelper apiHelper;
+    private final com.upreyvan.carti.data.repository.AuthRepository authRepo;
     private final MutableLiveData<AuthState> authState = new MutableLiveData<>();
 
     public MainViewModel(@NonNull Application application) {
         super(application);
         pref = PreferenceManager.getInstance(application);
-        apiHelper = new ApiHelper(application);
+        authRepo = com.upreyvan.carti.data.repository.AuthRepository.getInstance(application);
     }
 
     public LiveData<AuthState> getAuthState() { return authState; }
 
     public void validateGate() {
+        if (authState.getValue() == AuthState.AUTHENTICATED) return;
+
         if (pref.getUserId().isEmpty()) {
-            authState.setValue(AuthState.UNAUTHENTICATED);
+            authState.postValue(AuthState.UNAUTHENTICATED);
             return;
         }
 
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (authState.getValue() == null || authState.getValue() == AuthState.ERROR) {
+                if (!pref.getFamilyId().isEmpty()) {
+                    authState.postValue(AuthState.AUTHENTICATED);
+                } else if (!pref.getUserId().isEmpty()) {
+                    authState.postValue(AuthState.NO_FAMILY);
+                } else {
+                    authState.postValue(AuthState.UNAUTHENTICATED);
+                }
+            }
+        }, 10000);
 
-        if (!pref.getFamilyId().isEmpty()) {
-            authState.postValue(AuthState.AUTHENTICATED);
-        }
-
-        apiHelper.getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        authRepo.getUser(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> r) {
-                String fid = (r.get("familyId") != null && !"null".equals(String.valueOf(r.get("familyId")))) ? String.valueOf(r.get("familyId")) : "";
-                if (!fid.isEmpty()) {
-                    pref.setFamilyId(fid);
+                pref.saveUser(r);
+                String familyId = (r.get("familyId") != null && !"null".equals(String.valueOf(r.get("familyId")))) ? String.valueOf(r.get("familyId")) : "";
+                String pendingId = (r.get("pendingFamilyId") != null && !"null".equals(String.valueOf(r.get("pendingFamilyId")))) ? String.valueOf(r.get("pendingFamilyId")) : "";
+
+                if (!familyId.isEmpty()) {
                     authState.postValue(AuthState.AUTHENTICATED);
+                } else if ("declined".equals(pendingId)) {
+                    authState.postValue(AuthState.DECLINED);
+                } else if (!pendingId.isEmpty()) {
+                    authState.postValue(AuthState.PENDING);
                 } else {
                     authState.postValue(AuthState.NO_FAMILY);
                 }
@@ -49,13 +62,16 @@ public class MainViewModel extends AndroidViewModel {
 
             @Override
             public void onError(Throwable e) {
-                if (!pref.getFamilyId().isEmpty()) {
-                    authState.postValue(AuthState.AUTHENTICATED);
+                String msg = e.getMessage();
+                if (msg != null && (msg.contains("401") || msg.contains("Unauthorized") || msg.contains(com.upreyvan.carti.util.Constants.ErrorCodes.UNAUTHORIZED))) {
+                    authState.postValue(AuthState.UNAUTHENTICATED);
                 } else {
-                    if (e.getMessage() != null && e.getMessage().contains("401")) {
-                        authState.postValue(AuthState.UNAUTHENTICATED);
+                    if (!pref.getFamilyId().isEmpty()) {
+                        authState.postValue(AuthState.AUTHENTICATED);
+                    } else if (!pref.getUserId().isEmpty()) {
+                        authState.postValue(AuthState.NO_FAMILY);
                     } else {
-                        authState.postValue(AuthState.ERROR);
+                        authState.postValue(AuthState.UNAUTHENTICATED);
                     }
                 }
             }
@@ -63,14 +79,11 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void forceLogout() {
-        new Thread(() -> {
-            try { AppDatabase.getInstance(getApplication()).clearAllTables(); } catch (Exception ignored) {}
-            pref.clear();
-            authState.postValue(AuthState.UNAUTHENTICATED);
-        }).start();
+        pref.clear();
+        authState.postValue(AuthState.UNAUTHENTICATED);
     }
 
     public enum AuthState {
-        AUTHENTICATED, UNAUTHENTICATED, NO_FAMILY, ERROR
+        AUTHENTICATED, UNAUTHENTICATED, PENDING, DECLINED, NO_FAMILY, ERROR
     }
 }

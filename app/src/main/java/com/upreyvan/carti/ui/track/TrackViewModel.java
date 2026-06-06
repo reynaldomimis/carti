@@ -10,8 +10,6 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseMultiItem;
 import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.data.local.BudgetManager;
-import com.upreyvan.carti.data.local.db.dao.TransactionDao;
-import com.upreyvan.carti.data.local.db.dao.TransactionDao.CategorySum;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.TrackCategory;
@@ -105,17 +103,13 @@ public class TrackViewModel extends BaseViewModel {
             if (!pie.isEmpty()) items.add(new TrackListItem.ChartItem(pie, colors, legend, exp));
             items.add(new TrackListItem.ComparisonItem(inc, exp));
 
-            List<CategorySum> expenseBreakdown = new ArrayList<>();
+            List<TransactionRepository.CategorySum> expenseBreakdown = new ArrayList<>();
             for (Map.Entry<String, Double> entry : catTotals.entrySet()) {
-                CategorySum cs = new CategorySum();
-                cs.category = entry.getKey();
-                cs.total = entry.getValue();
-                expenseBreakdown.add(cs);
+                expenseBreakdown.add(new TransactionRepository.CategorySum(entry.getKey(), entry.getValue()));
             }
 
             List<BudgetCategoryItem> consolidated = BudgetManager.getInstance(getApplication()).getConsolidatedBudgets(currentDbAllocations, expenseBreakdown);
 
-            // Strictly synchronize: Only show categories that have an active budget allocation (Amount > 0)
             List<BudgetCategoryItem> nextAllocations = new ArrayList<>();
             double totalPlanAmount = 0;
             for (BudgetCategoryItem bi : consolidated) {
@@ -161,7 +155,7 @@ public class TrackViewModel extends BaseViewModel {
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 
-    public void sync() { repo.syncTransactionsIfNeeded(); }
+    public void sync() { repo.refreshTransactions(); }
 
     public void toggleLike(TransactionWithUser item) {
         repo.toggleLike(item, "👍");

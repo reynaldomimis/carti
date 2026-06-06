@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.SecurityManager;
+import java.util.Map;
 
 public class PreferenceManager {
     public static final String KEY_ADMIN_ID = "admin_id";
@@ -59,6 +60,10 @@ public class PreferenceManager {
     public String getUserId() {
         String id = getPrefs().getString(Constants.Keys.KEY_USER_ID_PREF, "");
         return (id == null || id.equalsIgnoreCase("null")) ? "" : id.trim();
+    }
+
+    public void setUserId(String userId) {
+        getPrefs().edit().putString(Constants.Keys.KEY_USER_ID_PREF, userId).commit();
     }
 
     public String getFamilyId() {
@@ -220,6 +225,26 @@ public class PreferenceManager {
 
     public void setAiIntroDone(boolean done) { getPrefs().edit().putBoolean("ai_intro_done", done).apply(); }
     public boolean isAiIntroDone() { return getPrefs().getBoolean("ai_intro_done", false); }
+
+    public void saveUser(Map<String, Object> data) {
+        if (data == null) return;
+        setUserData(
+                String.valueOf(data.get("username")),
+                String.valueOf(data.get("email")),
+                String.valueOf(data.get("role")),
+                Boolean.TRUE.equals(data.get("isEmployed")),
+                String.valueOf(data.get("familyId")),
+                String.valueOf(data.get("inviteCode")),
+                String.valueOf(data.get("$id"))
+        );
+        String pendingId = String.valueOf(data.get("pendingFamilyId"));
+        getPrefs().edit().putString("pending_family_id", (pendingId == null || "null".equals(pendingId)) ? "" : pendingId).apply();
+    }
+
+    public String getPendingFamilyId() {
+        String id = getPrefs().getString("pending_family_id", "");
+        return (id == null || id.equalsIgnoreCase("null")) ? "" : id.trim();
+    }
 
     public void clear() {
         String[] prefFiles = {

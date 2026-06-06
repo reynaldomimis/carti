@@ -2,15 +2,10 @@ package com.upreyvan.carti.model;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.room.Entity;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
 
 import java.util.Objects;
 
-@Entity(tableName = "members", indices = {@Index("familyId")})
 public class Member {
-    @PrimaryKey
     @NonNull
     private String id;
     private String familyId;

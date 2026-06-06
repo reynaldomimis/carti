@@ -92,6 +92,23 @@ public class NotificationRepository {
         return billsLiveData;
     }
 
+    public void listNotifications(String familyId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        AppwriteManager.getInstance(realtimeRepo.getContext()).listDocuments(
+            com.upreyvan.carti.util.Constants.Appwrite.DATABASE_ID,
+            com.upreyvan.carti.util.Constants.Appwrite.COL_NOTIFICATIONS,
+            java.util.Arrays.asList(io.appwrite.Query.Companion.equal("familyId", familyId), io.appwrite.Query.Companion.orderDesc("$createdAt")),
+            callback
+        );
+    }
+
+    public void sendAnnouncement(String title, String content, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        new ApiHelper(realtimeRepo.getContext()).sendAnnouncement(title, content, callback);
+    }
+
+    public void deleteNotification(String id, AppwriteManager.AppwriteCallback<Object> callback) {
+        AppwriteManager.getInstance(realtimeRepo.getContext()).deleteDocument(com.upreyvan.carti.util.Constants.Appwrite.DATABASE_ID, com.upreyvan.carti.util.Constants.Appwrite.COL_NOTIFICATIONS, id, callback);
+    }
+
     private Bill mapToBill(String id, Map<String, Object> data) {
         if (data == null) return null;
         

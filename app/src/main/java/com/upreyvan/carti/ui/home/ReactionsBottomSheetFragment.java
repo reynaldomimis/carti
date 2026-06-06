@@ -7,26 +7,18 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentReactionsBottomSheetBinding;
-import com.upreyvan.carti.model.Reactor;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import io.appwrite.models.Document;
-import io.appwrite.models.DocumentList;
 
 public class ReactionsBottomSheetFragment extends BaseBottomSheetFragment<FragmentReactionsBottomSheetBinding> {
 
     private static final String ARG_TRANSACTION_ID = "transaction_id";
     private String transactionId;
     private ReactorAdapter adapter;
-    private ApiHelper apiHelper;
+    private ReactionsViewModel viewModel;
 
     public static ReactionsBottomSheetFragment newInstance(String transactionId) {
         ReactionsBottomSheetFragment fragment = new ReactionsBottomSheetFragment();
@@ -52,16 +44,28 @@ public class ReactionsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        apiHelper = new ApiHelper(requireContext());
+        viewModel = new ViewModelProvider(this).get(ReactionsViewModel.class);
         setupRecyclerView();
-        loadReactions();
+        observeViewModel();
         setupRealtime();
+        
+        viewModel.loadReactions(transactionId);
+    }
+
+    private void observeViewModel() {
+        viewModel.getReactors().observe(getViewLifecycleOwner(), list -> {
+            adapter.submitList(list);
+        });
+        
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            getBinding().progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+        });
     }
 
     private void setupRealtime() {
-        com.upreyvan.carti.data.repository.RealtimeRepository.getInstance(requireContext()).getLikeStream().observe(getViewLifecycleOwner(), payload -> {
+        RealtimeRepository.getInstance(requireContext()).getLikeStream().observe(getViewLifecycleOwner(), payload -> {
             if (payload != null && transactionId.equals(payload.get("transactionId"))) {
-                loadReactions();
+                viewModel.loadReactions(transactionId);
             }
         });
     }
@@ -69,37 +73,5 @@ public class ReactionsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
     private void setupRecyclerView() {
         adapter = new ReactorAdapter();
         getBinding().rvReactors.setAdapter(adapter);
-    }
-
-    private void loadReactions() {
-        getBinding().progressBar.setVisibility(View.VISIBLE);
-        apiHelper.getLikes(transactionId, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                if (getActivity() == null) return;
-                getActivity().runOnUiThread(() -> {
-                    getBinding().progressBar.setVisibility(View.GONE);
-                    List<Reactor> reactors = new ArrayList<>();
-                    for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                        Map<String, Object> data = doc.getData();
-                        String username = String.valueOf(data.get("username"));
-                        String emoji = String.valueOf(data.get("emojiType"));
-                        String userId = String.valueOf(data.get("userId"));
-                        
-                        reactors.add(new Reactor(username, emoji, 0, null, userId));
-                    }
-                    adapter.submitList(reactors);
-                });
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (getActivity() == null) return;
-                getActivity().runOnUiThread(() -> {
-                    getBinding().progressBar.setVisibility(View.GONE);
-                    // Handle error
-                });
-            }
-        });
     }
 }

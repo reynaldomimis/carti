@@ -12,12 +12,11 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.FragmentCommentsBottomSheetBinding;
 import com.upreyvan.carti.util.AvatarHelper;
@@ -71,13 +70,14 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
     }
 
     private void setupRealtime() {
-        com.upreyvan.carti.data.local.db.AppDatabase.getInstance(requireContext())
-            .commentDao().getCommentsForTransaction(transactionId)
-            .observe(getViewLifecycleOwner(), comments -> {
-                adapter.setAllComments(comments);
-                getBinding().tvEmpty.setVisibility(comments.isEmpty() ? View.VISIBLE : View.GONE);
-                getBinding().progressBar.setVisibility(View.GONE);
-            });
+        RealtimeRepository.getInstance(requireContext()).getCommentStream().observe(getViewLifecycleOwner(), payload -> {
+            if (payload != null) {
+                String tid = String.valueOf(payload.get("transactionId"));
+                if (transactionId.equals(tid)) {
+                    loadComments();
+                }
+            }
+        });
     }
 
     private void setupUI() {
@@ -113,10 +113,6 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
     }
 
     private void startReplyMode(Comment comment) {
-        if (comment.getId().startsWith("temp_")) {
-            showToast("Wait for the comment to sync before replying", UiHelper.Status.WARNING);
-            return;
-        }
         selectedParentId = comment.getId();
         getBinding().etComment.setHint(String.format("Replying to @%s...", comment.getUsername()));
         getBinding().etComment.requestFocus();
@@ -129,9 +125,10 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
                 .setMessage("Are you sure you want to delete this comment?")
                 .setCancelable(false)
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    new Thread(() -> com.upreyvan.carti.data.local.db.AppDatabase.getInstance(requireContext()).commentDao().deleteById(comment.getId())).start();
                     repository.removeComment(comment.getId(), new AppwriteCallback<>() {
-                        @Override public void onSuccess(Map<String, Object> result) {}
+                        @Override public void onSuccess(Map<String, Object> result) {
+                            loadComments();
+                        }
                         @Override public void onError(Throwable error) {
                             showToast("Failed to delete comment", UiHelper.Status.ERROR);}
                     });
@@ -163,10 +160,6 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
         if (text.isEmpty()) return;
 
         getBinding().btnSend.setEnabled(false);
-        String tempId = "temp_" + System.currentTimeMillis();
-        Comment tempComment = new Comment(tempId, transactionId, pref.getUserId(), pref.getUsername(), text, selectedParentId, Utils.getCurrentTimestamp(), Utils.getCurrentTimestamp());
-        new Thread(() -> com.upreyvan.carti.data.local.db.AppDatabase.getInstance(requireContext()).commentDao().insert(tempComment)).start();
-
         repository.postComment(transactionId, text, selectedParentId, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
@@ -174,13 +167,13 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
                 getBinding().btnSend.setEnabled(true);
                 selectedParentId = null;
                 getBinding().etComment.setHint("Write a comment...");
+                loadComments();
             }
 
             @Override
             public void onError(Throwable error) {
                 getBinding().btnSend.setEnabled(true);
                 showToast("Failed to post comment", UiHelper.Status.ERROR);
-                new Thread(() -> com.upreyvan.carti.data.local.db.AppDatabase.getInstance(requireContext()).commentDao().deleteById(tempId)).start();
             }
         });
     }

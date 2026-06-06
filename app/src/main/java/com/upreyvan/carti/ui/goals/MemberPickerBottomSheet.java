@@ -71,7 +71,7 @@ public class MemberPickerBottomSheet extends BaseBottomSheetFragment<LayoutBotto
 
         getBinding().btnSelectAll.setVisibility(isMultiSelect ? View.VISIBLE : View.GONE);
         
-        memberRepository = new MemberRepository(requireContext());
+        memberRepository = MemberRepository.getInstance(requireContext());
 
         setupRecyclerView();
         setupListeners();
@@ -156,7 +156,6 @@ public class MemberPickerBottomSheet extends BaseBottomSheetFragment<LayoutBotto
                     
                     boolean isSelected = item.isSelected();
 
-                    // Visual indicators for selection
                     binding.vOverlay.setVisibility(isSelected ? View.GONE : View.VISIBLE);
                     binding.ivSelected.setVisibility(isSelected ? View.VISIBLE : View.GONE);
                     binding.cvAvatar.setStrokeColor(isSelected ? 
@@ -201,7 +200,6 @@ public class MemberPickerBottomSheet extends BaseBottomSheetFragment<LayoutBotto
                 updateSelectAllText(initialList);
             }
         });
-        memberRepository.syncMembersIfNeeded();
     }
 
     @Override

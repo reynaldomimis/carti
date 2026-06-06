@@ -5,10 +5,9 @@ import android.view.LayoutInflater;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.databinding.ActivityResetPasswordBinding;
 import com.upreyvan.carti.util.Constants.ErrorCodes;
 import com.upreyvan.carti.util.UiHelper;
@@ -21,6 +20,7 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
 
     private String userId;
     private String secret;
+    private AuthViewModel viewModel;
 
     @Override
     protected ActivityResetPasswordBinding inflateBinding(LayoutInflater inflater) {
@@ -30,6 +30,7 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
         
         userId = getIntent().getStringExtra(EXTRA_USER_ID);
         secret = getIntent().getStringExtra(EXTRA_SECRET);
@@ -42,6 +43,31 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
 
         setupUI();
         setupKeyboardHandling();
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+        viewModel.getLoginSuccess().observe(this, success -> {
+            if (success) {
+                showToast(R.string.msg_password_updated, UiHelper.Status.SUCCESS);
+                finish();
+            }
+        });
+        
+        viewModel.getError().observe(this, error -> {
+            if (error != null) {
+                if (error.contains("similar to your previous password")) {
+                    showToast(ErrorCodes.PASSWORD_RECENTLY_USED, UiHelper.Status.ERROR);
+                } else {
+                    showToast("Error: " + error, UiHelper.Status.ERROR);
+                }
+            }
+        });
+        
+        viewModel.getIsLoading().observe(this, loading -> {
+            getBinding().btnReset.setEnabled(!loading);
+            if (loading) showToast(R.string.msg_updating_password, UiHelper.Status.INFO);
+        });
     }
 
     private void setupKeyboardHandling() {
@@ -78,23 +104,6 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
             getBinding().tilConfirmPassword.setError(null);
         }
 
-        getBinding().btnReset.setEnabled(false);
-        showToast(R.string.msg_updating_password, UiHelper.Status.INFO);
-
-        AppwriteManager.getInstance(this).updatePasswordRecovery(userId, secret, newPassword, new AppwriteCallback<>() {
-            @Override public void onSuccess(Object result) {
-                showToast(R.string.msg_password_updated, UiHelper.Status.SUCCESS);
-                finish();
-            }
-            @Override public void onError(Throwable error) {
-                getBinding().btnReset.setEnabled(true);
-                String message = error.getMessage();
-                if (message != null && message.contains("similar to your previous password")) {
-                    showToast(ErrorCodes.PASSWORD_RECENTLY_USED, UiHelper.Status.ERROR);
-                } else {
-                    showToast("Error: " + (message != null ? message : "Unknown error"), UiHelper.Status.ERROR);
-                }
-            }
-        });
+        viewModel.updatePasswordRecovery(userId, secret, newPassword);
     }
 }

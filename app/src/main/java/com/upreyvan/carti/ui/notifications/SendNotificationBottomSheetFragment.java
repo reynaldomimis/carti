@@ -1,31 +1,23 @@
 package com.upreyvan.carti.ui.notifications;
 
-import com.upreyvan.carti.util.ToastHelper;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
+import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.LayoutSendNotificationBottomSheetBinding;
+import com.upreyvan.carti.ui.bills.BillsViewModel;
+import com.upreyvan.carti.util.ToastHelper;
 import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Validator;
-
-import java.util.Map;
 
 public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragment {
 
     private LayoutSendNotificationBottomSheetBinding binding;
-    private ApiHelper apiHelper;
-    private PreferenceManager pref;
+    private BillsViewModel viewModel;
 
     @Nullable
     @Override
@@ -37,10 +29,24 @@ public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragme
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        apiHelper = new ApiHelper(requireContext());
-        pref = PreferenceManager.getInstance(requireContext());
+        viewModel = new ViewModelProvider(this).get(BillsViewModel.class);
 
         binding.btnSend.setOnClickListener(v -> sendNotification());
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+        viewModel.getSaveSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                ToastHelper.show(requireContext(), "Announcement sent!", UiHelper.Status.SUCCESS);
+                dismiss();
+            }
+        });
+        
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            binding.btnSend.setEnabled(!loading);
+            binding.btnSend.setText(loading ? R.string.msg_sending : R.string.action_send_announcement);
+        });
     }
 
     private void sendNotification() {
@@ -59,35 +65,7 @@ public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragme
         }
         binding.tilContent.setError(null);
 
-        binding.btnSend.setEnabled(false);
-        binding.btnSend.setText(R.string.msg_sending);
-
-        apiHelper.sendAnnouncement(
-                title,
-                content,
-                new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
-                    @Override
-                    public void onSuccess(Map<String, Object> result) {
-                        if (isAdded()) {
-                            requireActivity().runOnUiThread(() -> {
-                                ToastHelper.show(requireContext(), "Announcement sent!", UiHelper.Status.SUCCESS);
-                                dismiss();
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        if (isAdded()) {
-                            requireActivity().runOnUiThread(() -> {
-                                binding.btnSend.setEnabled(true);
-                                binding.btnSend.setText(R.string.action_send_announcement);
-                                ToastHelper.show(requireContext(), error.getMessage(), UiHelper.Status.ERROR);
-                            });
-                        }
-                    }
-                }
-        );
+        viewModel.saveBill(title, content);
     }
 
     @Override
@@ -101,5 +79,3 @@ public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragme
         return R.style.CustomBottomSheetDialogTheme;
     }
 }
-
-

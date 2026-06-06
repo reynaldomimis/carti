@@ -211,7 +211,6 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         if (currentLiveData != null) currentLiveData.removeObserver(transactionObserver);
         currentLiveData = transactionRepository.getAllTransactions();
         currentLiveData.observe(getViewLifecycleOwner(), transactionObserver);
-        transactionRepository.syncTransactionsIfNeeded();
     }
 
     private void setupToolbar() {
@@ -253,15 +252,12 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
                 DialogHelper.showConfirmation(requireContext(), "Delete Transaction?", 
                     "Are you sure you want to delete this " + (transaction.getTitle() != null ? transaction.getTitle() : "transaction") + "?", 
                     "Delete", () -> {
-                    new ApiHelper(requireContext()).deleteTransaction(transaction.getId(), new AppwriteCallback<Object>() {
+                    transactionRepository.deleteTransaction(transaction.getId(), new AppwriteCallback<Object>() {
                         @Override public void onSuccess(Object result) {
-                            requireActivity().runOnUiThread(() -> {
-                                transactionRepository.deleteLocally(transaction.getId());
-                                showToast(getString(R.string.msg_deleted_balance_updated), UiHelper.Status.SUCCESS);
-                            });
+                            showToast(getString(R.string.msg_deleted_balance_updated), UiHelper.Status.SUCCESS);
                         }
                         @Override public void onError(Throwable error) { 
-                            requireActivity().runOnUiThread(() -> showToast(getString(R.string.err_generic, error.getMessage()), UiHelper.Status.ERROR));
+                            showToast(getString(R.string.err_generic, error.getMessage()), UiHelper.Status.ERROR);
                         }
                     });
                 });

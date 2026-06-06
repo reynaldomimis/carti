@@ -15,8 +15,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.data.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
@@ -26,15 +24,12 @@ import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.Utils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding> {
 
     private GenericAdapter<TransactionWithUser, ItemDebtBinding> adapter;
     private List<TransactionWithUser> allDebts = new ArrayList<>();
     private DebtViewModel viewModel;
-    private ApiHelper apiHelper;
-    private RealtimeRepository realtimeRepo;
     private boolean isLoading = true;
 
     @Override
@@ -46,8 +41,6 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(DebtViewModel.class);
-        apiHelper = new ApiHelper(requireContext());
-        realtimeRepo = RealtimeRepository.getInstance(requireContext());
         
         setupDynamicPadding();
         setupToolbar();
@@ -58,8 +51,8 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
     }
 
     private void observeRealtimeChanges() {
-        realtimeRepo.getDebtStream().observe(getViewLifecycleOwner(), payload -> viewModel.refresh());
-        realtimeRepo.getTransactionStream().observe(getViewLifecycleOwner(), payload -> viewModel.refresh());
+        RealtimeRepository.getInstance(requireContext()).getDebtStream().observe(getViewLifecycleOwner(), payload -> viewModel.refresh());
+        RealtimeRepository.getInstance(requireContext()).getTransactionStream().observe(getViewLifecycleOwner(), payload -> viewModel.refresh());
     }
 
     private void setupDynamicPadding() {
@@ -75,6 +68,21 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
                 filterDebts(getBinding().tabLayout.getSelectedTabPosition());
             }
         });
+        
+        viewModel.getMarkPaidSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                // Handled via ViewModel.refresh() and LiveData observation
+            }
+        });
+        
+        viewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) Utils.showToast(requireContext(), "Error: " + error);
+        });
+        
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            // Show loading if needed
+        });
+        
         viewModel.refresh();
     }
 
@@ -179,20 +187,8 @@ public class DebtTrackerFragment extends BaseFragment<FragmentDebtTrackerBinding
         } else {
             dialogBinding.btnMarkAsPaid.setOnClickListener(v -> {
                 dialogBinding.btnMarkAsPaid.setEnabled(false);
-                apiHelper.markDebtPaid(debt.getId(), new AppwriteCallback<>() {
-                    @Override public void onSuccess(Map<String, Object> result) {
-                        requireActivity().runOnUiThread(() -> {
-                            viewModel.refresh();
-                            dialog.dismiss();
-                        });
-                    }
-                    @Override public void onError(Throwable error) {
-                        requireActivity().runOnUiThread(() -> {
-                            dialogBinding.btnMarkAsPaid.setEnabled(true);
-                            Utils.showToast(requireContext(), "Error: " + error.getMessage());
-                        });
-                    }
-                });
+                viewModel.markDebtPaid(debt.getId());
+                dialog.dismiss();
             });
         }
         dialog.show();

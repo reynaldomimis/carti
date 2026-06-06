@@ -12,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.base.BaseActivity;
@@ -21,20 +20,16 @@ import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityMainBinding;
 import com.upreyvan.carti.databinding.LayoutNavItemBinding;
 import com.upreyvan.carti.ui.allocate.PlanFragment;
-import com.upreyvan.carti.ui.auth.LoginActivity;
 import com.upreyvan.carti.ui.common.AddOptionsActivity;
 import com.upreyvan.carti.ui.common.QuickAddBottomSheetFragment;
 import com.upreyvan.carti.ui.family.FamilyChatFragment;
 import com.upreyvan.carti.ui.home.HomeFragment;
-import com.upreyvan.carti.ui.onboarding.StartActivity;
 import com.upreyvan.carti.ui.profile.ProfileFragment;
 import com.upreyvan.carti.ui.track.TrackFragment;
 import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.SecurityGuard;
-import com.upreyvan.carti.util.UiHelper;
 
 public class MainActivity extends BaseActivity<ActivityMainBinding> {
-    private MainViewModel viewModel;
     private LayoutNavItemBinding[] navTabs;
     private boolean isInit = false;
 
@@ -50,44 +45,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     protected void onCreate(Bundle savedInstanceState) {
         SecurityGuard.checkIntegrity(this);
         super.onCreate(savedInstanceState);
-        setupViewModel();
-    }
-
-    private void setupViewModel() {
-        viewModel = new ViewModelProvider(this).get(MainViewModel.class);
-        viewModel.getAuthState().observe(this, state -> {
-            switch (state) {
-                case AUTHENTICATED:
-                    proceed();
-                    break;
-                case UNAUTHENTICATED:
-                    forceLogout();
-                    break;
-                case NO_FAMILY:
-                    navigateToOnboarding();
-                    break;
-                case ERROR:
-                    showToast("Connection required for first-time sync", UiHelper.Status.ERROR);
-                    break;
-            }
-        });
-        viewModel.validateGate();
-    }
-
-    private void forceLogout() {
-        RealtimeRepository.getInstance(this).stopListening();
-        viewModel.forceLogout();
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
-
-    private void navigateToOnboarding() {
-        Intent intent = new Intent(this, StartActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+        proceed();
     }
 
     private void proceed() {

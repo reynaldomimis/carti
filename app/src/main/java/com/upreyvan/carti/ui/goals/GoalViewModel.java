@@ -1,31 +1,84 @@
 package com.upreyvan.carti.ui.goals;
 
 import android.app.Application;
+import android.net.Uri;
 import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import com.upreyvan.carti.base.BaseViewModel;
+import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.util.Constants;
+import java.io.File;
 import java.util.List;
+import java.util.Map;
 
-public class GoalViewModel extends AndroidViewModel {
+public class GoalViewModel extends BaseViewModel {
     private final TransactionRepository repository;
+    private final MutableLiveData<Boolean> saveSuccess = new MutableLiveData<>(false);
+    private final MutableLiveData<String> error = new MutableLiveData<>();
 
     public GoalViewModel(@NonNull Application application) {
         super(application);
-        repository = TransactionRepository.getInstance(application);
+        this.repository = TransactionRepository.getInstance(application);
     }
 
-    public LiveData<List<TransactionWithUser>> getGoals() {
-        return repository.getGoals();
+    public LiveData<List<TransactionWithUser>> getGoals() { return repository.getGoals(); }
+    public LiveData<Boolean> getSaveSuccess() { return saveSuccess; }
+    public LiveData<String> getError() { return error; }
+
+    public void saveGoal(String name, double targetAmount, double savedAmount, String date, int iconRes, Uri imageUri) {
+        setLoading(true);
+        if (imageUri != null) {
+            uploadAndSave(name, targetAmount, savedAmount, date, iconRes, imageUri);
+        } else {
+            performSave(name, targetAmount, savedAmount, date, iconRes, null);
+        }
     }
 
-    public void refresh() {
-        repository.syncTransactionsIfNeeded();
-        repository.refreshTransactions();
+    private void uploadAndSave(String name, double targetAmount, double savedAmount, String date, int iconRes, Uri imageUri) {
+        File file = new File(imageUri.getPath());
+        repository.uploadIcon(file, new AppwriteCallback<io.appwrite.models.File>() {
+            @Override
+            public void onSuccess(io.appwrite.models.File result) {
+                String fileUrl = String.format("%s/storage/buckets/%s/files/%s/view?project=%s",
+                        com.upreyvan.carti.BuildConfig.APPWRITE_ENDPOINT,
+                        Constants.Appwrite.BUCKET_ICONS,
+                        result.getId(),
+                        com.upreyvan.carti.BuildConfig.APPWRITE_PROJECT_ID);
+                performSave(name, targetAmount, savedAmount, date, 0, fileUrl);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                setLoading(false);
+                error.postValue("Upload failed: " + e.getMessage());
+            }
+        });
     }
 
-    public void deleteGoal(String goalId) {
-        repository.deleteTransaction(goalId, null);
+    private void performSave(String name, double targetAmount, double savedAmount, String date, int iconRes, String iconUrl) {
+        Transaction t = new Transaction();
+        t.setTitle(name);
+        t.setTargetAmount(targetAmount);
+        t.setAmount(savedAmount);
+        t.setType("GOAL");
+        t.setTargetDate(date);
+        t.setIconRes(iconRes);
+        t.setIconUrl(iconUrl);
+
+        repository.addTransaction(t, new AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                setLoading(false);
+                saveSuccess.postValue(true);
+            }
+            @Override public void onError(Throwable e) {
+                setLoading(false);
+                error.postValue(e.getMessage());
+            }
+        });
     }
 }

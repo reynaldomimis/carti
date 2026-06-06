@@ -5,25 +5,18 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.upreyvan.carti.MainActivity;
+import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.databinding.FragmentOnboardingCreateBinding;
 import com.upreyvan.carti.util.Utils;
-
-import java.util.Map;
-
 import com.upreyvan.carti.util.Validator;
 
 public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCreateBinding> {
+    private OnboardingViewModel viewModel;
 
     @Override
     protected FragmentOnboardingCreateBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -33,9 +26,44 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(OnboardingViewModel.class);
         setupDynamicPadding();
         displayUserRole();
         getBinding().btnCreate.setOnClickListener(v -> performCreateFamily());
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+        viewModel.getUserStatus().observe(getViewLifecycleOwner(), userDoc -> {
+            if (userDoc == null) return;
+            
+            String inviteCode = String.valueOf(userDoc.get("inviteCode"));
+            if (inviteCode == null || "null".equals(inviteCode)) inviteCode = "";
+            
+            String displayCode = inviteCode;
+            if (displayCode.startsWith("FAM-")) {
+                displayCode = displayCode.replace("FAM-", "");
+            }
+            if (!inviteCode.isEmpty()) {
+                navigateTo(OnboardingStatusFragment.newInstance(displayCode));
+            }
+        });
+
+        viewModel.getError().observe(getViewLifecycleOwner(), message -> {
+            if (message != null) {
+                if ("ALREADY_IN_A_FAMILY".equals(message)) {
+                    showToast(R.string.err_already_in_family, com.upreyvan.carti.util.UiHelper.Status.WARNING);
+                    startActivity(new Intent(requireActivity(), com.upreyvan.carti.ui.auth.SplashActivity.class));
+                    requireActivity().finish();
+                } else if ("PARENTS_ONLY".equals(message)) {
+                    showToast(R.string.err_parents_only, com.upreyvan.carti.util.UiHelper.Status.ERROR);
+                } else {
+                    showToast(getString(R.string.err_error_prefix, message), com.upreyvan.carti.util.UiHelper.Status.ERROR);
+                }
+            }
+        });
+
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), this::setLoading);
     }
 
     private void displayUserRole() {
@@ -52,53 +80,7 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
         getBinding().tilFamilyName.setError(null);
 
         String familyName = getBinding().etFamilyName.getText().toString().trim();
-        setLoading(true);
-        
-        new ApiHelper(requireContext()).createFamily(familyName, new AppwriteManager.AppwriteCallback<>() {
-            @Override
-            public void onSuccess(Map<String, Object> result) {
-                if (isAdded()) {
-                    setLoading(false);
-                    
-                    PreferenceManager pref = PreferenceManager.getInstance(requireContext());
-                    Object fid = result.get("familyId");
-                    String familyId = (fid != null && !"null".equals(String.valueOf(fid))) ? String.valueOf(fid) : "";
-                    if (!familyId.isEmpty()) {
-                        pref.setFamilyId(familyId);
-                        pref.setAdminId(pref.getUserId());
-                    }
-
-                    Object ic = result.get("inviteCode");
-                    String inviteCode = (ic != null && !"null".equals(String.valueOf(ic))) ? String.valueOf(ic) : "";
-                    if (!inviteCode.isEmpty()) {
-                        pref.setInviteCode(inviteCode);
-                    }
-                    
-                    String displayCode = inviteCode;
-                    if (displayCode.startsWith("FAM-")) {
-                        displayCode = displayCode.replace("FAM-", "");
-                    }
-                    navigateTo(OnboardingStatusFragment.newInstance(displayCode));
-                }
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                if (isAdded()) {
-                    setLoading(false);
-                    String message = error.getMessage();
-                    if ("ALREADY_IN_A_FAMILY".equals(message)) {
-                        showToast(R.string.err_already_in_family, com.upreyvan.carti.util.UiHelper.Status.WARNING);
-                        startActivity(new Intent(requireActivity(), MainActivity.class));
-                        requireActivity().finish();
-                    } else if ("PARENTS_ONLY".equals(message)) {
-                        showToast(R.string.err_parents_only, com.upreyvan.carti.util.UiHelper.Status.ERROR);
-                    } else {
-                        showToast(getString(R.string.err_error_prefix, message), com.upreyvan.carti.util.UiHelper.Status.ERROR);
-                    }
-                }
-            }
-        });
+        viewModel.createFamily(familyName);
     }
 
     private void setLoading(boolean isLoading) {
@@ -131,4 +113,3 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
         );
     }
 }
-
