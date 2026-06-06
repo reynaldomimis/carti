@@ -145,11 +145,24 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
     private void onSaveClicked() {
         if (!checkNetwork()) return;
         if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) {
-            showToast(R.string.msg_fill_all_fields, UiHelper.Status.WARNING);
+            UiHelper.showSnackbar(getBinding().getRoot(), R.string.msg_fill_all_fields, UiHelper.Status.WARNING);
             return;
         }
 
         String name = getBinding().etGoalName.getText().toString().trim();
+
+        // Validate duplicates
+        androidx.lifecycle.LiveData<java.util.List<com.upreyvan.carti.model.TransactionWithUser>> goalsData = 
+                TransactionRepository.getInstance(requireContext()).getGoals();
+        if (goalsData.getValue() != null) {
+            for (com.upreyvan.carti.model.TransactionWithUser item : goalsData.getValue()) {
+                if (item.getTransaction().getTitle().equalsIgnoreCase(name)) {
+                    UiHelper.showSnackbar(getBinding().getRoot(), "This goal already exists", UiHelper.Status.WARNING);
+                    return;
+                }
+            }
+        }
+
         double targetAmount = Double.parseDouble(getBinding().etTargetAmount.getText().toString().trim());
         String savedAmountStr = getBinding().etSavedAmount.getText().toString().trim();
         double savedAmount = savedAmountStr.isEmpty() ? 0 : Double.parseDouble(savedAmountStr);

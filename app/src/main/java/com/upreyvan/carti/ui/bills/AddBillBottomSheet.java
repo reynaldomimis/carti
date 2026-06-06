@@ -89,8 +89,21 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             String category = getBinding().actCategory.getText().toString();
 
             if (billName.isEmpty() || amount.isEmpty()) {
-                ToastHelper.show(requireContext(), R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
+                UiHelper.showSnackbar(getBinding().getRoot(), R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
                 return;
+            }
+
+            // Validate duplicates
+            String familyId = PreferenceManager.getInstance(requireContext()).getFamilyId();
+            androidx.lifecycle.LiveData<java.util.List<com.upreyvan.carti.model.Bill>> billsData = 
+                    com.upreyvan.carti.data.repository.NotificationRepository.getInstance(requireContext()).getBills(familyId);
+            if (billsData.getValue() != null) {
+                for (com.upreyvan.carti.model.Bill b : billsData.getValue()) {
+                    if (b.getName().equalsIgnoreCase(billName)) {
+                        UiHelper.showSnackbar(getBinding().getRoot(), "This bill already exists", UiHelper.Status.WARNING);
+                        return;
+                    }
+                }
             }
 
             String title = "BILL: " + billName;

@@ -356,10 +356,30 @@ public interface HomeListItem extends BaseMultiItem {
             b.getRoot().setOnClickListener(v -> listener.onTransactionClick(transaction));
 
             boolean isOwner = Objects.equals(t.getUserId(), listener.getCurrentUserId());
-            b.layoutOwnerActions.setVisibility(isOwner ? View.VISIBLE : View.GONE);
+            b.btnOptions.setVisibility(isOwner ? View.VISIBLE : View.GONE);
             if (isOwner) {
-                b.btnEdit.setOnClickListener(v -> listener.onTransactionEdit(transaction));
-                b.btnDelete.setOnClickListener(v -> listener.onTransactionDelete(transaction));
+                b.btnOptions.setOnClickListener(v -> {
+                    androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(b.getRoot().getContext(), v);
+                    popup.getMenuInflater().inflate(R.menu.menu_transaction_options, popup.getMenu());
+                    popup.setOnMenuItemClickListener(item -> {
+                        int id = item.getItemId();
+                        if (id == R.id.action_edit) {
+                            listener.onTransactionEdit(transaction);
+                            return true;
+                        } else if (id == R.id.action_delete) {
+                            com.upreyvan.carti.util.DialogHelper.showConfirmation(
+                                    b.getRoot().getContext(),
+                                    "Delete Transaction?",
+                                    "Are you sure you want to delete this transaction?",
+                                    "Delete",
+                                    () -> listener.onTransactionDelete(transaction)
+                            );
+                            return true;
+                        }
+                        return false;
+                    });
+                    popup.show();
+                });
             }
         }
 

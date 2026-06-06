@@ -25,6 +25,8 @@ import com.upreyvan.carti.util.UiHelper;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetAddCategoryBinding> {
@@ -163,24 +165,31 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
 
     private void saveCategory() {
         android.text.Editable nameText = getBinding().etCategoryName.getText();
-        android.text.Editable amountText = getBinding().etAmount.getText();
         
         if (nameText == null) return;
 
         String name = nameText.toString().trim();
-        String amountStr = (amountText != null) ? amountText.toString().trim() : "";
         boolean isRecurring = getBinding().switchRecurring.isChecked();
         
         if (name.isEmpty()) {
-            showToast(R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
+            UiHelper.showSnackbar(getBinding().getRoot(), R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
             return;
         }
 
-        double amount = 0;
-        try {
-            if (!amountStr.isEmpty()) amount = Double.parseDouble(amountStr);
-        } catch (NumberFormatException ignored) {}
+        // Validate duplicates
+        List<BudgetCategoryItem> existing = BudgetManager.getInstance(requireContext()).getBudgetPlan();
+        for (BudgetCategoryItem item : existing) {
+            if (item.getCategoryName().equalsIgnoreCase(name) && 
+                Objects.equals(item.getParentCategory(), parentCategory)) {
+                // If we are editing, allow if it's the same item
+                if (editingItem == null || !editingItem.getCategoryName().equalsIgnoreCase(name)) {
+                    UiHelper.showSnackbar(getBinding().getRoot(), "This category already exists", UiHelper.Status.WARNING);
+                    return;
+                }
+            }
+        }
 
+        double amount = 0;
         BudgetManager.getInstance(requireContext()).updateOrAddCategory(
                 editingItem != null ? editingItem.getCategoryName() : null,
                 name,

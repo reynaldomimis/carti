@@ -72,14 +72,32 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
             String currentUserId = com.upreyvan.carti.data.local.PreferenceManager.getInstance(binding.getRoot().getContext()).getUserId();
             
             boolean isOwner = item.getUserId() != null && item.getUserId().equalsIgnoreCase(currentUserId);
-            binding.layoutOwnerActions.setVisibility(isOwner ? View.VISIBLE : View.GONE);
+            binding.btnOptions.setVisibility(isOwner ? View.VISIBLE : View.GONE);
 
             if (isOwner) {
-                binding.btnEdit.setOnClickListener(v -> {
-                    if (interactionListener != null) interactionListener.onEditClick(item);
-                });
-                binding.btnDelete.setOnClickListener(v -> {
-                    if (interactionListener != null) interactionListener.onDeleteClick(item);
+                binding.btnOptions.setOnClickListener(v -> {
+                    androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(binding.getRoot().getContext(), v);
+                    popup.getMenuInflater().inflate(R.menu.menu_transaction_options, popup.getMenu());
+                    popup.setOnMenuItemClickListener(menuItem -> {
+                        int id = menuItem.getItemId();
+                        if (id == R.id.action_edit) {
+                            if (interactionListener != null) interactionListener.onEditClick(item);
+                            return true;
+                        } else if (id == R.id.action_delete) {
+                            DialogHelper.showConfirmation(
+                                    binding.getRoot().getContext(),
+                                    "Delete Transaction?",
+                                    "Are you sure you want to delete this transaction?",
+                                    "Delete",
+                                    () -> {
+                                        if (interactionListener != null) interactionListener.onDeleteClick(item);
+                                    }
+                            );
+                            return true;
+                        }
+                        return false;
+                    });
+                    popup.show();
                 });
             }
 
