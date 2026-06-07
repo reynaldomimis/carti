@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/gap_card"
+    android:layout_marginBottom="@dimen/gap_card"
     app:cardBackgroundColor="@color/mint_green_alpha"
     app:cardCornerRadius="@dimen/radius_large"
     app:cardElevation="0dp"

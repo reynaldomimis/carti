@@ -90,6 +90,7 @@
         <item name="android:layout_height">0dp</item>
         <item name="android:clipToPadding">false</item>
         <item name="android:paddingHorizontal">@dimen/screen_padding</item>
+        <item name="android:paddingTop">@dimen/gap_section_title</item>
         <item name="android:paddingBottom">@dimen/scroll_bottom_padding</item>
     </style>
 

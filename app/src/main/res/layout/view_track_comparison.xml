@@ -5,7 +5,7 @@
     style="@style/DashCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/gap_card"
+    android:layout_marginBottom="@dimen/gap_card"
     app:strokeColor="@color/border_subtle"
     app:strokeWidth="1dp"
     app:cardElevation="0dp"

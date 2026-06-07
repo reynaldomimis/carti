@@ -9,12 +9,7 @@ public class CurrencyHelper {
     }
 
     public static String formatCompact(double amount) {
-        if (amount >= 1000000) {
-            return String.format(Locale.getDefault(), "₱%.1fM", amount / 1000000.0);
-        } else if (amount >= 1000) {
-            return String.format(Locale.getDefault(), "₱%.0fk", amount / 1000.0);
-        }
-        return String.format(Locale.getDefault(), "₱%.0f", amount);
+        return String.format(Locale.getDefault(), "₱%,.0f", amount);
     }
 
     public static double parse(Object value) {

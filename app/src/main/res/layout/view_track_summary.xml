@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="@dimen/gap_section_title">
+    android:layout_marginBottom="@dimen/gap_card">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardTotalBalance"
