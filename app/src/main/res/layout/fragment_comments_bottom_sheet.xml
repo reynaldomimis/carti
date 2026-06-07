@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_bottom_sheet"
+    android:background="@drawable/bg_bottom_sheet_floating"
     android:minHeight="400dp">
 
     <View
@@ -47,9 +47,9 @@
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         android:clipToPadding="false"
-        android:paddingBottom="80dp"
+        android:paddingBottom="16dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cardInput"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         tools:listitem="@layout/item_comment" />
 
@@ -60,11 +60,9 @@
         android:layout_marginTop="16dp"
         android:orientation="vertical"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cardInput"
         app:layout_constraintTop_toBottomOf="@id/tvTitle">
 
-        <include layout="@layout/item_comment_shimmer" />
-        <include layout="@layout/item_comment_shimmer" />
         <include layout="@layout/item_comment_shimmer" />
         <include layout="@layout/item_comment_shimmer" />
         <include layout="@layout/item_comment_shimmer" />
@@ -89,7 +87,7 @@
         android:layout_height="wrap_content"
         app:cardBackgroundColor="@color/bg_surface"
         app:cardCornerRadius="0dp"
-        app:cardElevation="8dp"
+        app:cardElevation="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:strokeWidth="0dp">
 
@@ -98,7 +96,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/spacing_medium"
+            android:paddingHorizontal="16dp"
             android:paddingVertical="8dp">
 
             <com.google.android.material.imageview.ShapeableImageView
@@ -106,8 +104,7 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:scaleType="centerCrop"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle"
-                tools:src="@tools:sample/avatars" />
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Pigy.Circle" />
 
             <EditText
                 android:id="@+id/etComment"

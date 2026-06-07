@@ -12,6 +12,13 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import android.view.Window;
+import android.view.WindowManager;
+import androidx.transition.ChangeBounds;
+import androidx.transition.TransitionManager;
+import androidx.core.view.WindowCompat;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.data.local.PreferenceManager;
@@ -62,10 +69,29 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        if (getDialog() instanceof BottomSheetDialog dialog) {
+            View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheet != null) {
+                BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setSkipCollapsed(true);
+            }
+        }
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         repository = TransactionRepository.getInstance(requireContext());
         pref = PreferenceManager.getInstance(requireContext());
+
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            Window window = getDialog().getWindow();
+            WindowCompat.setDecorFitsSystemWindows(window, false);
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
 
         setupUI();
         loadComments();
@@ -100,12 +126,37 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
 
         AvatarHelper.loadUserAvatar(requireContext(), getBinding().ivCurrentUserAvatar, pref.getUsername());
 
-        ViewCompat.setOnApplyWindowInsetsListener(getBinding().cardInput, (v, insets) -> {
+        getBinding().cardInput.setOnClickListener(v -> {
+            getBinding().etComment.requestFocus();
+            UiHelper.showKeyboard(requireContext(), getBinding().etComment);
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(getBinding().getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
             int bottom = Math.max(systemBars.bottom, ime.bottom);
-            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottom);
-            return insets;
+
+            boolean isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+            int extraGap = isKeyboardVisible ? Utils.dpToPx(requireContext(), 20) : Utils.dpToPx(requireContext(), 16);
+            
+            if (v.getParent() instanceof ViewGroup parent) {
+                ChangeBounds transition = new ChangeBounds();
+                transition.setDuration(400);
+                TransitionManager.beginDelayedTransition(parent, transition);
+            }
+
+            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            lp.bottomMargin = bottom + extraGap;
+            lp.leftMargin = Utils.dpToPx(requireContext(), 12);
+            lp.rightMargin = Utils.dpToPx(requireContext(), 12);
+            v.setLayoutParams(lp);
+
+            if (isKeyboardVisible && adapter != null && adapter.getItemCount() > 0) {
+                getBinding().rvComments.postDelayed(() -> 
+                    getBinding().rvComments.smoothScrollToPosition(adapter.getItemCount() - 1), 450);
+            }
+
+            return WindowInsetsCompat.CONSUMED;
         });
 
         getBinding().btnSend.setOnClickListener(v -> postComment());
