@@ -74,15 +74,20 @@ public class HomeViewModel extends BaseViewModel {
         long lstStart = Utils.getMonthStartMillis(lastMonth);
         long lstEnd = Utils.getMonthEndMillis(lastMonth);
 
-        dataTrigger.addSource(transRepo.getBalance(), v -> { totalBal = v; updateDash(); rebuild(); });
-        dataTrigger.addSource(transRepo.getTotalIncomeInRange(curStart, curEnd), v -> { curInc = v; updateDash(); rebuild(); });
-        dataTrigger.addSource(transRepo.getTotalExpenseInRange(curStart, curEnd), v -> { curExp = v; updateDash(); rebuild(); });
-        dataTrigger.addSource(transRepo.getTotalIncomeInRange(lstStart, lstEnd), v -> { lstInc = v; updateDash(); rebuild(); });
-        dataTrigger.addSource(transRepo.getTotalExpenseInRange(lstStart, lstEnd), v -> { lstExp = v; updateDash(); rebuild(); });
-        dataTrigger.addSource(transRepo.getRecentTransactions(5), v -> { this.currentTransactions = v; rebuild(); });
-        dataTrigger.addSource(notifRepo.getBills(pref.getFamilyId()), v -> { this.currentBills = v; rebuild(); });
-        dataTrigger.addSource(BudgetManager.getInstance(getApplication()).getBudgetPlanLiveData(), v -> { this.currentPlan = v; rebuild(); });
-        dataTrigger.addSource(transRepo.getSyncingStatus(), v -> rebuild());
+        dataTrigger.addSource(transRepo.getBalance(), v -> { totalBal = v; updateDash(); rebuild(false); });
+        dataTrigger.addSource(transRepo.getTotalIncomeInRange(curStart, curEnd), v -> { curInc = v; updateDash(); rebuild(false); });
+        dataTrigger.addSource(transRepo.getTotalExpenseInRange(curStart, curEnd), v -> { curExp = v; updateDash(); rebuild(false); });
+        dataTrigger.addSource(transRepo.getTotalIncomeInRange(lstStart, lstEnd), v -> { lstInc = v; updateDash(); rebuild(false); });
+        dataTrigger.addSource(transRepo.getTotalExpenseInRange(lstStart, lstEnd), v -> { lstExp = v; updateDash(); rebuild(false); });
+        dataTrigger.addSource(transRepo.getRecentTransactions(5), v -> { 
+            this.currentTransactions = v; 
+            // Fix: If we only updated transactions (e.g. social interaction), 
+            // run rebuild instantly on main thread to avoid lag.
+            rebuild(true); 
+        });
+        dataTrigger.addSource(notifRepo.getBills(pref.getFamilyId()), v -> { this.currentBills = v; rebuild(false); });
+        dataTrigger.addSource(BudgetManager.getInstance(getApplication()).getBudgetPlanLiveData(), v -> { this.currentPlan = v; rebuild(false); });
+        dataTrigger.addSource(transRepo.getSyncingStatus(), v -> rebuild(false));
     }
 
     private void updateDash() {
@@ -94,8 +99,8 @@ public class HomeViewModel extends BaseViewModel {
         this.currentDash = new DashboardState(bal, inc, exp, inc - exp, calculateTrend(inc, lInc), calculateTrend(exp, lExp), calculateTrend(inc - exp, lInc - lExp));
     }
 
-    private void rebuild() {
-        executor.execute(() -> {
+    private void rebuild(boolean instant) {
+        Runnable task = () -> {
             List<BaseMultiItem> items = new ArrayList<>();
             if (currentDash != null) items.add(new HomeListItem.DashboardItem(currentDash));
             items.add(new HomeListItem.AIInsightItem("Analyzing budget... 🙌"));
@@ -137,8 +142,12 @@ public class HomeViewModel extends BaseViewModel {
                 for (TransactionWithUser t : currentTransactions) items.add(new HomeListItem.TransactionItem(t, null));
             }
 
-            mainHandler.post(() -> uiState.setValue(items));
-        });
+            if (instant) uiState.setValue(items);
+            else mainHandler.post(() -> uiState.setValue(items));
+        };
+
+        if (instant) task.run();
+        else executor.execute(task);
     }
 
     private double calculateTrend(double c, double p) { return p == 0 ? 0 : ((c - p) / p) * 100; }

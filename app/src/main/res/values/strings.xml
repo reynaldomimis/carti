@@ -785,4 +785,11 @@
     <string name="title_sub_categories_for">%1$s Sub-categories</string>
     <string name="title_add_sub_category">Add Sub-category</string>
     <string name="desc_adding_sub_category">Adding sub-category for %1$s</string>
+
+    <!-- Comments -->
+    <string name="title_comments">Comments</string>
+    <string name="btn_close">Close</string>
+    <string name="empty_comments">No comments yet. Be the first to comment!</string>
+    <string name="hint_comment">Write a comment...</string>
+    <string name="btn_send">Send</string>
 </resources>

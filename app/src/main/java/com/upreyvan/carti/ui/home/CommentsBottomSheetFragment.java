@@ -26,6 +26,7 @@ import com.upreyvan.carti.util.Utils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<FragmentCommentsBottomSheetBinding> {
 
@@ -33,9 +34,11 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
     
     private String transactionId;
     private String selectedParentId = null;
+    private String lastPostedParentId = null;
     private CommentAdapter adapter;
     private TransactionRepository repository;
     private PreferenceManager pref;
+    private boolean shouldScrollToBottom = false;
 
     public static CommentsBottomSheetFragment newInstance(String transactionId) {
         CommentsBottomSheetFragment fragment = new CommentsBottomSheetFragment();
@@ -74,7 +77,7 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
             if (payload != null) {
                 String tid = String.valueOf(payload.get("transactionId"));
                 if (transactionId.equals(tid)) {
-                    loadComments();
+                    loadComments(false);
                 }
             }
         });
@@ -138,18 +141,47 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
     }
 
     private void loadComments() {
-        getBinding().progressBar.setVisibility(View.VISIBLE);
+        loadComments(true);
+    }
+
+    private void loadComments(boolean showShimmer) {
+        if (showShimmer) {
+            getBinding().layoutShimmer.setVisibility(View.VISIBLE);
+            getBinding().rvComments.setVisibility(View.GONE);
+        }
+
         repository.getComments(transactionId, new AppwriteCallback<>() {
             @Override
             public void onSuccess(List<Comment> result) {
-                getBinding().progressBar.setVisibility(View.GONE);
+                getBinding().layoutShimmer.setVisibility(View.GONE);
+                getBinding().rvComments.setVisibility(View.VISIBLE);
                 adapter.setAllComments(result);
                 getBinding().tvEmpty.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
+
+
+                if (shouldScrollToBottom && !result.isEmpty()) {
+                    getBinding().rvComments.post(() -> {
+                        if (lastPostedParentId == null) {
+                            getBinding().rvComments.smoothScrollToPosition(adapter.getItemCount() - 1);
+                        } else {
+                            List<Comment> current = adapter.getCurrentList();
+                            for (int i = 0; i < current.size(); i++) {
+                                if (current.get(i).getId().equals(lastPostedParentId)) {
+                                    getBinding().rvComments.smoothScrollToPosition(i);
+                                    break;
+                                }
+                            }
+                        }
+                        shouldScrollToBottom = false;
+                        lastPostedParentId = null;
+                    });
+                }
             }
 
             @Override
             public void onError(Throwable error) {
-                getBinding().progressBar.setVisibility(View.GONE);
+                getBinding().layoutShimmer.setVisibility(View.GONE);
+                getBinding().rvComments.setVisibility(View.VISIBLE);
                 showToast("Failed to load comments", UiHelper.Status.ERROR);
             }
         });
@@ -160,20 +192,22 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
         if (text.isEmpty()) return;
 
         getBinding().btnSend.setEnabled(false);
+        shouldScrollToBottom = true;
+        lastPostedParentId = selectedParentId;
         repository.postComment(transactionId, text, selectedParentId, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 getBinding().etComment.setText("");
                 getBinding().btnSend.setEnabled(true);
-                
-                // Fix: Auto-expand the thread if we just replied
+
                 if (selectedParentId != null) {
                     adapter.forceExpand(selectedParentId);
                 }
 
                 selectedParentId = null;
                 getBinding().etComment.setHint("Write a comment...");
-                loadComments();
+                
+                loadComments(false);
             }
 
             @Override

@@ -51,10 +51,10 @@ public class CommentAdapter extends BaseAdapter<Comment, ItemCommentBinding> {
             List<Comment> topLevel = comments.stream()
                     .filter(c -> c.getParentId() == null || c.getParentId().isEmpty() || c.getParentId().equalsIgnoreCase("null"))
                     .sorted(Comparator.comparing(Comment::getCreatedAt))
-                    .map(c -> {
-                        long replyCount = comments.stream().filter(r -> c.getId().equals(r.getParentId())).count();
-                        c.setChildSignature("v" + replyCount);
-                        return c;
+                    .peek(c -> {
+                        // Fix: Use Recursive Count for signature to detect deep nested replies
+                        int totalDescendants = countAllDescendants(c.getId(), comments);
+                        c.setChildSignature("v" + totalDescendants);
                     })
                     .collect(Collectors.toList());
             submitList(topLevel);
@@ -63,13 +63,40 @@ public class CommentAdapter extends BaseAdapter<Comment, ItemCommentBinding> {
         }
     }
 
+    private int countAllDescendants(String parentId, List<Comment> all) {
+        int count = 0;
+        for (Comment c : all) {
+            if (Objects.equals(parentId, c.getParentId())) {
+                count++;
+                count += countAllDescendants(c.getId(), all);
+            }
+        }
+        return count;
+    }
+
     public void setOnCommentInteractionListener(OnCommentInteractionListener listener) {
         this.interactionListener = listener;
     }
 
     public void forceExpand(String commentId) {
         if (commentId == null) return;
-        expandedStates.put(commentId, true);
+        
+        // Fix: If this is a nested comment, find its root parent to expand
+        String rootId = findRootParentId(commentId);
+        expandedStates.put(rootId, true);
+    }
+
+    private String findRootParentId(String commentId) {
+        for (Comment c : allComments) {
+            if (c.getId().equals(commentId)) {
+                if (c.getParentId() == null || c.getParentId().isEmpty() || c.getParentId().equalsIgnoreCase("null")) {
+                    return c.getId();
+                } else {
+                    return findRootParentId(c.getParentId());
+                }
+            }
+        }
+        return commentId;
     }
 
     @Override

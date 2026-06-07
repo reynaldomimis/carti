@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Comments"
+        android:text="@string/title_comments"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/viewHandle" />
@@ -34,7 +34,7 @@
         android:layout_height="32dp"
         android:layout_marginEnd="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Close"
+        android:contentDescription="@string/btn_close"
         android:src="@drawable/ic_close"
         app:layout_constraintBottom_toBottomOf="@id/tvTitle"
         app:layout_constraintEnd_toEndOf="parent"
@@ -53,22 +53,30 @@
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         tools:listitem="@layout/item_comment" />
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <LinearLayout
+        android:id="@+id/layoutShimmer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/rvComments"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/rvComments" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle">
+
+        <include layout="@layout/item_comment_shimmer" />
+        <include layout="@layout/item_comment_shimmer" />
+        <include layout="@layout/item_comment_shimmer" />
+        <include layout="@layout/item_comment_shimmer" />
+        <include layout="@layout/item_comment_shimmer" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tvEmpty"
         style="@style/CartiTextDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No comments yet. Be the first to comment!"
+        android:text="@string/empty_comments"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/rvComments"
         app:layout_constraintEnd_toEndOf="parent"
@@ -108,7 +116,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_edit_text_rounded"
-                android:hint="Write a comment..."
+                android:hint="@string/hint_comment"
                 android:inputType="textCapSentences|textMultiLine"
                 android:maxLines="6"
                 android:minHeight="48dp"
@@ -121,7 +129,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Send"
+                android:contentDescription="@string/btn_send"
                 android:src="@drawable/ic_send"
                 app:tint="@color/carti_primary_green" />
 
