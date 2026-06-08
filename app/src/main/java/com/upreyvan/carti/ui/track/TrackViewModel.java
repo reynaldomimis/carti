@@ -28,6 +28,8 @@ public class TrackViewModel extends BaseViewModel {
     private List<TransactionWithUser> currentMonthTrans;
     private List<TransactionWithUser> currentGoals;
     private List<TransactionWithUser> currentDbAllocations;
+    private List<TransactionWithUser> lastMonthTrans;
+    private List<TransactionWithUser> lastDbAllocations;
     private List<BudgetCategoryItem> currentAllocations = new ArrayList<>();
     private final int month, year;
     private boolean isExpanded = false;
@@ -53,9 +55,15 @@ public class TrackViewModel extends BaseViewModel {
     public void toggleExpansion() { isExpanded = !isExpanded; rebuild(); }
 
     private void setupDataStream() {
+        Calendar cal = Calendar.getInstance();
         dataTrigger.addSource(repo.getTransactionsByMonth(month, year), v -> { currentMonthTrans = v; rebuild(); });
         dataTrigger.addSource(repo.getGoals(), v -> { currentGoals = v; rebuild(); });
-        dataTrigger.addSource(repo.getAllocationsByMonth(com.upreyvan.carti.util.Utils.formatMonthQuery(java.util.Calendar.getInstance())), v -> { currentDbAllocations = v; rebuild(); });
+        dataTrigger.addSource(repo.getAllocationsByMonth(com.upreyvan.carti.util.Utils.formatMonthQuery(cal)), v -> { currentDbAllocations = v; rebuild(); });
+        
+        // Add sources for Last Month
+        cal.add(Calendar.MONTH, -1);
+        dataTrigger.addSource(repo.getTransactionsByMonth(cal.get(Calendar.MONTH), cal.get(Calendar.YEAR)), v -> { lastMonthTrans = v; rebuild(); });
+        dataTrigger.addSource(repo.getAllocationsByMonth(com.upreyvan.carti.util.Utils.formatMonthQuery(cal)), v -> { lastDbAllocations = v; rebuild(); });
     }
 
     private void rebuild() {
@@ -78,6 +86,25 @@ public class TrackViewModel extends BaseViewModel {
                             breakdownMap.merge(normalizeCategory(trans.getSubCategory()), trans.getAmount(), Double::sum);
                         }
                         filteredExp.add(t);
+                    }
+                }
+            }
+
+            // Calculate Last Month's savings
+            double lastExp = 0;
+            if (lastMonthTrans != null) {
+                for (TransactionWithUser t : lastMonthTrans) {
+                    if ("EXPENSE".equals(t.getTransaction().getType())) {
+                        lastExp += t.getTransaction().getAmount();
+                    }
+                }
+            }
+
+            double lastBudget = 0;
+            if (lastDbAllocations != null) {
+                for (TransactionWithUser t : lastDbAllocations) {
+                    if ("ALLOCATION".equals(t.getTransaction().getType())) {
+                        lastBudget += t.getTransaction().getAmount();
                     }
                 }
             }
@@ -108,15 +135,15 @@ public class TrackViewModel extends BaseViewModel {
 
             final double finalExp = exp;
             final double finalBudget = totalBudget;
-            final double finalSaved = goalSaved;
-            final double finalTarget = goalTarget;
+            final double finalSaved = Math.max(0, totalBudget - exp) + Math.max(0, lastBudget - lastExp) + goalSaved;
+            final double finalTarget = totalBudget + lastBudget + goalTarget;
             final List<TransactionWithUser> finalFiltered = filteredExp;
             final List<BudgetCategoryItem> finalValidAllocations = allValidAllocations;
 
             mainHandler.post(() -> {
                 currentAllocations = finalValidAllocations;
                 
-                // Summary Item (Budget - Expense as balance, Total Budget, Total Expense, Goal Progress)
+                // Summary Item (Budget - Expense as balance, Total Budget, Total Expense, Cumulative Savings Progress)
                 items.add(new TrackListItem.SummaryItem(finalBudget - finalExp, finalBudget, finalExp, finalSaved, finalTarget, finalTarget > 0 ? (int)((finalSaved/finalTarget)*100) : 0, this instanceof TrackListItem.OnTrackInteractionListener ? (TrackListItem.OnTrackInteractionListener) this : null));
 
                 // Chart Item
