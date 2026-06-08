@@ -174,35 +174,35 @@ public interface TrackListItem extends BaseMultiItem {
 
     record PieEntryData(float value, String label) {}
 
-    record ComparisonItem(double income, double expense) implements TrackListItem {
+    record ComparisonItem(double budget, double expense) implements TrackListItem {
         @Override public int getViewType() { return TYPE_COMPARISON; }
         @Override public String getItemUniqueId() { return "comparison"; }
         @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) { return ViewTrackComparisonBinding.inflate(inflater, parent, false); }
         @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
             ViewTrackComparisonBinding b = (ViewTrackComparisonBinding) binding;
-            b.tvIncomeAmountComp.setText(Utils.formatCurrency(income));
+            b.tvIncomeAmountComp.setText(Utils.formatCurrency(budget));
             b.tvExpenseAmountComp.setText(Utils.formatCurrency(expense));
-            float totalMax = Math.max(1.0f, (float) Math.max(income, expense));
+            float totalMax = Math.max(1.0f, (float) Math.max(budget, expense));
             int maxH = Utils.dpToPx(b.getRoot().getContext(), 120);
             ViewGroup.LayoutParams lpI = b.barIncome.getLayoutParams();
-            lpI.height = (int) ((income / totalMax) * maxH); b.barIncome.setLayoutParams(lpI);
+            lpI.height = (int) ((budget / totalMax) * maxH); b.barIncome.setLayoutParams(lpI);
             ViewGroup.LayoutParams lpE = b.barExpense.getLayoutParams();
             lpE.height = (int) ((expense / totalMax) * maxH); b.barExpense.setLayoutParams(lpE);
         }
     }
 
-    record AllocationHeaderItem(double totalAllocation, boolean isExpanded, int listSize, OnTrackInteractionListener listener, RecyclerView.RecycledViewPool pool) implements TrackListItem {
+    record AllocationHeaderItem(double totalAllocation, double totalSpent, boolean isExpanded, List<BudgetCategoryItem> allocations, OnTrackInteractionListener listener, RecyclerView.RecycledViewPool pool) implements TrackListItem {
         @Override public int getViewType() { return TYPE_ALLOCATION_HEADER; }
         @Override public String getItemUniqueId() { return "allocation_header"; }
         @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) { return ViewTrackAllocationCardBinding.inflate(inflater, parent, false); }
         @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
             ViewTrackAllocationCardBinding b = (ViewTrackAllocationCardBinding) binding;
             
-            if (Objects.equals(b.getRoot().getTag(R.id.item_tag_id), this)) return;
-            b.getRoot().setTag(R.id.item_tag_id, this);
-
             b.tvTotalAllocation.setText(b.getRoot().getContext().getString(R.string.label_total_allocation, Utils.formatCurrency(totalAllocation)));
             b.tvViewAllAllocationLabel.setText(isExpanded ? R.string.see_less : R.string.see_all);
+
+            int fullSize = listener.getAllocations().size();
+            b.btnViewAllAllocation.setVisibility(fullSize > 5 ? View.VISIBLE : View.GONE);
             
             float targetRot = isExpanded ? 90f : 0f;
             if (b.ivAllocationArrow.getRotation() != targetRot) {
@@ -214,23 +214,24 @@ public interface TrackListItem extends BaseMultiItem {
             RecyclerView rv = b.rvBudgetAllocation;
             if (rv.getLayoutManager() == null) {
                 LinearLayoutManager lm = new LinearLayoutManager(rv.getContext());
-                lm.setInitialPrefetchItemCount(3);
                 rv.setLayoutManager(lm);
-                rv.setHasFixedSize(true);
                 rv.setNestedScrollingEnabled(false);
                 rv.setRecycledViewPool(pool);
             }
-            setupAdapter(rv);
+            setupAdapter(rv, allocations);
         }
 
-        private void setupAdapter(RecyclerView rv) {
+        private void setupAdapter(RecyclerView rv, List<BudgetCategoryItem> allocations) {
             @SuppressWarnings("unchecked")
             GenericAdapter<BudgetCategoryItem, ItemBudgetCategoryBinding> adapter = (GenericAdapter<BudgetCategoryItem, ItemBudgetCategoryBinding>) rv.getAdapter();
-            List<BudgetCategoryItem> allocations = listener.getAllocations();
             if (adapter == null) {
                 adapter = new GenericAdapter<>(BudgetCategoryItem.DIFF_CALLBACK, (i, p) -> ItemBudgetCategoryBinding.inflate(i, p, false), (bind, it, p, c) -> {
                     bind.tvCategoryName.setText(it.getCategoryName());
                     
+                    double remaining = it.getAmount() - it.getCurrentSpent();
+                    bind.tvRemaining.setText(String.format("Remaining Balance: %s", Utils.formatCurrency(remaining)));
+                    bind.tvRemaining.setVisibility(View.VISIBLE);
+
                     String spentStr = Utils.formatCompactCurrency(it.getCurrentSpent());
                     String budgetStr = Utils.formatCompactCurrency(it.getAmount());
                     bind.tvAmount.setText(String.format("%s / %s", spentStr, budgetStr));
@@ -241,13 +242,13 @@ public interface TrackListItem extends BaseMultiItem {
 
                     Category cat = listener.findCategory(it.getCategoryName());
                     if (cat != null) {
-                        bind.ivIcon.setImageResource(cat.getIconRes());
-                        bind.ivIcon.setColorFilter(ContextCompat.getColor(bind.getRoot().getContext(), cat.getIconColor()));
-                        bind.cvIcon.setCardBackgroundColor(ContextCompat.getColor(bind.getRoot().getContext(), cat.getBackgroundColor()));
+                        bind.ivIcon.setImageResource(cat.getIconRes() != 0 ? cat.getIconRes() : R.drawable.ic_chart);
+                        bind.ivIcon.setColorFilter(ContextCompat.getColor(bind.getRoot().getContext(), cat.getIconColor() != 0 ? cat.getIconColor() : R.color.carti_primary_green));
+                        bind.cvIcon.setCardBackgroundColor(ContextCompat.getColor(bind.getRoot().getContext(), cat.getBackgroundColor() != 0 ? cat.getBackgroundColor() : R.color.mint_green_alpha));
                     } else {
-                        bind.ivIcon.setImageResource(it.getIconRes());
-                        bind.ivIcon.setColorFilter(ContextCompat.getColor(bind.getRoot().getContext(), it.getIconColor()));
-                        bind.cvIcon.setCardBackgroundColor(ContextCompat.getColor(bind.getRoot().getContext(), it.getBgColor()));
+                        bind.ivIcon.setImageResource(it.getIconRes() != 0 ? it.getIconRes() : R.drawable.ic_chart);
+                        bind.ivIcon.setColorFilter(ContextCompat.getColor(bind.getRoot().getContext(), it.getIconColor() != 0 ? it.getIconColor() : R.color.carti_primary_green));
+                        bind.cvIcon.setCardBackgroundColor(ContextCompat.getColor(bind.getRoot().getContext(), it.getBgColor() != 0 ? it.getBgColor() : R.color.mint_green_alpha));
                     }
 
                     bind.getRoot().setOnClickListener(v -> listener.onCategoryClick(it.getCategoryName()));

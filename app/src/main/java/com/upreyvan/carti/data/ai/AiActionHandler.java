@@ -38,12 +38,13 @@ public class AiActionHandler {
                 case "EXPENSE" -> {
                     double amount = data.optDouble("amount", 0.0);
                     String item = data.optString("item", data.optString("description", "Miscellaneous"));
-                    String category = CategoryMapper.map(context, item);
-                    if (category == null) category = data.optString("category", "Others");
+                    CategoryMapper.MapResult mapping = CategoryMapper.mapDetailed(context, item);
+                    
                     Transaction expense = new Transaction();
                     expense.setAmount(amount);
                     expense.setType("EXPENSE"); 
-                    expense.setCategory(category);
+                    expense.setCategory(mapping.category);
+                    expense.setSubCategory(mapping.subCategory);
                     expense.setTitle(item);
                     expense.setNote(String.format("Outflow log: %s", item));
                     transactionRepository.addTransaction(expense, callback);

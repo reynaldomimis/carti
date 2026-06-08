@@ -1,19 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <!-- Balance Allocation Info -->
+    <!-- Category -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelCategory"
+        style="@style/DashLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CATEGORY"
+        android:letterSpacing="0.1" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutCategory"
+        style="@style/CartiInputLayout.Dropdown"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small">
+
+        <AutoCompleteTextView
+            android:id="@+id/etCategory"
+            style="@style/CartiEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Select Category"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Balance Allocation Info (Senior Redesign) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cvBalanceInfo"
         style="@style/CartiCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
         android:layout_marginBottom="@dimen/spacing_medium"
+        android:visibility="gone"
         app:cardBackgroundColor="@color/tonal_button_bg"
-        app:strokeWidth="0dp">
+        app:strokeWidth="0dp"
+        tools:visibility="visible">
 
         <LinearLayout
             android:id="@+id/layout_balance_info"
@@ -22,75 +52,113 @@
             android:orientation="vertical"
             android:padding="@dimen/spacing_medium">
 
-            <TextView
-                android:id="@+id/allocatedHeader"
-                style="@style/CartiTextDescription"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_budget_plan_allocation" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/tvAllocatedBalance"
-                style="@style/CartiTextAmount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xs"
-                android:text="₱0.00"
-                android:textSize="@dimen/text_size_header" />
+                <TextView
+                    android:id="@+id/allocatedHeader"
+                    style="@style/CartiTextDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:text="Remaining Balance"
+                    android:textColor="@color/carti_primary_green"
+                    android:fontFamily="@font/plus_jakarta_sans_bold" />
+
+                <TextView
+                    android:id="@+id/tvAllocatedBalance"
+                    style="@style/CartiTextAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/allocatedHeader"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:text="₱0.00"
+                    android:textSize="@dimen/text_size_header" />
+            </RelativeLayout>
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Amount Input -->
+    <!-- Sub Category -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelSubCategory"
+        style="@style/DashLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:text="SUB CATEGORY"
+        android:letterSpacing="0.1"
+        android:visibility="gone" />
+
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilAmount"
-        style="@style/CartiInputLayout.Amount"
+        android:id="@+id/layoutSubCategory"
+        style="@style/CartiInputLayout.Dropdown"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/label_amount_peso">
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:visibility="gone">
+
+        <AutoCompleteTextView
+            android:id="@+id/etSubCategory"
+            style="@style/CartiEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Select Sub Category (Optional)"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Amount -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelAmount"
+        style="@style/DashLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="AMOUNT (PHP)"
+        android:letterSpacing="0.1" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilAmount"
+        style="@style/CartiInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etAmount"
             style="@style/CartiEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:paddingVertical="@dimen/spacing_medium" />
+            android:hint="Amount"
+            android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Description Input -->
+    <!-- Note -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelNote"
+        style="@style/DashLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="NOTE"
+        android:letterSpacing="0.1" />
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilDescription"
         style="@style/CartiInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:hint="@string/label_what_bought">
+        android:layout_marginTop="@dimen/spacing_small">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etDescription"
             style="@style/CartiEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textCapSentences"
-            android:paddingVertical="@dimen/spacing_medium" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Payment Source Dropdown -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilSource"
-        style="@style/CartiInputLayout.Dropdown"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:hint="@string/label_payment_source">
-
-        <com.google.android.material.textfield.MaterialAutoCompleteTextView
-            android:id="@+id/actvSource"
-            style="@style/CartiEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="none"
-            android:paddingVertical="@dimen/spacing_medium" />
+            android:hint="Note (Optional)"
+            android:inputType="textCapSentences" />
     </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

@@ -95,6 +95,7 @@
     <string name="label_employee_head">I am an Employee (Head of Family)</string>
     <string name="err_required">This field is required</string>
     <string name="err_invalid_email">Invalid email address</string>
+    <string name="err_insufficient_balance">Insufficient budget allocation balance.</string>
     <string name="btn_logging_in">Logging in...</string>
     <string name="btn_registering">Registering...</string>
     <string name="msg_sending">Sending...</string>
@@ -753,7 +754,7 @@
     <string name="no_budgets_desc">Start planning your monthly spending.</string>
     <string name="set_up_categories_title">Set Up Categories</string>
     <string name="label_add_category_plus">+ Category</string>
-    <string name="label_balance">balance</string>
+    <string name="label_balance">allocated</string>
     <string name="label_unpaid_bills">UNPAID BILLS</string>
     <string name="label_paid_bills">PAID BILLS</string>
     <string name="label_overdue">OVERDUE</string>

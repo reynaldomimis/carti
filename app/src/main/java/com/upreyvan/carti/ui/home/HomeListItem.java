@@ -149,8 +149,8 @@ public interface HomeListItem extends BaseMultiItem {
                 lm.setInitialPrefetchItemCount(3);
                 rv.setLayoutManager(lm);
                 rv.setRecycledViewPool(pool);
+                rv.setItemAnimator(null);
             }
-            rv.requestLayout();
             setupAdapter(rv);
         }
 
@@ -189,8 +189,8 @@ public interface HomeListItem extends BaseMultiItem {
                 lm.setInitialPrefetchItemCount(4);
                 rv.setLayoutManager(lm);
                 rv.setRecycledViewPool(pool);
+                rv.setItemAnimator(null);
             }
-            rv.requestLayout();
             setupAdapter(rv);
         }
 
@@ -224,8 +224,8 @@ public interface HomeListItem extends BaseMultiItem {
                 gm.setInitialPrefetchItemCount(8);
                 rv.setLayoutManager(gm);
                 rv.setRecycledViewPool(pool);
+                rv.setItemAnimator(null);
             }
-            rv.requestLayout();
             setupAdapter(rv);
         }
 

@@ -1,6 +1,8 @@
 package com.upreyvan.carti.ui.goals;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +23,6 @@ import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.Validator;
 import com.upreyvan.carti.util.ValueHelper;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -45,7 +46,40 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
 
     @Override protected LayoutBottomSheetUpdateGoalBinding inflateBinding(@NonNull LayoutInflater i, @Nullable ViewGroup c) { return LayoutBottomSheetUpdateGoalBinding.inflate(i, c, false); }
 
-    @Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) { super.onViewCreated(view, savedInstanceState); setupDatePicker(); setupMemberSelection(); setupListeners(); observeGoal(); }
+    @Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) { 
+        super.onViewCreated(view, savedInstanceState); 
+        setupDatePicker(); 
+        setupMemberSelection(); 
+        setupListeners(); 
+        setupInputValidation();
+        observeGoal(); 
+        validateForm();
+    }
+
+    private void setupInputValidation() {
+        TextWatcher validationWatcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validateForm(); }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+
+        getBinding().etGoalName.addTextChangedListener(validationWatcher);
+        getBinding().etTargetAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etTargetAmount));
+        getBinding().etTargetAmount.addTextChangedListener(validationWatcher);
+        getBinding().etTargetDate.addTextChangedListener(validationWatcher);
+    }
+
+    private void validateForm() {
+        String name = getBinding().etGoalName.getText().toString().trim();
+        String targetStr = getBinding().etTargetAmount.getText().toString().trim();
+        String date = getBinding().etTargetDate.getText().toString().trim();
+
+        double target = com.upreyvan.carti.util.StringHelper.parseDouble(targetStr);
+        
+        boolean isValid = !name.isEmpty() && target > 0 && !date.isEmpty();
+        
+        getBinding().btnUpdateGoal.setEnabled(isValid);
+    }
 
     private void observeGoal() { transactionRepository.getTransactionById(goalId).observe(getViewLifecycleOwner(), g -> { if (g != null) { currentGoal = g.getTransaction(); preFillData(); } }); }
 
@@ -78,8 +112,9 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
 
     private void onUpdateClicked() {
         if (!checkNetwork() || currentGoal == null) return;
-        if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) { showToast(R.string.msg_fill_all_fields, UiHelper.Status.WARNING); return; }
-        showLoading(true, "Updating goal..."); currentGoal.setTitle(getBinding().etGoalName.getText().toString().trim()); currentGoal.setTargetAmount(Double.parseDouble(getBinding().etTargetAmount.getText().toString().trim()));
+        
+        showLoading(true, "Updating goal..."); currentGoal.setTitle(getBinding().etGoalName.getText().toString().trim()); 
+        currentGoal.setTargetAmount(com.upreyvan.carti.util.StringHelper.parseDouble(getBinding().etTargetAmount.getText().toString().trim()));
         currentGoal.setTargetDate(getBinding().etTargetDate.getText().toString().trim()); currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
         transactionRepository.updateTransaction(currentGoal, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override public void onSuccess(Map<String, Object> r) { if (isAdded()) { showLoading(false); showToast("Goal updated successfully", UiHelper.Status.SUCCESS); dismiss(); } }

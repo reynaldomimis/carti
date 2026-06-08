@@ -44,42 +44,81 @@ public class CategoryMapper {
         }
     }
 
-    public static String map(Context context, String input) {
-        if (input == null || input.trim().isEmpty()) return Categories.OTHERS;
+    public static class MapResult {
+        public String category;
+        public String subCategory;
+        public MapResult(String category, String subCategory) {
+            this.category = category;
+            this.subCategory = subCategory;
+        }
+    }
+
+    public static MapResult mapDetailed(Context context, String input) {
+        if (input == null || input.trim().isEmpty()) return new MapResult(Categories.OTHERS, null);
         
         String clean = input.trim().toLowerCase();
 
-        // 1. Check User PLAN Categories (Source of Truth)
+        // 1. Check Actual User Categories (Set Up Categories)
+        List<com.upreyvan.carti.model.Category> actualCats = com.upreyvan.carti.data.local.CategoryManager.getInstance(context).getCategories();
+        
+        // Priority 1: Exact match with Sub-category or Category name
+        for (com.upreyvan.carti.model.Category cat : actualCats) {
+            if (cat.getName().equalsIgnoreCase(clean)) {
+                if (cat.getParentCategory() != null && !cat.getParentCategory().isEmpty()) {
+                    return new MapResult(cat.getParentCategory(), cat.getName());
+                } else {
+                    return new MapResult(cat.getName(), null);
+                }
+            }
+        }
+
+        // Priority 2: Contains match
+        for (com.upreyvan.carti.model.Category cat : actualCats) {
+            String catName = cat.getName().toLowerCase();
+            if (clean.contains(catName) || catName.contains(clean)) {
+                if (cat.getParentCategory() != null && !cat.getParentCategory().isEmpty()) {
+                    return new MapResult(cat.getParentCategory(), cat.getName());
+                } else {
+                    return new MapResult(cat.getName(), null);
+                }
+            }
+        }
+        
+        // 2. Check User PLAN Categories (Allocations)
         List<BudgetCategoryItem> plan = TransactionRepository.getInstance(context).getBudgetPlan();
         for (BudgetCategoryItem item : plan) {
             String catName = item.getCategoryName().toLowerCase();
             if (catName.equals(clean) || clean.contains(catName)) {
-                return item.getCategoryName();
+                return new MapResult(item.getCategoryName(), null);
             }
         }
         
         // 2. Direct match with defaults
         for (String category : getAllCategories()) {
-            if (category.toLowerCase().equals(clean)) return category;
+            if (category.toLowerCase().equals(clean)) return new MapResult(category, null);
         }
 
         // 3. Synonym match
-        if (SYNONYMS.containsKey(clean)) return SYNONYMS.get(clean);
+        if (SYNONYMS.containsKey(clean)) return new MapResult(SYNONYMS.get(clean), null);
 
         // 4. Fuzzy / Contains match
         for (Map.Entry<String, String> entry : SYNONYMS.entrySet()) {
             if (clean.contains(entry.getKey()) || isFuzzyMatch(clean, entry.getKey())) {
-                return entry.getValue();
+                return new MapResult(entry.getValue(), null);
             }
         }
 
-        return null; // Not found, needs AI fallback
+        return new MapResult(Categories.OTHERS, null);
+    }
+
+    public static String map(Context context, String input) {
+        return mapDetailed(context, input).category;
     }
 
     private static boolean isFuzzyMatch(String s1, String s2) {
         if (Math.abs(s1.length() - s2.length()) > 2) return false;
         int distance = levenshteinDistance(s1, s2);
-        return distance <= 1; // Allow 1 typo
+        return distance <= 1;
     }
 
     private static int levenshteinDistance(String s1, String s2) {

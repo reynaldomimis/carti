@@ -99,6 +99,9 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
                 (inflater, parent) -> ItemBudgetCategoryBinding.inflate(inflater, parent, false),
                 (binding, item) -> {
                     binding.tvCategoryName.setText(item.getCategoryName());
+                    double remaining = item.getAmount() - item.getCurrentSpent();
+                    binding.tvRemaining.setText(String.format("Remaining: %s", StringHelper.formatCurrency(remaining)));
+
                     String spent = StringHelper.formatCompactCurrency(item.getCurrentSpent());
                     String total = StringHelper.formatCompactCurrency(item.getAmount());
                     binding.tvAmount.setText(String.format(Locale.getDefault(), "%s / %s", spent, total));

@@ -23,18 +23,31 @@ public class CategoryValidator {
     }
 
     public static void validate(Context context, String item, String currentCategory, ValidationCallback callback) {
+        // 1. Get actual categories from Set Up Categories
+        List<com.upreyvan.carti.model.Category> actualCats = com.upreyvan.carti.data.local.CategoryManager.getInstance(context).getCategories();
+        List<String> validNames = new ArrayList<>();
+        for (com.upreyvan.carti.model.Category c : actualCats) validNames.add(c.getName());
 
-        if (SYSTEM_CATEGORIES.contains(currentCategory)) {
+        // 2. Direct match with current category
+        if (validNames.contains(currentCategory)) {
             callback.onValidated(currentCategory);
             return;
         }
 
-        String localRemap = CategoryMapper.map(context, item);
-        if (localRemap != null && SYSTEM_CATEGORIES.contains(localRemap)) {
+        // 3. Use Mapper to find best match from actual categories
+        String localRemap = CategoryMapper.map(context, item != null ? item : currentCategory);
+        if (localRemap != null && validNames.contains(localRemap)) {
             callback.onValidated(localRemap);
             return;
         }
 
-        callback.onValidated("Others");
+        // 4. Fallback to Others if it exists in actual categories
+        if (validNames.contains("Others")) {
+            callback.onValidated("Others");
+        } else if (!validNames.isEmpty()) {
+            callback.onValidated(validNames.get(validNames.size() - 1)); // Last resort
+        } else {
+            callback.onValidated(currentCategory);
+        }
     }
 }

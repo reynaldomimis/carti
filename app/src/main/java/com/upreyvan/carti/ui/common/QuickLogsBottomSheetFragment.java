@@ -1,6 +1,8 @@
 package com.upreyvan.carti.ui.common;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +16,8 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.databinding.FragmentQuickLogsBottomSheetBinding;
 import com.upreyvan.carti.model.Member;
-import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,16 +76,168 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         viewModel = new ViewModelProvider(this).get(QuickLogsViewModel.class);
         if (selectedCategory != null) viewModel.setCategory(selectedCategory);
         
-        setupDropdowns();
+        setupCategoryDropdown();
+        setupInputValidation();
         setupClickListeners();
         observeViewModel();
         updateUI();
+
+        if (selectedCategory != null && logType == LogType.EXPENSE) {
+            getBinding().layoutForm.etCategory.setText(selectedCategory, false);
+            updateSubCategoryDropdown(selectedCategory);
+        }
+        
+        validateForm();
+    }
+
+    private void setupInputValidation() {
+        TextWatcher validationWatcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validateForm(); }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+
+        getBinding().layoutForm.etAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().layoutForm.etAmount));
+        getBinding().layoutForm.etAmount.addTextChangedListener(validationWatcher);
+        getBinding().layoutForm.etCategory.addTextChangedListener(validationWatcher);
+    }
+
+    private void validateForm() {
+        if (getBinding() == null || getBinding().layoutForm == null) return;
+
+        String category = getBinding().layoutForm.etCategory.getText().toString().trim();
+        String amountStr = getBinding().layoutForm.etAmount.getText().toString().trim();
+        double amount = StringHelper.parseDouble(amountStr);
+        
+        boolean isAmountValid = !amountStr.isEmpty() && amount > 0;
+        boolean isCategoryValid = (logType == LogType.GOAL);
+
+        if (logType == LogType.EXPENSE || logType == LogType.DEBT) {
+            isCategoryValid = !category.isEmpty();
+        }
+
+        Double currentBalance = viewModel.getRemainingBalance().getValue();
+        boolean hasEnoughBalance = true;
+        
+        if (logType == LogType.EXPENSE && currentBalance != null && amount > currentBalance) {
+            getBinding().layoutForm.tilAmount.setError(getString(R.string.err_insufficient_balance));
+            hasEnoughBalance = false;
+        } else if (!amountStr.isEmpty() && amount <= 0) {
+            getBinding().layoutForm.tilAmount.setError(getString(R.string.msg_invalid_amount));
+            hasEnoughBalance = false;
+        } else {
+            getBinding().layoutForm.tilAmount.setError(null);
+        }
+
+        boolean isLoading = viewModel.getIsLoading().getValue() != null && viewModel.getIsLoading().getValue();
+        boolean isFormValid = isCategoryValid && isAmountValid && hasEnoughBalance;
+        
+        getBinding().btnSave.setEnabled(isFormValid && !isLoading);
+    }
+
+    private void setupCategoryDropdown() {
+        if (logType == LogType.DEBT) {
+            getBinding().layoutForm.labelCategory.setVisibility(View.VISIBLE);
+            getBinding().layoutForm.layoutCategory.setVisibility(View.VISIBLE);
+            getBinding().layoutForm.labelCategory.setText("WHO BORROWED?");
+            viewModel.getMembers().observe(getViewLifecycleOwner(), members -> {
+                List<String> names = new ArrayList<>();
+                for (Member m : members) names.add(m.getTitle());
+                if (names.isEmpty()) names.add("Self");
+                
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, names);
+                getBinding().layoutForm.etCategory.setAdapter(adapter);
+                if (!names.isEmpty()) getBinding().layoutForm.etCategory.setText(names.get(0), false);
+            });
+            return;
+        }
+
+        if (logType == LogType.GOAL) {
+            getBinding().layoutForm.labelCategory.setVisibility(View.GONE);
+            getBinding().layoutForm.layoutCategory.setVisibility(View.GONE);
+            return;
+        }
+
+        // For EXPENSE: Hide category if it was pre-selected (Direct Quick Log), show if null (General Add)
+        if (selectedCategory != null) {
+            getBinding().layoutForm.labelCategory.setVisibility(View.GONE);
+            getBinding().layoutForm.layoutCategory.setVisibility(View.GONE);
+            return;
+        }
+
+        getBinding().layoutForm.labelCategory.setVisibility(View.VISIBLE);
+        getBinding().layoutForm.layoutCategory.setVisibility(View.VISIBLE);
+        getBinding().layoutForm.labelCategory.setText("CATEGORY");
+
+        List<com.upreyvan.carti.model.Category> categories = com.upreyvan.carti.data.local.CategoryManager.getInstance(requireContext()).getCategories();
+        List<String> names = new ArrayList<>();
+        for (com.upreyvan.carti.model.Category item : categories) {
+            if (item.getParentCategory() == null || item.getParentCategory().isEmpty()) {
+                names.add(item.getName());
+            }
+        }
+        
+        names.sort((a, b) -> {
+            if (a.equalsIgnoreCase("Others")) return 1;
+            if (b.equalsIgnoreCase("Others")) return -1;
+            return a.compareToIgnoreCase(b);
+        });
+        
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, names);
+        getBinding().layoutForm.etCategory.setAdapter(adapter);
+        
+        getBinding().layoutForm.etCategory.setOnItemClickListener((parent, v, position, id) -> {
+            String selected = (String) parent.getItemAtPosition(position);
+            selectedCategory = selected;
+            viewModel.setCategory(selected);
+            updateSubCategoryDropdown(selected);
+            
+            // Show balance info when category is selected
+            getBinding().layoutForm.allocatedHeader.setText(getString(R.string.category_expense_label, selected));
+            getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
+            validateForm();
+        });
+    }
+
+    private void updateSubCategoryDropdown(String parentCategoryName) {
+        List<com.upreyvan.carti.model.Category> allCategories = com.upreyvan.carti.data.local.CategoryManager.getInstance(requireContext()).getCategories();
+        List<String> subCategoryNames = new ArrayList<>();
+        for (com.upreyvan.carti.model.Category item : allCategories) {
+            if (parentCategoryName.equalsIgnoreCase(item.getParentCategory())) {
+                subCategoryNames.add(item.getName());
+            }
+        }
+
+        if (!subCategoryNames.isEmpty()) {
+            getBinding().layoutForm.labelSubCategory.setVisibility(View.VISIBLE);
+            getBinding().layoutForm.layoutSubCategory.setVisibility(View.VISIBLE);
+            
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, subCategoryNames);
+            getBinding().layoutForm.etSubCategory.setAdapter(adapter);
+            getBinding().layoutForm.etSubCategory.setText(""); 
+
+            getBinding().layoutForm.etSubCategory.setOnItemClickListener((parent, v, position, id) -> {
+                String selected = (String) parent.getItemAtPosition(position);
+                viewModel.setCategory(selected);
+                getBinding().layoutForm.allocatedHeader.setText(getString(R.string.category_expense_label, selected));
+                validateForm();
+            });
+        } else {
+            getBinding().layoutForm.labelSubCategory.setVisibility(View.GONE);
+            getBinding().layoutForm.layoutSubCategory.setVisibility(View.GONE);
+            getBinding().layoutForm.etSubCategory.setText("");
+        }
     }
 
     private void observeViewModel() {
         viewModel.getRemainingBalance().observe(getViewLifecycleOwner(), balance -> {
-            if (getBinding() != null && getBinding().layoutForm != null && logType == LogType.EXPENSE) {
-                getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(balance));
+            if (getBinding() != null && getBinding().layoutForm != null) {
+                if (balance != null && (logType == LogType.EXPENSE || logType == LogType.GOAL)) {
+                    getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(balance));
+                    getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
+                }
+                validateForm();
             }
         });
         
@@ -110,39 +262,38 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             else if (logType == LogType.DEBT) msg = getString(R.string.msg_saving_debt);
             else if (logType == LogType.GOAL) msg = getString(R.string.msg_saving_goal);
             showLoading(loading, msg);
-            getBinding().btnSave.setEnabled(!loading);
+            validateForm();
         });
     }
 
     private void updateUI() {
         String title = getString(R.string.quick_log_title);
-        String btnText = getString(R.string.btn_save_expense);
+        String btnText = getString(R.string.label_save);
         
+        getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE); // Always show balance info if possible
+
         switch (logType) {
             case DEBT:
                 title = getString(R.string.title_quick_debt_log);
-                btnText = getString(R.string.btn_save_debt);
-                getBinding().layoutForm.tilDescription.setHint(getString(R.string.label_reason_note_hint));
-                getBinding().layoutForm.tilSource.setHint(getString(R.string.label_who_borrowed_hint));
+                getBinding().layoutForm.labelNote.setText("NOTE");
+                getBinding().layoutForm.tilDescription.setHint(getString(R.string.label_note_optional));
                 getBinding().layoutForm.cvBalanceInfo.setVisibility(View.GONE);
                 break;
             case GOAL:
                 title = getString(R.string.title_quick_goal_log);
-                btnText = getString(R.string.btn_add_savings);
+                getBinding().layoutForm.labelNote.setText("NOTE");
                 getBinding().layoutForm.tilDescription.setHint(getString(R.string.label_note_optional));
-                getBinding().layoutForm.tilSource.setVisibility(View.GONE);
                 getBinding().layoutForm.allocatedHeader.setText(getString(R.string.label_goal_progress));
                 break;
             case EXPENSE:
                 title = getString(R.string.quick_log_title);
-                btnText = getString(R.string.btn_save_expense);
-                getBinding().layoutForm.tilDescription.setHint(getString(R.string.label_what_bought));
-                getBinding().layoutForm.tilSource.setHint(getString(R.string.label_payment_source));
+                getBinding().layoutForm.labelNote.setText("NOTE");
+                getBinding().layoutForm.tilDescription.setHint("Note (Optional)");
                 
                 if (selectedCategory != null) {
                     getBinding().layoutForm.allocatedHeader.setText(getString(R.string.category_expense_label, selectedCategory));
                 } else {
-                    getBinding().layoutForm.tvAllocatedBalance.setText(StringHelper.formatCurrency(0.0));
+                    getBinding().layoutForm.allocatedHeader.setText(getString(R.string.label_budget_plan_allocation));
                 }
                 break;
         }
@@ -151,56 +302,27 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         getBinding().btnSave.setText(btnText);
     }
 
-    private void setupDropdowns() {
-        if (logType == LogType.EXPENSE) {
-            String[] sources = Constants.sourcesFund;
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
-                    android.R.layout.simple_dropdown_item_1line, sources);
-            getBinding().layoutForm.actvSource.setAdapter(adapter);
-            getBinding().layoutForm.actvSource.setText(sources[0], false);
-        } else if (logType == LogType.DEBT) {
-            viewModel.getMembers().observe(getViewLifecycleOwner(), members -> {
-                List<String> names = new ArrayList<>();
-                for (Member m : members) names.add(m.getTitle());
-                if (names.isEmpty()) names.add("Self");
-                
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
-                        android.R.layout.simple_dropdown_item_1line, names);
-                getBinding().layoutForm.actvSource.setAdapter(adapter);
-                if (!names.isEmpty()) getBinding().layoutForm.actvSource.setText(names.get(0), false);
-            });
-        }
-    }
-
     private void setupClickListeners() {
+        getBinding().btnClose.setOnClickListener(v -> dismiss());
+        getBinding().btnCancel.setOnClickListener(v -> dismiss());
         getBinding().btnSave.setOnClickListener(v -> {
             if (!checkNetwork()) return;
 
-            if (selectedCategory == null) {
-                showToast(getString(R.string.err_no_category_selected), UiHelper.Status.WARNING);
-                return;
-            }
-
-            if (Validator.isEmpty(getBinding().layoutForm.etAmount)) {
-                showToast(getString(R.string.msg_fill_all_fields), UiHelper.Status.WARNING);
-                return;
-            }
+            String categoryToSave = getBinding().layoutForm.etCategory.getText().toString().trim();
+            String subCategoryToSave = getBinding().layoutForm.etSubCategory.getText().toString().trim();
 
             double amountVal = StringHelper.parseDouble(getBinding().layoutForm.etAmount.getText().toString());
             String description = getBinding().layoutForm.etDescription.getText().toString();
-            String sourceOrPerson = getBinding().layoutForm.actvSource.getText().toString();
-
-            if (amountVal <= 0) {
-                showToast(getString(R.string.msg_invalid_amount), UiHelper.Status.WARNING);
-                return;
-            }
+            
+            String finalCategory = (logType == LogType.EXPENSE && !subCategoryToSave.isEmpty()) ? subCategoryToSave : categoryToSave;
+            if (finalCategory.isEmpty()) finalCategory = selectedCategory;
 
             switch (logType) {
                 case EXPENSE:
-                    viewModel.saveTrack(amountVal, selectedCategory, description, sourceOrPerson);
+                    viewModel.saveTrack(amountVal, finalCategory, description, "Cash");
                     break;
                 case DEBT:
-                    viewModel.saveDebt(amountVal, sourceOrPerson, description);
+                    viewModel.saveDebt(amountVal, categoryToSave, description);
                     break;
                 case GOAL:
                     viewModel.saveGoal(amountVal, selectedCategory);

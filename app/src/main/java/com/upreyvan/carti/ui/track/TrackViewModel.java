@@ -12,8 +12,8 @@ import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.TrackCategory;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
-import com.upreyvan.carti.util.ValueHelper;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,95 +48,105 @@ public class TrackViewModel extends BaseViewModel {
     }
 
     public LiveData<List<BaseMultiItem>> getUiState() { return uiState; }
-    public List<BudgetCategoryItem> getAllocations() { return isExpanded ? currentAllocations : currentAllocations.subList(0, Math.min(currentAllocations.size(), 3)); }
+    public List<BudgetCategoryItem> getAllocations() { return currentAllocations; }
+    public List<BudgetCategoryItem> getDisplayAllocations() { return isExpanded ? currentAllocations : currentAllocations.subList(0, Math.min(currentAllocations.size(), 5)); }
     public void toggleExpansion() { isExpanded = !isExpanded; rebuild(); }
 
     private void setupDataStream() {
         dataTrigger.addSource(repo.getTransactionsByMonth(month, year), v -> { currentMonthTrans = v; rebuild(); });
         dataTrigger.addSource(repo.getGoals(), v -> { currentGoals = v; rebuild(); });
-        dataTrigger.addSource(repo.getBudgetPlanLiveData(), v -> { rebuild(); });
         dataTrigger.addSource(repo.getAllocationsByMonth(com.upreyvan.carti.util.Utils.formatMonthQuery(java.util.Calendar.getInstance())), v -> { currentDbAllocations = v; rebuild(); });
     }
 
     private void rebuild() {
         executor.execute(() -> {
             List<BaseMultiItem> items = new ArrayList<>();
-            double inc = 0, exp = 0;
-            Map<String, Double> catTotals = new HashMap<>();
+            double exp = 0;
+            Map<String, Double> topLevelTotals = new HashMap<>();
+            Map<String, Double> breakdownMap = new HashMap<>();
             List<TransactionWithUser> filteredExp = new ArrayList<>();
             
             if (currentMonthTrans != null) {
                 for (TransactionWithUser t : currentMonthTrans) {
-                    if ("INCOME".equals(t.getTransaction().getType())) inc += t.getTransaction().getAmount();
-                    else if ("EXPENSE".equals(t.getTransaction().getType())) {
-                        exp += t.getTransaction().getAmount();
-                        String normCat = normalizeCategory(t.getTransaction().getCategory());
-                        catTotals.merge(normCat, t.getTransaction().getAmount(), Double::sum);
+                    Transaction trans = t.getTransaction();
+                    if ("EXPENSE".equals(trans.getType())) {
+                        exp += trans.getAmount();
+                        String cat = normalizeCategory(trans.getCategory());
+                        topLevelTotals.merge(cat, trans.getAmount(), Double::sum);
+                        breakdownMap.merge(cat, trans.getAmount(), Double::sum);
+                        if (trans.getSubCategory() != null) {
+                            breakdownMap.merge(normalizeCategory(trans.getSubCategory()), trans.getAmount(), Double::sum);
+                        }
                         filteredExp.add(t);
                     }
                 }
             }
 
-            double saved = 0, target = 0;
-            if (currentGoals != null) {
-                for (TransactionWithUser g : currentGoals) {
-                    saved += g.getTransaction().getAmount();
-                    target += g.getTransaction().getTargetAmount();
-                }
-            }
-            items.add(new TrackListItem.SummaryItem(inc - exp, inc, exp, saved, target, target > 0 ? (int)((saved/target)*100) : 0, this instanceof TrackListItem.OnTrackInteractionListener ? (TrackListItem.OnTrackInteractionListener) this : null));
-
-            List<TrackListItem.PieEntryData> pie = new ArrayList<>();
-            List<Integer> colors = new ArrayList<>();
-            List<TrackCategory> legend = new ArrayList<>();
-            int[] colorRes = { R.color.status_red, R.color.dash_orange, R.color.icon_electricity, R.color.icon_water, R.color.carti_primary_blue, R.color.purple };
-            int cIdx = 0;
-            for (Map.Entry<String, Double> e : catTotals.entrySet()) {
-                float p = exp > 0 ? (float)(e.getValue()/exp*100) : 0;
-                pie.add(new TrackListItem.PieEntryData(e.getValue().floatValue(), e.getKey()));
-                int color = getApplication().getColor(colorRes[cIdx % colorRes.length]);
-                colors.add(color);
-                legend.add(new TrackCategory(e.getKey(), e.getValue(), p, color));
-                cIdx++;
-            }
-            if (!pie.isEmpty()) items.add(new TrackListItem.ChartItem(pie, colors, legend, exp));
-            items.add(new TrackListItem.ComparisonItem(inc, exp));
-
             List<TransactionRepository.CategorySum> expenseBreakdown = new ArrayList<>();
-            for (Map.Entry<String, Double> entry : catTotals.entrySet()) {
+            for (Map.Entry<String, Double> entry : breakdownMap.entrySet()) {
                 expenseBreakdown.add(new TransactionRepository.CategorySum(entry.getKey(), entry.getValue()));
             }
 
             List<BudgetCategoryItem> consolidated = repo.getConsolidatedBudgets(currentDbAllocations, expenseBreakdown);
-
-            List<BudgetCategoryItem> nextAllocations = new ArrayList<>();
-            double totalPlanAmount = 0;
+            
+            double totalBudget = 0;
+            List<BudgetCategoryItem> allValidAllocations = new ArrayList<>();
             for (BudgetCategoryItem bi : consolidated) {
                 if (bi.getAmount() > 0) {
-                    nextAllocations.add(bi);
-                    totalPlanAmount += bi.getAmount();
+                    allValidAllocations.add(bi);
+                    totalBudget += bi.getAmount();
                 }
             }
 
-            nextAllocations.sort((a, b) -> {
-                boolean aOther = "others".equalsIgnoreCase(a.getCategoryName());
-                boolean bOther = "others".equalsIgnoreCase(b.getCategoryName());
-                if (aOther && bOther) return 0;
-                if (aOther) return 1;
-                if (bOther) return -1;
-                return a.getCategoryName().compareToIgnoreCase(b.getCategoryName());
-            });
-
-            if (!nextAllocations.isEmpty()) {
-                items.add(new TrackListItem.AllocationHeaderItem(totalPlanAmount, isExpanded, nextAllocations.size(), null, null));
+            double goalSaved = 0, goalTarget = 0;
+            if (currentGoals != null) {
+                for (TransactionWithUser g : currentGoals) {
+                    goalSaved += g.getTransaction().getAmount();
+                    goalTarget += g.getTransaction().getTargetAmount();
+                }
             }
 
-            items.add(new TrackListItem.SectionHeaderItem(getApplication().getString(R.string.recent_expenses), getApplication().getString(R.string.see_all), null));
-            filteredExp.sort((a,b) -> Long.compare(b.getTransaction().getTimestampMillis(), a.getTransaction().getTimestampMillis()));
-            for (int i=0; i<Math.min(filteredExp.size(), 5); i++) items.add(new TrackListItem.TransactionItem(filteredExp.get(i), null));
+            final double finalExp = exp;
+            final double finalBudget = totalBudget;
+            final double finalSaved = goalSaved;
+            final double finalTarget = goalTarget;
+            final List<TransactionWithUser> finalFiltered = filteredExp;
+            final List<BudgetCategoryItem> finalValidAllocations = allValidAllocations;
 
             mainHandler.post(() -> {
-                currentAllocations = nextAllocations;
+                currentAllocations = finalValidAllocations;
+                
+                // Summary Item (Budget - Expense as balance, Total Budget, Total Expense, Goal Progress)
+                items.add(new TrackListItem.SummaryItem(finalBudget - finalExp, finalBudget, finalExp, finalSaved, finalTarget, finalTarget > 0 ? (int)((finalSaved/finalTarget)*100) : 0, this instanceof TrackListItem.OnTrackInteractionListener ? (TrackListItem.OnTrackInteractionListener) this : null));
+
+                // Chart Item
+                List<TrackListItem.PieEntryData> pie = new ArrayList<>();
+                List<Integer> colors = new ArrayList<>();
+                List<TrackCategory> legend = new ArrayList<>();
+                int[] colorRes = { R.color.status_red, R.color.dash_orange, R.color.icon_electricity, R.color.icon_water, R.color.carti_primary_blue, R.color.purple };
+                int cIdx = 0;
+                for (Map.Entry<String, Double> e : topLevelTotals.entrySet()) {
+                    float p = finalExp > 0 ? (float)(e.getValue()/finalExp*100) : 0;
+                    pie.add(new TrackListItem.PieEntryData(e.getValue().floatValue(), e.getKey()));
+                    colors.add(getApplication().getColor(colorRes[cIdx % colorRes.length]));
+                    legend.add(new TrackCategory(e.getKey(), e.getValue(), p, colors.get(colors.size()-1)));
+                    cIdx++;
+                }
+                if (!pie.isEmpty()) items.add(new TrackListItem.ChartItem(pie, colors, legend, finalExp));
+
+                // Comparison Item
+                items.add(new TrackListItem.ComparisonItem(finalBudget, finalExp));
+
+                // Allocation Card
+                if (!currentAllocations.isEmpty()) {
+                    items.add(new TrackListItem.AllocationHeaderItem(finalBudget, finalExp, isExpanded, getDisplayAllocations(), this instanceof TrackListItem.OnTrackInteractionListener ? (TrackListItem.OnTrackInteractionListener) this : null, null));
+                }
+
+                // Recent Expenses
+                items.add(new TrackListItem.SectionHeaderItem(getApplication().getString(R.string.recent_expenses), getApplication().getString(R.string.see_all), null));
+                finalFiltered.sort((a,b) -> Long.compare(b.getTransaction().getTimestampMillis(), a.getTransaction().getTimestampMillis()));
+                for (int i=0; i<Math.min(finalFiltered.size(), 5); i++) items.add(new TrackListItem.TransactionItem(finalFiltered.get(i), null));
+
                 uiState.setValue(items);
             });
         });
@@ -144,14 +154,7 @@ public class TrackViewModel extends BaseViewModel {
 
     private String normalizeCategory(String cat) {
         if (cat == null || cat.trim().isEmpty()) return "Others";
-        String s = cat.trim().toLowerCase();
-        if (s.contains("food") || s.contains("fooo")) return "Food";
-        if (s.contains("tran") || s.contains("fare") || s.contains("grab")) return "Transportation";
-        if (s.contains("bill") || s.contains("util")) return "Bills";
-        if (s.contains("shop") || s.contains("buy")) return "Shopping";
-        if (s.contains("health") || s.contains("med")) return "Health";
-        if (s.contains("school") || s.contains("educ")) return "Education";
-        return s.substring(0, 1).toUpperCase() + s.substring(1);
+        return cat.trim();
     }
 
     public void sync() { repo.refreshTransactions(); }

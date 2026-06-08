@@ -14,6 +14,7 @@ import com.upreyvan.carti.data.repository.AiRepository;
 import com.upreyvan.carti.data.repository.ChatRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.ChatMessage;
+import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.CategoryMapper;
 import com.upreyvan.carti.data.ai.CategoryValidator;
 import com.upreyvan.carti.util.MessageHelper;
@@ -233,9 +234,9 @@ public class ChatViewModel extends BaseViewModel {
             if (amount > 0 && !item.isEmpty() && item.length() >= 2) {
                 final double finalAmt = amount;
                 final String finalItem = item;
-                String initialCategory = CategoryMapper.map(getApplication(), item);
+                CategoryMapper.MapResult mapping = CategoryMapper.mapDetailed(getApplication(), item);
                 
-                CategoryValidator.validate(getApplication(), item, initialCategory, validatedCategory -> {
+                CategoryValidator.validate(getApplication(), item, mapping.category, validatedCategory -> {
                     try {
                         JSONObject finalized = new JSONObject();
                         finalized.put("type", "EXPENSE_LOG");
@@ -245,6 +246,7 @@ public class ChatViewModel extends BaseViewModel {
                         JSONObject ext = new JSONObject();
                         ext.put("item", finalItem);
                         ext.put("category", validatedCategory);
+                        ext.put("sub_category", mapping.subCategory);
                         finalized.put("extracted", ext);
                         logTransaction(finalized);
                     } catch (Exception e) {
@@ -276,6 +278,7 @@ public class ChatViewModel extends BaseViewModel {
 
         String item = data.optString("item");
         String category = data.optString("category");
+        String subCategory = data.optString("sub_category");
         String intentType = parse.optString("type");
         
         String type;
@@ -286,14 +289,23 @@ public class ChatViewModel extends BaseViewModel {
         }
 
         final double amt = finalAmount;
-        performAddTransaction(amt, type, Objects.requireNonNullElse(category, "Others"), item);
+        performAddTransaction(amt, type, Objects.requireNonNullElse(category, "Others"), subCategory, item);
     }
 
-    private void performAddTransaction(double amt, String type, String category, String item) {
-        transRepo.addTransaction(amt, type, category, item, new AppwriteCallback<>() {
+    private void performAddTransaction(double amt, String type, String category, String subCategory, String item) {
+        Transaction t = new Transaction();
+        t.setAmount(amt);
+        t.setType(type);
+        t.setCategory(category);
+        t.setSubCategory(subCategory);
+        t.setTitle(item);
+        t.setNote("Chat log: " + item);
+
+        transRepo.addTransaction(t, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> map) {
-                sendAiResponse("Got it! Recorded " + item + " (" + Utils.formatCurrency(amt) + ") under " + category + ".");
+                String label = subCategory != null ? subCategory : category;
+                sendAiResponse("Got it! Recorded " + item + " (" + Utils.formatCurrency(amt) + ") under " + label + ".");
             }
             @Override public void onError(Throwable error) {
                 Log.e("ChatViewModel", "Transaction error", error);

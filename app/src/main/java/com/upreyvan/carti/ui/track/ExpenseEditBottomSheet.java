@@ -1,6 +1,8 @@
 package com.upreyvan.carti.ui.track;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +20,6 @@ import com.upreyvan.carti.databinding.DialogEditExpenseBinding;
 import com.upreyvan.carti.model.Category;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Validator;
 
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,33 @@ public class ExpenseEditBottomSheet extends BaseBottomSheetFragment<DialogEditEx
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(requireContext());
         setupUI();
+        setupInputValidation();
         getBinding().btnSave.setOnClickListener(v -> handleSave());
+        validateForm();
+    }
+
+    private void setupInputValidation() {
+        TextWatcher validationWatcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validateForm(); }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+
+        getBinding().etDescription.addTextChangedListener(validationWatcher);
+        getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etAmount));
+        getBinding().etAmount.addTextChangedListener(validationWatcher);
+        getBinding().actvCategory.addTextChangedListener(validationWatcher);
+    }
+
+    private void validateForm() {
+        String description = getBinding().etDescription.getText().toString().trim();
+        String amountStr = getBinding().etAmount.getText().toString().trim();
+        
+        double amount = com.upreyvan.carti.util.StringHelper.parseDouble(amountStr);
+        
+        boolean isValid = !description.isEmpty() && amount > 0;
+        
+        getBinding().btnSave.setEnabled(isValid);
     }
 
     private void setupUI() {
@@ -72,13 +99,8 @@ public class ExpenseEditBottomSheet extends BaseBottomSheetFragment<DialogEditEx
     private void handleSave() {
         if (!checkNetwork()) return;
 
-        if (Validator.isEmpty(getBinding().etAmount) || Validator.isEmpty(getBinding().etDescription)) {
-            showToast(R.string.msg_fill_all_fields, UiHelper.Status.WARNING);
-            return;
-        }
-
         try {
-            double amount = Double.parseDouble(getBinding().etAmount.getText().toString().trim());
+            double amount = com.upreyvan.carti.util.StringHelper.parseDouble(getBinding().etAmount.getText().toString().trim());
             String title = getBinding().etDescription.getText().toString().trim();
             String category = getBinding().actvCategory.getText().toString().trim();
 
@@ -122,7 +144,8 @@ public class ExpenseEditBottomSheet extends BaseBottomSheetFragment<DialogEditEx
     }
 
     private void setLoading(boolean loading) {
-        getBinding().btnSave.setEnabled(!loading);
+        if (!loading) validateForm();
+        else getBinding().btnSave.setEnabled(false);
         getBinding().btnSave.setText(loading ? R.string.label_saving : R.string.label_update);
     }
 }

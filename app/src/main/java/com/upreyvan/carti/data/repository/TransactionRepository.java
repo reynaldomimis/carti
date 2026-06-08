@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,6 +51,7 @@ public class TransactionRepository {
     private final AtomicBoolean isRefreshing = new AtomicBoolean(false);
     
     private final MutableLiveData<List<TransactionWithUser>> allTransactions = new MutableLiveData<>(new ArrayList<>());
+    private final List<TransactionWithUser> transactionCache = Collections.synchronizedList(new ArrayList<>());
     private final MutableLiveData<RecurringBudgetStats> recurringStatsLiveData = new MutableLiveData<>();
 
     private final Map<String, Long> requestCooldowns = new ConcurrentHashMap<>();
@@ -71,8 +73,12 @@ public class TransactionRepository {
 
     private void postStableList(List<TransactionWithUser> list) {
         if (list == null) return;
-        list.sort((a, b) -> Long.compare(b.getTransaction().getTimestampMillis(), a.getTransaction().getTimestampMillis()));
-        allTransactions.postValue(list);
+        synchronized (transactionCache) {
+            transactionCache.clear();
+            transactionCache.addAll(list);
+            transactionCache.sort((a, b) -> Long.compare(b.getTransaction().getTimestampMillis(), a.getTransaction().getTimestampMillis()));
+            allTransactions.postValue(new ArrayList<>(transactionCache));
+        }
     }
 
     public void refreshTransactions() {
@@ -110,6 +116,27 @@ public class TransactionRepository {
                 Log.e(TAG, "Refresh failed: " + error.getMessage());
                 isSyncing.postValue(false);
                 isRefreshing.set(false);
+            }
+        });
+    }
+
+    public void handleRealtimeEvent(Map<String, Object> data, boolean isDelete) {
+        String id = (String) data.get("$id");
+        if (id == null) return;
+
+        executor.execute(() -> {
+            synchronized (transactionCache) {
+                transactionCache.removeIf(tu -> tu.getTransaction().getId().equals(id));
+
+                if (!isDelete) {
+                    Transaction t = Utils.parseTransaction(data, id, (String) data.get("$createdAt"), (String) data.get("$updatedAt"));
+                    TransactionWithUser tu = new TransactionWithUser();
+                    tu.setTransaction(t);
+                    transactionCache.add(tu);
+                }
+
+                transactionCache.sort((a, b) -> Long.compare(b.getTransaction().getTimestampMillis(), a.getTransaction().getTimestampMillis()));
+                allTransactions.postValue(new ArrayList<>(transactionCache));
             }
         });
     }
@@ -177,7 +204,7 @@ public class TransactionRepository {
     public void addTransaction(Transaction t, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         remoteDataSource.addTransaction(mapTransactionFields(t), new AppwriteManager.AppwriteCallback<>() {
             @Override public void onSuccess(Map<String, Object> result) {
-                refreshTransactions();
+                handleRealtimeEvent(result, false);
                 if (callback != null) callback.onSuccess(result);
             }
             @Override public void onError(Throwable error) { if (callback != null) callback.onError(error); }
@@ -197,14 +224,27 @@ public class TransactionRepository {
     public void updateTransaction(Transaction t, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         remoteDataSource.updateTransaction(t.getId(), mapTransactionFields(t), new AppwriteManager.AppwriteCallback<>() {
             @Override public void onSuccess(Map<String, Object> result) {
-                refreshTransactions();
+                handleRealtimeEvent(result, false);
                 if (callback != null) callback.onSuccess(result);
             }
             @Override public void onError(Throwable error) { if (callback != null) callback.onError(error); }
         });
     }
 
+    private void normalizeCategoryFields(Transaction t) {
+        if (t.getCategory() == null || "ALLOCATION".equalsIgnoreCase(t.getType())) return;
+
+        com.upreyvan.carti.data.local.CategoryManager cm = com.upreyvan.carti.data.local.CategoryManager.getInstance(pref.getContext());
+        com.upreyvan.carti.model.Category c = cm.getCategoryByName(t.getCategory());
+        
+        if (c != null && c.getParentCategory() != null && !c.getParentCategory().isEmpty()) {
+            t.setSubCategory(c.getName());
+            t.setCategory(c.getParentCategory());
+        }
+    }
+
     private Map<String, Object> mapTransactionFields(Transaction t) {
+        normalizeCategoryFields(t);
         Map<String, Object> fields = new HashMap<>();
         fields.put("amount", t.getAmount());
         fields.put("type", t.getType());
@@ -493,37 +533,36 @@ public class TransactionRepository {
     }
 
     private void applyOptimisticLike(String transId, String userId, boolean isUnlike, String emoji) {
-        List<TransactionWithUser> current = allTransactions.getValue();
-        if (current == null) return;
+        executor.execute(() -> {
+            synchronized (transactionCache) {
+                boolean found = false;
+                for (int i = 0; i < transactionCache.size(); i++) {
+                    TransactionWithUser tu = transactionCache.get(i);
+                    if (tu.getTransaction().getId().equals(transId)) {
+                        TransactionWithUser tuCopy = tu.copy();
+                        Transaction t = tuCopy.getTransaction();
+                        List<Like> reactions = tuCopy.getReactions() != null ? new ArrayList<>(tuCopy.getReactions()) : new ArrayList<>();
+                        
+                        String myUsername = pref.getUsername();
+                        reactions.removeIf(l -> userId.equals(l.getUserId()) || myUsername.equalsIgnoreCase(l.getUsername()));
 
-        List<TransactionWithUser> updated = new ArrayList<>();
-        boolean found = false;
-        for (TransactionWithUser tu : current) {
-                if (tu.getTransaction().getId().equals(transId)) {
-                TransactionWithUser tuCopy = tu.copy();
-                Transaction t = tuCopy.getTransaction();
-                List<Like> reactions = tuCopy.getReactions() != null ? new ArrayList<>(tuCopy.getReactions()) : new ArrayList<>();
-                
-                // Fix: Nuclear De-duplication (userId OR username)
-                String myUsername = pref.getUsername();
-                reactions.removeIf(l -> userId.equals(l.getUserId()) || myUsername.equalsIgnoreCase(l.getUsername()));
-
-                if (isUnlike) {
-                    tuCopy.setMyReaction(null);
-                    tuCopy.setMyLikeId(null);
-                    } else {
-                        reactions.add(new Like("temp_" + UUID.randomUUID(), transId, userId, myUsername, emoji));
-                        tuCopy.setMyReaction(emoji);
+                        if (isUnlike) {
+                            tuCopy.setMyReaction(null);
+                            tuCopy.setMyLikeId(null);
+                        } else {
+                            reactions.add(new Like("temp_" + UUID.randomUUID(), transId, userId, myUsername, emoji));
+                            tuCopy.setMyReaction(emoji);
+                        }
+                        tuCopy.setReactions(reactions);
+                        t.setLikesCount(reactions.size());
+                        transactionCache.set(i, tuCopy);
+                        found = true;
+                        break;
                     }
-                tuCopy.setReactions(reactions);
-                t.setLikesCount(reactions.size()); // Fix A: Computed Truth
-                updated.add(tuCopy);
-                found = true;
-            } else {
-                updated.add(tu);
+                }
+                if (found) allTransactions.postValue(new ArrayList<>(transactionCache));
             }
-        }
-        if (found) postStableList(updated);
+        });
     }
 
     public void handleLikeEventLocally(Map<String, Object> payload, boolean isDelete) {
@@ -540,69 +579,62 @@ public class TransactionRepository {
         }
 
         executor.execute(() -> {
-            List<TransactionWithUser> current = allTransactions.getValue();
-            if (current == null) return;
+            synchronized (transactionCache) {
+                boolean modified = false;
 
-            List<TransactionWithUser> updated = new ArrayList<>();
-            boolean modified = false;
-
-            for (TransactionWithUser tu : current) {
-                if (tu.getTransaction().getId().equals(transId)) {
-                    if (tu.getTransaction().getUpdatedAt() != null && updatedAt != null) {
-                        if (updatedAt.compareTo(tu.getTransaction().getUpdatedAt()) < 0) {
-                            Log.d(TAG, "Discarding stale realtime event (Older version).");
-                            updated.add(tu);
-                            continue;
-                        }
-                    }
-
-                    TransactionWithUser tuCopy = tu.copy();
-                    tuCopy.getTransaction().setUpdatedAt(updatedAt);
-                    List<Like> reactions = tuCopy.getReactions() != null ? new ArrayList<>(tuCopy.getReactions()) : new ArrayList<>();
-
-                    if (isDelete) {
-                        // Nuclear Purge (by ID, userId, or username) to prevent ghosts
-                        String myUsername = pref.getUsername();
-                        if (reactions.removeIf(l -> likeId.equals(l.getId()) || userId.equals(l.getUserId()) || (userId.equals(pref.getUserId()) && myUsername.equalsIgnoreCase(l.getUsername())))) {
-                            tuCopy.setReactions(reactions);
-                            tuCopy.getTransaction().setLikesCount(reactions.size());
-                            if (pref.getUserId().equals(userId)) {
-                                tuCopy.setMyReaction(null);
-                                tuCopy.setMyLikeId(null);
+                for (int i = 0; i < transactionCache.size(); i++) {
+                    TransactionWithUser tu = transactionCache.get(i);
+                    if (tu.getTransaction().getId().equals(transId)) {
+                        if (tu.getTransaction().getUpdatedAt() != null && updatedAt != null) {
+                            if (updatedAt.compareTo(tu.getTransaction().getUpdatedAt()) < 0) {
+                                Log.d(TAG, "Discarding stale realtime event (Older version).");
+                                continue;
                             }
                         }
-                    } else {
-                        String emoji = (String) payload.get("emojiType");
-                        String username = (String) payload.get("username");
 
-                        // Nuclear De-duplication before injection
-                        reactions.removeIf(l -> userId.equals(l.getUserId()) || (username != null && username.equalsIgnoreCase(l.getUsername())));
-                        
-                        Like newLike = new Like(likeId, transId, userId, username, emoji);
-                        newLike.setUpdatedAt(updatedAt);
-                        reactions.add(newLike);
-                        
-                        tuCopy.setReactions(reactions);
-                        tuCopy.getTransaction().setLikesCount(reactions.size()); // Fix A: Computed Truth
+                        TransactionWithUser tuCopy = tu.copy();
+                        tuCopy.getTransaction().setUpdatedAt(updatedAt);
+                        List<Like> reactions = tuCopy.getReactions() != null ? new ArrayList<>(tuCopy.getReactions()) : new ArrayList<>();
 
-                        if (pref.getUserId().equals(userId)) {
-                            tuCopy.setMyReaction(emoji);
-                            tuCopy.setMyLikeId(likeId);
+                        if (isDelete) {
+                            String myUsername = pref.getUsername();
+                            if (reactions.removeIf(l -> likeId.equals(l.getId()) || userId.equals(l.getUserId()) || (userId.equals(pref.getUserId()) && myUsername.equalsIgnoreCase(l.getUsername())))) {
+                                tuCopy.setReactions(reactions);
+                                tuCopy.getTransaction().setLikesCount(reactions.size());
+                                if (pref.getUserId().equals(userId)) {
+                                    tuCopy.setMyReaction(null);
+                                    tuCopy.setMyLikeId(null);
+                                }
+                            }
+                        } else {
+                            String emoji = (String) payload.get("emojiType");
+                            String username = (String) payload.get("username");
+
+                            reactions.removeIf(l -> userId.equals(l.getUserId()) || (username != null && username.equalsIgnoreCase(l.getUsername())));
+                            Like newLike = new Like(likeId, transId, userId, username, emoji);
+                            newLike.setUpdatedAt(updatedAt);
+                            reactions.add(newLike);
+                            
+                            tuCopy.setReactions(reactions);
+                            tuCopy.getTransaction().setLikesCount(reactions.size());
+
+                            if (pref.getUserId().equals(userId)) {
+                                tuCopy.setMyReaction(emoji);
+                                tuCopy.setMyLikeId(likeId);
+                            }
                         }
-                    }
 
-                    tuCopy.setReactions(reactions);
-                    updated.add(tuCopy);
-                    modified = true;
-                } else {
-                    updated.add(tu);
+                        transactionCache.set(i, tuCopy);
+                        modified = true;
+                        break;
+                    }
                 }
-            }
-            
-            if (modified) {
-                postStableList(updated);
-            } else {
-                hydrateMissingReactions(transId);
+                
+                if (modified) {
+                    allTransactions.postValue(new ArrayList<>(transactionCache));
+                } else {
+                    hydrateMissingReactions(transId);
+                }
             }
         });
     }
@@ -612,58 +644,57 @@ public class TransactionRepository {
             @Override
             public void onSuccess(DocumentList<Map<String, Object>> result) {
                 executor.execute(() -> {
-                    List<TransactionWithUser> current = allTransactions.getValue();
-                    if (current == null) return;
-                    List<TransactionWithUser> updated = new ArrayList<>();
-                    boolean found = false;
-                    for (TransactionWithUser tu : current) {
-                        if (tu.getTransaction().getId().equals(transId)) {
-                            TransactionWithUser tuCopy = tu.copy();
-                            List<Like> currentReactions = tuCopy.getReactions() != null ? new ArrayList<>(tuCopy.getReactions()) : new ArrayList<>();
+                    synchronized (transactionCache) {
+                        boolean found = false;
+                        for (int i = 0; i < transactionCache.size(); i++) {
+                            TransactionWithUser tu = transactionCache.get(i);
+                            if (tu.getTransaction().getId().equals(transId)) {
+                                TransactionWithUser tuCopy = tu.copy();
+                                List<Like> currentReactions = tuCopy.getReactions() != null ? new ArrayList<>(tuCopy.getReactions()) : new ArrayList<>();
 
-                            for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                                String sUserId = (String) doc.getData().get("userId");
-                                String sUsername = (String) doc.getData().get("username");
-                                String sUpdatedAt = doc.getUpdatedAt();
-                                if (sUserId == null || sUsername == null) continue;
+                                for (Document<Map<String, Object>> doc : result.getDocuments()) {
+                                    String sUserId = (String) doc.getData().get("userId");
+                                    String sUsername = (String) doc.getData().get("username");
+                                    String sUpdatedAt = doc.getUpdatedAt();
+                                    if (sUserId == null || sUsername == null) continue;
 
-                                boolean hasNewerLocal = false;
-                                for (Like existing : currentReactions) {
-                                    if (sUserId.equals(existing.getUserId()) || sUsername.equalsIgnoreCase(existing.getUsername())) {
-                                        if (existing.getUpdatedAt() != null && sUpdatedAt != null) {
-                                            if (sUpdatedAt.compareTo(existing.getUpdatedAt()) < 0) {
-                                                hasNewerLocal = true;
+                                    boolean hasNewerLocal = false;
+                                    for (Like existing : currentReactions) {
+                                        if (sUserId.equals(existing.getUserId()) || sUsername.equalsIgnoreCase(existing.getUsername())) {
+                                            if (existing.getUpdatedAt() != null && sUpdatedAt != null) {
+                                                if (sUpdatedAt.compareTo(existing.getUpdatedAt()) < 0) {
+                                                    hasNewerLocal = true;
+                                                }
                                             }
+                                            break;
                                         }
-                                        break;
+                                    }
+
+                                    if (!hasNewerLocal) {
+                                        currentReactions.removeIf(l -> sUserId.equals(l.getUserId()) || sUsername.equalsIgnoreCase(l.getUsername()));
+                                        Like newLike = new Like(doc.getId(), transId, sUserId, sUsername, (String) doc.getData().get("emojiType"));
+                                        newLike.setUpdatedAt(sUpdatedAt);
+                                        currentReactions.add(newLike);
+                                    }
+                                }
+                                
+                                tuCopy.setReactions(currentReactions);
+                                tuCopy.getTransaction().setLikesCount(currentReactions.size());
+
+                                for (Like l : currentReactions) {
+                                    if (pref.getUserId().equals(l.getUserId())) {
+                                        tuCopy.setMyReaction(l.getEmojiType());
+                                        tuCopy.setMyLikeId(l.getId());
                                     }
                                 }
 
-                                if (!hasNewerLocal) {
-                                    currentReactions.removeIf(l -> sUserId.equals(l.getUserId()) || sUsername.equalsIgnoreCase(l.getUsername()));
-                                    Like newLike = new Like(doc.getId(), transId, sUserId, sUsername, (String) doc.getData().get("emojiType"));
-                                    newLike.setUpdatedAt(sUpdatedAt);
-                                    currentReactions.add(newLike);
-                                }
+                                transactionCache.set(i, tuCopy);
+                                found = true;
+                                break;
                             }
-                            
-                            tuCopy.setReactions(currentReactions);
-                            tuCopy.getTransaction().setLikesCount(currentReactions.size());
-
-                            for (Like l : currentReactions) {
-                                if (pref.getUserId().equals(l.getUserId())) {
-                                    tuCopy.setMyReaction(l.getEmojiType());
-                                    tuCopy.setMyLikeId(l.getId());
-                                }
-                            }
-
-                            updated.add(tuCopy);
-                            found = true;
-                        } else {
-                            updated.add(tu);
                         }
+                        if (found) allTransactions.postValue(new ArrayList<>(transactionCache));
                     }
-                    if (found) postStableList(updated);
                 });
             }
             @Override public void onError(Throwable e) { Log.e(TAG, "Hydration failed", e); }
@@ -675,28 +706,26 @@ public class TransactionRepository {
         if (transId == null) return;
 
         executor.execute(() -> {
-            List<TransactionWithUser> current = allTransactions.getValue();
-            if (current == null) return;
+            synchronized (transactionCache) {
+                boolean modified = false;
 
-            List<TransactionWithUser> updated = new ArrayList<>();
-            boolean modified = false;
-
-            for (TransactionWithUser tu : current) {
-                if (tu.getTransaction().getId().equals(transId)) {
-                    TransactionWithUser tuCopy = tu.copy();
-                    Transaction t = tuCopy.getTransaction();
-                    if (isDelete) {
-                        t.setCommentCount(Math.max(0, t.getCommentCount() - 1));
-                    } else {
-                        t.setCommentCount(t.getCommentCount() + 1);
+                for (int i = 0; i < transactionCache.size(); i++) {
+                    TransactionWithUser tu = transactionCache.get(i);
+                    if (tu.getTransaction().getId().equals(transId)) {
+                        TransactionWithUser tuCopy = tu.copy();
+                        Transaction t = tuCopy.getTransaction();
+                        if (isDelete) {
+                            t.setCommentCount(Math.max(0, t.getCommentCount() - 1));
+                        } else {
+                            t.setCommentCount(t.getCommentCount() + 1);
+                        }
+                        transactionCache.set(i, tuCopy);
+                        modified = true;
+                        break;
                     }
-                    updated.add(tuCopy);
-                    modified = true;
-                } else {
-                    updated.add(tu);
                 }
+                if (modified) allTransactions.postValue(new ArrayList<>(transactionCache));
             }
-            if (modified) postStableList(updated);
         });
     }
 
@@ -712,15 +741,11 @@ public class TransactionRepository {
 
     private boolean isSameMonth(String dbMonth, String currentMonthQuery) {
         if (dbMonth == null || currentMonthQuery == null) return false;
-        // Case 1: ISO Format (2026-06-01...) matches 2026-06
         if (dbMonth.startsWith(currentMonthQuery)) return true;
-        
-        // Case 2: Formatted String (Jun 8, 2026) matches June 2026
-        // We'll do a simple check: if the year is in the string and it's not from another month
+
         String year = currentMonthQuery.substring(0, 4);
         if (!dbMonth.contains(year)) return false;
-        
-        // Very basic month mapping to handle "Jun" vs "06"
+
         String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
         try {
             int monthIdx = Integer.parseInt(currentMonthQuery.substring(5)) - 1;
@@ -745,7 +770,7 @@ public class TransactionRepository {
                 })
                 .forEach(tu -> {
                     Transaction t = tu.getTransaction();
-                    String key = t.getCategory().toLowerCase(java.util.Locale.ROOT);
+                    String key = t.getCategory().toLowerCase(java.util.Locale.ROOT).trim();
                     BudgetCategoryItem existing = aggMap.get(key);
                     if (existing != null) {
                         existing.setAmount(existing.getAmount() + t.getAmount());
@@ -785,7 +810,7 @@ public class TransactionRepository {
                 if ("EXPENSE".equalsIgnoreCase(t.getType()) && timestamp >= start && timestamp <= end) {
                     String cat = t.getCategory();
                     if (cat != null) {
-                        String catKey = cat.toLowerCase(java.util.Locale.ROOT);
+                        String catKey = cat.toLowerCase(java.util.Locale.ROOT).trim();
                         Double currentObj = expenseMap.getOrDefault(catKey, 0.0);
                         double current = currentObj != null ? currentObj : 0.0;
                         expenseMap.put(catKey, current + t.getAmount());
@@ -794,7 +819,7 @@ public class TransactionRepository {
             }
 
             // 2. Aggregate Allocations by Category
-            Map<String, BudgetCategoryItem> allocationAggMap = new HashMap<>();
+            Map<String, BudgetCategoryItem> allocationAggMap = new LinkedHashMap<>();
             list.stream()
                 .filter(tu -> {
                     String type = tu.getTransaction().getType();
@@ -803,7 +828,7 @@ public class TransactionRepository {
                 })
                 .forEach(tu -> {
                     Transaction t = tu.getTransaction();
-                    String key = t.getCategory().toLowerCase(java.util.Locale.ROOT);
+                    String key = t.getCategory().toLowerCase(java.util.Locale.ROOT).trim();
                     BudgetCategoryItem existing = allocationAggMap.get(key);
                     if (existing != null) {
                         existing.setAmount(existing.getAmount() + t.getAmount());
@@ -826,8 +851,18 @@ public class TransactionRepository {
 
             // 3. Apply spent amount and calculate percentage
             for (BudgetCategoryItem item : allocationAggMap.values()) {
-                String catKey = item.getCategoryName().toLowerCase(java.util.Locale.ROOT);
+                String catKey = item.getCategoryName().toLowerCase(java.util.Locale.ROOT).trim();
                 double spent = expenseMap.getOrDefault(catKey, 0.0);
+                
+                // Fuzzy match for categories like "Load" matching "Load/Data"
+                if (spent == 0) {
+                    for (Map.Entry<String, Double> entry : expenseMap.entrySet()) {
+                        if (catKey.contains(entry.getKey()) || entry.getKey().contains(catKey)) {
+                            spent += entry.getValue();
+                        }
+                    }
+                }
+                
                 item.setCurrentSpent(spent);
                 double limit = item.getAmount();
                 item.setPercentage(limit > 0 ? (int)((spent / limit) * 100) : 0);
@@ -909,28 +944,61 @@ public class TransactionRepository {
         if (dbAllocations == null || dbAllocations.isEmpty()) {
             basePlan = getDefaultCategories();
         } else {
+            Map<String, BudgetCategoryItem> aggregated = new LinkedHashMap<>();
             for (TransactionWithUser tu : dbAllocations) {
                 Transaction t = tu.getTransaction();
-                basePlan.add(new BudgetCategoryItem(
-                        t.getCategory(), t.getIconRes(), t.getIconColor(), t.getIconBgColor(),
-                        t.getAmount(), 0, t.getNote(), 0, t.isRecurring()
-                ));
+                String name = t.getSubCategory() != null ? t.getSubCategory() : t.getCategory();
+                String key = name.toLowerCase(java.util.Locale.ROOT).trim();
+                BudgetCategoryItem existing = aggregated.get(key);
+                if (existing != null) {
+                    existing.setAmount(existing.getAmount() + t.getAmount());
+                } else {
+                    aggregated.put(key, new BudgetCategoryItem(
+                            name,
+                            t.getIconRes() != 0 ? t.getIconRes() : R.drawable.ic_chart,
+                            t.getIconColor() != 0 ? t.getIconColor() : R.color.carti_primary_green,
+                            t.getIconBgColor() != 0 ? t.getIconBgColor() : R.color.mint_green_alpha,
+                            t.getAmount(), 0, 
+                            t.getSubCategory() != null ? t.getCategory() : t.getNote(), 
+                            0, t.isRecurring()
+                    ));
+                }
             }
+            basePlan.addAll(aggregated.values());
         }
+
 
         Map<String, Double> expenseMap = new HashMap<>();
         if (expenses != null) {
             for (CategorySum e : expenses) {
-                expenseMap.put(e.category.toLowerCase(java.util.Locale.ROOT), e.total);
+                expenseMap.put(e.category.toLowerCase(java.util.Locale.ROOT).trim(), e.total);
             }
         }
 
         List<BudgetCategoryItem> consolidated = new ArrayList<>();
         for (BudgetCategoryItem item : basePlan) {
-            String catLower = item.getCategoryName().toLowerCase(java.util.Locale.ROOT);
-            Double totalSpent = expenseMap.get(catLower);
-            double spent = (totalSpent != null) ? totalSpent : 0.0;
+            String catName = item.getCategoryName().toLowerCase(java.util.Locale.ROOT).trim();
             double limit = item.getAmount();
+
+            double spent = expenseMap.getOrDefault(catName, 0.0);
+            
+            // Fuzzy match for categories like "Load" matching "Load/Data"
+            if (spent == 0) {
+                for (Map.Entry<String, Double> entry : expenseMap.entrySet()) {
+                    if (catName.contains(entry.getKey()) || entry.getKey().contains(catName)) {
+                        spent += entry.getValue();
+                    }
+                }
+            }
+
+            if (item.getParentCategory() == null || item.getParentCategory().isEmpty()) {
+                List<com.upreyvan.carti.model.Category> allCats = com.upreyvan.carti.data.local.CategoryManager.getInstance(pref.getContext()).getCategories();
+                for (com.upreyvan.carti.model.Category c : allCats) {
+                    if (item.getCategoryName().equalsIgnoreCase(c.getParentCategory())) {
+                        spent += expenseMap.getOrDefault(c.getName().toLowerCase(java.util.Locale.ROOT).trim(), 0.0);
+                    }
+                }
+            }
 
             int pct = limit > 0 ? (int)((spent / limit) * 100) : 0;
             
@@ -976,28 +1044,40 @@ public class TransactionRepository {
                 .map(TransactionWithUser::getTransaction)
                 .filter(t -> "ALLOCATION".equalsIgnoreCase(t.getType()) && 
                             (t.getAllocationMonth() != null && t.getAllocationMonth().startsWith(currentMonth)) &&
-                            t.getCategory().equalsIgnoreCase(targetName))
+                            (t.getCategory().equalsIgnoreCase(targetName) || (t.getSubCategory() != null && t.getSubCategory().equalsIgnoreCase(targetName))))
                 .findFirst().orElse(null);
         }
 
         if (existing != null) {
-            existing.setCategory(name);
+            if (parent != null && !parent.isEmpty()) {
+                existing.setCategory(parent);
+                existing.setSubCategory(name);
+            } else {
+                existing.setCategory(name);
+                existing.setSubCategory(null);
+            }
             existing.setAmount(amount);
             existing.setIconRes(icon);
             existing.setIconColor(iconColor);
             existing.setIconBgColor(bgColor);
-            existing.setNote(parent);
+            existing.setNote(null); 
             existing.setRecurring(isRecurring);
             updateTransaction(existing, null);
         } else {
             Transaction t = new Transaction();
             t.setType("ALLOCATION");
-            t.setCategory(name);
+            if (parent != null && !parent.isEmpty()) {
+                t.setCategory(parent);
+                t.setSubCategory(name);
+            } else {
+                t.setCategory(name);
+                t.setSubCategory(null);
+            }
             t.setAmount(amount);
             t.setIconRes(icon);
             t.setIconColor(iconColor);
             t.setIconBgColor(bgColor);
-            t.setNote(parent);
+            t.setNote(null);
             t.setRecurring(isRecurring);
             t.setAllocationMonth(currentMonth);
             addTransaction(t, null);

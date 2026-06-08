@@ -57,9 +57,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
 
     private void initAdapter() {
         homeAdapter = new com.upreyvan.carti.base.BaseMultiAdapter();
-        getBinding().rvMainHome.setLayoutManager(new LinearLayoutManager(requireContext()));
-        getBinding().rvMainHome.setAdapter(homeAdapter);
-        setupSmoothScrolling(getBinding().rvMainHome);
+        RecyclerView rv = getBinding().rvMainHome;
+        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rv.setAdapter(homeAdapter);
+        rv.setItemViewCacheSize(10);
+        rv.setHasFixedSize(true);
+        setupSmoothScrolling(rv);
     }
 
     private void observeViewModel() {

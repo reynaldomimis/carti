@@ -8,11 +8,11 @@ import androidx.lifecycle.Transformations;
 import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.Member;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.util.TransactionHandler;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class QuickLogsViewModel extends BaseViewModel {
     private final TransactionRepository transRepo;
@@ -27,14 +27,15 @@ public class QuickLogsViewModel extends BaseViewModel {
         this.transRepo = TransactionRepository.getInstance(application);
         this.memberRepo = MemberRepository.getInstance(application);
         
-        this.remainingBalance = Transformations.switchMap(category, cat -> 
-            Transformations.map(transRepo.getAllTransactions(), list -> {
-                double allocated = 5000.0; // Same as hardcoded in legacy helper
-                double spent = list.stream()
-                    .filter(tu -> "EXPENSE".equalsIgnoreCase(tu.getTransaction().getType()) && cat.equalsIgnoreCase(tu.getTransaction().getCategory()))
-                    .mapToDouble(tu -> tu.getTransaction().getAmount())
-                    .sum();
-                return allocated - spent;
+        this.remainingBalance = Transformations.switchMap(category, cat ->
+            Transformations.map(transRepo.getBudgetPlanLiveData(), list -> {
+                if (cat == null || list == null) return 0.0;
+                for (BudgetCategoryItem item : list) {
+                    if (cat.equalsIgnoreCase(item.getCategoryName())) {
+                        return item.getAmount() - item.getCurrentSpent();
+                    }
+                }
+                return 0.0;
             })
         );
     }

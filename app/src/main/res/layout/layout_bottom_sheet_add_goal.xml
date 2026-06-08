@@ -240,6 +240,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_small"
             android:layout_weight="1"
+            android:enabled="false"
             android:text="@string/btn_save_goal" />
 
     </LinearLayout>

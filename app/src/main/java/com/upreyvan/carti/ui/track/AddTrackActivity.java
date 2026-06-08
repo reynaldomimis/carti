@@ -16,6 +16,7 @@ import com.upreyvan.carti.util.StringHelper;
 import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.Utils;
 import com.upreyvan.carti.util.Validator;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
@@ -52,22 +53,58 @@ public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
 
     private void setupDropdowns() {
         List<Category> cats = CategoryManager.getInstance(this).getCategories();
-        String[] names = cats.stream().map(Category::getName).toArray(String[]::new);
-        getBinding().actvCategory.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, names));
-        if (names.length > 0) { 
-            getBinding().actvCategory.setText(names[0], false); 
-            viewModel.setCategory(names[0]);
-            getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
+        List<String> names = new ArrayList<>();
+        for (Category item : cats) {
+            if (item.getParentCategory() == null || item.getParentCategory().isEmpty()) {
+                names.add(item.getName());
+            }
         }
-        getBinding().actvCategory.setOnItemClickListener((p, v, pos, id) -> {
+        
+        names.sort((a, b) -> {
+            if (a.equalsIgnoreCase("Others")) return 1;
+            if (b.equalsIgnoreCase("Others")) return -1;
+            return a.compareToIgnoreCase(b);
+        });
+        
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, names);
+        getBinding().layoutForm.etCategory.setAdapter(adapter);
+        
+        getBinding().layoutForm.etCategory.setOnItemClickListener((p, v, pos, id) -> {
             String cat = (String) p.getItemAtPosition(pos);
             viewModel.setCategory(cat);
+            updateSubCategoryDropdown(cat);
             getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
         });
 
-        String[] src = {"Cash", "GCash", "Maya", "Bank Transfer", "Credit Card"};
-        getBinding().layoutForm.actvSource.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, src));
-        getBinding().layoutForm.actvSource.setText(src[0], false);
+        if (!names.isEmpty()) { 
+            getBinding().layoutForm.etCategory.setText(names.get(0), false); 
+            viewModel.setCategory(names.get(0));
+            updateSubCategoryDropdown(names.get(0));
+            getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void updateSubCategoryDropdown(String parentCategoryName) {
+        List<com.upreyvan.carti.model.Category> allCategories = com.upreyvan.carti.data.local.CategoryManager.getInstance(this).getCategories();
+        List<String> subCategoryNames = new ArrayList<>();
+        for (com.upreyvan.carti.model.Category item : allCategories) {
+            if (parentCategoryName.equalsIgnoreCase(item.getParentCategory())) {
+                subCategoryNames.add(item.getName());
+            }
+        }
+
+        if (!subCategoryNames.isEmpty()) {
+            getBinding().layoutForm.labelSubCategory.setVisibility(View.VISIBLE);
+            getBinding().layoutForm.layoutSubCategory.setVisibility(View.VISIBLE);
+            
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, subCategoryNames);
+            getBinding().layoutForm.etSubCategory.setAdapter(adapter);
+            getBinding().layoutForm.etSubCategory.setText(""); 
+        } else {
+            getBinding().layoutForm.labelSubCategory.setVisibility(View.GONE);
+            getBinding().layoutForm.layoutSubCategory.setVisibility(View.GONE);
+            getBinding().layoutForm.etSubCategory.setText("");
+        }
     }
 
     private void setupDynamicPadding() {
@@ -84,15 +121,18 @@ public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
     private void setupClickListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
             if (!checkNetwork()) return;
-            if (Validator.isEmpty(getBinding().layoutForm.etAmount) || Validator.isEmpty(getBinding().actvCategory) || Validator.isEmpty(getBinding().layoutForm.etDescription)) {
+            String cat = getBinding().layoutForm.etCategory.getText().toString().trim();
+            String sub = getBinding().layoutForm.etSubCategory.getText().toString().trim();
+            
+            if (Validator.isEmpty(getBinding().layoutForm.etAmount) || cat.isEmpty() || Validator.isEmpty(getBinding().layoutForm.etDescription)) {
                 showToast(R.string.msg_fill_all_fields, UiHelper.Status.WARNING); return;
             }
-            double val = StringHelper.parseDouble(getBinding().layoutForm.etAmount.getText().toString());
-            String cat = getBinding().actvCategory.getText().toString();
-            String desc = getBinding().layoutForm.etDescription.getText().toString();
-            String source = getBinding().layoutForm.actvSource.getText().toString();
             
-            viewModel.saveTrack(val, cat, desc, source);
+            double val = StringHelper.parseDouble(getBinding().layoutForm.etAmount.getText().toString());
+            String desc = getBinding().layoutForm.etDescription.getText().toString();
+            String finalCat = sub.isEmpty() ? cat : sub;
+            
+            viewModel.saveTrack(val, finalCat, desc, "Cash");
         });
     }
 }

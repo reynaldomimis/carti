@@ -73,7 +73,7 @@ public class RealtimeRepository {
             } else if (path.contains(Constants.Appwrite.COL_TRANSACTIONS)) {
                 transactionStream.postValue(payload);
                 dispatchTypedStream(payload);
-                TransactionRepository.getInstance(context).refreshTransactions();
+                TransactionRepository.getInstance(context).handleRealtimeEvent(payload, path.endsWith(".delete"));
             } else if (path.contains(Constants.Appwrite.COL_NOTIFICATIONS)) {
                 notificationStream.postValue(payload);
             } else if (path.contains(Constants.Appwrite.COL_MESSAGES)) {

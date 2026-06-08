@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +25,6 @@ import com.upreyvan.carti.model.IconChoice;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
 import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Validator;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -77,7 +78,36 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
         viewModel = new ViewModelProvider(this).get(GoalViewModel.class);
         setupDatePicker();
         setupListeners();
+        setupInputValidation();
         observeViewModel();
+        validateForm();
+    }
+
+    private void setupInputValidation() {
+        TextWatcher validationWatcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validateForm(); }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+
+        getBinding().etGoalName.addTextChangedListener(validationWatcher);
+        getBinding().etTargetAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etTargetAmount));
+        getBinding().etTargetAmount.addTextChangedListener(validationWatcher);
+        getBinding().etSavedAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etSavedAmount));
+        getBinding().etTargetDate.addTextChangedListener(validationWatcher);
+    }
+
+    private void validateForm() {
+        String name = getBinding().etGoalName.getText().toString().trim();
+        String targetStr = getBinding().etTargetAmount.getText().toString().trim();
+        String date = getBinding().etTargetDate.getText().toString().trim();
+
+        double target = com.upreyvan.carti.util.StringHelper.parseDouble(targetStr);
+        
+        boolean isValid = !name.isEmpty() && target > 0 && !date.isEmpty();
+        boolean isLoading = viewModel.getIsLoading().getValue() != null && viewModel.getIsLoading().getValue();
+
+        getBinding().btnSave.setEnabled(isValid && !isLoading);
     }
 
     private void observeViewModel() {
@@ -92,7 +122,10 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
             if (err != null) showToast(err, UiHelper.Status.ERROR);
         });
         
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> showLoading(loading, "Saving goal..."));
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            showLoading(loading, "Saving goal...");
+            validateForm();
+        });
     }
 
     private void setupDatePicker() {
@@ -161,10 +194,6 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
 
     private void onSaveClicked() {
         if (!checkNetwork()) return;
-        if (Validator.isEmpty(getBinding().etGoalName) || Validator.isEmpty(getBinding().etTargetAmount)) {
-            UiHelper.showSnackbar(getBinding().getRoot(), R.string.msg_fill_all_fields, UiHelper.Status.WARNING);
-            return;
-        }
 
         String name = getBinding().etGoalName.getText().toString().trim();
 
@@ -178,9 +207,9 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
             }
         }
 
-        double targetAmount = Double.parseDouble(getBinding().etTargetAmount.getText().toString().trim());
+        double targetAmount = com.upreyvan.carti.util.StringHelper.parseDouble(getBinding().etTargetAmount.getText().toString().trim());
         String savedAmountStr = getBinding().etSavedAmount.getText().toString().trim();
-        double savedAmount = savedAmountStr.isEmpty() ? 0 : Double.parseDouble(savedAmountStr);
+        double savedAmount = savedAmountStr.isEmpty() ? 0 : com.upreyvan.carti.util.StringHelper.parseDouble(savedAmountStr);
         String date = getBinding().etTargetDate.getText().toString().trim();
 
         viewModel.saveGoal(name, targetAmount, savedAmount, date, selectedIcon, selectedImageUri);

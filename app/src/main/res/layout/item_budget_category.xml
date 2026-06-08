@@ -15,7 +15,7 @@
         app:cardBackgroundColor="@color/log_food"
         app:cardCornerRadius="@dimen/radius_small"
         app:cardElevation="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/pbBudget"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:strokeWidth="0dp">
@@ -38,8 +38,26 @@
         android:layout_marginStart="@dimen/spacing_medium"
         app:layout_constraintEnd_toStartOf="@id/tvAmount"
         app:layout_constraintStart_toEndOf="@id/cvIcon"
-        app:layout_constraintTop_toTopOf="@id/cvIcon"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/tvRemaining"
+        app:layout_constraintVertical_chainStyle="packed"
         tools:text="Bills &amp; Utilities" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvRemaining"
+        style="@style/CartiCaption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:textColor="@color/carti_primary_green"
+        android:fontFamily="@font/plus_jakarta_sans_bold"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        app:layout_constraintBottom_toTopOf="@id/pbBudget"
+        app:layout_constraintStart_toStartOf="@id/tvCategoryName"
+        app:layout_constraintTop_toBottomOf="@id/tvCategoryName"
+        tools:text="Remaining Balance: ₱845.00" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvAmount"
@@ -48,7 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/spacing_small"
         android:textSize="@dimen/text_size_body_small"
-        app:layout_constraintBottom_toBottomOf="@id/tvCategoryName"
+        app:layout_constraintBottom_toBottomOf="@id/tvRemaining"
         app:layout_constraintEnd_toStartOf="@id/tvPercentage"
         app:layout_constraintTop_toTopOf="@id/tvCategoryName"
         tools:text="₱4k / ₱8k" />
@@ -58,7 +76,7 @@
         style="@style/CartiCaption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@id/tvCategoryName"
+        app:layout_constraintBottom_toBottomOf="@id/tvRemaining"
         app:layout_constraintEnd_toStartOf="@id/ivArrowRight"
         app:layout_constraintTop_toTopOf="@id/tvCategoryName"
         tools:text="80%" />
@@ -79,12 +97,12 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="4dp"
-        android:layout_marginTop="@dimen/spacing_xs"
+        android:layout_marginTop="@dimen/spacing_small"
         android:progress="80"
         android:progressDrawable="@drawable/bg_dash_progress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/tvCategoryName"
-        app:layout_constraintTop_toBottomOf="@id/tvCategoryName"
+        app:layout_constraintTop_toBottomOf="@id/tvRemaining"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="@dimen/spacing_xxs" />
 

@@ -1,6 +1,8 @@
 package com.upreyvan.carti.ui.bills;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,7 +54,34 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
 
         setupDropdowns();
         setupListeners();
+        setupInputValidation();
         observeViewModel();
+        validateForm();
+    }
+
+    private void setupInputValidation() {
+        TextWatcher validationWatcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validateForm(); }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+
+        getBinding().etBillName.addTextChangedListener(validationWatcher);
+        getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etAmount));
+        getBinding().etAmount.addTextChangedListener(validationWatcher);
+        getBinding().actCategory.addTextChangedListener(validationWatcher);
+        getBinding().etDueDate.addTextChangedListener(validationWatcher);
+    }
+
+    private void validateForm() {
+        String name = getBinding().etBillName.getText().toString().trim();
+        String amount = getBinding().etAmount.getText().toString().trim();
+        String date = getBinding().etDueDate.getText().toString().trim();
+        
+        boolean isValid = !name.isEmpty() && !amount.isEmpty() && !date.isEmpty();
+        boolean isLoading = viewModel.getIsLoading().getValue() != null && viewModel.getIsLoading().getValue();
+
+        getBinding().btnSave.setEnabled(isValid && !isLoading);
     }
 
     private void observeViewModel() {
@@ -62,7 +91,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
                 dismiss();
             }
         });
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> getBinding().btnSave.setEnabled(!loading));
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> validateForm());
     }
 
     private void setupDropdowns() {

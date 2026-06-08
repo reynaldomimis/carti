@@ -60,7 +60,7 @@ public class PlanViewModel extends BaseViewModel {
         executor.execute(() -> {
             transRepo.processRecurringBudgets();
             
-            // Re-use repository logic to ensure consistency and correct month filtering
+            // 1. Load Budgets (ALLOCATIONS from Repository)
             List<BudgetCategoryItem> consolidated = transRepo.getBudgetPlan();
             if (consolidated == null) consolidated = new ArrayList<>();
 
@@ -68,9 +68,25 @@ public class PlanViewModel extends BaseViewModel {
             for (BudgetCategoryItem item : consolidated) {
                 if (item.getAmount() > 0) budgetList.add(item);
             }
-
             budgets.postValue(sortBudgetItems(budgetList));
-            categories.postValue(sortBudgetItems(consolidated));
+
+            // 2. Load Categories (from local CategoryManager as requested)
+            List<com.upreyvan.carti.model.Category> localCats = com.upreyvan.carti.data.local.CategoryManager.getInstance(getApplication()).getCategories();
+            List<BudgetCategoryItem> categoryList = new ArrayList<>();
+            for (com.upreyvan.carti.model.Category c : localCats) {
+                categoryList.add(new BudgetCategoryItem(
+                        c.getName(),
+                        c.getIconRes(),
+                        c.getIconColor(),
+                        c.getBackgroundColor(),
+                        0,
+                        0,
+                        c.getParentCategory(),
+                        0,
+                        false
+                ));
+            }
+            categories.postValue(sortBudgetItems(categoryList));
         });
     }
 

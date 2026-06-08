@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
@@ -107,9 +110,16 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         getBinding().btnSave.setOnClickListener(v -> saveCategory());
         getBinding().cardIconContainer.setOnClickListener(v -> showIconPicker());
 
+        setupInputValidation();
+
         if (parentCategory != null) {
             getBinding().tvTitle.setText(R.string.title_add_sub_category);
             getBinding().tvSubtitle.setText(getString(R.string.desc_adding_sub_category, parentCategory));
+            
+            // Show amount and recurring for sub-categories
+            getBinding().labelAmount.setVisibility(View.VISIBLE);
+            getBinding().layoutAmount.setVisibility(View.VISIBLE);
+            getBinding().layoutRecurring.setVisibility(View.VISIBLE);
         }
 
         if (editingItem != null) {
@@ -123,7 +133,34 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
                 getBinding().ivCategoryIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
             }
             parentCategory = editingItem.getParentCategory();
+
+            if (parentCategory != null) {
+                getBinding().labelAmount.setVisibility(View.VISIBLE);
+                getBinding().layoutAmount.setVisibility(View.VISIBLE);
+                getBinding().layoutRecurring.setVisibility(View.VISIBLE);
+            }
         }
+        
+        validateForm();
+    }
+
+    private void setupInputValidation() {
+        TextWatcher validationWatcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validateForm(); }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+
+        getBinding().etCategoryName.addTextChangedListener(validationWatcher);
+        getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etAmount));
+        getBinding().etAmount.addTextChangedListener(validationWatcher);
+    }
+
+    private void validateForm() {
+        String name = getBinding().etCategoryName.getText().toString().trim();
+        boolean isNameValid = !name.isEmpty();
+        
+        getBinding().btnSave.setEnabled(isNameValid);
     }
 
     private void showIconPicker() {
@@ -176,39 +213,55 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
             return;
         }
 
-        // Validate duplicates
-        TransactionRepository.getInstance(requireContext()).getBudgetPlanLiveData().observe(getViewLifecycleOwner(), existing -> {
-            if (existing != null) {
-                for (BudgetCategoryItem item : existing) {
-                    if (item.getCategoryName().equalsIgnoreCase(name) &&
-                            Objects.equals(item.getParentCategory(), parentCategory)) {
-                        if (editingItem == null || !editingItem.getCategoryName().equalsIgnoreCase(name)) {
-                            UiHelper.showSnackbar(getBinding().getRoot(), "This category already exists", UiHelper.Status.WARNING);
-                            return;
-                        }
-                    }
+        com.upreyvan.carti.data.local.CategoryManager manager = com.upreyvan.carti.data.local.CategoryManager.getInstance(requireContext());
+        List<com.upreyvan.carti.model.Category> existing = manager.getCategories();
+        
+        for (com.upreyvan.carti.model.Category item : existing) {
+            if (item.getName().equalsIgnoreCase(name) &&
+                    Objects.equals(item.getParentCategory(), parentCategory)) {
+                if (editingItem == null || !editingItem.getCategoryName().equalsIgnoreCase(name)) {
+                    UiHelper.showSnackbar(getBinding().getRoot(), "This category already exists", UiHelper.Status.WARNING);
+                    return;
                 }
             }
-            
-            double amount = 0;
-            String amountStr = getBinding().etAmount.getText() != null ? getBinding().etAmount.getText().toString() : "0";
-            if (!amountStr.isEmpty()) {
-                try { amount = Double.parseDouble(amountStr); } catch (Exception ignored) {}
-            }
+        }
+        
+        com.upreyvan.carti.model.Category cat = new com.upreyvan.carti.model.Category(
+                editingItem != null ? editingItem.getCategoryName() : UUID.randomUUID().toString(),
+                name,
+                selectedIcon,
+                R.color.carti_primary_green,
+                R.color.mint_green_alpha,
+                false,
+                parentCategory
+        );
 
-            TransactionRepository.getInstance(requireContext()).updateOrAddCategory(
-                    editingItem != null ? editingItem.getCategoryName() : null,
-                    name,
-                    selectedIcon,
-                    R.color.carti_primary_green,
-                    R.color.mint_green_alpha,
-                    amount,
-                    parentCategory,
-                    isRecurring
-            );
+        manager.updateCategory(editingItem != null ? editingItem.getCategoryName() : name, cat);
 
-            if (listener != null) listener.onCategoryAdded(name, amount, isRecurring);
-            dismiss();
-        });
+        // If user also set an amount, we save it as a budget (ALLOCATION) in the repo
+        String amountStr = getBinding().etAmount.getText() != null ? getBinding().etAmount.getText().toString() : "0";
+        if (!amountStr.isEmpty()) {
+            try { 
+                double amount = com.upreyvan.carti.util.StringHelper.parseDouble(amountStr);
+                if (amount > 0) {
+                    TransactionRepository.getInstance(requireContext()).updateOrAddCategory(
+                            editingItem != null ? editingItem.getCategoryName() : null,
+                            name,
+                            selectedIcon,
+                            R.color.carti_primary_green,
+                            R.color.mint_green_alpha,
+                            amount,
+                            parentCategory,
+                            isRecurring
+                    );
+                }
+            } catch (Exception ignored) {}
+        }
+
+        PlanViewModel viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
+        viewModel.loadData();
+        
+        if (listener != null) listener.onCategoryAdded(name, 0, isRecurring);
+        dismiss();
     }
 }

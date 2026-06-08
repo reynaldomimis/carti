@@ -67,7 +67,7 @@ public class QuickAddBottomSheetFragment extends BaseBottomSheetFragment<BottomS
         adapter.setOnItemClickListener(item -> {
             int titleId = item.getTitleResId();
             if (titleId == R.string.add_options_expense) {
-                startActivity(new Intent(requireContext(), AddTrackActivity.class));
+                QuickLogsBottomSheetFragment.newInstance(null).show(getParentFragmentManager(), "QUICK_LOG");
                 dismiss();
             } else if (titleId == R.string.action_add_income) {
                 if (getActivity() instanceof com.upreyvan.carti.MainActivity) {

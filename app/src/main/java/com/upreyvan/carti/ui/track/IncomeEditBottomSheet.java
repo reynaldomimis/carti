@@ -1,21 +1,24 @@
 package com.upreyvan.carti.ui.track;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.remote.AppwriteManager;
+import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.DialogEditIncomeBinding;
 import com.upreyvan.carti.model.Transaction;
-import java.util.Map;
-import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.util.Validator;
 import com.upreyvan.carti.util.UiHelper;
 import com.upreyvan.carti.util.ValueHelper;
+
+import java.util.Map;
 
 public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditIncomeBinding> {
 
@@ -60,7 +63,32 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         super.onViewCreated(view, savedInstanceState);
         transactionRepository = TransactionRepository.getInstance(requireContext());
         setupUI();
+        setupInputValidation();
         getBinding().btnSave.setOnClickListener(v -> handleSave());
+        validateForm();
+    }
+
+    private void setupInputValidation() {
+        TextWatcher validationWatcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validateForm(); }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+
+        getBinding().etIncomeSource.addTextChangedListener(validationWatcher);
+        getBinding().etSalaryAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etSalaryAmount));
+        getBinding().etSalaryAmount.addTextChangedListener(validationWatcher);
+    }
+
+    private void validateForm() {
+        String source = getBinding().etIncomeSource.getText().toString().trim();
+        String amountStr = getBinding().etSalaryAmount.getText().toString().trim();
+        
+        double amount = com.upreyvan.carti.util.StringHelper.parseDouble(amountStr);
+        
+        boolean isValid = !source.isEmpty() && amount > 0;
+        
+        getBinding().btnSave.setEnabled(isValid);
     }
 
     private void setupUI() {
@@ -92,18 +120,8 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
     private void handleSave() {
         if (!checkNetwork()) return;
 
-        if (Validator.isEmpty(getBinding().etSalaryAmount)) {
-            showToast("Please enter an amount", UiHelper.Status.WARNING);
-            return;
-        }
-
-        if (Validator.isEmpty(getBinding().etIncomeSource)) {
-            showToast("Please enter a source", UiHelper.Status.WARNING);
-            return;
-        }
-
         try {
-            double amount = Double.parseDouble(getBinding().etSalaryAmount.getText().toString().trim());
+            double amount = com.upreyvan.carti.util.StringHelper.parseDouble(getBinding().etSalaryAmount.getText().toString().trim());
             setLoading(true);
 
             if (mode == Mode.ADD_INCOME) {
@@ -176,7 +194,8 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
     }
 
     private void setLoading(boolean loading) {
-        getBinding().btnSave.setEnabled(!loading);
+        if (!loading) validateForm();
+        else getBinding().btnSave.setEnabled(false);
         getBinding().btnSave.setText(loading ? R.string.label_saving : (mode == Mode.ADD_INCOME ? R.string.label_add_income : R.string.label_save));
     }
 }

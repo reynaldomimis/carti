@@ -28,24 +28,6 @@
                 android:id="@+id/layout_form"
                 layout="@layout/layout_expense_form" />
 
-            <!-- Category Selector for general Add Track (not Quick Log) -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilCategory"
-                style="@style/CartiInputLayout.Dropdown"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:hint="@string/label_category">
-
-                <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                    android:id="@+id/actvCategory"
-                    style="@style/CartiEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:paddingVertical="@dimen/spacing_medium" />
-            </com.google.android.material.textfield.TextInputLayout>
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
@@ -56,7 +38,7 @@
         android:layout_height="@dimen/button_height_standard"
         android:layout_marginHorizontal="@dimen/spacing_large"
         android:layout_marginBottom="@dimen/spacing_large"
-        android:text="@string/btn_save_expense"
+        android:text="@string/label_save"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

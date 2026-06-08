@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.upreyvan.carti.R;
 import com.upreyvan.carti.databinding.ItemCustomizeCategoryBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 
@@ -40,9 +41,10 @@ public class CustomizeCategoryAdapter extends RecyclerView.Adapter<CustomizeCate
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         BudgetCategoryItem category = categories.get(position);
         holder.binding.tvCategoryName.setText(category.getCategoryName());
-        holder.binding.ivIcon.setImageResource(category.getIconRes());
+        holder.binding.ivIcon.setImageResource(category.getIconRes() != 0 ? category.getIconRes() : R.drawable.ic_chart);
         
-        int iconColor = holder.itemView.getContext().getColor(category.getIconColor());
+        int iconColorRes = category.getIconColor() != 0 ? category.getIconColor() : R.color.carti_primary_green;
+        int iconColor = holder.itemView.getContext().getColor(iconColorRes);
         int bgColor = ColorUtils.setAlphaComponent(iconColor, 25);
         
         holder.binding.cardIcon.setCardBackgroundColor(bgColor);

@@ -51,8 +51,34 @@ public class CategoryManager {
         saveCategories(categories);
     }
 
+    public void updateCategory(String oldName, Category updated) {
+        List<Category> categories = getCategories();
+        for (int i = 0; i < categories.size(); i++) {
+            if (categories.get(i).getName().equalsIgnoreCase(oldName)) {
+                categories.set(i, updated);
+                saveCategories(categories);
+                return;
+            }
+        }
+        addCategory(updated);
+    }
+
+    public void deleteCategory(String name) {
+        List<Category> categories = getCategories();
+        categories.removeIf(c -> c.getName().equalsIgnoreCase(name) || name.equalsIgnoreCase(c.getParentCategory()));
+        saveCategories(categories);
+    }
+
     public void updateCategories(List<Category> categories) {
         saveCategories(categories);
+    }
+
+    public Category getCategoryByName(String name) {
+        if (name == null) return null;
+        for (Category c : getCategories()) {
+            if (c.getName().equalsIgnoreCase(name)) return c;
+        }
+        return null;
     }
 
     private void saveCategories(List<Category> categories) {

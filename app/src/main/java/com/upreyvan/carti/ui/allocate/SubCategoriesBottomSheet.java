@@ -88,7 +88,7 @@ public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomShee
     private void observeViewModel() {
         viewModel.getCategories().observe(getViewLifecycleOwner(), allCategories -> {
             List<BudgetCategoryItem> subs = allCategories.stream()
-                    .filter(c -> parentCategory.equals(c.getParentCategory()))
+                    .filter(c -> parentCategory != null && parentCategory.equalsIgnoreCase(c.getParentCategory()))
                     .collect(Collectors.toList());
             
             adapter.submitList(new ArrayList<>(subs));
@@ -124,7 +124,11 @@ public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomShee
                 "Delete Sub-category?",
                 "Are you sure you want to delete '" + item.getCategoryName() + "'?",
                 "Delete",
-                () -> TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName())
+                () -> {
+                    com.upreyvan.carti.data.local.CategoryManager.getInstance(requireContext()).deleteCategory(item.getCategoryName());
+                    TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName());
+                    viewModel.loadData();
+                }
         );
     }
 }

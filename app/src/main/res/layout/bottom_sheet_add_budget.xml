@@ -72,6 +72,39 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/labelSubCategory"
+        style="@style/DashLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="SUB CATEGORY"
+        android:letterSpacing="0.1"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutCategory" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutSubCategory"
+        style="@style/CartiInputLayout.Dropdown"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/labelSubCategory">
+
+        <AutoCompleteTextView
+            android:id="@+id/etSubCategory"
+            style="@style/CartiEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Select Sub Category (Optional)"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/labelLimit"
         style="@style/DashLabel"
         android:layout_width="wrap_content"
@@ -81,7 +114,7 @@
         android:text="MONTHLY LIMIT (PHP)"
         android:letterSpacing="0.1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layoutCategory" />
+        app:layout_constraintTop_toBottomOf="@id/layoutSubCategory" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/layoutLimit"
@@ -156,6 +189,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_small"
             android:layout_weight="1"
+            android:enabled="false"
             android:text="Save" />
 
     </LinearLayout>

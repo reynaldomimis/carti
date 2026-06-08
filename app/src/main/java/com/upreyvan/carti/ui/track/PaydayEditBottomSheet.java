@@ -3,6 +3,8 @@ package com.upreyvan.carti.ui.track;
 import com.upreyvan.carti.util.ToastHelper;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,36 +50,21 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
         getBinding().cbMonthly.setChecked(manager.isMonthly());
         updateInputStates(manager.isMonthly());
 
+        setupInputValidation();
+
         getBinding().cbMonthly.setOnCheckedChangeListener((buttonView, isChecked) -> {
             updateInputStates(isChecked);
+            validateForm();
         });
 
         getBinding().btnSave.setOnClickListener(v -> {
             boolean isMonthly = getBinding().cbMonthly.isChecked();
             manager.setIsMonthly(isMonthly);
 
-            if (Validator.isEmpty(getBinding().etPayday1)) {
-                showToast(getString(R.string.msg_enter_payday), com.upreyvan.carti.util.UiHelper.Status.WARNING);
-                return;
-            }
-
             try {
                 int p1 = Integer.parseInt(getBinding().etPayday1.getText().toString().trim());
-                if (p1 < 1 || p1 > 31) {
-                    showToast(getString(R.string.msg_day_range), com.upreyvan.carti.util.UiHelper.Status.WARNING);
-                    return;
-                }
-
                 if (!isMonthly) {
-                    if (Validator.isEmpty(getBinding().etPayday2)) {
-                        showToast(getString(R.string.msg_enter_payday_second), com.upreyvan.carti.util.UiHelper.Status.WARNING);
-                        return;
-                    }
                     int p2 = Integer.parseInt(getBinding().etPayday2.getText().toString().trim());
-                    if (p2 < 1 || p2 > 31) {
-                        showToast(getString(R.string.msg_day_range), com.upreyvan.carti.util.UiHelper.Status.WARNING);
-                        return;
-                    }
                     manager.setFirstPayday(p1);
                     manager.setSecondPayday(p2);
                 } else {
@@ -93,6 +80,38 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
             }
             dismiss();
         });
+        
+        validateForm();
+    }
+
+    private void setupInputValidation() {
+        TextWatcher validationWatcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validateForm(); }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+
+        getBinding().etPayday1.addTextChangedListener(validationWatcher);
+        getBinding().etPayday2.addTextChangedListener(validationWatcher);
+    }
+
+    private void validateForm() {
+        boolean isMonthly = getBinding().cbMonthly.isChecked();
+        String p1Str = getBinding().etPayday1.getText().toString().trim();
+        String p2Str = getBinding().etPayday2.getText().toString().trim();
+
+        int p1 = -1;
+        try { p1 = Integer.parseInt(p1Str); } catch (NumberFormatException ignored) {}
+        boolean p1Valid = p1 >= 1 && p1 <= 31;
+
+        boolean p2Valid = true;
+        if (!isMonthly) {
+            int p2 = -1;
+            try { p2 = Integer.parseInt(p2Str); } catch (NumberFormatException ignored) {}
+            p2Valid = p2 >= 1 && p2 <= 31;
+        }
+
+        getBinding().btnSave.setEnabled(p1Valid && p2Valid);
     }
 
     private void updateInputStates(boolean isMonthly) {

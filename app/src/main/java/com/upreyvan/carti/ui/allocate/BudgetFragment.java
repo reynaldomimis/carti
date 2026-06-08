@@ -82,10 +82,18 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
 
     private void observeViewModel() {
         viewModel.getBudgets().observe(getViewLifecycleOwner(), budgets -> {
-            budgetAdapter.submitList(new ArrayList<>(budgets));
-            getBinding().cardEmptyBudgets.setVisibility(budgets.isEmpty() ? View.VISIBLE : View.GONE);
+            java.util.List<BudgetCategoryItem> parentBudgets = budgets.stream()
+                    .filter(c -> c.getParentCategory() == null || c.getParentCategory().isEmpty())
+                    .collect(java.util.stream.Collectors.toList());
+            budgetAdapter.submitList(new ArrayList<>(parentBudgets));
+            getBinding().cardEmptyBudgets.setVisibility(parentBudgets.isEmpty() ? View.VISIBLE : View.GONE);
         });
-        viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> categoryAdapter.submitList(new ArrayList<>(categories)));
+        viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
+            java.util.List<BudgetCategoryItem> parentCategories = categories.stream()
+                    .filter(c -> c.getParentCategory() == null || c.getParentCategory().isEmpty())
+                    .collect(java.util.stream.Collectors.toList());
+            categoryAdapter.submitList(new ArrayList<>(parentCategories));
+        });
     }
 
     private void showAddBudgetBottomSheet() {
@@ -132,7 +140,11 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
                 "Delete Category?",
                 "Are you sure you want to delete '" + item.getCategoryName() + "'? This will also delete all its sub-categories.",
                 "Delete",
-                () -> TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName())
+                () -> {
+                    com.upreyvan.carti.data.local.CategoryManager.getInstance(requireContext()).deleteCategory(item.getCategoryName());
+                    TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName());
+                    viewModel.loadData();
+                }
         );
     }
 }
