@@ -41,14 +41,14 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/tvRemaining"
         app:layout_constraintVertical_chainStyle="packed"
-        tools:text="Bills &amp; Utilities" />
+        tools:text="Grocery" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvRemaining"
         style="@style/CartiCaption"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
+        android:layout_marginTop="6dp"
         android:textColor="@color/carti_primary_green"
         android:fontFamily="@font/plus_jakarta_sans_bold"
         android:textSize="11sp"
@@ -56,6 +56,7 @@
         android:ellipsize="end"
         app:layout_constraintBottom_toTopOf="@id/pbBudget"
         app:layout_constraintStart_toStartOf="@id/tvCategoryName"
+        app:layout_constraintEnd_toStartOf="@id/tvPercentage"
         app:layout_constraintTop_toBottomOf="@id/tvCategoryName"
         tools:text="Remaining Balance: ₱845.00" />
 
@@ -66,20 +67,32 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/spacing_small"
         android:textSize="@dimen/text_size_body_small"
-        app:layout_constraintBottom_toBottomOf="@id/tvRemaining"
-        app:layout_constraintEnd_toStartOf="@id/tvPercentage"
+        app:layout_constraintBottom_toBottomOf="@id/tvCategoryName"
+        app:layout_constraintEnd_toStartOf="@id/ivArrowRight"
         app:layout_constraintTop_toTopOf="@id/tvCategoryName"
-        tools:text="₱4k / ₱8k" />
+        tools:text="₱1,155 / ₱2,000" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvPercentage"
         style="@style/CartiCaption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/spacing_small"
+        android:textSize="13sp"
+        android:fontFamily="@font/plus_jakarta_sans_bold"
+        android:textColor="@color/text_secondary"
         app:layout_constraintBottom_toBottomOf="@id/tvRemaining"
         app:layout_constraintEnd_toStartOf="@id/ivArrowRight"
-        app:layout_constraintTop_toTopOf="@id/tvCategoryName"
-        tools:text="80%" />
+        app:layout_constraintTop_toTopOf="@id/tvRemaining"
+        tools:text="57%" />
+
+    <ImageView
+        android:id="@+id/id_dummy_arrow_space"
+        android:layout_width="20dp"
+        android:layout_height="0dp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/ivArrowRight"
@@ -87,9 +100,9 @@
         android:layout_height="20dp"
         android:src="@drawable/ic_chevron_right"
         android:contentDescription="@null"
-        app:layout_constraintBottom_toBottomOf="@id/tvPercentage"
+        app:layout_constraintBottom_toBottomOf="@id/tvAmount"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tvPercentage"
+        app:layout_constraintTop_toTopOf="@id/tvAmount"
         app:tint="@color/text_tertiary" />
 
     <ProgressBar
@@ -98,7 +111,7 @@
         android:layout_width="0dp"
         android:layout_height="4dp"
         android:layout_marginTop="@dimen/spacing_small"
-        android:progress="80"
+        android:progress="57"
         android:progressDrawable="@drawable/bg_dash_progress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/tvCategoryName"
