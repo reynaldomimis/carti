@@ -2,7 +2,6 @@ package com.upreyvan.carti.data.ai;
 
 import android.content.Context;
 import android.util.Log;
-import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.Transaction;
@@ -89,15 +88,8 @@ public class AiActionHandler {
                 case "ALLOCATION" -> {
                     String catName = data.optString("category", "Others");
                     double allocAmount = data.optDouble("amount", 0.0);
-                    BudgetManager.getInstance(context).updateOrAddCategory(catName, allocAmount, null, false);
-                    Transaction alloc = new Transaction();
-                    alloc.setAmount(allocAmount);
-                    alloc.setType("ALLOCATION"); 
-                    alloc.setCategory(catName);
-                    alloc.setTitle(catName);
-                    alloc.setAllocatedTo(catName);
-                    alloc.setAllocationMonth(Utils.getCurrentTimestamp());
-                    transactionRepository.addTransaction(alloc, callback);
+                    transactionRepository.updateOrAddCategory(catName, allocAmount, null, false);
+                    if (callback != null) callback.onSuccess(null);
                 }
                 default -> Log.w("AiActionHandler", "Unknown AI intent/action: " + intent);
             }

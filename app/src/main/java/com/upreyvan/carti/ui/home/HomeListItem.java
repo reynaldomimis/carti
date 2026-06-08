@@ -148,9 +148,9 @@ public interface HomeListItem extends BaseMultiItem {
                 LinearLayoutManager lm = new LinearLayoutManager(rv.getContext(), LinearLayoutManager.HORIZONTAL, false);
                 lm.setInitialPrefetchItemCount(3);
                 rv.setLayoutManager(lm);
-                rv.setHasFixedSize(true);
                 rv.setRecycledViewPool(pool);
             }
+            rv.requestLayout();
             setupAdapter(rv);
         }
 
@@ -188,9 +188,9 @@ public interface HomeListItem extends BaseMultiItem {
                 LinearLayoutManager lm = new LinearLayoutManager(rv.getContext(), LinearLayoutManager.HORIZONTAL, false);
                 lm.setInitialPrefetchItemCount(4);
                 rv.setLayoutManager(lm);
-                rv.setHasFixedSize(true);
                 rv.setRecycledViewPool(pool);
             }
+            rv.requestLayout();
             setupAdapter(rv);
         }
 
@@ -223,9 +223,9 @@ public interface HomeListItem extends BaseMultiItem {
                 GridLayoutManager gm = new GridLayoutManager(rv.getContext(), 4);
                 gm.setInitialPrefetchItemCount(8);
                 rv.setLayoutManager(gm);
-                rv.setHasFixedSize(true);
                 rv.setRecycledViewPool(pool);
             }
+            rv.requestLayout();
             setupAdapter(rv);
         }
 
@@ -436,13 +436,11 @@ public interface HomeListItem extends BaseMultiItem {
                     if (b.containsKey("myReaction")) {
                         String reaction = b.getString("myReaction");
                         boolean hasReac = reaction != null && !reaction.isEmpty();
-                        
-                        // Update Button
+
                         vb.tvBtnLikeIcon.setText(hasReac ? reaction : "👍");
                         vb.tvBtnLikeText.setTextColor(ContextCompat.getColor(vb.getRoot().getContext(), 
                             hasReac ? R.color.carti_primary_green : R.color.text_secondary));
                         
-                        // Update Summary Emoji
                         vb.tvReactionEmoji.setText(hasReac ? reaction : "👍");
                         vb.tvReactionEmoji.setVisibility(t.getLikesCount() > 0 ? View.VISIBLE : View.GONE);
                     }

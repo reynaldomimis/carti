@@ -7,14 +7,18 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
+import com.upreyvan.carti.R;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.remote.AppwriteManager;
 import com.upreyvan.carti.data.remote.source.TransactionRemoteDataSource;
+import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.Comment;
 import com.upreyvan.carti.model.Like;
+import com.upreyvan.carti.model.RecurringBudgetStats;
 import com.upreyvan.carti.model.Transaction;
 import com.upreyvan.carti.model.TransactionWithUser;
 import com.upreyvan.carti.util.CommentHelper;
+import com.upreyvan.carti.util.Constants;
 import com.upreyvan.carti.util.Utils;
 
 import java.io.File;
@@ -46,6 +50,7 @@ public class TransactionRepository {
     private final AtomicBoolean isRefreshing = new AtomicBoolean(false);
     
     private final MutableLiveData<List<TransactionWithUser>> allTransactions = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<RecurringBudgetStats> recurringStatsLiveData = new MutableLiveData<>();
 
     private final Map<String, Long> requestCooldowns = new ConcurrentHashMap<>();
     private final java.util.Set<String> pendingToggles = Collections.synchronizedSet(new java.util.HashSet<>());
@@ -66,8 +71,6 @@ public class TransactionRepository {
 
     private void postStableList(List<TransactionWithUser> list) {
         if (list == null) return;
-        // Ensure the list is always sorted by timestamp descending (Newest first)
-        // This prevents the "jumping" behavior when server syncs out-of-order.
         list.sort((a, b) -> Long.compare(b.getTransaction().getTimestampMillis(), a.getTransaction().getTimestampMillis()));
         allTransactions.postValue(list);
     }
@@ -125,14 +128,20 @@ public class TransactionRepository {
         );
     }
 
+    @SuppressWarnings("unused")
     public LiveData<List<TransactionWithUser>> getGoals() { return getTransactionsByType("GOAL"); }
     public LiveData<List<TransactionWithUser>> getIncome() { return getTransactionsByType("INCOME"); }
+    @SuppressWarnings("unused")
     public LiveData<List<TransactionWithUser>> getAllocations() { return getTransactionsByType("ALLOCATION"); }
 
     public LiveData<List<TransactionWithUser>> getAllocationsByMonth(String month) {
         return Transformations.map(allTransactions, list -> 
             list.stream()
-                .filter(tu -> "ALLOCATION".equalsIgnoreCase(tu.getTransaction().getType()) && java.util.Objects.equals(month, tu.getTransaction().getAllocationMonth()))
+                .filter(tu -> {
+                    String type = tu.getTransaction().getType();
+                    String m = tu.getTransaction().getAllocationMonth();
+                    return "ALLOCATION".equalsIgnoreCase(type) && isSameMonth(m, month);
+                })
                 .collect(Collectors.toList())
         );
     }
@@ -201,10 +210,12 @@ public class TransactionRepository {
         fields.put("type", t.getType());
         fields.put("title", t.getTitle());
         fields.put("note", t.getNote());
+        fields.put("sub_category", t.getSubCategory());
         fields.put("userId", pref.getUserId());
         fields.put("familyId", pref.getFamilyId());
         fields.put("username", pref.getUsername());
         fields.put("startDate", t.getStartDate() != null ? t.getStartDate() : Utils.getCurrentTimestamp());
+        fields.put("isRecurring", t.isRecurring());
 
         String type = t.getType() != null ? t.getType().toUpperCase() : "EXPENSE";
 
@@ -270,36 +281,104 @@ public class TransactionRepository {
         });
     }
 
-    public LiveData<Double> getTotalIncome() {
-        return Transformations.map(allTransactions, list -> 
-            list.stream()
-                .filter(tu -> "INCOME".equalsIgnoreCase(tu.getTransaction().getType()))
-                .mapToDouble(tu -> tu.getTransaction().getAmount())
-                .sum()
-        );
+    public LiveData<Double> getSum(String type, String category) {
+        return Transformations.map(allTransactions, list -> {
+            if (list == null) return 0.0;
+            
+            String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
+            Calendar cal = Calendar.getInstance();
+            long start = Utils.getMonthStartMillis(cal);
+            long end = Utils.getMonthEndMillis(cal);
+
+            return list.stream()
+                .map(TransactionWithUser::getTransaction)
+                .filter(t -> {
+                    // 1. Basic Type and Category Filter
+                    boolean matchesType = (type == null || type.equalsIgnoreCase(t.getType()));
+                    boolean matchesCategory = (category == null || category.equalsIgnoreCase(t.getCategory()));
+                    if (!matchesType || !matchesCategory) return false;
+
+                    // 2. Month-Aware Filter
+                    if ("ALLOCATION".equalsIgnoreCase(t.getType())) {
+                        return isSameMonth(t.getAllocationMonth(), currentMonth);
+                    } else {
+                        // Expenses/Income/etc check the actual timestamp
+                        long ts = t.getTimestampMillis();
+                        return ts >= start && ts <= end;
+                    }
+                })
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        });
     }
 
+    @SuppressWarnings("unused")
+    public LiveData<Double> getSumByType(String type) { return getSum(type, null); }
+    @SuppressWarnings("unused")
+    public LiveData<Double> getSumByCategory(String category) { return getSum(null, category); }
+    @SuppressWarnings("unused")
+    public LiveData<Double> getSumByTypeAndCategory(String type, String category) { return getSum(type, category); }
+
+    public LiveData<List<TransactionWithUser>> getFilteredTransactions(String type, String category) {
+        return Transformations.map(allTransactions, list -> {
+            if (list == null) return new ArrayList<>();
+            return list.stream()
+                .filter(tu -> (type == null || type.equalsIgnoreCase(tu.getTransaction().getType())) &&
+                            (category == null || category.equalsIgnoreCase(tu.getTransaction().getCategory())))
+                .collect(Collectors.toList());
+        });
+    }
+
+    @SuppressWarnings("unused")
+    public LiveData<List<TransactionWithUser>> getTransactionsByCategory(String category) { return getFilteredTransactions(null, category); }
+    @SuppressWarnings("unused")
+    public LiveData<List<TransactionWithUser>> getTransactionsByTypeAndCategory(String type, String category) { return getFilteredTransactions(type, category); }
+
+    @SuppressWarnings("unused")
+    public LiveData<List<CategorySum>> getExpenseBreakdownLiveData() {
+        return Transformations.map(allTransactions, list -> {
+            if (list == null) return new ArrayList<>();
+            
+            Calendar cal = Calendar.getInstance();
+            long start = Utils.getMonthStartMillis(cal);
+            long end = Utils.getMonthEndMillis(cal);
+            
+            Map<String, Double> breakdown = new HashMap<>();
+            for (TransactionWithUser tu : list) {
+                Transaction t = tu.getTransaction();
+                if ("EXPENSE".equalsIgnoreCase(t.getType()) && t.getTimestampMillis() >= start && t.getTimestampMillis() <= end) {
+                    String cat = t.getCategory() != null ? t.getCategory() : "Others";
+                    Double currentObj = breakdown.getOrDefault(cat, 0.0);
+                    double current = currentObj != null ? currentObj : 0.0;
+                    breakdown.put(cat, current + t.getAmount());
+                }
+            }
+            
+            return breakdown.entrySet().stream()
+                .map(e -> new CategorySum(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+        });
+    }
+
+    public LiveData<Double> getTotalIncome() {
+        Calendar cal = Calendar.getInstance();
+        long start = Utils.getMonthStartMillis(cal);
+        long end = Utils.getMonthEndMillis(cal);
+        return getTotalIncomeInRange(start, end);
+    }
+
+    @SuppressWarnings("unused")
     public LiveData<Double> getTotalExpense() {
-        return Transformations.map(allTransactions, list -> 
-            list.stream()
-                .filter(tu -> "EXPENSE".equalsIgnoreCase(tu.getTransaction().getType()))
-                .mapToDouble(tu -> tu.getTransaction().getAmount())
-                .sum()
-        );
+        Calendar cal = Calendar.getInstance();
+        long start = Utils.getMonthStartMillis(cal);
+        long end = Utils.getMonthEndMillis(cal);
+        return getTotalExpenseInRange(start, end);
     }
 
     public LiveData<Double> getBalance() {
-        return Transformations.map(allTransactions, list -> {
-            double income = list.stream()
-                .filter(tu -> "INCOME".equalsIgnoreCase(tu.getTransaction().getType()))
-                .mapToDouble(tu -> tu.getTransaction().getAmount())
-                .sum();
-            double expense = list.stream()
-                .filter(tu -> "EXPENSE".equalsIgnoreCase(tu.getTransaction().getType()))
-                .mapToDouble(tu -> tu.getTransaction().getAmount())
-                .sum();
-            return income - expense;
-        });
+        return Transformations.switchMap(getSumByType("ALLOCATION"), budget ->
+               Transformations.map(getSumByType("EXPENSE"), expense -> budget - expense)
+        );
     }
 
     public LiveData<Double> getTotalIncomeInRange(long start, long end) {
@@ -322,6 +401,41 @@ public class TransactionRepository {
                 .mapToDouble(tu -> tu.getTransaction().getAmount())
                 .sum()
         );
+    }
+
+    public LiveData<Double> getSavingsCombined() {
+        return Transformations.map(allTransactions, list -> {
+            if (list == null) return 0.0;
+            
+            Calendar current = Calendar.getInstance();
+            Calendar last = Calendar.getInstance();
+            last.add(Calendar.MONTH, -1);
+
+            long curStart = Utils.getMonthStartMillis(current);
+            long curEnd = Utils.getMonthEndMillis(current);
+            long lstStart = Utils.getMonthStartMillis(last);
+            long lstEnd = Utils.getMonthEndMillis(last);
+
+            double totalIncome = list.stream()
+                .filter(tu -> "INCOME".equalsIgnoreCase(tu.getTransaction().getType()))
+                .filter(tu -> {
+                    long ts = tu.getTransaction().getTimestampMillis();
+                    return (ts >= curStart && ts <= curEnd) || (ts >= lstStart && ts <= lstEnd);
+                })
+                .mapToDouble(tu -> tu.getTransaction().getAmount())
+                .sum();
+
+            double totalExpense = list.stream()
+                .filter(tu -> "EXPENSE".equalsIgnoreCase(tu.getTransaction().getType()))
+                .filter(tu -> {
+                    long ts = tu.getTransaction().getTimestampMillis();
+                    return (ts >= curStart && ts <= curEnd) || (ts >= lstStart && ts <= lstEnd);
+                })
+                .mapToDouble(tu -> tu.getTransaction().getAmount())
+                .sum();
+
+            return totalIncome - totalExpense;
+        });
     }
 
     public void unlikeTransaction(String likeId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) { remoteDataSource.removeLike(likeId, callback); }
@@ -462,7 +576,7 @@ public class TransactionRepository {
                         String username = (String) payload.get("username");
 
                         // Nuclear De-duplication before injection
-                        reactions.removeIf(l -> userId.equals(l.getUserId()) || username.equalsIgnoreCase(l.getUsername()));
+                        reactions.removeIf(l -> userId.equals(l.getUserId()) || (username != null && username.equalsIgnoreCase(l.getUsername())));
                         
                         Like newLike = new Like(likeId, transId, userId, username, emoji);
                         newLike.setUpdatedAt(updatedAt);
@@ -588,12 +702,319 @@ public class TransactionRepository {
 
     public void uploadIcon(File file, AppwriteManager.AppwriteCallback<io.appwrite.models.File> callback) {
         AppwriteManager.getInstance(pref.getContext()).uploadFile(
-                com.upreyvan.carti.util.Constants.Appwrite.BUCKET_ICONS,
+                Constants.Appwrite.BUCKET_ICONS,
                 io.appwrite.ID.Companion.unique(0),
                 io.appwrite.models.InputFile.Companion.fromFile(file),
                 null,
                 callback
         );
+    }
+
+    private boolean isSameMonth(String dbMonth, String currentMonthQuery) {
+        if (dbMonth == null || currentMonthQuery == null) return false;
+        // Case 1: ISO Format (2026-06-01...) matches 2026-06
+        if (dbMonth.startsWith(currentMonthQuery)) return true;
+        
+        // Case 2: Formatted String (Jun 8, 2026) matches June 2026
+        // We'll do a simple check: if the year is in the string and it's not from another month
+        String year = currentMonthQuery.substring(0, 4);
+        if (!dbMonth.contains(year)) return false;
+        
+        // Very basic month mapping to handle "Jun" vs "06"
+        String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        try {
+            int monthIdx = Integer.parseInt(currentMonthQuery.substring(5)) - 1;
+            return dbMonth.contains(months[monthIdx]);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public List<BudgetCategoryItem> getBudgetPlan() {
+        List<TransactionWithUser> list = allTransactions.getValue();
+        if (list == null) return getDefaultCategories();
+
+        String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
+        Map<String, BudgetCategoryItem> aggMap = new HashMap<>();
+
+        list.stream()
+                .filter(tu -> {
+                    String type = tu.getTransaction().getType();
+                    String m = tu.getTransaction().getAllocationMonth();
+                    return "ALLOCATION".equalsIgnoreCase(type) && isSameMonth(m, currentMonth);
+                })
+                .forEach(tu -> {
+                    Transaction t = tu.getTransaction();
+                    String key = t.getCategory().toLowerCase(java.util.Locale.ROOT);
+                    BudgetCategoryItem existing = aggMap.get(key);
+                    if (existing != null) {
+                        existing.setAmount(existing.getAmount() + t.getAmount());
+                    } else {
+                        aggMap.put(key, new BudgetCategoryItem(
+                                t.getCategory(),
+                                t.getIconRes() != 0 ? t.getIconRes() : R.drawable.ic_chart,
+                                t.getIconColor() != 0 ? t.getIconColor() : R.color.carti_primary_green,
+                                t.getIconBgColor() != 0 ? t.getIconBgColor() : R.color.mint_green_alpha,
+                                t.getAmount(),
+                                0,
+                                t.getNote(),
+                                0.0,
+                                t.isRecurring()
+                        ));
+                    }
+                });
+
+        return aggMap.isEmpty() ? getDefaultCategories() : new ArrayList<>(aggMap.values());
+    }
+
+    public LiveData<List<BudgetCategoryItem>> getBudgetPlanLiveData() {
+        return Transformations.map(allTransactions, list -> {
+            if (list == null) return getDefaultCategories();
+
+            String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
+
+            Calendar cal = Calendar.getInstance();
+            long start = Utils.getMonthStartMillis(cal);
+            long end = Utils.getMonthEndMillis(cal);
+            
+            Map<String, Double> expenseMap = new HashMap<>();
+            for (TransactionWithUser tu : list) {
+                Transaction t = tu.getTransaction();
+                long timestamp = t.getTimestampMillis();
+                
+                if ("EXPENSE".equalsIgnoreCase(t.getType()) && timestamp >= start && timestamp <= end) {
+                    String cat = t.getCategory();
+                    if (cat != null) {
+                        String catKey = cat.toLowerCase(java.util.Locale.ROOT);
+                        Double currentObj = expenseMap.getOrDefault(catKey, 0.0);
+                        double current = currentObj != null ? currentObj : 0.0;
+                        expenseMap.put(catKey, current + t.getAmount());
+                    }
+                }
+            }
+
+            // 2. Aggregate Allocations by Category
+            Map<String, BudgetCategoryItem> allocationAggMap = new HashMap<>();
+            list.stream()
+                .filter(tu -> {
+                    String type = tu.getTransaction().getType();
+                    String m = tu.getTransaction().getAllocationMonth();
+                    return "ALLOCATION".equalsIgnoreCase(type) && isSameMonth(m, currentMonth);
+                })
+                .forEach(tu -> {
+                    Transaction t = tu.getTransaction();
+                    String key = t.getCategory().toLowerCase(java.util.Locale.ROOT);
+                    BudgetCategoryItem existing = allocationAggMap.get(key);
+                    if (existing != null) {
+                        existing.setAmount(existing.getAmount() + t.getAmount());
+                    } else {
+                        allocationAggMap.put(key, new BudgetCategoryItem(
+                                t.getCategory(), 
+                                t.getIconRes() != 0 ? t.getIconRes() : R.drawable.ic_chart, 
+                                t.getIconColor() != 0 ? t.getIconColor() : R.color.carti_primary_green, 
+                                t.getIconBgColor() != 0 ? t.getIconBgColor() : R.color.mint_green_alpha,
+                                t.getAmount(), 
+                                0, 
+                                t.getNote(), 
+                                0.0, 
+                                t.isRecurring()
+                        ));
+                    }
+                });
+
+            if (allocationAggMap.isEmpty()) return getDefaultCategories();
+
+            // 3. Apply spent amount and calculate percentage
+            for (BudgetCategoryItem item : allocationAggMap.values()) {
+                String catKey = item.getCategoryName().toLowerCase(java.util.Locale.ROOT);
+                double spent = expenseMap.getOrDefault(catKey, 0.0);
+                item.setCurrentSpent(spent);
+                double limit = item.getAmount();
+                item.setPercentage(limit > 0 ? (int)((spent / limit) * 100) : 0);
+            }
+
+            return new ArrayList<>(allocationAggMap.values());
+        });
+    }
+
+    public List<BudgetCategoryItem> getDefaultCategories() {
+        List<BudgetCategoryItem> items = new ArrayList<>();
+        items.add(new BudgetCategoryItem("Food", R.drawable.ic_chart, R.color.icon_food, R.color.log_food, 0, 0));
+        items.add(new BudgetCategoryItem("Transportation", R.drawable.ic_chart, R.color.icon_fare, R.color.log_fare, 0, 0));
+        items.add(new BudgetCategoryItem("Shopping", R.drawable.ic_chart, R.color.icon_store, R.color.log_store, 0, 0));
+        items.add(new BudgetCategoryItem("Health", R.drawable.ic_chart, R.color.status_red, R.color.status_red_tonal, 0, 0));
+        items.add(new BudgetCategoryItem("Others", R.drawable.ic_chart, R.color.icon_others, R.color.log_others, 0, 0));
+        return items;
+    }
+
+    public LiveData<RecurringBudgetStats> getRecurringStatsLiveData() {
+        refreshRecurringStats();
+        return recurringStatsLiveData;
+    }
+
+    public void refreshRecurringStats() {
+        List<TransactionWithUser> all = allTransactions.getValue();
+        if (all == null) return;
+
+        String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
+        List<Transaction> recurringItems = all.stream()
+                .map(TransactionWithUser::getTransaction)
+                .filter(t -> "ALLOCATION".equalsIgnoreCase(t.getType()) && 
+                            Objects.equals(currentMonth, t.getAllocationMonth()) && 
+                            t.isRecurring())
+                .collect(java.util.stream.Collectors.toList());
+
+        int count = recurringItems.size();
+        double amount = recurringItems.stream().mapToDouble(Transaction::getAmount).sum();
+
+        String currentMonthKey = String.format(java.util.Locale.US, "%d-%02d", 
+                Calendar.getInstance().get(Calendar.YEAR), 
+                Calendar.getInstance().get(Calendar.MONTH) + 1);
+        
+        boolean needsProcessing = !currentMonthKey.equals(pref.getLastRecurringCheck());
+        recurringStatsLiveData.postValue(new RecurringBudgetStats(count, amount, pref.getLastRecurringCheck(), needsProcessing));
+    }
+
+    public void processRecurringBudgets() {
+        String currentMonthKey = String.format(java.util.Locale.US, "%d-%02d", 
+                Calendar.getInstance().get(Calendar.YEAR), 
+                Calendar.getInstance().get(Calendar.MONTH) + 1);
+
+        if (currentMonthKey.equals(pref.getLastRecurringCheck())) return;
+
+        List<TransactionWithUser> all = allTransactions.getValue();
+        if (all == null) return;
+
+        String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
+        List<Transaction> recurringItems = all.stream()
+                .map(TransactionWithUser::getTransaction)
+                .filter(t -> "ALLOCATION".equalsIgnoreCase(t.getType()) && 
+                            (t.getAllocationMonth() != null && t.getAllocationMonth().startsWith(currentMonth)) &&
+                            t.isRecurring() && t.getAmount() > 0)
+                .collect(java.util.stream.Collectors.toList());
+
+        for (Transaction item : recurringItems) {
+            addTransaction(item.getAmount(), "INCOME", item.getCategory(), "Recurring: " + item.getCategory(), null);
+        }
+        
+        pref.setLastRecurringCheck(currentMonthKey);
+        refreshRecurringStats();
+    }
+
+    public List<BudgetCategoryItem> getConsolidatedBudgets(
+            List<TransactionWithUser> dbAllocations,
+            List<CategorySum> expenses) {
+
+        List<BudgetCategoryItem> basePlan = new ArrayList<>();
+        if (dbAllocations == null || dbAllocations.isEmpty()) {
+            basePlan = getDefaultCategories();
+        } else {
+            for (TransactionWithUser tu : dbAllocations) {
+                Transaction t = tu.getTransaction();
+                basePlan.add(new BudgetCategoryItem(
+                        t.getCategory(), t.getIconRes(), t.getIconColor(), t.getIconBgColor(),
+                        t.getAmount(), 0, t.getNote(), 0, t.isRecurring()
+                ));
+            }
+        }
+
+        Map<String, Double> expenseMap = new HashMap<>();
+        if (expenses != null) {
+            for (CategorySum e : expenses) {
+                expenseMap.put(e.category.toLowerCase(java.util.Locale.ROOT), e.total);
+            }
+        }
+
+        List<BudgetCategoryItem> consolidated = new ArrayList<>();
+        for (BudgetCategoryItem item : basePlan) {
+            String catLower = item.getCategoryName().toLowerCase(java.util.Locale.ROOT);
+            Double totalSpent = expenseMap.get(catLower);
+            double spent = (totalSpent != null) ? totalSpent : 0.0;
+            double limit = item.getAmount();
+
+            int pct = limit > 0 ? (int)((spent / limit) * 100) : 0;
+            
+            consolidated.add(new BudgetCategoryItem(
+                    item.getCategoryName(), item.getIconRes(), item.getIconColor(), item.getBgColor(),
+                    limit, pct, item.getParentCategory(), spent, item.isRecurring()
+            ));
+        }
+        return consolidated;
+    }
+
+    public void saveBudgetPlan(List<BudgetCategoryItem> items) {
+        if (items == null) return;
+        for (BudgetCategoryItem item : items) {
+            updateOrAddCategory(
+                item.getCategoryName(),
+                item.getIconRes() != 0 ? item.getIconRes() : R.drawable.ic_chart,
+                item.getIconColor() != 0 ? item.getIconColor() : R.color.carti_primary_green,
+                item.getBgColor() != 0 ? item.getBgColor() : R.color.mint_green_alpha,
+                item.getAmount(),
+                item.getParentCategory(),
+                item.isRecurring()
+            );
+        }
+    }
+
+    public void updateOrAddCategory(String name, double amount, String parent, boolean isRecurring) {
+        updateOrAddCategory(name, R.drawable.ic_chart, R.color.carti_primary_green, R.color.mint_green_alpha, amount, parent, isRecurring);
+    }
+
+    public void updateOrAddCategory(String name, int icon, int iconColor, int bgColor, double amount, String parent, boolean isRecurring) {
+        updateOrAddCategory(null, name, icon, iconColor, bgColor, amount, parent, isRecurring);
+    }
+
+    public void updateOrAddCategory(String oldName, String name, int icon, int iconColor, int bgColor, double amount, String parent, boolean isRecurring) {
+        String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
+        List<TransactionWithUser> all = allTransactions.getValue();
+        Transaction existing = null;
+
+        if (all != null) {
+            String targetName = (oldName != null) ? oldName : name;
+            existing = all.stream()
+                .map(TransactionWithUser::getTransaction)
+                .filter(t -> "ALLOCATION".equalsIgnoreCase(t.getType()) && 
+                            (t.getAllocationMonth() != null && t.getAllocationMonth().startsWith(currentMonth)) &&
+                            t.getCategory().equalsIgnoreCase(targetName))
+                .findFirst().orElse(null);
+        }
+
+        if (existing != null) {
+            existing.setCategory(name);
+            existing.setAmount(amount);
+            existing.setIconRes(icon);
+            existing.setIconColor(iconColor);
+            existing.setIconBgColor(bgColor);
+            existing.setNote(parent);
+            existing.setRecurring(isRecurring);
+            updateTransaction(existing, null);
+        } else {
+            Transaction t = new Transaction();
+            t.setType("ALLOCATION");
+            t.setCategory(name);
+            t.setAmount(amount);
+            t.setIconRes(icon);
+            t.setIconColor(iconColor);
+            t.setIconBgColor(bgColor);
+            t.setNote(parent);
+            t.setRecurring(isRecurring);
+            t.setAllocationMonth(currentMonth);
+            addTransaction(t, null);
+        }
+    }
+
+    public void deleteCategory(String name) {
+        String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
+        List<TransactionWithUser> all = allTransactions.getValue();
+        if (all == null) return;
+
+        all.stream()
+            .map(TransactionWithUser::getTransaction)
+            .filter(t -> "ALLOCATION".equalsIgnoreCase(t.getType()) && 
+                        (t.getAllocationMonth() != null && t.getAllocationMonth().startsWith(currentMonth)) &&
+                        (t.getCategory().equalsIgnoreCase(name) || Objects.equals(t.getNote(), name)))
+            .forEach(t -> deleteTransaction(t.getId(), null));
     }
 
     public static class CategorySum {

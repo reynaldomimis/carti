@@ -24,10 +24,12 @@ public class TransactionHelper {
         t.setUpdatedAt(updatedAt);
         t.setStatus((String) data.get("status"));
         t.setPaid(Boolean.TRUE.equals(data.get("isPaid")));
+        t.setRecurring(Boolean.TRUE.equals(data.get("isRecurring")));
         t.setTargetAmount(CurrencyHelper.parse(data.get("targetAmount")));
         t.setTargetDate((String) data.get("targetDate"));
         t.setAllocatedTo((String) data.get("allocatedTo"));
         t.setAllocationMonth((String) data.get("allocationMonth"));
+        t.setSubCategory((String) data.get("sub_category"));
         t.setIconUrl((String) data.get("iconUrl"));
         
         Object iconResObj = data.get("iconRes");

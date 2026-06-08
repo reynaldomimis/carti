@@ -69,7 +69,7 @@ public class RealtimeRepository {
                 likeStream.postValue(payload);
                 TransactionRepository.getInstance(context).handleLikeEventLocally(payload, path.endsWith(".delete"));
             } else if (path.contains(Constants.Appwrite.COL_FAMILIES)) {
-                handleFamilyEvent(path, payload);
+                // Family document updated
             } else if (path.contains(Constants.Appwrite.COL_TRANSACTIONS)) {
                 transactionStream.postValue(payload);
                 dispatchTypedStream(payload);
@@ -86,13 +86,6 @@ public class RealtimeRepository {
                 TransactionRepository.getInstance(context).handleCommentEventLocally(payload, path.endsWith(".delete"));
             }
         });
-    }
-
-    private void handleFamilyEvent(String path, Map<String, Object> payload) {
-        Object bp = payload.get("budgetPlan");
-        if (bp != null) {
-            com.upreyvan.carti.data.local.BudgetManager.getInstance(context).saveBudgetPlanFromJson(String.valueOf(bp));
-        }
     }
 
     private void dispatchTypedStream(Map<String, Object> payload) {

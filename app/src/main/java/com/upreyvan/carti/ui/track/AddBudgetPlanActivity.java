@@ -11,7 +11,7 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.local.BudgetManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityAddBudgetPlanBinding;
 import com.upreyvan.carti.databinding.ItemBudgetCategoryBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
@@ -60,7 +60,7 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
                 ToastHelper.show(this, R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
                 return;
             }
-            BudgetManager.getInstance(this).saveBudgetPlan(items);
+            TransactionRepository.getInstance(this).saveBudgetPlan(items);
             ToastHelper.show(this, R.string.msg_goal_saved_success, UiHelper.Status.SUCCESS);
             finish();
         });
@@ -115,12 +115,16 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
     }
 
     private void loadExistingPlan() {
-        List<BudgetCategoryItem> items = BudgetManager.getInstance(this).getBudgetPlan();
-        if (items.isEmpty()) {
-            items.add(new BudgetCategoryItem("Bills & Utilities", R.drawable.ic_calendar, R.color.icon_water, R.color.log_water, 8000, 0));
-            items.add(new BudgetCategoryItem("Grocery", R.drawable.ic_chart, R.color.icon_food, R.color.log_food, 12000, 0));
-        }
-        adapter.submitList(items);
+        TransactionRepository.getInstance(this).getBudgetPlanLiveData().observe(this, items -> {
+            if (items == null || items.isEmpty()) {
+                List<BudgetCategoryItem> defaults = new ArrayList<>();
+                defaults.add(new BudgetCategoryItem("Bills & Utilities", R.drawable.ic_calendar, R.color.icon_water, R.color.log_water, 8000, 0));
+                defaults.add(new BudgetCategoryItem("Grocery", R.drawable.ic_chart, R.color.icon_food, R.color.log_food, 12000, 0));
+                adapter.submitList(defaults);
+            } else {
+                adapter.submitList(items);
+            }
+        });
     }
 }
 

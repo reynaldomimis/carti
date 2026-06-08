@@ -1,11 +1,8 @@
 package com.upreyvan.carti.ui.home;
 
-import com.upreyvan.carti.util.ToastHelper;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -13,10 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.ui.home.CustomizeCategoryAdapter;
 import com.upreyvan.carti.base.BaseActivity;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityCustomizeQuickLogBinding;
-import com.upreyvan.carti.data.local.CategoryManager;
 import com.upreyvan.carti.util.Utils;
 
 public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQuickLogBinding> {
@@ -53,9 +49,13 @@ public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQui
     }
 
     private void setupRecyclerView() {
-        adapter = new CustomizeCategoryAdapter(com.upreyvan.carti.data.local.BudgetManager.getInstance(this).getBudgetPlan());
+        TransactionRepository.getInstance(this).getBudgetPlanLiveData().observe(this, items -> {
+            if (adapter == null) {
+                adapter = new CustomizeCategoryAdapter(items);
+                getBinding().rvCustomize.setAdapter(adapter);
+            }
+        });
         getBinding().rvCustomize.setLayoutManager(new LinearLayoutManager(this));
-        getBinding().rvCustomize.setAdapter(adapter);
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
             @Override
@@ -73,7 +73,7 @@ public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQui
 
     private void setupListeners() {
         getBinding().btnSaveOrder.setOnClickListener(v -> {
-            com.upreyvan.carti.data.local.BudgetManager.getInstance(this).saveBudgetPlan(adapter.getCategories());
+            TransactionRepository.getInstance(this).saveBudgetPlan(adapter.getCategories());
             com.upreyvan.carti.util.ToastHelper.show(this, "Quick Log order updated!", com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
             finish();
         });

@@ -14,7 +14,7 @@ import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentBudgetBinding;
 import com.upreyvan.carti.databinding.ItemBudgetCardBinding;
 import com.upreyvan.carti.databinding.ItemCategoryRowBinding;
-import com.upreyvan.carti.data.local.BudgetManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.util.DialogHelper;
 import com.upreyvan.carti.util.Utils;
@@ -132,7 +132,7 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
                 "Delete Category?",
                 "Are you sure you want to delete '" + item.getCategoryName() + "'? This will also delete all its sub-categories.",
                 "Delete",
-                () -> BudgetManager.getInstance(requireContext()).deleteCategory(item.getCategoryName())
+                () -> TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName())
         );
     }
 }

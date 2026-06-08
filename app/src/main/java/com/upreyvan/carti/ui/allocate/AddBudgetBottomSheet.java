@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.BottomSheetAddBudgetBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
@@ -61,19 +60,20 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
     }
 
     private void setupCategoryDropdown() {
-        List<BudgetCategoryItem> categories = BudgetManager.getInstance(requireContext()).getBudgetPlan();
-        List<String> names = new ArrayList<>();
-        for (BudgetCategoryItem item : categories) names.add(item.getCategoryName());
-        
-        // Sort to keep "Others" always at the end
-        names.sort((a, b) -> {
-            if (a.equalsIgnoreCase("Others")) return 1;
-            if (b.equalsIgnoreCase("Others")) return -1;
-            return a.compareToIgnoreCase(b);
+        TransactionRepository.getInstance(requireContext()).getBudgetPlanLiveData().observe(getViewLifecycleOwner(), categories -> {
+            if (categories == null) return;
+            List<String> names = new ArrayList<>();
+            for (BudgetCategoryItem item : categories) names.add(item.getCategoryName());
+            
+            names.sort((a, b) -> {
+                if (a.equalsIgnoreCase("Others")) return 1;
+                if (b.equalsIgnoreCase("Others")) return -1;
+                return a.compareToIgnoreCase(b);
+            });
+            
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, names);
+            getBinding().etCategory.setAdapter(adapter);
         });
-        
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, names);
-        getBinding().etCategory.setAdapter(adapter);
     }
 
     private void saveBudget() {
@@ -93,37 +93,8 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
         
         try {
             double amount = Double.parseDouble(amountStr);
-            BudgetManager.getInstance(requireContext()).updateOrAddCategory(category, amount, null, isRecurring);
-            
-            Transaction t = (editingItem != null && editingItem.getParentCategory() != null) ? 
-                    new Transaction() : new Transaction(); // TODO: Find existing if editing
-            
-            if (editingItem != null) {
-                // We should ideally find the existing transaction ID if possible
-                // for now let's just create a new record as per "pag Add palang nyan ng Alloation masave nayan sa database"
-            }
-
-            t.setAmount(amount);
-            t.setType("ALLOCATION");
-            t.setCategory(category);
-            t.setTitle(category);
-            t.setAllocatedTo(category);
-            t.setAllocationMonth(Utils.formatMonthQuery(java.util.Calendar.getInstance()));
-            
-            TransactionRepository.getInstance(requireContext()).addTransaction(t, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<java.util.Map<String, Object>>() {
-                @Override
-                public void onSuccess(java.util.Map<String, Object> result) {
-                    requireActivity().runOnUiThread(() -> {
-                        TransactionRepository.getInstance(requireContext()).refreshTransactions();
-                        dismiss();
-                    });
-                }
-
-                @Override
-                public void onError(Throwable error) {
-                    requireActivity().runOnUiThread(() -> showToast("Failed to save allocation", com.upreyvan.carti.util.UiHelper.Status.ERROR));
-                }
-            });
+            TransactionRepository.getInstance(requireContext()).updateOrAddCategory(category, amount, null, isRecurring);
+            dismiss();
         } catch (NumberFormatException e) {
             showToast(R.string.msg_invalid_amount, UiHelper.Status.ERROR);
         }

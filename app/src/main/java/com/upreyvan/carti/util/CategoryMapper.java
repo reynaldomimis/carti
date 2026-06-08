@@ -1,7 +1,7 @@
 package com.upreyvan.carti.util;
 
 import android.content.Context;
-import com.upreyvan.carti.data.local.BudgetManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.util.Constants.Categories;
 import java.util.HashMap;
@@ -50,7 +50,7 @@ public class CategoryMapper {
         String clean = input.trim().toLowerCase();
 
         // 1. Check User PLAN Categories (Source of Truth)
-        List<BudgetCategoryItem> plan = BudgetManager.getInstance(context).getBudgetPlan();
+        List<BudgetCategoryItem> plan = TransactionRepository.getInstance(context).getBudgetPlan();
         for (BudgetCategoryItem item : plan) {
             String catName = item.getCategoryName().toLowerCase();
             if (catName.equals(clean) || clean.contains(catName)) {

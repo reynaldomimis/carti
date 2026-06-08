@@ -16,7 +16,7 @@ import androidx.core.content.ContextCompat;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.local.BudgetManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.BottomSheetAddCategoryBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.IconChoice;
@@ -177,38 +177,38 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         }
 
         // Validate duplicates
-        List<BudgetCategoryItem> existing = BudgetManager.getInstance(requireContext()).getBudgetPlan();
-        for (BudgetCategoryItem item : existing) {
-            if (item.getCategoryName().equalsIgnoreCase(name) && 
-                Objects.equals(item.getParentCategory(), parentCategory)) {
-                // If we are editing, allow if it's the same item
-                if (editingItem == null || !editingItem.getCategoryName().equalsIgnoreCase(name)) {
-                    UiHelper.showSnackbar(getBinding().getRoot(), "This category already exists", UiHelper.Status.WARNING);
-                    return;
+        TransactionRepository.getInstance(requireContext()).getBudgetPlanLiveData().observe(getViewLifecycleOwner(), existing -> {
+            if (existing != null) {
+                for (BudgetCategoryItem item : existing) {
+                    if (item.getCategoryName().equalsIgnoreCase(name) &&
+                            Objects.equals(item.getParentCategory(), parentCategory)) {
+                        if (editingItem == null || !editingItem.getCategoryName().equalsIgnoreCase(name)) {
+                            UiHelper.showSnackbar(getBinding().getRoot(), "This category already exists", UiHelper.Status.WARNING);
+                            return;
+                        }
+                    }
                 }
             }
-        }
+            
+            double amount = 0;
+            String amountStr = getBinding().etAmount.getText() != null ? getBinding().etAmount.getText().toString() : "0";
+            if (!amountStr.isEmpty()) {
+                try { amount = Double.parseDouble(amountStr); } catch (Exception ignored) {}
+            }
 
-        double amount = 0;
-        BudgetManager.getInstance(requireContext()).updateOrAddCategory(
-                editingItem != null ? editingItem.getCategoryName() : null,
-                name,
-                selectedIcon,
-                R.color.carti_primary_green,
-                R.color.mint_green_alpha,
-                amount,
-                parentCategory,
-                isRecurring
-        );
+            TransactionRepository.getInstance(requireContext()).updateOrAddCategory(
+                    editingItem != null ? editingItem.getCategoryName() : null,
+                    name,
+                    selectedIcon,
+                    R.color.carti_primary_green,
+                    R.color.mint_green_alpha,
+                    amount,
+                    parentCategory,
+                    isRecurring
+            );
 
-        // Notify listener then dismiss
-        if (listener != null) {
-            listener.onCategoryAdded(name, amount, isRecurring);
-        }
-
-        // Manually trigger a refresh in BudgetManager to update LiveData
-        BudgetManager.getInstance(requireContext()).getBudgetPlanLiveData();
-
-        dismiss();
+            if (listener != null) listener.onCategoryAdded(name, amount, isRecurring);
+            dismiss();
+        });
     }
 }

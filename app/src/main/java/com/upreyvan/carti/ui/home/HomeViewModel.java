@@ -11,7 +11,6 @@ import androidx.lifecycle.MediatorLiveData;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseMultiItem;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.repository.MemberRepository;
 import com.upreyvan.carti.data.repository.NotificationRepository;
@@ -81,12 +80,10 @@ public class HomeViewModel extends BaseViewModel {
         dataTrigger.addSource(transRepo.getTotalExpenseInRange(lstStart, lstEnd), v -> { lstExp = v; updateDash(); rebuild(false); });
         dataTrigger.addSource(transRepo.getRecentTransactions(5), v -> { 
             this.currentTransactions = v; 
-            // Fix: If we only updated transactions (e.g. social interaction), 
-            // run rebuild instantly on main thread to avoid lag.
             rebuild(true); 
         });
         dataTrigger.addSource(notifRepo.getBills(pref.getFamilyId()), v -> { this.currentBills = v; rebuild(false); });
-        dataTrigger.addSource(BudgetManager.getInstance(getApplication()).getBudgetPlanLiveData(), v -> { this.currentPlan = v; rebuild(false); });
+        dataTrigger.addSource(transRepo.getBudgetPlanLiveData(), v -> { this.currentPlan = v; rebuild(false); });
         dataTrigger.addSource(transRepo.getSyncingStatus(), v -> rebuild(false));
     }
 

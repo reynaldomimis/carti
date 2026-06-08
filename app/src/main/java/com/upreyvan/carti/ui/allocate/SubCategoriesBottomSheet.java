@@ -4,18 +4,21 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.local.BudgetManager;
+import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.BottomSheetSubCategoriesBinding;
 import com.upreyvan.carti.databinding.ItemCategoryRowBinding;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.util.DialogHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -121,7 +124,7 @@ public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomShee
                 "Delete Sub-category?",
                 "Are you sure you want to delete '" + item.getCategoryName() + "'?",
                 "Delete",
-                () -> BudgetManager.getInstance(requireContext()).deleteCategory(item.getCategoryName())
+                () -> TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName())
         );
     }
 }

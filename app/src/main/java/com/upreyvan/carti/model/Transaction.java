@@ -37,6 +37,8 @@ public class Transaction {
     private String iconUrl;
     private int iconRes;
     private String title;
+    private boolean isRecurring;
+    private String subCategory;
     
     private String createdAt;
     private String updatedAt;
@@ -124,6 +126,12 @@ public class Transaction {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
+    public String getSubCategory() { return subCategory; }
+    public void setSubCategory(String subCategory) { this.subCategory = subCategory; }
+
+    public boolean isRecurring() { return isRecurring; }
+    public void setRecurring(boolean recurring) { isRecurring = recurring; }
+
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 
@@ -172,6 +180,8 @@ public class Transaction {
         t.iconUrl = this.iconUrl;
         t.iconRes = this.iconRes;
         t.title = this.title;
+        t.isRecurring = this.isRecurring;
+        t.subCategory = this.subCategory;
         t.createdAt = this.createdAt;
         t.updatedAt = this.updatedAt;
         t.iconBgColor = this.iconBgColor;
@@ -221,6 +231,7 @@ public class Transaction {
         return Double.compare(that.amount, amount) == 0 &&
                 Double.compare(that.targetAmount, targetAmount) == 0 &&
                 isPaid == that.isPaid &&
+                isRecurring == that.isRecurring &&
                 likesCount == that.likesCount &&
                 commentCount == that.commentCount &&
                 Objects.equals(id, that.id) &&
@@ -234,7 +245,7 @@ public class Transaction {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, amount, title, note, category, status, likesCount, commentCount, updatedAt);
+        return Objects.hash(id, type, amount, title, note, category, status, likesCount, commentCount, updatedAt, isRecurring);
     }
 
     public static final DiffUtil.ItemCallback<Transaction> DIFF_CALLBACK = new DiffUtil.ItemCallback<Transaction>() {

@@ -9,7 +9,6 @@ import androidx.lifecycle.MediatorLiveData;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseMultiItem;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.repository.TransactionRepository;
 import com.upreyvan.carti.model.BudgetCategoryItem;
 import com.upreyvan.carti.model.TrackCategory;
@@ -55,7 +54,7 @@ public class TrackViewModel extends BaseViewModel {
     private void setupDataStream() {
         dataTrigger.addSource(repo.getTransactionsByMonth(month, year), v -> { currentMonthTrans = v; rebuild(); });
         dataTrigger.addSource(repo.getGoals(), v -> { currentGoals = v; rebuild(); });
-        dataTrigger.addSource(BudgetManager.getInstance(getApplication()).getBudgetPlanLiveData(), v -> { rebuild(); });
+        dataTrigger.addSource(repo.getBudgetPlanLiveData(), v -> { rebuild(); });
         dataTrigger.addSource(repo.getAllocationsByMonth(com.upreyvan.carti.util.Utils.formatMonthQuery(java.util.Calendar.getInstance())), v -> { currentDbAllocations = v; rebuild(); });
     }
 
@@ -108,7 +107,7 @@ public class TrackViewModel extends BaseViewModel {
                 expenseBreakdown.add(new TransactionRepository.CategorySum(entry.getKey(), entry.getValue()));
             }
 
-            List<BudgetCategoryItem> consolidated = BudgetManager.getInstance(getApplication()).getConsolidatedBudgets(currentDbAllocations, expenseBreakdown);
+            List<BudgetCategoryItem> consolidated = repo.getConsolidatedBudgets(currentDbAllocations, expenseBreakdown);
 
             List<BudgetCategoryItem> nextAllocations = new ArrayList<>();
             double totalPlanAmount = 0;

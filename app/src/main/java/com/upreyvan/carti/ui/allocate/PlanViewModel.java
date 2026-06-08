@@ -5,10 +5,8 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.MutableLiveData;
 
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.local.BudgetManager;
 import com.upreyvan.carti.data.local.PreferenceManager;
 import com.upreyvan.carti.data.repository.NotificationRepository;
 import com.upreyvan.carti.data.repository.TransactionRepository;
@@ -31,7 +29,6 @@ public class PlanViewModel extends BaseViewModel {
     private final MediatorLiveData<List<BudgetCategoryItem>> categories = new MediatorLiveData<>();
     private final MediatorLiveData<RecurringBudgetStats> recurringStats = new MediatorLiveData<>();
     
-    private final BudgetManager budgetManager;
     private final TransactionRepository transRepo;
     private final NotificationRepository notifRepo;
     private final PreferenceManager pref;
@@ -39,18 +36,17 @@ public class PlanViewModel extends BaseViewModel {
 
     public PlanViewModel(@NonNull Application application) {
         super(application);
-        budgetManager = BudgetManager.getInstance(application);
         transRepo = TransactionRepository.getInstance(application);
         notifRepo = NotificationRepository.getInstance(application);
         pref = PreferenceManager.getInstance(application);
         
-        budgets.addSource(budgetManager.getBudgetPlanLiveData(), items -> loadData());
+        budgets.addSource(transRepo.getBudgetPlanLiveData(), items -> loadData());
         budgets.addSource(transRepo.getAllTransactions(), items -> loadData());
         
-        categories.addSource(budgetManager.getBudgetPlanLiveData(), items -> loadData());
+        categories.addSource(transRepo.getBudgetPlanLiveData(), items -> loadData());
         categories.addSource(transRepo.getAllTransactions(), items -> loadData());
         
-        recurringStats.addSource(budgetManager.getRecurringStatsLiveData(), recurringStats::postValue);
+        recurringStats.addSource(transRepo.getRecurringStatsLiveData(), recurringStats::postValue);
     }
 
     public LiveData<List<BudgetCategoryItem>> getBudgets() { return budgets; }
@@ -62,30 +58,11 @@ public class PlanViewModel extends BaseViewModel {
 
     public void loadData() {
         executor.execute(() -> {
-            budgetManager.processRecurringBudgets();
+            transRepo.processRecurringBudgets();
             
-            List<TransactionWithUser> all = transRepo.getAllTransactions().getValue();
-            if (all == null) all = new ArrayList<>();
-            
-            String currentMonth = Utils.formatMonthQuery(java.util.Calendar.getInstance());
-            List<TransactionWithUser> databaseAllocations = all.stream()
-                .filter(tu -> "ALLOCATION".equalsIgnoreCase(tu.getTransaction().getType()) && java.util.Objects.equals(currentMonth, tu.getTransaction().getAllocationMonth()))
-                .collect(Collectors.toList());
-                
-            Map<String, Double> expensesMap = new HashMap<>();
-            for (TransactionWithUser tu : all) {
-                if ("EXPENSE".equalsIgnoreCase(tu.getTransaction().getType())) {
-                    String cat = tu.getTransaction().getCategory();
-                    expensesMap.put(cat, expensesMap.getOrDefault(cat, 0.0) + tu.getTransaction().getAmount());
-                }
-            }
-            
-            List<TransactionRepository.CategorySum> expenseBreakdown = new ArrayList<>();
-            for (Map.Entry<String, Double> entry : expensesMap.entrySet()) {
-                expenseBreakdown.add(new TransactionRepository.CategorySum(entry.getKey(), entry.getValue()));
-            }
-            
-            List<BudgetCategoryItem> consolidated = budgetManager.getConsolidatedBudgets(databaseAllocations, expenseBreakdown);
+            // Re-use repository logic to ensure consistency and correct month filtering
+            List<BudgetCategoryItem> consolidated = transRepo.getBudgetPlan();
+            if (consolidated == null) consolidated = new ArrayList<>();
 
             List<BudgetCategoryItem> budgetList = new ArrayList<>();
             for (BudgetCategoryItem item : consolidated) {
