@@ -243,9 +243,9 @@ public interface TrackListItem extends BaseMultiItem {
                     Category cat = listener.findCategory(it.getCategoryName());
                     int iconRes = (cat != null && cat.getIconRes() != 0) ? cat.getIconRes() : (it.getIconRes() != 0 ? it.getIconRes() : R.drawable.ic_chart);
                     bind.ivIcon.setImageResource(iconRes);
-
-                    bind.getRoot().setOnClickListener(v -> listener.onCategoryClick(it.getCategoryName()));
+                    com.upreyvan.carti.utils.UiHelper.applyCategoryStyle(null, bind.cvIcon, bind.ivIcon, it.getCategoryName());
                 });
+                adapter.setOnItemClickListener(item -> listener.onCategoryClick(item.getCategoryName()));
                 rv.setAdapter(adapter);
             }
             if (adapter.getCurrentList() != allocations) {

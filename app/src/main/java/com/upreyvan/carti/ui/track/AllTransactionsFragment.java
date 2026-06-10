@@ -149,7 +149,10 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
             String type = t.getTransaction().getType();
             boolean matchesType = filterType == null || filterType.equalsIgnoreCase(type);
             boolean matchesUser = filterUserId == null || filterUserId.equals(t.getTransaction().getUserId());
-            boolean matchesCategory = filterCategory == null || filterCategory.equalsIgnoreCase(t.getTransaction().getCategory());
+            
+            boolean matchesCategory = filterCategory == null || 
+                                      filterCategory.equalsIgnoreCase(t.getTransaction().getCategory()) ||
+                                      filterCategory.equalsIgnoreCase(t.getTransaction().getSubCategory());
             
             String username = t.getUsername() != null ? t.getUsername().toLowerCase() : "";
             String category = t.getTransaction().getCategory() != null ? t.getTransaction().getCategory().toLowerCase() : "";
@@ -220,9 +223,15 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
         });
 
         TextView title = getBinding().layoutToolbar.tvToolbarTitle;
-        if (filterUserName != null) title.setText(getString(R.string.label_user_expenses, filterUserName));
-        else if ("EXPENSE".equals(filterType)) title.setText(R.string.expenses_title);
-        else title.setText(R.string.all_transactions_title);
+        if (filterUserName != null) {
+            title.setText(getString(R.string.label_user_expenses, filterUserName));
+        } else if (filterCategory != null) {
+            title.setText(filterCategory);
+        } else if ("EXPENSE".equals(filterType)) {
+            title.setText(R.string.expenses_title);
+        } else {
+            title.setText(R.string.all_transactions_title);
+        }
     }
 
     private void setupRecyclerView() {
