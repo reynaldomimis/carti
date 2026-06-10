@@ -1,11 +1,12 @@
 package com.upreyvan.carti.ui.goals;
 
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.UiHelper.Status;
-import com.upreyvan.carti.util.Validator;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionType;
+import com.upreyvan.carti.utils.UiHelper.Status;
+import com.upreyvan.carti.utils.Validator;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -34,7 +35,6 @@ public class AddGoalActivity extends BaseGoalActivity {
         showLoading(true, getString(R.string.msg_saving_goal));
 
         Transaction goal = new Transaction();
-        goal.setType("GOAL");
         goal.setTitle(name);
         goal.setTargetAmount(targetAmount);
         goal.setTargetDate(date);
@@ -42,7 +42,7 @@ public class AddGoalActivity extends BaseGoalActivity {
         goal.setMembers(new ArrayList<>(selectedMemberIds));
         goal.setUserId(PreferenceManager.getInstance(this).getUserId());
 
-        transactionRepository.addTransaction(goal, new AppwriteCallback<>() {
+        transactionRepository.createItem(TransactionType.GOAL, goal, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 showLoading(false);

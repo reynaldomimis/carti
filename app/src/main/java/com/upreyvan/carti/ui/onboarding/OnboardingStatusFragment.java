@@ -15,8 +15,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentOnboardingStatusBinding;
 
 import java.util.Map;
@@ -84,13 +84,13 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
             } else if ("declined".equals(pendingFamilyId)) {
                 handleDeclined();
             } else {
-                showToast("Still pending approval...", com.upreyvan.carti.util.UiHelper.Status.INFO);
+                showToast("Still pending approval...", com.upreyvan.carti.utils.UiHelper.Status.INFO);
             }
         });
 
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> showLoading(loading));
         viewModel.getError().observe(getViewLifecycleOwner(), error -> {
-            if (error != null) showToast(error, com.upreyvan.carti.util.UiHelper.Status.ERROR);
+            if (error != null) showToast(error, com.upreyvan.carti.utils.UiHelper.Status.ERROR);
         });
     }
 
@@ -100,7 +100,7 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
         ClipData clip = ClipData.newPlainText("Invite Code", text);
         if (clipboard != null) {
             clipboard.setPrimaryClip(clip);
-            showToast("Invite code copied!", com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
+            showToast("Invite code copied!", com.upreyvan.carti.utils.UiHelper.Status.SUCCESS);
         }
     }
 

@@ -114,7 +114,8 @@
                     style="@style/DashAmountSmall"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_xxs" />
+                    android:layout_marginTop="@dimen/spacing_xxs"
+                    android:textColor="@color/status_red" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

@@ -13,11 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.BaseMultiItem;
-import com.upreyvan.carti.data.local.CategoryManager;
+import com.upreyvan.carti.managers.CategoryManager;
 import com.upreyvan.carti.databinding.FragmentTrackBinding;
-import com.upreyvan.carti.model.BudgetCategoryItem;
-import com.upreyvan.carti.model.Category;
-import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.models.BudgetCategoryItem;
+import com.upreyvan.carti.models.Category;
+import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
 
 import java.util.List;
@@ -80,7 +80,7 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> implements
     }
 
     @Override public String getCurrentUserId() {
-        return com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getUserId();
+        return com.upreyvan.carti.managers.PreferenceManager.getInstance(requireContext()).getUserId();
     }
 
     @Override public Category findCategory(String name) {

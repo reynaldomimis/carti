@@ -15,11 +15,11 @@ import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.databinding.LayoutBottomSheetAddBillBinding;
-import com.upreyvan.carti.model.Bill;
-import com.upreyvan.carti.util.StringHelper;
-import com.upreyvan.carti.util.ToastHelper;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.Bill;
+import com.upreyvan.carti.utils.StringHelper;
+import com.upreyvan.carti.utils.ToastHelper;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.List;
 
@@ -67,7 +67,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
         };
 
         getBinding().etBillName.addTextChangedListener(validationWatcher);
-        getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etAmount));
+        getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etAmount));
         getBinding().etAmount.addTextChangedListener(validationWatcher);
         getBinding().actCategory.addTextChangedListener(validationWatcher);
         getBinding().etDueDate.addTextChangedListener(validationWatcher);

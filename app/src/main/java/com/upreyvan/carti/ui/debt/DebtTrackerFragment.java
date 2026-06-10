@@ -15,13 +15,13 @@ import com.google.android.material.tabs.TabLayout;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
+import com.upreyvan.carti.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.DialogDebtDetailBinding;
 import com.upreyvan.carti.databinding.FragmentDebtTrackerBinding;
 import com.upreyvan.carti.databinding.ItemDebtBinding;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.TransactionWithUser;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionWithUser;
+import com.upreyvan.carti.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 

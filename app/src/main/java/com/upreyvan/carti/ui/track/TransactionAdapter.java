@@ -10,11 +10,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.databinding.ItemTransactionBinding;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.TransactionWithUser;
-import com.upreyvan.carti.util.AvatarHelper;
-import com.upreyvan.carti.util.DialogHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionWithUser;
+import com.upreyvan.carti.utils.AvatarHelper;
+import com.upreyvan.carti.utils.DialogHelper;
+import com.upreyvan.carti.utils.Utils;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -22,9 +22,11 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
 
     private OnTransactionInteractionListener interactionListener;
     private OnItemClickListener itemClickListener;
+    private String currentUserId;
 
-    public TransactionAdapter() {
+    public TransactionAdapter(String currentUserId) {
         super(TransactionWithUser.DIFF_CALLBACK);
+        this.currentUserId = currentUserId;
     }
 
     public interface OnTransactionInteractionListener {
@@ -56,7 +58,7 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(getItem(position), interactionListener, itemClickListener);
+        holder.bind(getItem(position), interactionListener, itemClickListener, currentUserId);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -67,9 +69,8 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
             this.binding = binding;
         }
 
-        void bind(TransactionWithUser itemWithUser, OnTransactionInteractionListener interactionListener, OnItemClickListener itemClickListener) {
+        void bind(TransactionWithUser itemWithUser, OnTransactionInteractionListener interactionListener, OnItemClickListener itemClickListener, String currentUserId) {
             Transaction item = itemWithUser.getTransaction();
-            String currentUserId = com.upreyvan.carti.data.local.PreferenceManager.getInstance(binding.getRoot().getContext()).getUserId();
             
             boolean isOwner = item.getUserId() != null && item.getUserId().equalsIgnoreCase(currentUserId);
             binding.btnOptions.setVisibility(isOwner ? View.VISIBLE : View.GONE);
@@ -143,7 +144,16 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
             }
 
             binding.tvUserAction.setText(username);
-            binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
+            
+            String status = item.getStatus();
+            if (Transaction.STATUS_PENDING.equals(status) || Transaction.STATUS_SYNCING.equals(status)) {
+                binding.getRoot().setAlpha(0.6f);
+                binding.tvTimestamp.setText("Sending...");
+            } else {
+                binding.getRoot().setAlpha(1.0f);
+                binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
+            }
+
             binding.tvTitle.setText(item.getTitle() != null ? item.getTitle() : item.getCategory());
 
             String note = item.getNote();

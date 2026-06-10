@@ -2,7 +2,7 @@ package com.upreyvan.carti.ui.family;
 
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemAiSuggestionCardBinding;
-import com.upreyvan.carti.model.AiSuggestion;
+import com.upreyvan.carti.models.AiSuggestion;
 
 public class AiSuggestionAdapter extends BaseAdapter<AiSuggestion, ItemAiSuggestionCardBinding> {
 

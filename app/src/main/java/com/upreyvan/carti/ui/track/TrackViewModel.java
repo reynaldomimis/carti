@@ -9,11 +9,11 @@ import androidx.lifecycle.MediatorLiveData;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseMultiItem;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.BudgetCategoryItem;
-import com.upreyvan.carti.model.TrackCategory;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.BudgetCategoryItem;
+import com.upreyvan.carti.models.TrackCategory;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionWithUser;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,12 +58,12 @@ public class TrackViewModel extends BaseViewModel {
         Calendar cal = Calendar.getInstance();
         dataTrigger.addSource(repo.getTransactionsByMonth(month, year), v -> { currentMonthTrans = v; rebuild(); });
         dataTrigger.addSource(repo.getGoals(), v -> { currentGoals = v; rebuild(); });
-        dataTrigger.addSource(repo.getAllocationsByMonth(com.upreyvan.carti.util.Utils.formatMonthQuery(cal)), v -> { currentDbAllocations = v; rebuild(); });
-        
+        dataTrigger.addSource(repo.getAllocationsByMonth(com.upreyvan.carti.utils.Utils.formatMonthQuery(cal)), v -> { currentDbAllocations = v; rebuild(); });
+
         // Add sources for Last Month
         cal.add(Calendar.MONTH, -1);
         dataTrigger.addSource(repo.getTransactionsByMonth(cal.get(Calendar.MONTH), cal.get(Calendar.YEAR)), v -> { lastMonthTrans = v; rebuild(); });
-        dataTrigger.addSource(repo.getAllocationsByMonth(com.upreyvan.carti.util.Utils.formatMonthQuery(cal)), v -> { lastDbAllocations = v; rebuild(); });
+        dataTrigger.addSource(repo.getAllocationsByMonth(com.upreyvan.carti.utils.Utils.formatMonthQuery(cal)), v -> { lastDbAllocations = v; rebuild(); });
     }
 
     private void rebuild() {
@@ -195,6 +195,7 @@ public class TrackViewModel extends BaseViewModel {
     }
 
     public void deleteTransaction(TransactionWithUser item) {
-        repo.deleteTransaction(item.getTransaction().getId(), null);
+        Transaction transaction = item.getTransaction();
+        repo.deleteItem(transaction.getType(), transaction.getId(), null);
     }
 }

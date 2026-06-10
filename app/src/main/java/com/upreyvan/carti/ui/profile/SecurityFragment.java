@@ -17,7 +17,7 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentSecurityBinding;
 import com.upreyvan.carti.ui.auth.LoginActivity;
-import com.upreyvan.carti.util.UiHelper;
+import com.upreyvan.carti.utils.UiHelper;
 
 public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
 
@@ -80,12 +80,12 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
             String newPass = etNewPassword.getText().toString().trim();
 
             if (oldPass.isEmpty() || newPass.isEmpty()) {
-                showToast(R.string.err_required, com.upreyvan.carti.util.UiHelper.Status.WARNING);
+                showToast(R.string.err_required, com.upreyvan.carti.utils.UiHelper.Status.WARNING);
                 return;
             }
 
             if (newPass.length() < 8) {
-                showToast(R.string.msg_password_short, com.upreyvan.carti.util.UiHelper.Status.WARNING);
+                showToast(R.string.msg_password_short, com.upreyvan.carti.utils.UiHelper.Status.WARNING);
                 return;
             }
 

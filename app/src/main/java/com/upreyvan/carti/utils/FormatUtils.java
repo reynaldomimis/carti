@@ -1,0 +1,11 @@
+package com.upreyvan.carti.utils;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
+public class FormatUtils {
+    public static String formatTime(Calendar calendar) {
+        return new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(calendar.getTime());
+    }
+}

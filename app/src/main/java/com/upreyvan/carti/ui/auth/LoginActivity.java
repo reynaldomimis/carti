@@ -9,8 +9,8 @@ import androidx.annotation.Nullable;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityLoginBinding;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Validator;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Validator;
 
 public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
 

@@ -10,10 +10,10 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.managers.PreferenceManager;
 import com.upreyvan.carti.databinding.FragmentOnboardingCreateBinding;
-import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.Validator;
+import com.upreyvan.carti.utils.Utils;
+import com.upreyvan.carti.utils.Validator;
 
 public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCreateBinding> {
     private OnboardingViewModel viewModel;
@@ -52,13 +52,13 @@ public class OnboardingCreateFragment extends BaseFragment<FragmentOnboardingCre
         viewModel.getError().observe(getViewLifecycleOwner(), message -> {
             if (message != null) {
                 if ("ALREADY_IN_A_FAMILY".equals(message)) {
-                    showToast(R.string.err_already_in_family, com.upreyvan.carti.util.UiHelper.Status.WARNING);
+                    showToast(R.string.err_already_in_family, com.upreyvan.carti.utils.UiHelper.Status.WARNING);
                     startActivity(new Intent(requireActivity(), com.upreyvan.carti.ui.auth.SplashActivity.class));
                     requireActivity().finish();
                 } else if ("PARENTS_ONLY".equals(message)) {
-                    showToast(R.string.err_parents_only, com.upreyvan.carti.util.UiHelper.Status.ERROR);
+                    showToast(R.string.err_parents_only, com.upreyvan.carti.utils.UiHelper.Status.ERROR);
                 } else {
-                    showToast(getString(R.string.err_error_prefix, message), com.upreyvan.carti.util.UiHelper.Status.ERROR);
+                    showToast(getString(R.string.err_error_prefix, message), com.upreyvan.carti.utils.UiHelper.Status.ERROR);
                 }
             }
         });

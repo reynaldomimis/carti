@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.databinding.ItemCustomizeCategoryBinding;
-import com.upreyvan.carti.model.BudgetCategoryItem;
+import com.upreyvan.carti.models.BudgetCategoryItem;
 
 import java.util.Collections;
 import java.util.List;

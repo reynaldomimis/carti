@@ -12,11 +12,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentNotificationsBinding;
-import com.upreyvan.carti.model.Notification;
-import com.upreyvan.carti.util.UiHelper;
+import com.upreyvan.carti.models.Notification;
+import com.upreyvan.carti.utils.UiHelper;
 
 public class NotificationsFragment extends BaseFragment<FragmentNotificationsBinding> {
 
@@ -36,7 +36,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
         pref = PreferenceManager.getInstance(requireContext());
         
         pref.setHasNotifications(false);
-        pref.setLastNotifCheck(com.upreyvan.carti.util.Utils.getCurrentTimestamp());
+        pref.setLastNotifCheck(com.upreyvan.carti.utils.Utils.getCurrentTimestamp());
         
         setupToolbar();
         setupRecyclerView();

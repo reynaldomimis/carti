@@ -17,10 +17,10 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.viewbinding.ViewBinding;
 import com.google.android.material.snackbar.Snackbar;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.util.LoadingDialog;
-import com.upreyvan.carti.util.NetworkMonitor;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.utils.LoadingDialog;
+import com.upreyvan.carti.utils.NetworkMonitor;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Utils;
 
 
 public abstract class BaseActivity<VB extends ViewBinding> extends AppCompatActivity {

@@ -11,10 +11,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ItemAllocationChildBinding;
 import com.upreyvan.carti.databinding.ItemAllocationParentBinding;
-import com.upreyvan.carti.model.BudgetAllocation;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.StringHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.BudgetAllocation;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.utils.StringHelper;
+import com.upreyvan.carti.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 

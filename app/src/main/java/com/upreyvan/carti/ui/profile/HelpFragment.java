@@ -18,7 +18,7 @@ import com.upreyvan.carti.databinding.FragmentHelpBinding;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ItemFaqBinding;
-import com.upreyvan.carti.model.FaqItem;
+import com.upreyvan.carti.models.FaqItem;
 import java.util.ArrayList;
 import java.util.List;
 

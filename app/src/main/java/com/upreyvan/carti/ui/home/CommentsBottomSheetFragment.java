@@ -21,15 +21,15 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.repository.RealtimeRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.FragmentCommentsBottomSheetBinding;
-import com.upreyvan.carti.util.AvatarHelper;
-import com.upreyvan.carti.model.Comment;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.utils.AvatarHelper;
+import com.upreyvan.carti.models.Comment;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.List;
 import java.util.Map;
@@ -212,14 +212,20 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
 
                 if (shouldScrollToBottom && !result.isEmpty()) {
                     getBinding().rvComments.post(() -> {
+                        if (!isAdded() || getBinding() == null) return;
                         if (lastPostedParentId == null) {
-                            getBinding().rvComments.smoothScrollToPosition(adapter.getItemCount() - 1);
+                            int count = adapter.getItemCount();
+                            if (count > 0) {
+                                getBinding().rvComments.smoothScrollToPosition(count - 1);
+                            }
                         } else {
                             List<Comment> current = adapter.getCurrentList();
-                            for (int i = 0; i < current.size(); i++) {
-                                if (current.get(i).getId().equals(lastPostedParentId)) {
-                                    getBinding().rvComments.smoothScrollToPosition(i);
-                                    break;
+                            if (current != null) {
+                                for (int i = 0; i < current.size(); i++) {
+                                    if (current.get(i).getId().equals(lastPostedParentId)) {
+                                        getBinding().rvComments.smoothScrollToPosition(i);
+                                        break;
+                                    }
                                 }
                             }
                         }

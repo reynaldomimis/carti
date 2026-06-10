@@ -1,6 +1,6 @@
 package com.upreyvan.carti.ui.track;
 
-import com.upreyvan.carti.util.ToastHelper;
+import com.upreyvan.carti.utils.ToastHelper;
 
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,11 +13,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.local.SalaryManager;
+import com.upreyvan.carti.managers.SalaryManager;
 import com.upreyvan.carti.databinding.DialogEditPaydayBinding;
 
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.util.Validator;
+import com.upreyvan.carti.utils.Validator;
 
 public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPaydayBinding> {
 
@@ -71,7 +71,7 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
                     manager.setFirstPayday(p1);
                 }
             } catch (NumberFormatException e) {
-                showToast(getString(R.string.msg_invalid_day_format), com.upreyvan.carti.util.UiHelper.Status.ERROR);
+                showToast(getString(R.string.msg_invalid_day_format), com.upreyvan.carti.utils.UiHelper.Status.ERROR);
                 return;
             }
 
@@ -128,8 +128,8 @@ public class PaydayEditBottomSheet extends BaseBottomSheetFragment<DialogEditPay
         }
     }
 
-    protected void showToast(String message, com.upreyvan.carti.util.UiHelper.Status status) {
-        com.upreyvan.carti.util.ToastHelper.show(requireContext(), message, status);
+    protected void showToast(String message, com.upreyvan.carti.utils.UiHelper.Status status) {
+        com.upreyvan.carti.utils.ToastHelper.show(requireContext(), message, status);
     }
 }
 

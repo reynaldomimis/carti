@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
+import com.upreyvan.carti.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentReactionsBottomSheetBinding;
 
 public class ReactionsBottomSheetFragment extends BaseBottomSheetFragment<FragmentReactionsBottomSheetBinding> {

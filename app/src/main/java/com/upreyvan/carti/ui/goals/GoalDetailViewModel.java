@@ -5,9 +5,9 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionWithUser;
 import java.util.List;
 
 public class GoalDetailViewModel extends AndroidViewModel {

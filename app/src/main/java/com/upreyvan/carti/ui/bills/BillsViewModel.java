@@ -5,11 +5,12 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.data.repository.NotificationRepository;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.Bill;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.repository.NotificationRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.Bill;
+import com.upreyvan.carti.models.TransactionType;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,7 @@ public class BillsViewModel extends BaseViewModel {
 
     public void payBill(String id, String name, double amount, String notes) {
         setLoading(true);
-        TransactionRepository.getInstance(getApplication()).addTransaction(amount, "EXPENSE", "Bills", name + ": " + notes, new AppwriteCallback<Map<String, Object>>() {
+        TransactionRepository.getInstance(getApplication()).createItem(TransactionType.EXPENSE, amount, "Bills", name + ": " + notes, new AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 deleteBill(id);

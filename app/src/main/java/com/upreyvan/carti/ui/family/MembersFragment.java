@@ -17,9 +17,9 @@ import com.upreyvan.carti.databinding.FragmentMembersBinding;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ItemMemberHorizontalBinding;
 import com.upreyvan.carti.databinding.ItemMemberContributionBinding;
-import com.upreyvan.carti.util.AvatarHelper;
-import com.upreyvan.carti.model.Member;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.utils.AvatarHelper;
+import com.upreyvan.carti.models.Member;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -6,13 +6,14 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityAddBillBinding;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.UiHelper.Status;
-import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.Validator;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionType;
+import com.upreyvan.carti.utils.UiHelper.Status;
+import com.upreyvan.carti.utils.Utils;
+import com.upreyvan.carti.utils.Validator;
 import java.util.Calendar;
 
 public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
@@ -64,14 +65,13 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
             Transaction transaction = new Transaction();
             transaction.setTitle(name);
             transaction.setAmount(amount);
-            transaction.setType("EXPENSE");
             transaction.setCategory(category);
             transaction.setFamilyId(familyId);
             transaction.setUserId(userId);
             transaction.setCreatedAt(date);
             transaction.setPaid(false);
 
-            transactionRepository.addTransaction(transaction, null);
+            transactionRepository.createItem(TransactionType.EXPENSE, transaction, null);
             showToast(getString(R.string.msg_bill_saved), Status.SUCCESS);
             finish();
         });

@@ -7,18 +7,18 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.ai.LocalIntentParser;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.data.repository.AiRepository;
-import com.upreyvan.carti.data.repository.ChatRepository;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.ChatMessage;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.CategoryMapper;
-import com.upreyvan.carti.data.ai.CategoryValidator;
-import com.upreyvan.carti.util.MessageHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.managers.ai.LocalIntentParser;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.repository.AiRepository;
+import com.upreyvan.carti.repository.ChatRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.ChatMessage;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.utils.CategoryMapper;
+import com.upreyvan.carti.managers.ai.CategoryValidator;
+import com.upreyvan.carti.utils.MessageHelper;
+import com.upreyvan.carti.utils.Utils;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
 import org.json.JSONObject;
@@ -301,7 +301,7 @@ public class ChatViewModel extends BaseViewModel {
         t.setTitle(item);
         t.setNote("Chat log: " + item);
 
-        transRepo.addTransaction(t, new AppwriteCallback<>() {
+        transRepo.createItem(type, t, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> map) {
                 String label = subCategory != null ? subCategory : category;

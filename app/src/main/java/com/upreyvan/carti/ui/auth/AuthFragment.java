@@ -12,11 +12,11 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.managers.PreferenceManager;
 import com.upreyvan.carti.databinding.FragmentAuthBinding;
 import com.upreyvan.carti.ui.onboarding.StartActivity;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Validator;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Validator;
 
 public class AuthFragment extends BaseFragment<FragmentAuthBinding> {
     private boolean isLoginMode = true;

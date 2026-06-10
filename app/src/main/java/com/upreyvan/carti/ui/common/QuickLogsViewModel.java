@@ -6,12 +6,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.repository.MemberRepository;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.BudgetCategoryItem;
-import com.upreyvan.carti.model.Member;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.TransactionHandler;
+import com.upreyvan.carti.repository.MemberRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.BudgetCategoryItem;
+import com.upreyvan.carti.models.Member;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.utils.TransactionHandler;
 import java.util.List;
 
 public class QuickLogsViewModel extends BaseViewModel {

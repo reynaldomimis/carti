@@ -5,8 +5,8 @@ import androidx.core.content.ContextCompat;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemBillBinding;
-import com.upreyvan.carti.model.Bill;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.Bill;
+import com.upreyvan.carti.utils.Utils;
 
 public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
 

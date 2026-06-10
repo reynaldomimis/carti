@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.databinding.BottomSheetCategoryOptionsBinding;
-import com.upreyvan.carti.model.BudgetCategoryItem;
+import com.upreyvan.carti.models.BudgetCategoryItem;
 
 public class CategoryOptionsBottomSheet extends BaseBottomSheetFragment<BottomSheetCategoryOptionsBinding> {
     private BudgetCategoryItem category;

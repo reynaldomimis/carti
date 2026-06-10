@@ -7,14 +7,15 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.repository.NotificationRepository;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.Bill;
-import com.upreyvan.carti.model.BudgetCategoryItem;
-import com.upreyvan.carti.model.RecurringBudgetStats;
-import com.upreyvan.carti.model.TransactionWithUser;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.repository.NotificationRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.Bill;
+import com.upreyvan.carti.models.BudgetCategoryItem;
+import com.upreyvan.carti.models.RecurringBudgetStats;
+import com.upreyvan.carti.models.TransactionType;
+import com.upreyvan.carti.models.TransactionWithUser;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,9 +72,9 @@ public class PlanViewModel extends BaseViewModel {
             budgets.postValue(sortBudgetItems(budgetList));
 
             // 2. Load Categories (from local CategoryManager as requested)
-            List<com.upreyvan.carti.model.Category> localCats = com.upreyvan.carti.data.local.CategoryManager.getInstance(getApplication()).getCategories();
+            List<com.upreyvan.carti.models.Category> localCats = com.upreyvan.carti.managers.CategoryManager.getInstance(getApplication()).getCategories();
             List<BudgetCategoryItem> categoryList = new ArrayList<>();
-            for (com.upreyvan.carti.model.Category c : localCats) {
+            for (com.upreyvan.carti.models.Category c : localCats) {
                 categoryList.add(new BudgetCategoryItem(
                         c.getName(),
                         c.getIconRes(),
@@ -91,7 +92,7 @@ public class PlanViewModel extends BaseViewModel {
     }
 
     public void deleteGoal(String goalId) {
-        transRepo.deleteTransaction(goalId, null);
+        transRepo.deleteItem(TransactionType.GOAL, goalId, null);
     }
 
     public void refresh() {

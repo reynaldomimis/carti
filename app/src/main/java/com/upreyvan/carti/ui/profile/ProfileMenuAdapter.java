@@ -3,7 +3,7 @@ package com.upreyvan.carti.ui.profile;
 import android.view.View;
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemProfileMenuBinding;
-import com.upreyvan.carti.model.ProfileMenuItem;
+import com.upreyvan.carti.models.ProfileMenuItem;
 
 public class ProfileMenuAdapter extends BaseAdapter<ProfileMenuItem, ItemProfileMenuBinding> {
 

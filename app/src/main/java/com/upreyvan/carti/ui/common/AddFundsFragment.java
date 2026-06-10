@@ -9,9 +9,9 @@ import androidx.annotation.Nullable;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentAddFundsBinding;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.ValueHelper;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.utils.Utils;
+import com.upreyvan.carti.utils.ValueHelper;
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -67,10 +67,10 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
         getBinding().btnSave.setOnClickListener(v -> {
             String amountStr = getBinding().etAmount.getText().toString();
             if (amountStr.isEmpty()) {
-                showToast("Please enter an amount", com.upreyvan.carti.util.UiHelper.Status.WARNING);
+                showToast("Please enter an amount", com.upreyvan.carti.utils.UiHelper.Status.WARNING);
                 return;
             }
-            showToast("Saved successfully!", com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
+            showToast("Saved successfully!", com.upreyvan.carti.utils.UiHelper.Status.SUCCESS);
             if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }

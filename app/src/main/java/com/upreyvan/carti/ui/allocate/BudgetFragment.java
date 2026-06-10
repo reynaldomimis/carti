@@ -14,10 +14,10 @@ import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentBudgetBinding;
 import com.upreyvan.carti.databinding.ItemBudgetCardBinding;
 import com.upreyvan.carti.databinding.ItemCategoryRowBinding;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.BudgetCategoryItem;
-import com.upreyvan.carti.util.DialogHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.BudgetCategoryItem;
+import com.upreyvan.carti.utils.DialogHelper;
+import com.upreyvan.carti.utils.Utils;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -141,7 +141,7 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
                 "Are you sure you want to delete '" + item.getCategoryName() + "'? This will also delete all its sub-categories.",
                 "Delete",
                 () -> {
-                    com.upreyvan.carti.data.local.CategoryManager.getInstance(requireContext()).deleteCategory(item.getCategoryName());
+                    com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).deleteCategory(item.getCategoryName());
                     TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName());
                     viewModel.loadData();
                 }

@@ -12,11 +12,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.repository.MemberRepository;
+import com.upreyvan.carti.repository.MemberRepository;
 import com.upreyvan.carti.databinding.ItemMemberAvatarSelectBinding;
 import com.upreyvan.carti.databinding.LayoutBottomSheetMemberPickerBinding;
-import com.upreyvan.carti.model.Member;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.Member;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -18,31 +18,92 @@
         android:orientation="vertical"
         android:padding="@dimen/spacing_medium">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tvOverviewTitle"
-            style="@style/DashLabel"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/label_total_balance"
-            android:textAllCaps="true"
-            android:letterSpacing="0.05" />
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tvBalanceAmount"
-            style="@style/CartiTextAmount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xxs"
-            android:textSize="28sp"
-            tools:text="₱ 150,000.00" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tvOverviewDate"
-            style="@style/DashLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xxs"
-            android:text="@string/placeholder_month_year" />
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvOverviewTitle"
+                    style="@style/DashLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_total_balance"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.05" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvBalanceAmount"
+                    style="@style/CartiTextAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xxs"
+                    android:textSize="24sp"
+                    tools:text="₱ 150,000.00" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvOverviewDate"
+                    style="@style/DashLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xxs"
+                    android:text="@string/placeholder_month_year" />
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:layout_marginStart="@dimen/spacing_medium"
+                app:cardBackgroundColor="@color/status_red_tonal"
+                app:cardCornerRadius="@dimen/radius_medium"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_small">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/DashLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TODAY"
+                        android:textColor="@color/status_red"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvTodayExpenseAmount"
+                        style="@style/CartiTextAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/status_red"
+                        android:textSize="18sp"
+                        tools:text="₱ 1,250.00" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/DashLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Realtime"
+                        android:alpha="0.7"
+                        android:textSize="10sp"
+                        android:textColor="@color/status_red" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
 
         <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
@@ -62,6 +123,7 @@
                 android:paddingBottom="@dimen/spacing_xs">
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardMonthlyBudget"
                     android:layout_width="140dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/spacing_small"
@@ -81,7 +143,41 @@
                             style="@style/DashLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/label_monthly_income" />
+                            android:text="Monthly Budget" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvMonthlyBudgetAmount"
+                            style="@style/CartiHeaderSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xxs"
+                            android:textColor="@color/carti_primary_green"
+                            tools:text="₱ 6,000" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardMonthlyIncome"
+                    android:layout_width="140dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_small"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="@dimen/radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/border_subtle"
+                    app:strokeWidth="@dimen/stroke_width_thin">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_small">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            style="@style/DashLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_total_income" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvIncomeAmount"
@@ -91,18 +187,11 @@
                             android:layout_marginTop="@dimen/spacing_xxs"
                             android:textColor="@color/green_primary"
                             tools:text="₱ 120,000" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvIncomeTrend"
-                            style="@style/DashPercentage"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/dash_green"
-                            tools:text="+8% vs last month" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardMonthlyExpenses"
                     android:layout_width="140dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/spacing_small"
@@ -132,18 +221,11 @@
                             android:layout_marginTop="@dimen/spacing_xxs"
                             android:textColor="@color/status_red"
                             tools:text="₱ 76,100" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvExpensesTrend"
-                            style="@style/DashPercentage"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/dash_red"
-                            tools:text="-12% vs last month" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardNetSavings"
                     android:layout_width="140dp"
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="@color/white"
@@ -172,53 +254,6 @@
                             android:layout_marginTop="@dimen/spacing_xxs"
                             android:textColor="@color/carti_primary_blue"
                             tools:text="₱ 43,900" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvSavingsTrend"
-                            style="@style/DashPercentage"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/carti_primary_green"
-                            tools:text="+15% vs last month" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="140dp"
-                    android:layout_height="wrap_content"
-                    app:cardBackgroundColor="@color/white"
-                    app:cardCornerRadius="@dimen/radius_medium"
-                    app:cardElevation="0dp"
-                    app:strokeColor="@color/border_subtle"
-                    app:strokeWidth="@dimen/stroke_width_thin">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="@dimen/spacing_small">
-
-                        <com.google.android.material.textview.MaterialTextView
-                            style="@style/DashLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/label_monthly_remaining" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvAllocationAmount"
-                            style="@style/CartiHeaderSmall"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_xxs"
-                            android:textColor="@color/carti_primary_green"
-                            tools:text="₱ 10,000" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            style="@style/DashPercentage"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/text_tertiary"
-                            android:text="Planned" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

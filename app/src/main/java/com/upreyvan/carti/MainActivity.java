@@ -15,8 +15,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.repository.RealtimeRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityMainBinding;
 import com.upreyvan.carti.databinding.LayoutNavItemBinding;
 import com.upreyvan.carti.ui.allocate.PlanFragment;
@@ -26,8 +26,8 @@ import com.upreyvan.carti.ui.family.FamilyChatFragment;
 import com.upreyvan.carti.ui.home.HomeFragment;
 import com.upreyvan.carti.ui.profile.ProfileFragment;
 import com.upreyvan.carti.ui.track.TrackFragment;
-import com.upreyvan.carti.util.Constants;
-import com.upreyvan.carti.util.SecurityGuard;
+import com.upreyvan.carti.utils.Constants;
+import com.upreyvan.carti.utils.SecurityGuard;
 
 public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private LayoutNavItemBinding[] navTabs;

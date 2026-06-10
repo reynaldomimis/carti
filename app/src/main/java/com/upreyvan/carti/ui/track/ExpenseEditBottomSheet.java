@@ -13,13 +13,14 @@ import androidx.annotation.Nullable;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.local.CategoryManager;
-import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.managers.CategoryManager;
+import com.upreyvan.carti.datasource.AppwriteManager;
+import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.DialogEditExpenseBinding;
-import com.upreyvan.carti.model.Category;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.UiHelper;
+import com.upreyvan.carti.models.Category;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionType;
+import com.upreyvan.carti.utils.UiHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,7 @@ public class ExpenseEditBottomSheet extends BaseBottomSheetFragment<DialogEditEx
         };
 
         getBinding().etDescription.addTextChangedListener(validationWatcher);
-        getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etAmount));
+        getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etAmount));
         getBinding().etAmount.addTextChangedListener(validationWatcher);
         getBinding().actvCategory.addTextChangedListener(validationWatcher);
     }
@@ -76,7 +77,7 @@ public class ExpenseEditBottomSheet extends BaseBottomSheetFragment<DialogEditEx
         String description = getBinding().etDescription.getText().toString().trim();
         String amountStr = getBinding().etAmount.getText().toString().trim();
         
-        double amount = com.upreyvan.carti.util.StringHelper.parseDouble(amountStr);
+        double amount = com.upreyvan.carti.utils.StringHelper.parseDouble(amountStr);
         
         boolean isValid = !description.isEmpty() && amount > 0;
         
@@ -100,7 +101,7 @@ public class ExpenseEditBottomSheet extends BaseBottomSheetFragment<DialogEditEx
         if (!checkNetwork()) return;
 
         try {
-            double amount = com.upreyvan.carti.util.StringHelper.parseDouble(getBinding().etAmount.getText().toString().trim());
+            double amount = com.upreyvan.carti.utils.StringHelper.parseDouble(getBinding().etAmount.getText().toString().trim());
             String title = getBinding().etDescription.getText().toString().trim();
             String category = getBinding().actvCategory.getText().toString().trim();
 
@@ -109,7 +110,7 @@ public class ExpenseEditBottomSheet extends BaseBottomSheetFragment<DialogEditEx
             transaction.setTitle(title);
             transaction.setCategory(category);
 
-            transactionRepository.updateTransaction(transaction, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            transactionRepository.updateItem(TransactionType.EXPENSE, transaction.getId(), transaction, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
                 @Override
                 public void onSuccess(Map<String, Object> result) {
                     onActionSuccess();

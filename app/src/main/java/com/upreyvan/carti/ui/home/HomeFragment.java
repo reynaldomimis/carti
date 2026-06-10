@@ -16,12 +16,12 @@ import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.BaseMultiItem;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.local.SalaryManager;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.managers.SalaryManager;
 import com.upreyvan.carti.databinding.FragmentHomeBinding;
-import com.upreyvan.carti.model.Bill;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.models.Bill;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.ui.bills.BillDetailsBottomSheet;
 import com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment;
 import com.upreyvan.carti.ui.goals.UpdateGoalBottomSheetFragment;
@@ -29,10 +29,10 @@ import com.upreyvan.carti.ui.track.AddBudgetPlanActivity;
 import com.upreyvan.carti.ui.track.AllTransactionsFragment;
 import com.upreyvan.carti.ui.track.ExpenseEditBottomSheet;
 import com.upreyvan.carti.ui.track.IncomeEditBottomSheet;
-import com.upreyvan.carti.util.Constants;
-import com.upreyvan.carti.util.DialogHelper;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.utils.Constants;
+import com.upreyvan.carti.utils.DialogHelper;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,7 +40,9 @@ import java.util.stream.Collectors;
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements HomeListItem.OnHomeInteractionListener {
     private com.upreyvan.carti.base.BaseMultiAdapter homeAdapter;
     private HomeViewModel viewModel;
-    private final RecyclerView.RecycledViewPool sharedPool = new RecyclerView.RecycledViewPool();
+    private final RecyclerView.RecycledViewPool billPool = new RecyclerView.RecycledViewPool();
+    private final RecyclerView.RecycledViewPool actionPool = new RecyclerView.RecycledViewPool();
+    private final RecyclerView.RecycledViewPool logPool = new RecyclerView.RecycledViewPool();
 
     @Override protected FragmentHomeBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
         return FragmentHomeBinding.inflate(inflater, container, false);
@@ -53,6 +55,24 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
         setupHeaders();
         initAdapter();
         observeViewModel();
+        setupListeners();
+        observeNotifications();
+    }
+
+    private void setupListeners() {
+        getBinding().btnNotif.setOnClickListener(v -> {
+            com.upreyvan.carti.repository.NotificationRepository.getInstance(requireContext()).markAllAsRead();
+            if (getActivity() instanceof MainActivity main) {
+                main.navigateTo(R.id.nav_profile);
+            }
+        });
+    }
+
+    private void observeNotifications() {
+        com.upreyvan.carti.repository.NotificationRepository.getInstance(requireContext())
+                .getUnreadCount().observe(getViewLifecycleOwner(), count -> {
+                    getBinding().notifBadge.setVisibility(count != null && count > 0 ? View.VISIBLE : View.GONE);
+                });
     }
 
     private void initAdapter() {
@@ -74,9 +94,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
 
     private BaseMultiItem enrich(BaseMultiItem item) {
         if (item instanceof HomeListItem.BudgetPromptItem) return new HomeListItem.BudgetPromptItem(this::onBudgetPromptClick);
-        if (item instanceof HomeListItem.BillContainerItem b) return new HomeListItem.BillContainerItem(b.bills(), this, sharedPool);
-        if (item instanceof HomeListItem.QuickActionsItem q) return new HomeListItem.QuickActionsItem(q.actions(), this, sharedPool);
-        if (item instanceof HomeListItem.QuickLogItemContainer l) return new HomeListItem.QuickLogItemContainer(l.logs(), this, sharedPool);
+        if (item instanceof HomeListItem.BillContainerItem b) return new HomeListItem.BillContainerItem(b.bills(), this, billPool);
+        if (item instanceof HomeListItem.QuickActionsItem q) return new HomeListItem.QuickActionsItem(q.actions(), this, actionPool);
+        if (item instanceof HomeListItem.QuickLogItemContainer l) return new HomeListItem.QuickLogItemContainer(l.logs(), this, logPool);
         if (item instanceof HomeListItem.TransactionItem t) return new HomeListItem.TransactionItem(t.transaction(), this);
         if (item instanceof HomeListItem.SectionHeaderItem s) {
             if (getString(R.string.recent_activity).equals(s.title())) return new HomeListItem.SectionHeaderItem(s.title(), s.subtitle(), s.showAction(), s.actionText(), this::onSeeAllTransactions);
@@ -94,7 +114,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
 
     @Override public void onBudgetPromptClick() { startActivity(new Intent(requireContext(), AddBudgetPlanActivity.class)); }
     @Override public void onBillClick(Bill bill) { BillDetailsBottomSheet.newInstance(bill.getId(), bill.getName()).show(getChildFragmentManager(), "BillDetails"); }
-    @Override public void onActionClick(com.upreyvan.carti.model.QuickLogItem item) {
+    @Override public void onActionClick(com.upreyvan.carti.models.QuickLogItem item) {
         MainActivity main = (MainActivity) getActivity(); if (main == null) return;
         String t = item.getTitle();
         if (Objects.equals(t, getString(R.string.add_options_expense))) {
@@ -107,8 +127,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
             main.navigateTo(Constants.Navigation.PLAN);
         }
     }
-    @Override public void onQuickLogClick(com.upreyvan.carti.model.QuickLogItem item) { QuickLogsBottomSheetFragment.newInstance(item.getTitle()).show(getChildFragmentManager(), "QUICK_LOG"); }
-    @Override public void onQuickLogLongClick(com.upreyvan.carti.model.QuickLogItem item) { startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class)); }
+    @Override public void onQuickLogClick(com.upreyvan.carti.models.QuickLogItem item) { QuickLogsBottomSheetFragment.newInstance(item.getTitle()).show(getChildFragmentManager(), "QUICK_LOG"); }
+    @Override public void onQuickLogLongClick(com.upreyvan.carti.models.QuickLogItem item) { startActivity(new Intent(requireContext(), CustomizeQuickLogActivity.class)); }
     @Override public void onTransactionClick(TransactionWithUser item) {}
     @Override public void onTransactionLike(TransactionWithUser item) { viewModel.toggleLike(item); }
     @Override public void onTransactionReaction(TransactionWithUser item, String emoji) { viewModel.toggleReaction(item, emoji); }

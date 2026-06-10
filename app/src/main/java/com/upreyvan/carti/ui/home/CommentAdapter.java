@@ -6,9 +6,9 @@ import com.bumptech.glide.Glide;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemCommentBinding;
-import com.upreyvan.carti.model.Comment;
-import com.upreyvan.carti.util.AvatarHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.Comment;
+import com.upreyvan.carti.utils.AvatarHelper;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Comparator;

@@ -5,8 +5,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemNotificationBinding;
-import com.upreyvan.carti.model.Notification;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.Notification;
+import com.upreyvan.carti.utils.Utils;
 import java.util.Collections;
 
 public class NotificationAdapter extends BaseAdapter<Notification, ItemNotificationBinding> {

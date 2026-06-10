@@ -9,9 +9,9 @@ import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.databinding.ActivityResetPasswordBinding;
-import com.upreyvan.carti.util.Constants.ErrorCodes;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Validator;
+import com.upreyvan.carti.utils.Constants.ErrorCodes;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Validator;
 
 public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBinding> {
 

@@ -13,17 +13,17 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
 import java.util.ArrayList;
 import java.util.List;
-import com.upreyvan.carti.data.repository.MemberRepository;
+import com.upreyvan.carti.repository.MemberRepository;
 import com.upreyvan.carti.databinding.ItemMemberAvatarSelectBinding;
 import com.upreyvan.carti.databinding.LayoutBottomSheetUpdateGoalBinding;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.Member;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.ValueHelper;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.Member;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Utils;
+import com.upreyvan.carti.utils.ValueHelper;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -36,11 +36,11 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
     private GenericAdapter<Member, ItemMemberAvatarSelectBinding> memberAdapter; private final Set<String> selectedMemberIds = new HashSet<>();
 
     public static UpdateGoalBottomSheetFragment newInstance(String id) {
-        UpdateGoalBottomSheetFragment f = new UpdateGoalBottomSheetFragment(); Bundle a = new Bundle(); a.putString(com.upreyvan.carti.util.Constants.Keys.KEY_TRANSACTION_ID, id); f.setArguments(a); return f;
+        UpdateGoalBottomSheetFragment f = new UpdateGoalBottomSheetFragment(); Bundle a = new Bundle(); a.putString(com.upreyvan.carti.utils.Constants.Keys.KEY_TRANSACTION_ID, id); f.setArguments(a); return f;
     }
 
     @Override public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState); if (getArguments() != null) goalId = getArguments().getString(com.upreyvan.carti.util.Constants.Keys.KEY_TRANSACTION_ID);
+        super.onCreate(savedInstanceState); if (getArguments() != null) goalId = getArguments().getString(com.upreyvan.carti.utils.Constants.Keys.KEY_TRANSACTION_ID);
         transactionRepository = TransactionRepository.getInstance(requireContext()); memberRepository = MemberRepository.getInstance(requireContext());
     }
 
@@ -64,7 +64,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
         };
 
         getBinding().etGoalName.addTextChangedListener(validationWatcher);
-        getBinding().etTargetAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etTargetAmount));
+        getBinding().etTargetAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etTargetAmount));
         getBinding().etTargetAmount.addTextChangedListener(validationWatcher);
         getBinding().etTargetDate.addTextChangedListener(validationWatcher);
     }
@@ -74,7 +74,7 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
         String targetStr = getBinding().etTargetAmount.getText().toString().trim();
         String date = getBinding().etTargetDate.getText().toString().trim();
 
-        double target = com.upreyvan.carti.util.StringHelper.parseDouble(targetStr);
+        double target = com.upreyvan.carti.utils.StringHelper.parseDouble(targetStr);
         
         boolean isValid = !name.isEmpty() && target > 0 && !date.isEmpty();
         
@@ -114,9 +114,9 @@ public class UpdateGoalBottomSheetFragment extends BaseBottomSheetFragment<Layou
         if (!checkNetwork() || currentGoal == null) return;
         
         showLoading(true, "Updating goal..."); currentGoal.setTitle(getBinding().etGoalName.getText().toString().trim()); 
-        currentGoal.setTargetAmount(com.upreyvan.carti.util.StringHelper.parseDouble(getBinding().etTargetAmount.getText().toString().trim()));
+        currentGoal.setTargetAmount(com.upreyvan.carti.utils.StringHelper.parseDouble(getBinding().etTargetAmount.getText().toString().trim()));
         currentGoal.setTargetDate(getBinding().etTargetDate.getText().toString().trim()); currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
-        transactionRepository.updateTransaction(currentGoal, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        transactionRepository.updateItem(currentGoal.getType(), currentGoal.getId(), currentGoal, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override public void onSuccess(Map<String, Object> r) { if (isAdded()) { showLoading(false); showToast("Goal updated successfully", UiHelper.Status.SUCCESS); dismiss(); } }
             @Override public void onError(Throwable e) { if (isAdded()) { showLoading(false); showToast(getString(R.string.err_generic, e.getMessage()), UiHelper.Status.ERROR); } }
         });

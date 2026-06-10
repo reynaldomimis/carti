@@ -1,11 +1,11 @@
 package com.upreyvan.carti.ui.goals;
 
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.UiHelper.Status;
-import com.upreyvan.carti.util.Validator;
-import com.upreyvan.carti.util.ValueHelper;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.utils.UiHelper.Status;
+import com.upreyvan.carti.utils.Validator;
+import com.upreyvan.carti.utils.ValueHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +88,7 @@ public class UpdateGoalActivity extends BaseGoalActivity {
         currentGoal.setTargetDate(date);
         currentGoal.setMembers(new ArrayList<>(selectedMemberIds));
 
-        transactionRepository.updateTransaction(currentGoal, new AppwriteCallback<Map<String, Object>>() {
+        transactionRepository.updateItem(currentGoal.getType(), currentGoal.getId(), currentGoal, new AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 showLoading(false);

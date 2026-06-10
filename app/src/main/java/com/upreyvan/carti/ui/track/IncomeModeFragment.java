@@ -12,17 +12,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentIncomeModeBinding;
-import com.upreyvan.carti.data.local.SalaryManager;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.data.repository.RealtimeRepository;
-import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.managers.SalaryManager;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.repository.RealtimeRepository;
+import com.upreyvan.carti.models.TransactionWithUser;
 import java.util.ArrayList;
 import java.util.List;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ItemIncomeBinding;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.ValueHelper;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.utils.Utils;
+import com.upreyvan.carti.utils.ValueHelper;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Objects;
@@ -56,7 +56,6 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     }
 
     private void observeRealtime() {
-        realtimeRepo.getIncomeStream().observe(getViewLifecycleOwner(), payload -> transactionRepository.refreshTransactions());
         realtimeRepo.getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> updateUI());
     }
 
@@ -91,7 +90,7 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
     }
 
     private void observeIncomes() {
-        String myUserId = com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getUserId();
+        String myUserId = com.upreyvan.carti.managers.PreferenceManager.getInstance(requireContext()).getUserId();
         transactionRepository.getIncome().observe(getViewLifecycleOwner(), incomesWithUser -> {
             List<Transaction> incomes = new ArrayList<>();
             if (incomesWithUser != null) {
@@ -111,8 +110,6 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
 
         transactionRepository.getTotalIncome().observe(getViewLifecycleOwner(), totalIncome -> 
                 updateTotalBudget(Objects.requireNonNullElse(totalIncome, 0.0)));
-
-        transactionRepository.refreshTransactions();
     }
 
     private void updateTotalBudget(double totalBudget) {
@@ -191,5 +188,4 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
         bottomSheet.setListener(this::updateUI);
         bottomSheet.show(getChildFragmentManager(), "IncomeAddBottomSheet");
     }
-
 }

@@ -12,11 +12,12 @@ import androidx.annotation.Nullable;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.DialogEditIncomeBinding;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.ValueHelper;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionType;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.ValueHelper;
 
 import java.util.Map;
 
@@ -76,7 +77,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         };
 
         getBinding().etIncomeSource.addTextChangedListener(validationWatcher);
-        getBinding().etSalaryAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etSalaryAmount));
+        getBinding().etSalaryAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etSalaryAmount));
         getBinding().etSalaryAmount.addTextChangedListener(validationWatcher);
     }
 
@@ -84,7 +85,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         String source = getBinding().etIncomeSource.getText().toString().trim();
         String amountStr = getBinding().etSalaryAmount.getText().toString().trim();
         
-        double amount = com.upreyvan.carti.util.StringHelper.parseDouble(amountStr);
+        double amount = com.upreyvan.carti.utils.StringHelper.parseDouble(amountStr);
         
         boolean isValid = !source.isEmpty() && amount > 0;
         
@@ -121,7 +122,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         if (!checkNetwork()) return;
 
         try {
-            double amount = com.upreyvan.carti.util.StringHelper.parseDouble(getBinding().etSalaryAmount.getText().toString().trim());
+            double amount = com.upreyvan.carti.utils.StringHelper.parseDouble(getBinding().etSalaryAmount.getText().toString().trim());
             setLoading(true);
 
             if (mode == Mode.ADD_INCOME) {
@@ -137,15 +138,14 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
 
     private void addExtraIncome(String source, double amount) {
         Transaction income = new Transaction();
-        income.setType("INCOME");
         income.setTitle(source);
         income.setAmount(amount);
         income.setCategory("Income");
         income.setNote(source);
-        income.setUserId(com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getUserId());
-        income.setFamilyId(com.upreyvan.carti.data.local.PreferenceManager.getInstance(requireContext()).getFamilyId());
+        income.setUserId(com.upreyvan.carti.managers.PreferenceManager.getInstance(requireContext()).getUserId());
+        income.setFamilyId(com.upreyvan.carti.managers.PreferenceManager.getInstance(requireContext()).getFamilyId());
 
-        transactionRepository.addTransaction(income, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        transactionRepository.createItem(TransactionType.INCOME, income, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 onActionSuccess("Income added");
@@ -164,7 +164,7 @@ public class IncomeEditBottomSheet extends BaseBottomSheetFragment<DialogEditInc
         incomeToEdit.setAmount(amount);
         incomeToEdit.setCategory("Income");
 
-        transactionRepository.updateTransaction(incomeToEdit, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        transactionRepository.updateItem(TransactionType.INCOME, incomeToEdit.getId(), incomeToEdit, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 onActionSuccess("Income updated");

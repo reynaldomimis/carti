@@ -19,12 +19,12 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.BottomSheetAddCategoryBinding;
-import com.upreyvan.carti.model.BudgetCategoryItem;
-import com.upreyvan.carti.model.IconChoice;
+import com.upreyvan.carti.models.BudgetCategoryItem;
+import com.upreyvan.carti.models.IconChoice;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
-import com.upreyvan.carti.util.UiHelper;
+import com.upreyvan.carti.utils.UiHelper;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -152,7 +152,7 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         };
 
         getBinding().etCategoryName.addTextChangedListener(validationWatcher);
-        getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etAmount));
+        getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etAmount));
         getBinding().etAmount.addTextChangedListener(validationWatcher);
     }
 
@@ -213,10 +213,10 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
             return;
         }
 
-        com.upreyvan.carti.data.local.CategoryManager manager = com.upreyvan.carti.data.local.CategoryManager.getInstance(requireContext());
-        List<com.upreyvan.carti.model.Category> existing = manager.getCategories();
+        com.upreyvan.carti.managers.CategoryManager manager = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext());
+        List<com.upreyvan.carti.models.Category> existing = manager.getCategories();
         
-        for (com.upreyvan.carti.model.Category item : existing) {
+        for (com.upreyvan.carti.models.Category item : existing) {
             if (item.getName().equalsIgnoreCase(name) &&
                     Objects.equals(item.getParentCategory(), parentCategory)) {
                 if (editingItem == null || !editingItem.getCategoryName().equalsIgnoreCase(name)) {
@@ -226,7 +226,7 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
             }
         }
         
-        com.upreyvan.carti.model.Category cat = new com.upreyvan.carti.model.Category(
+        com.upreyvan.carti.models.Category cat = new com.upreyvan.carti.models.Category(
                 editingItem != null ? editingItem.getCategoryName() : UUID.randomUUID().toString(),
                 name,
                 selectedIcon,
@@ -242,7 +242,7 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         String amountStr = getBinding().etAmount.getText() != null ? getBinding().etAmount.getText().toString() : "0";
         if (!amountStr.isEmpty()) {
             try { 
-                double amount = com.upreyvan.carti.util.StringHelper.parseDouble(amountStr);
+                double amount = com.upreyvan.carti.utils.StringHelper.parseDouble(amountStr);
                 if (amount > 0) {
                     TransactionRepository.getInstance(requireContext()).updateOrAddCategory(
                             editingItem != null ? editingItem.getCategoryName() : null,

@@ -8,12 +8,12 @@ import android.view.View;
 
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.repository.AuthRepository;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.datasource.AppwriteManager;
+import com.upreyvan.carti.repository.AuthRepository;
 import com.upreyvan.carti.databinding.ActivitySplashBinding;
 import com.upreyvan.carti.ui.onboarding.StartActivity;
-import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.utils.Constants;
 import java.util.Map;
 
 @SuppressLint("CustomSplashScreen")

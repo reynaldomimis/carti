@@ -10,9 +10,9 @@ import android.view.View;
 import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.managers.PreferenceManager;
 import com.upreyvan.carti.databinding.FragmentInviteFamilyBinding;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.utils.Utils;
 
 public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBinding> {
     private InviteFamilyViewModel viewModel;
@@ -78,7 +78,7 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
         ClipData clip = ClipData.newPlainText(getString(R.string.label_family_id), text);
         if (clipboard != null) {
             clipboard.setPrimaryClip(clip);
-            showToast(R.string.msg_invite_copied, com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
+            showToast(R.string.msg_invite_copied, com.upreyvan.carti.utils.UiHelper.Status.SUCCESS);
         }
     }
 

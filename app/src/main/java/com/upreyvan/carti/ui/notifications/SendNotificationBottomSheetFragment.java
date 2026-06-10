@@ -11,8 +11,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.databinding.LayoutSendNotificationBottomSheetBinding;
 import com.upreyvan.carti.ui.bills.BillsViewModel;
-import com.upreyvan.carti.util.ToastHelper;
-import com.upreyvan.carti.util.UiHelper;
+import com.upreyvan.carti.utils.ToastHelper;
+import com.upreyvan.carti.utils.UiHelper;
 
 public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragment {
 

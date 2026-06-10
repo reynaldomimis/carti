@@ -11,10 +11,10 @@ import androidx.fragment.app.Fragment;
 import androidx.viewbinding.ViewBinding;
 
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.util.Constants;
-import com.upreyvan.carti.util.NetworkMonitor;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.utils.Constants;
+import com.upreyvan.carti.utils.NetworkMonitor;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Utils;
 
 public abstract class BaseFragment<VB extends ViewBinding> extends Fragment {
     private VB binding;

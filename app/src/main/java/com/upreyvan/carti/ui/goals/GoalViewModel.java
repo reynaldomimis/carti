@@ -6,14 +6,14 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.TransactionWithUser;
-import com.upreyvan.carti.util.Constants;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionType;
+import com.upreyvan.carti.models.TransactionWithUser;
+import com.upreyvan.carti.utils.Constants;
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 public class GoalViewModel extends BaseViewModel {
     private final TransactionRepository repository;
@@ -64,21 +64,10 @@ public class GoalViewModel extends BaseViewModel {
         t.setTitle(name);
         t.setTargetAmount(targetAmount);
         t.setAmount(savedAmount);
-        t.setType("GOAL");
         t.setTargetDate(date);
         t.setIconRes(iconRes);
         t.setIconUrl(iconUrl);
 
-        repository.addTransaction(t, new AppwriteCallback<Map<String, Object>>() {
-            @Override
-            public void onSuccess(Map<String, Object> result) {
-                setLoading(false);
-                saveSuccess.postValue(true);
-            }
-            @Override public void onError(Throwable e) {
-                setLoading(false);
-                error.postValue(e.getMessage());
-            }
-        });
+        repository.createItem(TransactionType.GOAL, t, loadingCallback(() -> saveSuccess.postValue(true), error));
     }
 }

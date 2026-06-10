@@ -15,12 +15,12 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseMultiItem;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.*;
-import com.upreyvan.carti.model.Bill;
-import com.upreyvan.carti.model.QuickLogItem;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.TransactionWithUser;
-import com.upreyvan.carti.util.AvatarHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.Bill;
+import com.upreyvan.carti.models.QuickLogItem;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionWithUser;
+import com.upreyvan.carti.utils.AvatarHelper;
+import com.upreyvan.carti.utils.Utils;
 import java.util.List;
 import java.util.Objects;
 
@@ -74,9 +74,23 @@ public interface HomeListItem extends BaseMultiItem {
         @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
             ViewHomeDashboardBinding b = (ViewHomeDashboardBinding) binding;
             b.tvBalanceAmount.setText(Utils.formatCurrency(state.balance()));
+            b.tvTodayExpenseAmount.setText(Utils.formatCurrency(state.todayExpense()));
+            
+            // Monthly Budget
+            b.tvMonthlyBudgetAmount.setText(b.getRoot().getContext().getString(R.string.format_currency_no_decimal, state.monthlyBudget()));
+            b.cardMonthlyBudget.setVisibility(View.VISIBLE);
+            
+            // Monthly Income
             b.tvIncomeAmount.setText(b.getRoot().getContext().getString(R.string.format_currency_no_decimal, state.monthlyIncome()));
+            b.cardMonthlyIncome.setVisibility(state.monthlyIncome() > 0 ? View.VISIBLE : View.GONE);
+            
+            // Monthly Expenses
             b.tvExpensesAmount.setText(b.getRoot().getContext().getString(R.string.format_currency_no_decimal, state.monthlyExpense()));
+            b.cardMonthlyExpenses.setVisibility(View.VISIBLE);
+            
+            // Net Savings
             b.tvTotalSavings.setText(b.getRoot().getContext().getString(R.string.format_currency_no_decimal, state.monthlySavings()));
+            b.cardNetSavings.setVisibility(View.VISIBLE);
         }
 
         @Override public Object getChangePayload(@NonNull BaseMultiItem newItem) {
@@ -86,6 +100,8 @@ public interface HomeListItem extends BaseMultiItem {
                 if (state.monthlyIncome() != other.state.monthlyIncome()) diff.putDouble("income", other.state.monthlyIncome());
                 if (state.monthlyExpense() != other.state.monthlyExpense()) diff.putDouble("expense", other.state.monthlyExpense());
                 if (state.monthlySavings() != other.state.monthlySavings()) diff.putDouble("savings", other.state.monthlySavings());
+                if (state.todayExpense() != other.state.todayExpense()) diff.putDouble("todayExpense", other.state.todayExpense());
+                if (state.monthlyBudget() != other.state.monthlyBudget()) diff.putDouble("budget", other.state.monthlyBudget());
                 return !diff.isEmpty() ? diff : null;
             }
             return null;
@@ -99,17 +115,26 @@ public interface HomeListItem extends BaseMultiItem {
                     if (b.containsKey("income")) vb.tvIncomeAmount.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal, b.getDouble("income")));
                     if (b.containsKey("expense")) vb.tvExpensesAmount.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal, b.getDouble("expense")));
                     if (b.containsKey("savings")) vb.tvTotalSavings.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal, b.getDouble("savings")));
+                    if (b.containsKey("todayExpense")) vb.tvTodayExpenseAmount.setText(Utils.formatCurrency(b.getDouble("todayExpense")));
+                    if (b.containsKey("budget")) vb.tvMonthlyBudgetAmount.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal, b.getDouble("budget")));
                 }
             }
         }
     }
 
-    record AIInsightItem(String message) implements HomeListItem {
+    record AIInsightItem(String message, String type) implements HomeListItem {
         @Override public int getViewType() { return TYPE_AI_INSIGHT; }
-        @Override public String getItemUniqueId() { return "AI_INSIGHT"; }
+        @Override public String getItemUniqueId() { return "AI_INSIGHT_" + message.hashCode(); }
         @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) { return ViewAiInsightBinding.inflate(inflater, parent, false); }
         @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
-            ((ViewAiInsightBinding) binding).tvInsightMessage.setText(message);
+            ViewAiInsightBinding b = (ViewAiInsightBinding) binding;
+            b.tvInsightMessage.setText(message);
+
+            if ("OVERDUE_BILL".equals(type) || "BUDGET_WARNING".equals(type)) {
+                b.tvInsightTitle.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.status_red));
+            } else {
+                b.tvInsightTitle.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.carti_primary_green));
+            }
         }
     }
 
@@ -301,7 +326,16 @@ public interface HomeListItem extends BaseMultiItem {
             }
 
             b.tvUserAction.setText(username);
-            b.tvTimestamp.setText(Utils.getTimeAgo(t.getTimestampMillis()));
+            
+            String status = t.getStatus();
+            if (Transaction.STATUS_PENDING.equals(status) || Transaction.STATUS_SYNCING.equals(status)) {
+                b.getRoot().setAlpha(0.6f);
+                b.tvTimestamp.setText("Sending...");
+            } else {
+                b.getRoot().setAlpha(1.0f);
+                b.tvTimestamp.setText(Utils.getTimeAgo(t.getTimestampMillis()));
+            }
+
             b.tvTitle.setText(t.getTitle() != null ? t.getTitle() : t.getCategory());
 
             String note = t.getNote();
@@ -360,7 +394,7 @@ public interface HomeListItem extends BaseMultiItem {
 
             b.btnLike.setOnClickListener(v -> listener.onTransactionLike(transaction));
             b.btnLike.setOnLongClickListener(v -> {
-                com.upreyvan.carti.util.DialogHelper.showEmojiPicker(b.btnLike, emoji ->
+                com.upreyvan.carti.utils.DialogHelper.showEmojiPicker(b.btnLike, emoji ->
                     listener.onTransactionReaction(transaction, emoji));
                 return true;
             });
@@ -384,7 +418,7 @@ public interface HomeListItem extends BaseMultiItem {
                             listener.onTransactionEdit(transaction);
                             return true;
                         } else if (id == R.id.action_delete) {
-                            com.upreyvan.carti.util.DialogHelper.showConfirmation(
+                            com.upreyvan.carti.utils.DialogHelper.showConfirmation(
                                     b.getRoot().getContext(),
                                     "Delete Transaction?",
                                     "Are you sure you want to delete this transaction?",

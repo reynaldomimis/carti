@@ -5,13 +5,13 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.AppwriteManager;
-import com.upreyvan.carti.data.repository.MemberRepository;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.Member;
-import com.upreyvan.carti.model.TransactionWithUser;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.datasource.AppwriteManager;
+import com.upreyvan.carti.repository.MemberRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.Member;
+import com.upreyvan.carti.models.TransactionWithUser;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -121,21 +121,21 @@ public class MembersViewModel extends BaseViewModel {
     }
 
     public void approveMember(String userId) {
-        com.upreyvan.carti.data.repository.FamilyRepository.getInstance(getApplication()).approveJoinRequest(userId, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        com.upreyvan.carti.repository.FamilyRepository.getInstance(getApplication()).approveJoinRequest(userId, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override public void onSuccess(Map<String, Object> result) { refreshData(); }
             @Override public void onError(Throwable error) {}
         });
     }
 
     public void rejectMember(String userId) {
-        com.upreyvan.carti.data.repository.FamilyRepository.getInstance(getApplication()).rejectJoinRequest(userId, new com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        com.upreyvan.carti.repository.FamilyRepository.getInstance(getApplication()).rejectJoinRequest(userId, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override public void onSuccess(Map<String, Object> result) { refreshData(); }
             @Override public void onError(Throwable error) {}
         });
     }
 
     private void fetchCurrentUser() {
-        com.upreyvan.carti.data.repository.AuthRepository.getInstance(getApplication()).getCurrentUser(new AppwriteManager.AppwriteCallback<User<Map<String, Object>>>() {
+        com.upreyvan.carti.repository.AuthRepository.getInstance(getApplication()).getCurrentUser(new AppwriteManager.AppwriteCallback<User<Map<String, Object>>>() {
             @Override
             public void onSuccess(User<Map<String, Object>> result) {
                 currentUserId.postValue(result.getId());

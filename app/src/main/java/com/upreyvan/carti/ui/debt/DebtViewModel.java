@@ -5,9 +5,9 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.TransactionWithUser;
 import java.util.List;
 import java.util.Map;
 

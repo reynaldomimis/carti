@@ -14,19 +14,20 @@ import com.google.android.material.timepicker.TimeFormat;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.base.GenericAdapter;
-import com.upreyvan.carti.data.local.CategoryManager;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.managers.CategoryManager;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.databinding.ActivityAddDebtBinding;
 import com.upreyvan.carti.databinding.ItemQuickLogBinding;
-import com.upreyvan.carti.model.Category;
-import com.upreyvan.carti.model.QuickLogItem;
-import com.upreyvan.carti.model.Transaction;
+import com.upreyvan.carti.models.Category;
+import com.upreyvan.carti.models.QuickLogItem;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionType;
 import com.upreyvan.carti.ui.goals.MemberPickerBottomSheet;
-import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.Validator;
-import com.upreyvan.carti.util.UiHelper.Status;
+import com.upreyvan.carti.utils.Utils;
+import com.upreyvan.carti.utils.Validator;
+import com.upreyvan.carti.utils.UiHelper.Status;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -165,7 +166,6 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         String reminder = getBinding().tvReminder.getText().toString();
         showLoading(true, getString(R.string.msg_saving_debt));
         Transaction transaction = new Transaction();
-        transaction.setType("DEBT");
         transaction.setAmount(amount);
         transaction.setTitle(selectedMemberName);
         transaction.setNote(purpose + (notes.isEmpty() ? "" : ": " + notes));
@@ -176,7 +176,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
         PreferenceManager pref = PreferenceManager.getInstance(this);
         transaction.setUserId(pref.getUserId());
         transaction.setFamilyId(pref.getFamilyId());
-        transactionRepository.addTransaction(transaction, new AppwriteCallback<>() {
+        transactionRepository.createItem(TransactionType.DEBT, transaction, new AppwriteCallback<>() {
             @Override public void onSuccess(Map<String, Object> result) { showLoading(false); finish(); }
             @Override public void onError(Throwable error) { showLoading(false); showToast(getString(R.string.err_generic, error.getMessage()), Status.ERROR); }
         });

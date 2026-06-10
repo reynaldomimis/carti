@@ -14,12 +14,12 @@ import androidx.annotation.Nullable;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.BottomSheetAddBudgetBinding;
-import com.upreyvan.carti.model.BudgetCategoryItem;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.models.BudgetCategoryItem;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +79,7 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
         };
 
         getBinding().etCategory.addTextChangedListener(validationWatcher);
-        getBinding().etLimit.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etLimit));
+        getBinding().etLimit.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etLimit));
         getBinding().etLimit.addTextChangedListener(validationWatcher);
     }
 
@@ -87,7 +87,7 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
         String category = getBinding().etCategory.getText().toString().trim();
         String limitStr = getBinding().etLimit.getText().toString().trim();
         
-        double limit = com.upreyvan.carti.util.StringHelper.parseDouble(limitStr);
+        double limit = com.upreyvan.carti.utils.StringHelper.parseDouble(limitStr);
         
         boolean isValid = !category.isEmpty() && limit > 0;
         
@@ -95,9 +95,9 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
     }
 
     private void updateSubCategoryDropdown(String parentCategoryName) {
-        List<com.upreyvan.carti.model.Category> allCategories = com.upreyvan.carti.data.local.CategoryManager.getInstance(requireContext()).getCategories();
+        List<com.upreyvan.carti.models.Category> allCategories = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).getCategories();
         List<String> subCategoryNames = new ArrayList<>();
-        for (com.upreyvan.carti.model.Category item : allCategories) {
+        for (com.upreyvan.carti.models.Category item : allCategories) {
             if (parentCategoryName.equalsIgnoreCase(item.getParentCategory())) {
                 subCategoryNames.add(item.getName());
             }
@@ -119,9 +119,9 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
 
     private void setupCategoryDropdown() {
         // Load from CategoryManager to include all defined categories (even those without budgets)
-        List<com.upreyvan.carti.model.Category> categories = com.upreyvan.carti.data.local.CategoryManager.getInstance(requireContext()).getCategories();
+        List<com.upreyvan.carti.models.Category> categories = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).getCategories();
         List<String> names = new ArrayList<>();
-        for (com.upreyvan.carti.model.Category item : categories) {
+        for (com.upreyvan.carti.models.Category item : categories) {
             // Only show parent categories in the main budget dropdown
             if (item.getParentCategory() == null || item.getParentCategory().isEmpty()) {
                 names.add(item.getName());
@@ -156,7 +156,7 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
         String parentName = subCategory.isEmpty() ? null : category;
         
         try {
-            double amount = com.upreyvan.carti.util.StringHelper.parseDouble(amountStr);
+            double amount = com.upreyvan.carti.utils.StringHelper.parseDouble(amountStr);
             TransactionRepository.getInstance(requireContext()).updateOrAddCategory(targetCategory, amount, parentName, isRecurring);
             dismiss();
         } catch (NumberFormatException e) {

@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.databinding.FragmentFamilyChatBinding;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.VoiceToTextHelper;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Utils;
+import com.upreyvan.carti.utils.VoiceToTextHelper;
 
 import java.util.ArrayList;
 

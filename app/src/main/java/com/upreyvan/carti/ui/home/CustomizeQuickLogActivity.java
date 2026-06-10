@@ -11,9 +11,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.ActivityCustomizeQuickLogBinding;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.utils.Utils;
 
 public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQuickLogBinding> {
 
@@ -74,7 +74,7 @@ public class CustomizeQuickLogActivity extends BaseActivity<ActivityCustomizeQui
     private void setupListeners() {
         getBinding().btnSaveOrder.setOnClickListener(v -> {
             TransactionRepository.getInstance(this).saveBudgetPlan(adapter.getCategories());
-            com.upreyvan.carti.util.ToastHelper.show(this, "Quick Log order updated!", com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
+            com.upreyvan.carti.utils.ToastHelper.show(this, "Quick Log order updated!", com.upreyvan.carti.utils.UiHelper.Status.SUCCESS);
             finish();
         });
     }

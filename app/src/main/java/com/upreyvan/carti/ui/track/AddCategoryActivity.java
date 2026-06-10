@@ -9,12 +9,12 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.local.CategoryManager;
+import com.upreyvan.carti.managers.CategoryManager;
 import com.upreyvan.carti.databinding.ActivityAddCategoryBinding;
-import com.upreyvan.carti.model.Category;
-import com.upreyvan.carti.model.IconChoice;
+import com.upreyvan.carti.models.Category;
+import com.upreyvan.carti.models.IconChoice;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.utils.Utils;
 import com.yalantis.ucrop.UCrop;
 import java.io.File;
 import java.util.UUID;
@@ -78,12 +78,12 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
         getBinding().btnSave.setOnClickListener(v -> {
             String name = getBinding().etCategoryName.getText().toString().trim();
             if (name.isEmpty()) {
-                showToast("Please enter a category name", com.upreyvan.carti.util.UiHelper.Status.WARNING);
+                showToast("Please enter a category name", com.upreyvan.carti.utils.UiHelper.Status.WARNING);
                 return;
             }
             Category newCategory = new Category(UUID.randomUUID().toString(), name, selectedIconRes, R.color.icon_others, R.color.log_others, false);
             CategoryManager.getInstance(this).addCategory(newCategory);
-            showToast("Category Saved!", com.upreyvan.carti.util.UiHelper.Status.SUCCESS);
+            showToast("Category Saved!", com.upreyvan.carti.utils.UiHelper.Status.SUCCESS);
             finish();
         });
     }

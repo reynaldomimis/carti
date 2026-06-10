@@ -21,17 +21,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.remote.ApiHelper;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.data.repository.TransactionRepository;
+import com.upreyvan.carti.datasource.ApiHelper;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.FragmentAllTransactionsBinding;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.ui.home.CommentsBottomSheetFragment;
 import com.upreyvan.carti.ui.home.ReactionsBottomSheetFragment;
 import com.upreyvan.carti.ui.goals.UpdateGoalBottomSheetFragment;
-import com.upreyvan.carti.util.DialogHelper;
-import com.upreyvan.carti.util.UiHelper;
+import com.upreyvan.carti.utils.DialogHelper;
+import com.upreyvan.carti.utils.UiHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -226,7 +226,8 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
     }
 
     private void setupRecyclerView() {
-        adapter = new TransactionAdapter();
+        String currentUserId = com.upreyvan.carti.managers.PreferenceManager.getInstance(requireContext()).getUserId();
+        adapter = new TransactionAdapter(currentUserId);
         adapter.setOnTransactionInteractionListener(new TransactionAdapter.OnTransactionInteractionListener() {
             @Override public void onLikeClick(TransactionWithUser item) { transactionRepository.toggleLike(item, "👍"); }
             @Override public void onReactionClick(TransactionWithUser item, String emoji) { transactionRepository.toggleLike(item, emoji); }
@@ -252,7 +253,7 @@ public class AllTransactionsFragment extends BaseFragment<FragmentAllTransaction
                 DialogHelper.showConfirmation(requireContext(), "Delete Transaction?", 
                     "Are you sure you want to delete this " + (transaction.getTitle() != null ? transaction.getTitle() : "transaction") + "?", 
                     "Delete", () -> {
-                    transactionRepository.deleteTransaction(transaction.getId(), new AppwriteCallback<Object>() {
+                    transactionRepository.deleteItem(transaction.getType(), transaction.getId(), new AppwriteCallback<Object>() {
                         @Override public void onSuccess(Object result) {
                             showToast(getString(R.string.msg_deleted_balance_updated), UiHelper.Status.SUCCESS);
                         }

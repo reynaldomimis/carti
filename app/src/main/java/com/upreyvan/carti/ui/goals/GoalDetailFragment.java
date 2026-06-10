@@ -14,11 +14,11 @@ import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.FragmentGoalDetailBinding;
 import com.upreyvan.carti.databinding.ItemGoalHistoryBinding;
-import com.upreyvan.carti.model.Transaction;
-import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.ui.common.AddFundsFragment;
-import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.ValueHelper;
+import com.upreyvan.carti.utils.Utils;
+import com.upreyvan.carti.utils.ValueHelper;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     public static GoalDetailFragment newInstance(String goalId) {
         GoalDetailFragment fragment = new GoalDetailFragment();
         Bundle args = new Bundle();
-        args.putString(com.upreyvan.carti.util.Constants.Keys.KEY_TRANSACTION_ID, goalId);
+        args.putString(com.upreyvan.carti.utils.Constants.Keys.KEY_TRANSACTION_ID, goalId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -44,7 +44,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            goalId = getArguments().getString(com.upreyvan.carti.util.Constants.Keys.KEY_TRANSACTION_ID);
+            goalId = getArguments().getString(com.upreyvan.carti.utils.Constants.Keys.KEY_TRANSACTION_ID);
         }
     }
 

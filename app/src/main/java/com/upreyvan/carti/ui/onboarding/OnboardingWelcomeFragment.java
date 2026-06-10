@@ -12,10 +12,10 @@ import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
-import com.upreyvan.carti.data.local.PreferenceManager;
+import com.upreyvan.carti.managers.PreferenceManager;
 import com.upreyvan.carti.databinding.FragmentOnboardingWelcomeBinding;
 import com.upreyvan.carti.ui.family.JoinFamilyFragment;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.utils.Utils;
 import java.util.Map;
 
 public class OnboardingWelcomeFragment extends BaseFragment<FragmentOnboardingWelcomeBinding> {

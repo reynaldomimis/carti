@@ -58,7 +58,7 @@ public class AboutFragment extends BaseFragment<FragmentAboutBinding> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
         } catch (Exception e) {
-            showToast("Unable to open link", com.upreyvan.carti.util.UiHelper.Status.ERROR);
+            showToast("Unable to open link", com.upreyvan.carti.utils.UiHelper.Status.ERROR);
         }
     }
 }

@@ -11,8 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.upreyvan.carti.databinding.LayoutBaseActionBottomSheetBinding;
-import com.upreyvan.carti.util.AmountTextWatcher;
-import com.upreyvan.carti.util.UiHelper;
+import com.upreyvan.carti.utils.AmountTextWatcher;
+import com.upreyvan.carti.utils.UiHelper;
 
 public abstract class BaseActionBottomSheet extends BaseBottomSheetFragment<LayoutBaseActionBottomSheetBinding> {
 
@@ -61,7 +61,7 @@ public abstract class BaseActionBottomSheet extends BaseBottomSheetFragment<Layo
 
         Editable amountText = getBinding().etAmount.getText();
         String amountStr = amountText != null ? amountText.toString().trim() : "";
-        double amount = com.upreyvan.carti.util.StringHelper.parseDouble(amountStr);
+        double amount = com.upreyvan.carti.utils.StringHelper.parseDouble(amountStr);
         setActionEnabled(amount > 0);
     }
 

@@ -11,15 +11,17 @@ import androidx.lifecycle.MediatorLiveData;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseMultiItem;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.repository.MemberRepository;
-import com.upreyvan.carti.data.repository.NotificationRepository;
-import com.upreyvan.carti.data.repository.TransactionRepository;
-import com.upreyvan.carti.model.Bill;
-import com.upreyvan.carti.model.BudgetCategoryItem;
-import com.upreyvan.carti.model.QuickLogItem;
-import com.upreyvan.carti.model.TransactionWithUser;
-import com.upreyvan.carti.util.Utils;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.repository.AiRepository;
+import com.upreyvan.carti.repository.MemberRepository;
+import com.upreyvan.carti.repository.NotificationRepository;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.Bill;
+import com.upreyvan.carti.models.BudgetCategoryItem;
+import com.upreyvan.carti.models.QuickLogItem;
+import com.upreyvan.carti.models.Transaction;
+import com.upreyvan.carti.models.TransactionWithUser;
+import com.upreyvan.carti.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,6 +34,7 @@ public class HomeViewModel extends BaseViewModel {
     private final TransactionRepository transRepo;
     private final NotificationRepository notifRepo;
     private final MemberRepository memberRepo;
+    private final AiRepository aiRepo;
     private final PreferenceManager pref;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -43,14 +46,16 @@ public class HomeViewModel extends BaseViewModel {
     private List<Bill> currentBills;
     private List<TransactionWithUser> currentTransactions;
     private List<BudgetCategoryItem> currentPlan;
-
-    private Double curInc = 0.0, curExp = 0.0, lstInc = 0.0, lstExp = 0.0, totalBal = 0.0;
+    private List<TransactionWithUser> allTransactionsList;
+    private String aiInsight;
+    private boolean isAiFetching = false;
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
         transRepo = TransactionRepository.getInstance(application);
         notifRepo = NotificationRepository.getInstance(application);
         memberRepo = MemberRepository.getInstance(application);
+        aiRepo = AiRepository.getInstance(application);
         pref = PreferenceManager.getInstance(application);
         setupDataStream();
         uiState.addSource(dataTrigger, v -> {});
@@ -61,46 +66,156 @@ public class HomeViewModel extends BaseViewModel {
     public void refreshData() {
         transRepo.refreshTransactions();
         memberRepo.refreshMembers();
+        aiInsight = null;
+        fetchAiInsight();
     }
 
     private void setupDataStream() {
-        Calendar current = Calendar.getInstance();
-        Calendar lastMonth = Calendar.getInstance();
-        lastMonth.add(Calendar.MONTH, -1);
-
-        long curStart = Utils.getMonthStartMillis(current);
-        long curEnd = Utils.getMonthEndMillis(current);
-        long lstStart = Utils.getMonthStartMillis(lastMonth);
-        long lstEnd = Utils.getMonthEndMillis(lastMonth);
-
-        dataTrigger.addSource(transRepo.getBalance(), v -> { totalBal = v; updateDash(); rebuild(false); });
-        dataTrigger.addSource(transRepo.getTotalIncomeInRange(curStart, curEnd), v -> { curInc = v; updateDash(); rebuild(false); });
-        dataTrigger.addSource(transRepo.getTotalExpenseInRange(curStart, curEnd), v -> { curExp = v; updateDash(); rebuild(false); });
-        dataTrigger.addSource(transRepo.getTotalIncomeInRange(lstStart, lstEnd), v -> { lstInc = v; updateDash(); rebuild(false); });
-        dataTrigger.addSource(transRepo.getTotalExpenseInRange(lstStart, lstEnd), v -> { lstExp = v; updateDash(); rebuild(false); });
-        dataTrigger.addSource(transRepo.getRecentTransactions(5), v -> { 
-            this.currentTransactions = v; 
-            rebuild(true); 
-        });
+        dataTrigger.addSource(transRepo.getAllTransactions(), v -> { allTransactionsList = v; rebuild(false); });
         dataTrigger.addSource(notifRepo.getBills(pref.getFamilyId()), v -> { this.currentBills = v; rebuild(false); });
         dataTrigger.addSource(transRepo.getBudgetPlanLiveData(), v -> { this.currentPlan = v; rebuild(false); });
         dataTrigger.addSource(transRepo.getSyncingStatus(), v -> rebuild(false));
     }
 
-    private void updateDash() {
-        double inc = curInc != null ? curInc : 0.0;
-        double exp = curExp != null ? curExp : 0.0;
-        double lInc = lstInc != null ? lstInc : 0.0;
-        double lExp = lstExp != null ? lstExp : 0.0;
-        double bal = totalBal != null ? totalBal : 0.0;
-        this.currentDash = new DashboardState(bal, inc, exp, inc - exp, calculateTrend(inc, lInc), calculateTrend(exp, lExp), calculateTrend(inc - exp, lInc - lExp));
+    private void checkAiTrigger() {
+        if (aiInsight == null && !isAiFetching) {
+            String cached = pref.getAiInsightsCache();
+            long timestamp = pref.getAiInsightsTimestamp();
+            
+            boolean isBoring = cached.toLowerCase().contains("no urgent");
+            
+            if (!cached.isEmpty() && timestamp >= Utils.getStartOfDayMillis() && !isBoring) {
+                aiInsight = cached;
+                rebuild(false);
+            } else {
+                fetchAiInsight();
+            }
+        }
+    }
+
+    private void fetchAiInsight() {
+        if (currentDash == null || isAiFetching) return;
+        
+        isAiFetching = true;
+        rebuild(false); 
+        
+        StringBuilder ctxBuilder = new StringBuilder();
+        ctxBuilder.append(String.format("CURRENCY: Philippine Peso (PHP, ₱). Balance: ₱%.2f. Monthly Income: ₱%.2f. Monthly Expense: ₱%.2f.\n",
+                currentDash.balance, currentDash.monthlyIncome, currentDash.monthlyExpense));
+        
+        if (currentBills != null && !currentBills.isEmpty()) {
+            ctxBuilder.append("Upcoming/Overdue Bills:\n");
+            for (Bill b : currentBills) {
+                ctxBuilder.append(String.format("- %s (₱%.2f) Due: %s\n", b.getName(), b.getAmount(), b.getDate()));
+            }
+        }
+        
+        if (currentPlan != null && !currentPlan.isEmpty()) {
+            ctxBuilder.append("Budget Progress:\n");
+            for (BudgetCategoryItem p : currentPlan) {
+                double usage = p.getAmount() > 0 ? (p.getCurrentSpent() / p.getAmount()) * 100 : 0;
+                ctxBuilder.append(String.format("- %s: %.0f%% used.\n", p.getCategoryName(), usage));
+            }
+        }
+
+        aiRepo.getInsights(ctxBuilder.toString(), new AiRepository.AiCallback() {
+            @Override public void onSuccess(String response) {
+                isAiFetching = false;
+                aiInsight = response;
+                pref.setAiInsightsCache(response);
+                rebuild(false);
+            }
+            @Override public void onError(Throwable t) {
+                isAiFetching = false;
+                if (aiInsight == null) {
+                    aiInsight = "[{\"type\": \"INFO\", \"message\": \"Kakatapos ko lang mag-analyze, check mo dashboard natin! 🙌\"}]";
+                    rebuild(false);
+                }
+            }
+            @Override public void onActionDetected(org.json.JSONObject action) {
+                isAiFetching = false;
+            }
+        });
     }
 
     private void rebuild(boolean instant) {
         Runnable task = () -> {
+            if (allTransactionsList != null) {
+                Calendar cal = Calendar.getInstance();
+                long curStart = Utils.getMonthStartMillis(cal);
+                long curEnd = Utils.getMonthEndMillis(cal);
+                long todayStart = Utils.getStartOfDayMillis();
+                String curMonthQuery = Utils.formatMonthQuery(cal);
+                
+                cal.add(Calendar.MONTH, -1);
+                long lstStart = Utils.getMonthStartMillis(cal);
+                long lstEnd = Utils.getMonthEndMillis(cal);
+                
+                double budget = 0, exp = 0, inc = 0, today = 0, lExp = 0, lInc = 0;
+                List<TransactionWithUser> recents = new ArrayList<>();
+                
+                for (TransactionWithUser tu : allTransactionsList) {
+                    Transaction t = tu.getTransaction();
+                    String type = t.getType();
+                    long ts = t.getTimestampMillis();
+                    
+                    boolean isCurMonth = ts >= curStart && ts <= curEnd;
+                    boolean isLstMonth = ts >= lstStart && ts <= lstEnd;
+                    
+                    if ("ALLOCATION".equalsIgnoreCase(type)) {
+                        if (t.getAllocationMonth() != null && t.getAllocationMonth().contains(curMonthQuery)) {
+                            budget += t.getAmount();
+                        }
+                    } else if ("EXPENSE".equalsIgnoreCase(type)) {
+                        if (isCurMonth) exp += t.getAmount();
+                        if (isLstMonth) lExp += t.getAmount();
+                        if (ts >= todayStart) today += t.getAmount();
+                    } else if ("INCOME".equalsIgnoreCase(type)) {
+                        if (isCurMonth) inc += t.getAmount();
+                        if (isLstMonth) lInc += t.getAmount();
+                    }
+                }
+                
+                // Get 5 most recent
+                recents = allTransactionsList.stream().limit(5).collect(java.util.stream.Collectors.toList());
+                this.currentTransactions = recents;
+
+                double bal = budget - exp;
+                this.currentDash = new DashboardState(bal, inc, exp, bal, calculateTrend(inc, lInc), calculateTrend(exp, lExp), 0, today, budget);
+                if (aiInsight == null) mainHandler.post(this::checkAiTrigger);
+            }
+
             List<BaseMultiItem> items = new ArrayList<>();
             if (currentDash != null) items.add(new HomeListItem.DashboardItem(currentDash));
-            items.add(new HomeListItem.AIInsightItem("Analyzing budget... 🙌"));
+            
+            if (isAiFetching) {
+                items.add(new HomeListItem.AIInsightItem(
+                        "Analyzing your Carti finances... 🤔",
+                        "INFO"
+                ));
+            } else if (aiInsight != null && !aiInsight.isEmpty()) {
+                try {
+                    String cleanJson = aiInsight.replaceAll("```json", "").replaceAll("```", "").trim();
+                    org.json.JSONArray arr = new org.json.JSONArray(cleanJson);
+                    if (arr.length() > 0) {
+                        for (int i = 0; i < arr.length(); i++) {
+                            org.json.JSONObject obj = arr.getJSONObject(i);
+                            String msg = obj.optString("message", obj.optString("text"));
+                            items.add(new HomeListItem.AIInsightItem(msg, obj.optString("type")));
+                        }
+                    } else {
+                        items.add(new HomeListItem.AIInsightItem("Laging tandaan: Ang pag-iipon ay para sa iyong future! 🙌", "INFO"));
+                    }
+                } catch (Exception e) {
+                    String cleanMsg = aiInsight.replaceAll("[\\*\\[\\]]", "").trim();
+                    if (!cleanMsg.isEmpty()) {
+                        items.add(new HomeListItem.AIInsightItem(cleanMsg, "INFO"));
+                    } else {
+                        items.add(new HomeListItem.AIInsightItem("Kakatapos ko lang mag-analyze, check mo dashboard natin! 🙌", "INFO"));
+                    }
+                }
+            }
+
             if (currentPlan == null || currentPlan.isEmpty()) items.add(new HomeListItem.BudgetPromptItem(null));
             if (currentBills != null && !currentBills.isEmpty()) {
                 items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.due_bills_header), null, false, null, null));
@@ -148,7 +263,7 @@ public class HomeViewModel extends BaseViewModel {
     }
 
     private double calculateTrend(double c, double p) { return p == 0 ? 0 : ((c - p) / p) * 100; }
-    public record DashboardState(double balance, double monthlyIncome, double monthlyExpense, double monthlySavings, double incomeTrend, double expenseTrend, double savingsTrend) {}
+    public record DashboardState(double balance, double monthlyIncome, double monthlyExpense, double monthlySavings, double incomeTrend, double expenseTrend, double savingsTrend, double todayExpense, double monthlyBudget) {}
 
     public void toggleLike(TransactionWithUser item) {
         transRepo.toggleLike(item, "👍");
@@ -159,6 +274,7 @@ public class HomeViewModel extends BaseViewModel {
     }
 
     public void deleteTransaction(TransactionWithUser item) {
-        transRepo.deleteTransaction(item.getTransaction().getId(), null);
+        Transaction transaction = item.getTransaction();
+        transRepo.deleteItem(transaction.getType(), transaction.getId(), null);
     }
 }

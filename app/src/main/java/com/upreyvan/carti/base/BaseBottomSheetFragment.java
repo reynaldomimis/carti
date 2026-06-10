@@ -9,8 +9,8 @@ import androidx.annotation.Nullable;
 import androidx.viewbinding.ViewBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.upreyvan.carti.R;
-import com.upreyvan.carti.util.NetworkMonitor;
-import com.upreyvan.carti.util.UiHelper;
+import com.upreyvan.carti.utils.NetworkMonitor;
+import com.upreyvan.carti.utils.UiHelper;
 
 public abstract class BaseBottomSheetFragment<VB extends ViewBinding> extends BottomSheetDialogFragment {
     private VB binding;

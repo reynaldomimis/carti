@@ -2,8 +2,8 @@ package com.upreyvan.carti.ui.home;
 
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemReactorBinding;
-import com.upreyvan.carti.model.Reactor;
-import com.upreyvan.carti.util.AvatarHelper;
+import com.upreyvan.carti.models.Reactor;
+import com.upreyvan.carti.utils.AvatarHelper;
 
 public class ReactorAdapter extends BaseAdapter<Reactor, ItemReactorBinding> {
 

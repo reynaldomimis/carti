@@ -9,13 +9,13 @@ import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActivity;
-import com.upreyvan.carti.data.local.CategoryManager;
+import com.upreyvan.carti.managers.CategoryManager;
 import com.upreyvan.carti.databinding.ActivityAddTrackBinding;
-import com.upreyvan.carti.model.Category;
-import com.upreyvan.carti.util.StringHelper;
-import com.upreyvan.carti.util.UiHelper;
-import com.upreyvan.carti.util.Utils;
-import com.upreyvan.carti.util.Validator;
+import com.upreyvan.carti.models.Category;
+import com.upreyvan.carti.utils.StringHelper;
+import com.upreyvan.carti.utils.UiHelper;
+import com.upreyvan.carti.utils.Utils;
+import com.upreyvan.carti.utils.Validator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,9 +85,9 @@ public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
     }
 
     private void updateSubCategoryDropdown(String parentCategoryName) {
-        List<com.upreyvan.carti.model.Category> allCategories = com.upreyvan.carti.data.local.CategoryManager.getInstance(this).getCategories();
+        List<com.upreyvan.carti.models.Category> allCategories = com.upreyvan.carti.managers.CategoryManager.getInstance(this).getCategories();
         List<String> subCategoryNames = new ArrayList<>();
-        for (com.upreyvan.carti.model.Category item : allCategories) {
+        for (com.upreyvan.carti.models.Category item : allCategories) {
             if (parentCategoryName.equalsIgnoreCase(item.getParentCategory())) {
                 subCategoryNames.add(item.getName());
             }

@@ -21,10 +21,10 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.databinding.LayoutBottomSheetAddGoalBinding;
-import com.upreyvan.carti.model.IconChoice;
-import com.upreyvan.carti.model.TransactionWithUser;
+import com.upreyvan.carti.models.IconChoice;
+import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
-import com.upreyvan.carti.util.UiHelper;
+import com.upreyvan.carti.utils.UiHelper;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -91,9 +91,9 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
         };
 
         getBinding().etGoalName.addTextChangedListener(validationWatcher);
-        getBinding().etTargetAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etTargetAmount));
+        getBinding().etTargetAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etTargetAmount));
         getBinding().etTargetAmount.addTextChangedListener(validationWatcher);
-        getBinding().etSavedAmount.addTextChangedListener(new com.upreyvan.carti.util.AmountTextWatcher(getBinding().etSavedAmount));
+        getBinding().etSavedAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etSavedAmount));
         getBinding().etTargetDate.addTextChangedListener(validationWatcher);
     }
 
@@ -102,7 +102,7 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
         String targetStr = getBinding().etTargetAmount.getText().toString().trim();
         String date = getBinding().etTargetDate.getText().toString().trim();
 
-        double target = com.upreyvan.carti.util.StringHelper.parseDouble(targetStr);
+        double target = com.upreyvan.carti.utils.StringHelper.parseDouble(targetStr);
         
         boolean isValid = !name.isEmpty() && target > 0 && !date.isEmpty();
         boolean isLoading = viewModel.getIsLoading().getValue() != null && viewModel.getIsLoading().getValue();
@@ -207,9 +207,9 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
             }
         }
 
-        double targetAmount = com.upreyvan.carti.util.StringHelper.parseDouble(getBinding().etTargetAmount.getText().toString().trim());
+        double targetAmount = com.upreyvan.carti.utils.StringHelper.parseDouble(getBinding().etTargetAmount.getText().toString().trim());
         String savedAmountStr = getBinding().etSavedAmount.getText().toString().trim();
-        double savedAmount = savedAmountStr.isEmpty() ? 0 : com.upreyvan.carti.util.StringHelper.parseDouble(savedAmountStr);
+        double savedAmount = savedAmountStr.isEmpty() ? 0 : com.upreyvan.carti.utils.StringHelper.parseDouble(savedAmountStr);
         String date = getBinding().etTargetDate.getText().toString().trim();
 
         viewModel.saveGoal(name, targetAmount, savedAmount, date, selectedIcon, selectedImageUri);

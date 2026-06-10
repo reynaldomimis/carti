@@ -5,11 +5,11 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.upreyvan.carti.base.BaseViewModel;
-import com.upreyvan.carti.data.local.PreferenceManager;
-import com.upreyvan.carti.data.remote.AppwriteManager.AppwriteCallback;
-import com.upreyvan.carti.data.repository.FamilyRepository;
-import com.upreyvan.carti.data.repository.NotificationRepository;
-import com.upreyvan.carti.model.Notification;
+import com.upreyvan.carti.managers.PreferenceManager;
+import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
+import com.upreyvan.carti.repository.FamilyRepository;
+import com.upreyvan.carti.repository.NotificationRepository;
+import com.upreyvan.carti.models.Notification;
 import io.appwrite.models.Document;
 import io.appwrite.models.DocumentList;
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class NotificationViewModel extends BaseViewModel {
     public void loadAll() {
         setLoading(true);
         List<Notification> list = new ArrayList<>();
-        list.add(new Notification("Welcome to Carti!", "Start tracking your family expenses and reach your goals together.", System.currentTimeMillis(), Notification.Type.INFO, null));
+        list.add(new Notification("welcome", "Welcome to Carti!", "Start tracking your family expenses and reach your goals together.", System.currentTimeMillis(), Notification.Type.INFO, null));
 
         if (pref.isAdmin()) {
             familyRepo.getPendingMembers(new AppwriteCallback<DocumentList<Map<String, Object>>>() {
@@ -46,7 +46,7 @@ public class NotificationViewModel extends BaseViewModel {
                 public void onSuccess(DocumentList<Map<String, Object>> result) {
                     for (Document<Map<String, Object>> doc : result.getDocuments()) {
                         String userName = String.valueOf(doc.getData().get("username"));
-                        list.add(new Notification("New Join Request", userName + " wants to join your family.", System.currentTimeMillis(), Notification.Type.JOIN_REQUEST, doc.getId()));
+                        list.add(new Notification(doc.getId(), "New Join Request", userName + " wants to join your family.", System.currentTimeMillis(), Notification.Type.JOIN_REQUEST, doc.getId()));
                     }
                     loadAnnouncements(list);
                 }
@@ -72,8 +72,8 @@ public class NotificationViewModel extends BaseViewModel {
                     String title = String.valueOf(doc.getData().get("title"));
                     String content = String.valueOf(doc.getData().get("content"));
                     long ts = 0;
-                    try { ts = com.upreyvan.carti.util.Utils.getMillisFromIso(String.valueOf(doc.getData().get("$createdAt"))); } catch (Exception ignored) {}
-                    list.add(new Notification(title, content, ts > 0 ? ts : System.currentTimeMillis(), Notification.Type.INFO, null));
+                    try { ts = com.upreyvan.carti.utils.Utils.getMillisFromIso(String.valueOf(doc.getData().get("$createdAt"))); } catch (Exception ignored) {}
+                    list.add(new Notification(doc.getId(), title, content, ts > 0 ? ts : System.currentTimeMillis(), Notification.Type.INFO, null));
                 }
                 notifications.postValue(list);
                 setLoading(false);

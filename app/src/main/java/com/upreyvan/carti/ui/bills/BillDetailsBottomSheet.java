@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseActionBottomSheet;
 import com.upreyvan.carti.databinding.LayoutBaseActionBottomSheetBinding;
-import com.upreyvan.carti.util.StringHelper;
+import com.upreyvan.carti.utils.StringHelper;
 
 public class BillDetailsBottomSheet extends BaseActionBottomSheet {
 
