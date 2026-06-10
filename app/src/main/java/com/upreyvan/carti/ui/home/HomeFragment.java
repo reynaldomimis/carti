@@ -61,9 +61,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
 
     private void setupListeners() {
         getBinding().btnNotif.setOnClickListener(v -> {
-            com.upreyvan.carti.repository.NotificationRepository.getInstance(requireContext()).markAllAsRead();
             if (getActivity() instanceof MainActivity main) {
-                main.navigateTo(R.id.nav_profile);
+                main.navigateTo(Constants.Navigation.NOTIFICATIONS);
             }
         });
     }

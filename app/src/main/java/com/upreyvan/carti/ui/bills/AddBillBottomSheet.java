@@ -157,7 +157,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             String title = "BILL: " + billName;
             String content = "A new bill for " + category + " (" + Utils.formatCurrency(StringHelper.parseDouble(amountStr)) + ") is due on " + formattedDate;
 
-            viewModel.saveBill(title, content);
+            viewModel.saveBill(title, content, StringHelper.parseDouble(amountStr));
         });
     }
 }

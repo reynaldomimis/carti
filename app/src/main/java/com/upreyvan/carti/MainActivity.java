@@ -190,6 +190,9 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             } else if (id == Constants.Navigation.ADD) {
                 startActivity(new Intent(this, AddOptionsActivity.class));
                 return;
+            } else if (id == Constants.Navigation.NOTIFICATIONS) {
+                target = new com.upreyvan.carti.ui.notifications.NotificationsFragment();
+                showBottomNav = false;
             }
         }
 
@@ -265,13 +268,6 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
                 if (activeFragment != homeFragment) {
                     navigateTo(Constants.Navigation.HOME);
-                    getSupportFragmentManager().beginTransaction()
-                            .hide(activeFragment)
-                            .show(homeFragment)
-                            .commit();
-                    activeFragment = homeFragment;
-                    setTabActive(getBinding().tabHome);
-                    setBottomNavVisibility(true);
                 } else if (activeFragment == homeFragment) {
                     new MaterialAlertDialogBuilder(MainActivity.this)
                             .setTitle("Exit")

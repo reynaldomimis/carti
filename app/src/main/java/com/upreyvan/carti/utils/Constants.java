@@ -51,6 +51,9 @@ public class Constants {
         public static final String ADD_COMMENT = "add_comment";
         public static final String UPDATE_COMMENT = "update_comment";
         public static final String DELETE_COMMENT = "delete_comment";
+        public static final String GET_NOTIFICATIONS = "get_notifications";
+        public static final String MARK_NOTIFICATION_READ = "mark_notification_read";
+        public static final String MARK_ALL_NOTIFICATIONS_READ = "mark_all_notifications_read";
     }
 
     public static final class Keys {
@@ -143,6 +146,7 @@ public class Constants {
         public static final int GOALS = 6;
         public static final int ADD = 7;
         public static final int INCOME = 8;
+        public static final int NOTIFICATIONS = 9;
     }
 
     public static final class ErrorCodes {

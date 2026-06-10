@@ -1,73 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.upreyvan.carti.ui.common.RootLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet_white"
-    android:orientation="vertical"
+    app:useImePadding="true"
     android:padding="24dp">
 
-    <View
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="24dp"
-        android:background="@color/border_light" />
-
-    <TextView
-        style="@style/CartiTextTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/notif_send_family_title"
-        android:textSize="20sp" />
-
-    <TextView
-        style="@style/CartiTextDescription"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="24dp"
-        android:text="@string/notif_send_family_desc" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilTitle"
-        style="@style/CartiInputLayout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:hint="@string/label_title">
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etTitle"
-            style="@style/CartiEditText"
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:background="@color/border_light" />
+
+        <TextView
+            style="@style/CartiTextTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/notif_send_family_title"
+            android:textSize="20sp" />
+
+        <TextView
+            style="@style/CartiTextDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="24dp"
+            android:text="@string/notif_send_family_desc" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilTitle"
+            style="@style/CartiInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textCapSentences" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="16dp"
+            android:hint="@string/label_title">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilContent"
-        style="@style/CartiInputLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:hint="@string/hint_news_content">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTitle"
+                style="@style/CartiEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etContent"
-            style="@style/CartiEditText"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilContent"
+            style="@style/CartiInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="top"
-            android:inputType="textMultiLine|textCapSentences"
-            android:lines="4" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="24dp"
+            android:hint="@string/hint_news_content">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSend"
-        style="@style/CartiButton.Primary"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="@string/action_send_announcement" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etContent"
+                style="@style/CartiEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top"
+                android:inputType="textMultiLine|textCapSentences"
+                android:lines="4" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-</LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSend"
+            style="@style/CartiButton.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/action_send_announcement" />
+    </LinearLayout>
+
+</com.upreyvan.carti.ui.common.RootLayout>

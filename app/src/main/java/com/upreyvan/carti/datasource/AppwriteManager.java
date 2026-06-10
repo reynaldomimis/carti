@@ -319,6 +319,21 @@ public class AppwriteManager {
         }));
     }
 
+    public void updateDocument(String databaseId, String collectionId, String documentId, Map<String, Object> data, AppwriteCallback<Document<Map<String, Object>>> callback) {
+        ensureInitialized(() -> BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
+            try {
+                Document<Map<String, Object>> result = BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (s2, c2) -> {
+                    try { return databases.updateDocument(databaseId, collectionId, documentId, data, null, (Class) Map.class, c2); }
+                    catch (Exception e) { throw new RuntimeException(e); }
+                });
+                postSuccess(callback, result);
+            } catch (Exception e) {
+                postError(callback, e.getCause() != null ? e.getCause() : e);
+            }
+            return Unit.INSTANCE;
+        }));
+    }
+
     public void getDocument(String databaseId, String collectionId, String documentId, AppwriteCallback<Document<Map<String, Object>>> callback) {
         ensureInitialized(() -> BuildersKt.launch(scope, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (s, continuation) -> {
             try {

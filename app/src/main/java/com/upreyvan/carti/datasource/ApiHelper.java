@@ -302,10 +302,11 @@ public class ApiHelper {
         );
     }
 
-    public void sendAnnouncement(String title, String content, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+    public void sendAnnouncement(String title, String content, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("title", title);
         params.put("content", content);
+        params.put("amount", amount);
         callAction(Constants.Actions.SEND_ANNOUNCEMENT, params, callback);
     }
 
@@ -319,5 +320,19 @@ public class ApiHelper {
                 ),
                 callback
         );
+    }
+
+    public void fetchNotifications(AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        callAction(Constants.Actions.GET_NOTIFICATIONS, new HashMap<>(), callback);
+    }
+
+    public void markNotificationRead(String notificationId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("notificationId", notificationId);
+        callAction(Constants.Actions.MARK_NOTIFICATION_READ, params, callback);
+    }
+
+    public void markAllNotificationsRead(AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        callAction(Constants.Actions.MARK_ALL_NOTIFICATIONS_READ, new HashMap<>(), callback);
     }
 }

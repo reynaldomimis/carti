@@ -545,10 +545,16 @@ public class TransactionRepository {
     }
 
     public LiveData<Double> getTotalIncome() {
+        // Future-ready: Actual money earned/owned by a specific user (Salary, side income, etc.)
         Calendar cal = Calendar.getInstance();
         long start = Utils.getMonthStartMillis(cal);
         long end = Utils.getMonthEndMillis(cal);
         return getTotalIncomeInRange(start, end);
+    }
+
+    public LiveData<Double> getTotalAllocation() {
+        // Current: Shared planned family budget distribution (Food, bills, etc.)
+        return getSumByType("ALLOCATION");
     }
 
     @SuppressWarnings("unused")
@@ -560,6 +566,8 @@ public class TransactionRepository {
     }
 
     public LiveData<Double> getBalance() {
+        // Current System: Available Balance is based on ALLOCATION-based budgeting.
+        // Allocation represents shared planned distribution, not actual earned money.
         return Transformations.switchMap(getSumByType("ALLOCATION"), budget ->
                Transformations.map(getSumByType("EXPENSE"), expense -> budget - expense)
         );
@@ -588,6 +596,7 @@ public class TransactionRepository {
     }
 
     public LiveData<Double> getSavingsCombined() {
+        // Future-ready: Combined savings based on actual earned INCOME vs actual EXPENSES.
         return Transformations.map(allTransactions, list -> {
             if (list == null) return 0.0;
             
@@ -1052,6 +1061,9 @@ public class TransactionRepository {
     }
 
     public void processRecurringBudgets() {
+        // Financial Logic: Allocation and Income are separate concepts.
+        // Recurring Allocation should carry over as Allocation to maintain budget consistency.
+        // It must NOT be treated as or converted into earned Income.
         String currentMonthKey = String.format(java.util.Locale.US, "%d-%02d", 
                 Calendar.getInstance().get(Calendar.YEAR), 
                 Calendar.getInstance().get(Calendar.MONTH) + 1);
@@ -1061,16 +1073,37 @@ public class TransactionRepository {
         List<TransactionWithUser> all = allTransactions.getValue();
         if (all == null) return;
 
+        Calendar lastMonthCal = Calendar.getInstance();
+        lastMonthCal.add(Calendar.MONTH, -1);
+        String lastMonth = Utils.formatMonthQuery(lastMonthCal);
         String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
-        List<Transaction> recurringItems = all.stream()
+
+        // Find recurring ALLOCATIONS from the previous month to carry forward
+        List<Transaction> lastMonthRecurring = all.stream()
                 .map(TransactionWithUser::getTransaction)
                 .filter(t -> "ALLOCATION".equalsIgnoreCase(t.getType()) && 
-                            (t.getAllocationMonth() != null && t.getAllocationMonth().startsWith(currentMonth)) &&
+                            isSameMonth(t.getAllocationMonth(), lastMonth) &&
                             t.isRecurring() && t.getAmount() > 0)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
 
-        for (Transaction item : recurringItems) {
-            createItem(TransactionType.INCOME, item.getAmount(), item.getCategory(), "Recurring: " + item.getCategory(), null);
+        // Identify existing ALLOCATIONS in the current month to avoid duplication
+        java.util.Set<String> existingCategories = all.stream()
+                .map(TransactionWithUser::getTransaction)
+                .filter(t -> "ALLOCATION".equalsIgnoreCase(t.getType()) && 
+                            isSameMonth(t.getAllocationMonth(), currentMonth))
+                .map(t -> t.getCategory().toLowerCase(java.util.Locale.ROOT).trim())
+                .collect(Collectors.toSet());
+
+        for (Transaction item : lastMonthRecurring) {
+            String catKey = item.getCategory().toLowerCase(java.util.Locale.ROOT).trim();
+            if (!existingCategories.contains(catKey)) {
+                // Carry over as ALLOCATION for the new month
+                Transaction nextItem = item.copy();
+                nextItem.setId(null); // Ensure a new document is created
+                nextItem.setAllocationMonth(currentMonth);
+                nextItem.setTimestampMillis(System.currentTimeMillis());
+                createItem(TransactionType.ALLOCATION, nextItem, null);
+            }
         }
         
         pref.setLastRecurringCheck(currentMonthKey);

@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.upreyvan.carti.MainActivity;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.managers.PreferenceManager;
@@ -35,6 +36,10 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
         viewModel = new ViewModelProvider(this).get(NotificationViewModel.class);
         pref = PreferenceManager.getInstance(requireContext());
         
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setBottomNavVisibility(false);
+        }
+
         pref.setHasNotifications(false);
         pref.setLastNotifCheck(com.upreyvan.carti.utils.Utils.getCurrentTimestamp());
         
@@ -93,7 +98,9 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
                 bottomSheet.show(getChildFragmentManager(), "SendNotificationBottomSheet");
             });
         } else {
-            getBinding().layoutToolbar.btnAction.setVisibility(View.GONE);
+            getBinding().layoutToolbar.btnAction.setVisibility(View.VISIBLE);
+            getBinding().layoutToolbar.btnAction.setText("Mark all as read");
+            getBinding().layoutToolbar.btnAction.setOnClickListener(v -> viewModel.markAllAsRead());
         }
     }
 
@@ -101,6 +108,11 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
         adapter = new NotificationAdapter();
         adapter.setOnAcceptListener(viewModel::approveMember);
         adapter.setOnDenyListener(viewModel::rejectMember);
+        adapter.setOnItemClickListener(notification -> {
+            if (notification.isUnread()) {
+                viewModel.markAsRead(notification.getId());
+            }
+        });
         getBinding().rvNotifications.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvNotifications.setAdapter(adapter);
     }
