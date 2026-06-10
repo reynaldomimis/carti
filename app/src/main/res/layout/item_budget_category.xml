@@ -1,122 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/CartiListItemContainer"
+    style="@style/CartiCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="@dimen/spacing_xxs"
     android:clickable="true"
-    android:focusable="true"
-    android:foreground="?attr/selectableItemBackground"
-    android:paddingHorizontal="0dp">
+    android:focusable="true">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cvIcon"
-        android:layout_width="@dimen/icon_size_large"
-        android:layout_height="@dimen/icon_size_large"
-        app:cardBackgroundColor="@color/log_food"
-        app:cardCornerRadius="@dimen/radius_small"
-        app:cardElevation="0dp"
-        app:layout_constraintBottom_toBottomOf="@id/pbBudget"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:strokeWidth="0dp">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_small">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cvIcon"
+            android:layout_width="@dimen/icon_size_large"
+            android:layout_height="@dimen/icon_size_large"
+            app:cardBackgroundColor="@color/log_food"
+            app:cardCornerRadius="@dimen/radius_small"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="@id/pbBudget"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeWidth="0dp">
+
+            <ImageView
+                android:id="@+id/ivIcon"
+                android:layout_width="@dimen/icon_size_small"
+                android:layout_height="@dimen/icon_size_small"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_chart"
+                app:tint="@color/icon_food"
+                android:contentDescription="@null" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvCategoryName"
+            style="@style/CartiHeaderSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_medium"
+            app:layout_constraintEnd_toStartOf="@id/tvAmount"
+            app:layout_constraintStart_toEndOf="@id/cvIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/tvRemaining"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="Grocery" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvRemaining"
+            style="@style/CartiCaption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/carti_primary_green"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintBottom_toTopOf="@id/pbBudget"
+            app:layout_constraintStart_toStartOf="@id/tvCategoryName"
+            app:layout_constraintEnd_toStartOf="@id/tvPercentage"
+            app:layout_constraintTop_toBottomOf="@id/tvCategoryName"
+            tools:text="Remaining Balance: ₱845.00" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvAmount"
+            style="@style/CartiHeaderSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:textSize="@dimen/text_size_body_small"
+            app:layout_constraintBottom_toBottomOf="@id/tvCategoryName"
+            app:layout_constraintEnd_toStartOf="@id/ivArrowRight"
+            app:layout_constraintTop_toTopOf="@id/tvCategoryName"
+            tools:text="₱1,155 / ₱2,000" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvPercentage"
+            style="@style/CartiCaption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:textSize="13sp"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
+            android:textColor="@color/text_secondary"
+            app:layout_constraintBottom_toBottomOf="@id/tvRemaining"
+            app:layout_constraintEnd_toStartOf="@id/ivArrowRight"
+            app:layout_constraintTop_toTopOf="@id/tvRemaining"
+            tools:text="57%" />
 
         <ImageView
-            android:id="@+id/ivIcon"
-            android:layout_width="@dimen/icon_size_small"
-            android:layout_height="@dimen/icon_size_small"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_chart"
-            app:tint="@color/icon_food"
-            android:contentDescription="@null" />
-    </com.google.android.material.card.MaterialCardView>
+            android:id="@+id/ivArrowRight"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_chevron_right"
+            android:contentDescription="@null"
+            app:layout_constraintBottom_toBottomOf="@id/tvAmount"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvAmount"
+            app:tint="@color/text_tertiary" />
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvCategoryName"
-        style="@style/CartiHeaderSmall"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/spacing_medium"
-        app:layout_constraintEnd_toStartOf="@id/tvAmount"
-        app:layout_constraintStart_toEndOf="@id/cvIcon"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/tvRemaining"
-        app:layout_constraintVertical_chainStyle="packed"
-        tools:text="Grocery" />
+        <ProgressBar
+            android:id="@+id/pbBudget"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:progress="57"
+            android:progressDrawable="@drawable/bg_dash_progress"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tvCategoryName"
+            app:layout_constraintTop_toBottomOf="@id/tvRemaining"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="@dimen/spacing_xxs" />
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvRemaining"
-        style="@style/CartiCaption"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:textColor="@color/carti_primary_green"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:textSize="11sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        app:layout_constraintBottom_toTopOf="@id/pbBudget"
-        app:layout_constraintStart_toStartOf="@id/tvCategoryName"
-        app:layout_constraintEnd_toStartOf="@id/tvPercentage"
-        app:layout_constraintTop_toBottomOf="@id/tvCategoryName"
-        tools:text="Remaining Balance: ₱845.00" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvAmount"
-        style="@style/CartiHeaderSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/spacing_small"
-        android:textSize="@dimen/text_size_body_small"
-        app:layout_constraintBottom_toBottomOf="@id/tvCategoryName"
-        app:layout_constraintEnd_toStartOf="@id/ivArrowRight"
-        app:layout_constraintTop_toTopOf="@id/tvCategoryName"
-        tools:text="₱1,155 / ₱2,000" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvPercentage"
-        style="@style/CartiCaption"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/spacing_small"
-        android:textSize="13sp"
-        android:fontFamily="@font/plus_jakarta_sans_bold"
-        android:textColor="@color/text_secondary"
-        app:layout_constraintBottom_toBottomOf="@id/tvRemaining"
-        app:layout_constraintEnd_toStartOf="@id/ivArrowRight"
-        app:layout_constraintTop_toTopOf="@id/tvRemaining"
-        tools:text="57%" />
-
-    <ImageView
-        android:id="@+id/id_dummy_arrow_space"
-        android:layout_width="20dp"
-        android:layout_height="0dp"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/ivArrowRight"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:src="@drawable/ic_chevron_right"
-        android:contentDescription="@null"
-        app:layout_constraintBottom_toBottomOf="@id/tvAmount"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tvAmount"
-        app:tint="@color/text_tertiary" />
-
-    <ProgressBar
-        android:id="@+id/pbBudget"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="0dp"
-        android:layout_height="4dp"
-        android:layout_marginTop="@dimen/spacing_small"
-        android:progress="57"
-        android:progressDrawable="@drawable/bg_dash_progress"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/tvCategoryName"
-        app:layout_constraintTop_toBottomOf="@id/tvRemaining"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="@dimen/spacing_xxs" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

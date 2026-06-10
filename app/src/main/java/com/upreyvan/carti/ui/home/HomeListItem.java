@@ -259,10 +259,9 @@ public interface HomeListItem extends BaseMultiItem {
             GenericAdapter<QuickLogItem, ItemQuickLogBinding> existingAdapter = (GenericAdapter<QuickLogItem, ItemQuickLogBinding>) rv.getAdapter();
             if (existingAdapter == null) {
                 GenericAdapter<QuickLogItem, ItemQuickLogBinding> newAdapter = new GenericAdapter<>(QuickLogItem.DIFF_CALLBACK, (i, p) -> ItemQuickLogBinding.inflate(i, p, false), (bind, item, p, c) -> {
-                    bind.tvLabel.setText(item.getTitle()); bind.ivIcon.setImageResource(item.getIconRes());
-                    int color = ContextCompat.getColor(bind.getRoot().getContext(), item.getIconColor());
-                    bind.cvIconBg.setCardBackgroundColor(androidx.core.graphics.ColorUtils.setAlphaComponent(color, 25));
-                    bind.ivIcon.setColorFilter(color);
+                    bind.tvLabel.setText(item.getTitle()); 
+                    bind.ivIcon.setImageResource(item.getIconRes());
+                    com.upreyvan.carti.utils.UiHelper.applyCategoryStyle(bind.getRoot(), bind.cvIconBg, bind.ivIcon, item.getTitle());
                 });
                 newAdapter.setOnItemClickListener(listener::onQuickLogClick);
                 newAdapter.setOnItemLongClickListener(log -> { listener.onQuickLogLongClick(log); return true; });

@@ -17,7 +17,6 @@ import com.upreyvan.carti.ui.bills.BillsFragment;
 import com.upreyvan.carti.ui.goals.GoalFragment;
 
 public class PlanFragment extends BaseFragment<FragmentPlanBinding> {
-    private PlanViewModel viewModel;
 
     public static PlanFragment newInstance(boolean track) {
         return new PlanFragment();
@@ -31,7 +30,7 @@ public class PlanFragment extends BaseFragment<FragmentPlanBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
+        PlanViewModel viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
         setupViewPager();
         viewModel.loadData();
     }

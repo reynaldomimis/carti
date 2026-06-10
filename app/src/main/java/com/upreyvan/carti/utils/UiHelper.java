@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,8 +13,11 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.snackbar.Snackbar;
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.managers.CategoryManager;
+import com.upreyvan.carti.models.Category;
 
 public class UiHelper {
 
@@ -89,5 +93,50 @@ public class UiHelper {
             textView.setText(text);
             textView.setVisibility(View.VISIBLE);
         }
+    }
+
+    public static void applyCategoryStyle(View container, View iconBg, ImageView icon, String categoryName, boolean applyToContainer) {
+        if (container == null && iconBg == null && icon == null) return;
+        Context context = (container != null) ? container.getContext() : (iconBg != null ? iconBg.getContext() : icon.getContext());
+        Category cat = CategoryManager.getInstance(context).getCategoryByName(categoryName);
+        
+        int iconColorRes = R.color.carti_primary_green;
+        int bgColorRes = R.color.log_others;
+
+        if (cat != null) {
+            if (cat.getIconColor() != 0) iconColorRes = cat.getIconColor();
+            if (cat.getBackgroundColor() != 0) bgColorRes = cat.getBackgroundColor();
+        }
+
+        int iconColor = ContextCompat.getColor(context, iconColorRes);
+        int bgColor = ContextCompat.getColor(context, bgColorRes);
+
+        if (icon != null) icon.setColorFilter(iconColor);
+        
+        if (iconBg != null) {
+            if (applyToContainer && container != null) {
+                int glassColor = androidx.core.graphics.ColorUtils.setAlphaComponent(0, 8);
+                if (iconBg instanceof MaterialCardView mcv) mcv.setCardBackgroundColor(glassColor);
+                else iconBg.setBackgroundColor(glassColor);
+            } else {
+                if (iconBg instanceof MaterialCardView mcv) mcv.setCardBackgroundColor(bgColor);
+                else iconBg.setBackgroundColor(bgColor);
+            }
+        }
+
+        if (container != null) {
+            if (applyToContainer) {
+                if (container instanceof MaterialCardView mcv) mcv.setCardBackgroundColor(bgColor);
+                else container.setBackgroundColor(bgColor);
+            } else {
+                int defaultColor = ContextCompat.getColor(context, R.color.white);
+                if (container instanceof MaterialCardView mcv) mcv.setCardBackgroundColor(defaultColor);
+                else container.setBackgroundColor(defaultColor);
+            }
+        }
+    }
+
+    public static void applyCategoryStyle(View container, View iconBg, ImageView icon, String categoryName) {
+        applyCategoryStyle(container, iconBg, icon, categoryName, true);
     }
 }

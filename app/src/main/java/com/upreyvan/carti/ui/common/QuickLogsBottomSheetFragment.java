@@ -85,6 +85,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         if (selectedCategory != null && logType == LogType.EXPENSE) {
             getBinding().layoutForm.etCategory.setText(selectedCategory, false);
             updateSubCategoryDropdown(selectedCategory);
+            UiHelper.applyCategoryStyle(getBinding().layoutForm.cvBalanceInfo, null, null, selectedCategory);
         }
         
         validateForm();
@@ -196,6 +197,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             // Show balance info when category is selected
             getBinding().layoutForm.allocatedHeader.setText(getString(R.string.category_expense_label, selected));
             getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
+            UiHelper.applyCategoryStyle(getBinding().layoutForm.cvBalanceInfo, null, null, selected);
             validateForm();
         });
     }
@@ -221,6 +223,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
                 String selected = (String) parent.getItemAtPosition(position);
                 viewModel.setCategory(selected);
                 getBinding().layoutForm.allocatedHeader.setText(getString(R.string.category_expense_label, selected));
+                UiHelper.applyCategoryStyle(getBinding().layoutForm.cvBalanceInfo, null, null, selected);
                 validateForm();
             });
         } else {

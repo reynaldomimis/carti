@@ -109,8 +109,7 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
                     binding.tvPercentage.setText(String.format(Locale.getDefault(), "%d%%", progress));
                     binding.pbBudget.setProgress(progress);
                     binding.ivIcon.setImageResource(item.getIconRes());
-                    binding.cvIcon.setCardBackgroundColor(ContextCompat.getColor(this, item.getBgColor()));
-                    binding.ivIcon.setColorFilter(ContextCompat.getColor(this, item.getIconColor()));
+                    com.upreyvan.carti.utils.UiHelper.applyCategoryStyle(binding.getRoot(), binding.cvIcon, binding.ivIcon, item.getCategoryName());
                 }
         );
         getBinding().rvCategories.setLayoutManager(new LinearLayoutManager(this));

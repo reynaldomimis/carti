@@ -241,16 +241,8 @@ public interface TrackListItem extends BaseMultiItem {
                     bind.pbBudget.setProgress(Math.min(100, percent));
 
                     Category cat = listener.findCategory(it.getCategoryName());
-                    if (cat != null) {
-                        bind.ivIcon.setImageResource(cat.getIconRes() != 0 ? cat.getIconRes() : R.drawable.ic_chart);
-                        bind.ivIcon.setColorFilter(ContextCompat.getColor(bind.getRoot().getContext(), cat.getIconColor() != 0 ? cat.getIconColor() : R.color.carti_primary_green));
-                        bind.cvIcon.setCardBackgroundColor(ContextCompat.getColor(bind.getRoot().getContext(), cat.getBackgroundColor() != 0 ? cat.getBackgroundColor() : R.color.mint_green_alpha));
-                    } else {
-                        bind.ivIcon.setImageResource(it.getIconRes() != 0 ? it.getIconRes() : R.drawable.ic_chart);
-                        bind.ivIcon.setColorFilter(ContextCompat.getColor(bind.getRoot().getContext(), it.getIconColor() != 0 ? it.getIconColor() : R.color.carti_primary_green));
-                        bind.cvIcon.setCardBackgroundColor(ContextCompat.getColor(bind.getRoot().getContext(), it.getBgColor() != 0 ? it.getBgColor() : R.color.mint_green_alpha));
-                    }
-
+                    int iconRes = (cat != null && cat.getIconRes() != 0) ? cat.getIconRes() : (it.getIconRes() != 0 ? it.getIconRes() : R.drawable.ic_chart);
+                    bind.ivIcon.setImageResource(iconRes);
                     bind.getRoot().setOnClickListener(v -> listener.onCategoryClick(it.getCategoryName()));
                 });
                 rv.setAdapter(adapter);

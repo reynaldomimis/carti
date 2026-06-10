@@ -58,6 +58,7 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
                     binding.tvRemainingText.setText(Utils.formatCurrency(Math.max(0, item.getAmount() - item.getCurrentSpent())));
                     binding.tvStatus.setText(getString(R.string.label_balance));
                     
+                    com.upreyvan.carti.utils.UiHelper.applyCategoryStyle(binding.getRoot(), null, null, item.getCategoryName());
                     binding.getRoot().setOnClickListener(v -> showEditBudgetBottomSheet(item));
                 });
 
@@ -66,11 +67,8 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
                 (binding, item, pos, count) -> {
                     binding.tvCategoryName.setText(item.getCategoryName());
                     binding.ivCategoryIcon.setImageResource(item.getIconRes() != 0 ? item.getIconRes() : R.drawable.ic_chart);
-                    int bgColor = item.getBgColor() != 0 ? item.getBgColor() : R.color.mint_green_alpha;
-                    int iconColor = item.getIconColor() != 0 ? item.getIconColor() : R.color.carti_primary_green;
-                    binding.cardIcon.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(getResources().getColor(bgColor, null)));
-                    binding.ivCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(iconColor, null)));
-
+                    
+                    com.upreyvan.carti.utils.UiHelper.applyCategoryStyle(null, binding.cardIcon, binding.ivCategoryIcon, item.getCategoryName());
                     binding.btnOptions.setOnClickListener(v -> showCategoryOptions(item, v));
                 });
 
