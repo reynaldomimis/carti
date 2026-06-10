@@ -80,11 +80,8 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
 
     private void observeViewModel() {
         viewModel.getBudgets().observe(getViewLifecycleOwner(), budgets -> {
-            java.util.List<BudgetCategoryItem> parentBudgets = budgets.stream()
-                    .filter(c -> c.getParentCategory() == null || c.getParentCategory().isEmpty())
-                    .collect(java.util.stream.Collectors.toList());
-            budgetAdapter.submitList(new ArrayList<>(parentBudgets));
-            getBinding().cardEmptyBudgets.setVisibility(parentBudgets.isEmpty() ? View.VISIBLE : View.GONE);
+            budgetAdapter.submitList(new ArrayList<>(budgets));
+            getBinding().cardEmptyBudgets.setVisibility(budgets.isEmpty() ? View.VISIBLE : View.GONE);
         });
         viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
             java.util.List<BudgetCategoryItem> parentCategories = categories.stream()

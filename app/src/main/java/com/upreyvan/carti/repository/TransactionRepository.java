@@ -926,7 +926,7 @@ public class TransactionRepository {
                                 t.getIconBgColor() != 0 ? t.getIconBgColor() : R.color.mint_green_alpha,
                                 t.getAmount(),
                                 0,
-                                t.getNote(),
+                                null, // Set parent to null as this is the group item
                                 0.0,
                                 t.isRecurring()
                         ));
@@ -983,7 +983,7 @@ public class TransactionRepository {
                                 t.getIconBgColor() != 0 ? t.getIconBgColor() : R.color.mint_green_alpha,
                                 t.getAmount(), 
                                 0, 
-                                t.getNote(), 
+                                null,
                                 0.0, 
                                 t.isRecurring()
                         ));
@@ -1088,19 +1088,18 @@ public class TransactionRepository {
             Map<String, BudgetCategoryItem> aggregated = new LinkedHashMap<>();
             for (TransactionWithUser tu : dbAllocations) {
                 Transaction t = tu.getTransaction();
-                String name = t.getSubCategory() != null ? t.getSubCategory() : t.getCategory();
-                String key = name.toLowerCase(java.util.Locale.ROOT).trim();
+                String key = t.getCategory().toLowerCase(java.util.Locale.ROOT).trim();
                 BudgetCategoryItem existing = aggregated.get(key);
                 if (existing != null) {
                     existing.setAmount(existing.getAmount() + t.getAmount());
                 } else {
                     aggregated.put(key, new BudgetCategoryItem(
-                            name,
+                            t.getCategory(),
                             t.getIconRes() != 0 ? t.getIconRes() : R.drawable.ic_chart,
                             t.getIconColor() != 0 ? t.getIconColor() : R.color.carti_primary_green,
                             t.getIconBgColor() != 0 ? t.getIconBgColor() : R.color.mint_green_alpha,
                             t.getAmount(), 0, 
-                            t.getSubCategory() != null ? t.getCategory() : t.getNote(), 
+                            null,
                             0, t.isRecurring()
                     ));
                 }

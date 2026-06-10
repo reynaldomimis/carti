@@ -30,8 +30,8 @@ public class MembersViewModel extends BaseViewModel {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     
     private final MutableLiveData<String> currentUserId = new MutableLiveData<>();
-    private final MutableLiveData<Double> totalIncome = new MutableLiveData<>();
-    private final MutableLiveData<Double> totalExpense = new MutableLiveData<>();
+    private final MediatorLiveData<Double> totalIncome = new MediatorLiveData<>();
+    private final MediatorLiveData<Double> totalExpense = new MediatorLiveData<>();
     private final MediatorLiveData<List<Member>> membersWithContributions = new MediatorLiveData<>();
 
     public MembersViewModel(@NonNull Application application) {
@@ -42,7 +42,12 @@ public class MembersViewModel extends BaseViewModel {
         this.currentUserId.setValue(pref.getUserId());
         
         setupMembersMediator();
-        refreshBudget();
+        setupBudgetMediators();
+    }
+
+    private void setupBudgetMediators() {
+        totalIncome.addSource(transRepo.getSumByType("ALLOCATION"), totalIncome::setValue);
+        totalExpense.addSource(transRepo.getSumByType("EXPENSE"), totalExpense::setValue);
     }
 
     private void setupMembersMediator() {
@@ -108,16 +113,6 @@ public class MembersViewModel extends BaseViewModel {
     public void refreshData() {
         repository.refreshMembers();
         fetchCurrentUser();
-        refreshBudget();
-    }
-
-    private void refreshBudget() {
-        executor.execute(() -> {
-            double income = pref.getTotalIncome();
-            double expense = pref.getTotalExpense();
-            totalIncome.postValue(income);
-            totalExpense.postValue(expense);
-        });
     }
 
     public void approveMember(String userId) {

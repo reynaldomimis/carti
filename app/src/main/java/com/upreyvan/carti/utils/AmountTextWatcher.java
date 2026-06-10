@@ -19,11 +19,8 @@ public class AmountTextWatcher implements TextWatcher {
         this.originalHint = editText.getHint();
         this.editText.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
-                // Hide hint and clear text to avoid "placeholder play" while typing
                 editText.setHint("");
-                editText.setText("");
             } else {
-                // Restore hint when focus is lost
                 if (editText.getText().length() == 0) {
                     editText.setHint(originalHint);
                 }
@@ -42,7 +39,6 @@ public class AmountTextWatcher implements TextWatcher {
         String original = s.toString();
         if (original.equals(current)) return;
 
-        // 1. Save cursor position relative to digits and decimal point
         int selectionStart = editText.getSelectionStart();
         int contentCharsBefore = 0;
         for (int i = 0; i < selectionStart && i < original.length(); i++) {

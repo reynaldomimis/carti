@@ -157,17 +157,28 @@
                         app:trackThickness="10dp"
                         tools:progress="75" />
 
-                    <TextView
-                        android:id="@+id/tvProgressSubtitle"
-                        style="@style/CartiSubHeader"
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnContribute"
+                        style="@style/CartiButton.Tonal"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_xs"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="@dimen/text_size_xxs"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/progressBudget"
-                        tools:text="75% used" />
+                        android:layout_height="32dp"
+                        android:layout_marginTop="6dp"
+                        android:text="Contribute"
+                        android:textSize="10sp"
+                        android:textColor="@color/carti_primary_green"
+                        android:paddingHorizontal="@dimen/spacing_small"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        app:icon="@drawable/ic_add"
+                        app:iconSize="12dp"
+                        app:iconTint="@color/carti_primary_green"
+                        app:strokeWidth="0.5dp"
+                        app:strokeColor="@color/carti_primary_green"
+                        android:backgroundTint="@color/white_50"
+                        app:cornerRadius="@dimen/radius_small"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvUsedPercentage"
+                        app:layout_constraintBottom_toBottomOf="@id/layoutAmount" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

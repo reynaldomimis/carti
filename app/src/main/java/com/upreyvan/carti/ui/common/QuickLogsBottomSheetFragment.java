@@ -110,12 +110,9 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         String amountStr = getBinding().layoutForm.etAmount.getText().toString().trim();
         double amount = StringHelper.parseDouble(amountStr);
         
-        boolean isAmountValid = !amountStr.isEmpty() && amount > 0;
-        boolean isCategoryValid = (logType == LogType.GOAL);
-
-        if (logType == LogType.EXPENSE || logType == LogType.DEBT) {
-            isCategoryValid = !category.isEmpty();
-        }
+        boolean isCategoryValid = (logType == LogType.GOAL) || !category.isEmpty();
+        boolean isAmountEntered = !amountStr.isEmpty();
+        boolean isAmountValid = amount > 0;
 
         Double currentBalance = viewModel.getRemainingBalance().getValue();
         boolean hasEnoughBalance = true;
@@ -123,15 +120,20 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         if (logType == LogType.EXPENSE && currentBalance != null && amount > currentBalance) {
             getBinding().layoutForm.tilAmount.setError(getString(R.string.err_insufficient_balance));
             hasEnoughBalance = false;
-        } else if (!amountStr.isEmpty() && amount <= 0) {
+        } else if (isAmountEntered && amount <= 0) {
             getBinding().layoutForm.tilAmount.setError(getString(R.string.msg_invalid_amount));
+            hasEnoughBalance = false;
+        } else if (!isAmountEntered) {
+            // Option 1: Show warning if empty (User's request)
+            getBinding().layoutForm.tilAmount.setError("Amount is required");
             hasEnoughBalance = false;
         } else {
             getBinding().layoutForm.tilAmount.setError(null);
+            getBinding().layoutForm.tilAmount.setErrorEnabled(false);
         }
 
         boolean isLoading = viewModel.getIsLoading().getValue() != null && viewModel.getIsLoading().getValue();
-        boolean isFormValid = isCategoryValid && isAmountValid && hasEnoughBalance;
+        boolean isFormValid = isCategoryValid && isAmountEntered && isAmountValid && hasEnoughBalance;
         
         getBinding().btnSave.setEnabled(isFormValid && !isLoading);
     }
@@ -160,7 +162,6 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             return;
         }
 
-        // For EXPENSE: Hide category if it was pre-selected (Direct Quick Log), show if null (General Add)
         if (selectedCategory != null) {
             getBinding().layoutForm.labelCategory.setVisibility(View.GONE);
             getBinding().layoutForm.layoutCategory.setVisibility(View.GONE);

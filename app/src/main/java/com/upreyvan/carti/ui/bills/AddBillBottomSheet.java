@@ -75,13 +75,24 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
 
     private void validateForm() {
         String name = getBinding().etBillName.getText().toString().trim();
-        String amount = getBinding().etAmount.getText().toString().trim();
+        String amountStr = getBinding().etAmount.getText().toString().trim();
         String date = getBinding().etDueDate.getText().toString().trim();
+        double amount = StringHelper.parseDouble(amountStr);
         
-        boolean isValid = !name.isEmpty() && !amount.isEmpty() && !date.isEmpty();
+        boolean isAmountEntered = !amountStr.isEmpty();
+        boolean isValid = !name.isEmpty() && isAmountEntered && amount > 0 && !date.isEmpty();
         boolean isLoading = viewModel.getIsLoading().getValue() != null && viewModel.getIsLoading().getValue();
 
         getBinding().btnSave.setEnabled(isValid && !isLoading);
+
+        if (isAmountEntered && amount <= 0) {
+            getBinding().layoutAmount.setError("Please enter a valid amount");
+        } else if (!isAmountEntered) {
+            getBinding().layoutAmount.setError("Amount is required");
+        } else {
+            getBinding().layoutAmount.setError(null);
+            getBinding().layoutAmount.setErrorEnabled(false);
+        }
     }
 
     private void observeViewModel() {

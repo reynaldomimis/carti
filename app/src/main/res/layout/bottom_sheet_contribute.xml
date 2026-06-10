@@ -24,9 +24,18 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_medium"
         android:layout_marginTop="@dimen/spacing_large"
-        android:text="Add budget"
+        android:text="Contribute to Budget"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/handle" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvSubtitle"
+        style="@style/CartiTextDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Specify which category you want to contribute to."
+        app:layout_constraintStart_toStartOf="@id/tvTitle"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
     <ImageButton
         android:id="@+id/btnClose"
@@ -34,12 +43,14 @@
         android:layout_height="48dp"
         android:layout_marginEnd="@dimen/spacing_medium"
         android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@null"
         android:src="@drawable/ic_close"
         app:layout_constraintBottom_toBottomOf="@id/tvTitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tvTitle"
         app:tint="@color/text_primary" />
 
+    <!-- Category -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/labelCategory"
         style="@style/DashLabel"
@@ -50,7 +61,7 @@
         android:text="CATEGORY"
         android:letterSpacing="0.1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/layoutCategory"
@@ -71,6 +82,7 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Sub Category -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/labelSubCategory"
         style="@style/DashLabel"
@@ -104,29 +116,30 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Amount -->
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/labelLimit"
+        android:id="@+id/labelAmount"
         style="@style/DashLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_medium"
         android:layout_marginTop="@dimen/spacing_large"
-        android:text="MONTHLY LIMIT (PHP)"
+        android:text="CONTRIBUTION AMOUNT (PHP)"
         android:letterSpacing="0.1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/layoutSubCategory" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutLimit"
+        android:id="@+id/tilAmount"
         style="@style/CartiInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/spacing_medium"
         android:layout_marginTop="@dimen/spacing_small"
-        app:layout_constraintTop_toBottomOf="@id/labelLimit">
+        app:layout_constraintTop_toBottomOf="@id/labelAmount">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etLimit"
+            android:id="@+id/etAmount"
             style="@style/CartiEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -135,40 +148,13 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout
-        android:id="@+id/layoutRecurring"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_medium"
-        android:layout_marginTop="@dimen/spacing_large"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/layoutLimit">
-
-        <com.google.android.material.textview.MaterialTextView
-            style="@style/CartiHeaderSmall"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/label_make_it_recurring"
-            android:textColor="@color/text_secondary" />
-
-        <com.google.android.material.materialswitch.MaterialSwitch
-            android:id="@+id/switchRecurring"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:thumbTint="@color/switch_thumb_selector"
-            app:trackTint="@color/switch_track_selector" />
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/layoutButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xl"
         android:orientation="horizontal"
         android:paddingHorizontal="@dimen/spacing_medium"
-        app:layout_constraintTop_toBottomOf="@id/layoutRecurring">
+        app:layout_constraintTop_toBottomOf="@id/tilAmount">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancel"
@@ -182,14 +168,14 @@
             app:backgroundTint="@color/tonal_button_bg" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSave"
+            android:id="@+id/btnContribute"
             style="@style/CartiButton.Primary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_small"
             android:layout_weight="1"
             android:enabled="false"
-            android:text="Save" />
+            android:text="Contribute" />
 
     </LinearLayout>
 

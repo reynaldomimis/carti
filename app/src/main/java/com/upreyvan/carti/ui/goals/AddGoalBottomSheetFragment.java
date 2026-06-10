@@ -103,11 +103,21 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
         String date = getBinding().etTargetDate.getText().toString().trim();
 
         double target = com.upreyvan.carti.utils.StringHelper.parseDouble(targetStr);
+        boolean isAmountEntered = !targetStr.isEmpty();
         
-        boolean isValid = !name.isEmpty() && target > 0 && !date.isEmpty();
+        boolean isValid = !name.isEmpty() && isAmountEntered && target > 0 && !date.isEmpty();
         boolean isLoading = viewModel.getIsLoading().getValue() != null && viewModel.getIsLoading().getValue();
 
         getBinding().btnSave.setEnabled(isValid && !isLoading);
+
+        if (isAmountEntered && target <= 0) {
+            getBinding().layoutTargetAmount.setError("Please enter a valid amount");
+        } else if (!isAmountEntered) {
+            getBinding().layoutTargetAmount.setError("Target amount is required");
+        } else {
+            getBinding().layoutTargetAmount.setError(null);
+            getBinding().layoutTargetAmount.setErrorEnabled(false);
+        }
     }
 
     private void observeViewModel() {

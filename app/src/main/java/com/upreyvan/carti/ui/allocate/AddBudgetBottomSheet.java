@@ -57,7 +57,7 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
         if (editingItem != null) {
             getBinding().tvTitle.setText(R.string.btn_edit);
             getBinding().etCategory.setText(editingItem.getCategoryName(), false);
-            getBinding().etCategory.setEnabled(false); // Usually don't want to change category name here
+            getBinding().etCategory.setEnabled(false);
             getBinding().etLimit.setText(String.valueOf(editingItem.getAmount()));
             getBinding().switchRecurring.setChecked(editingItem.isRecurring());
         }
@@ -86,12 +86,22 @@ public class AddBudgetBottomSheet extends BaseBottomSheetFragment<BottomSheetAdd
     private void validateForm() {
         String category = getBinding().etCategory.getText().toString().trim();
         String limitStr = getBinding().etLimit.getText().toString().trim();
-        
         double limit = com.upreyvan.carti.utils.StringHelper.parseDouble(limitStr);
         
-        boolean isValid = !category.isEmpty() && limit > 0;
+        boolean isCategoryValid = !category.isEmpty();
+        boolean isAmountEntered = !limitStr.isEmpty();
+        boolean isAmountValid = limit > 0;
         
-        getBinding().btnSave.setEnabled(isValid);
+        getBinding().btnSave.setEnabled(isCategoryValid && isAmountEntered && isAmountValid);
+
+        if (isAmountEntered && limit <= 0) {
+            getBinding().layoutLimit.setError("Please enter a valid amount");
+        } else if (!isAmountEntered) {
+            getBinding().layoutLimit.setError("Monthly limit is required");
+        } else {
+            getBinding().layoutLimit.setError(null);
+            getBinding().layoutLimit.setErrorEnabled(false);
+        }
     }
 
     private void updateSubCategoryDropdown(String parentCategoryName) {

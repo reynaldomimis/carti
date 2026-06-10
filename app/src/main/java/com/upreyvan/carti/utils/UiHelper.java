@@ -126,12 +126,21 @@ public class UiHelper {
 
         if (container != null) {
             if (applyToContainer) {
-                if (container instanceof MaterialCardView mcv) mcv.setCardBackgroundColor(bgColor);
-                else container.setBackgroundColor(bgColor);
+                if (container instanceof MaterialCardView mcv) {
+                    mcv.setCardBackgroundColor(bgColor);
+                    mcv.setStrokeColor(android.content.res.ColorStateList.valueOf(androidx.core.graphics.ColorUtils.setAlphaComponent(iconColor, 60))); // ~25% alpha
+                    mcv.setStrokeWidth(3); 
+                } else {
+                    container.setBackgroundColor(bgColor);
+                }
             } else {
                 int defaultColor = ContextCompat.getColor(context, R.color.white);
-                if (container instanceof MaterialCardView mcv) mcv.setCardBackgroundColor(defaultColor);
-                else container.setBackgroundColor(defaultColor);
+                if (container instanceof MaterialCardView mcv) {
+                    mcv.setCardBackgroundColor(defaultColor);
+                    mcv.setStrokeWidth(0);
+                } else {
+                    container.setBackgroundColor(defaultColor);
+                }
             }
         }
     }

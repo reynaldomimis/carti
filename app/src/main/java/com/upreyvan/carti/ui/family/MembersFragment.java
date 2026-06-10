@@ -75,6 +75,8 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
 
         viewModel.getTotalIncome().observe(getViewLifecycleOwner(), income -> updateBudgetCard());
         viewModel.getTotalExpense().observe(getViewLifecycleOwner(), expense -> updateBudgetCard());
+
+        getBinding().btnContribute.setOnClickListener(v -> ContributeBottomSheetFragment.newInstance().show(getChildFragmentManager(), "CONTRIBUTE_BOTTOM_SHEET"));
     }
 
     private void refreshAdapters() {
@@ -87,20 +89,24 @@ public class MembersFragment extends BaseFragment<FragmentMembersBinding> {
     }
 
     private void updateBudgetCard() {
-        Double income = viewModel.getTotalIncome().getValue();
+        Double budget = viewModel.getTotalIncome().getValue();
         Double expense = viewModel.getTotalExpense().getValue();
-        if (income == null || expense == null) return;
+        if (budget == null || expense == null) return;
         
-        getBinding().tvBudgetAmount.setText(Utils.formatCurrency(income));
+        getBinding().tvBudgetAmount.setText(Utils.formatCurrency(budget));
         
-        int percent = 0;
-        if (income > 0) {
-            percent = (int) ((expense / income) * 100);
+        int percentUsed = 0;
+        if (budget > 0) {
+            percentUsed = (int) ((expense / budget) * 100);
         }
         
-        getBinding().progressBudget.setProgress(Math.min(percent, 100));
-        getBinding().tvUsedPercentage.setText(getString(R.string.label_used_percentage, percent));
-        getBinding().tvProgressSubtitle.setText(getString(R.string.label_used, percent));
+        // Use remaining for the progress if requested "progress minus mo sa expense"
+        // But usually progress bars fill up. Let's keep it as Used for now but check if they meant remaining.
+        // Given "0% used" in image, it matches Used.
+        getBinding().progressBudget.setProgress(Math.min(percentUsed, 100));
+        getBinding().tvUsedPercentage.setText(getString(R.string.percentage_format, percentUsed));
+
+        com.upreyvan.carti.utils.UiHelper.applyCategoryStyle(getBinding().cardBudget, null, null, "Food");
     }
 
     private void stopShimmers() {
