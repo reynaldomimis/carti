@@ -38,16 +38,6 @@ public class NotificationAdapter extends BaseAdapter<Notification, ItemNotificat
                   binding.tvDescription.setText(description);
                   binding.tvTime.setText(Utils.getTimeAgo(notification.getTimestampMillis()));
 
-                  boolean isBill = "bill".equalsIgnoreCase(notification.getType()) || 
-                                 (notification.getTitle() != null && notification.getTitle().toUpperCase().startsWith("BILL:"));
-                  
-                  if (isBill) {
-                      binding.tvStatus.setVisibility(View.VISIBLE);
-                      binding.tvStatus.setText("PENDING");
-                  } else {
-                      binding.tvStatus.setVisibility(View.GONE);
-                  }
-
                   boolean isJoinRequest = "family".equalsIgnoreCase(notification.getType()) && 
                                         "New Join Request".equalsIgnoreCase(notification.getTitle());
                   

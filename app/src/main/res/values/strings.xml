@@ -767,7 +767,7 @@
     <string name="label_action_needed">Action needed</string>
     <string name="label_active">Active</string>
     <string name="label_upcoming_bills">Upcoming Bills</string>
-    <string name="label_setup_bills_debts">Setup Bills &amp; Debts</string>
+    <string name="label_setup_bills_debts">Setup Bills</string>
     <string name="label_setup_goals">Setup Financial Goals</string>
     <string name="quick_add_title">Quick add</string>
     <string name="quick_add_subtitle">Choose what you want to record.</string>

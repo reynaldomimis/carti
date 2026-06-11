@@ -109,11 +109,6 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
         ArrayAdapter<String> catAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, categories);
         getBinding().actCategory.setAdapter(catAdapter);
         getBinding().actCategory.setText(categories[0], false);
-
-        String[] statuses = {getString(R.string.status_active), "Pending", "Paid"};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, statuses);
-        getBinding().actStatus.setAdapter(statusAdapter);
-        getBinding().actStatus.setText(statuses[0], false);
     }
 
     private void setupListeners() {
