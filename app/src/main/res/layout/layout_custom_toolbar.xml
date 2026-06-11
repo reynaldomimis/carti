@@ -36,11 +36,14 @@
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_toolbar_title"
         style="@style/CartiHeader"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_small"
+        android:ellipsize="end"
+        android:maxLines="1"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btn_action"
+        app:layout_constraintStart_toEndOf="@id/back_button_container"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="@string/label_title" />
 

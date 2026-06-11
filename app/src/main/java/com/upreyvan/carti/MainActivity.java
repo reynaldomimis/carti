@@ -33,7 +33,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private LayoutNavItemBinding[] navTabs;
     private boolean isInit = false;
 
-    private Fragment homeFragment, trackFragment, planFragment, chatFragment, profileFragment;
+    private Fragment homeFragment, trackFragment, planFragment, chatFragment, profileFragment, notificationsFragment;
     private Fragment activeFragment;
 
     @Override
@@ -93,6 +93,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         planFragment = PlanFragment.newInstance(false);
         chatFragment = new FamilyChatFragment();
         profileFragment = new ProfileFragment();
+        notificationsFragment = new com.upreyvan.carti.ui.notifications.NotificationsFragment();
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_container, homeFragment, "1")
@@ -100,6 +101,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                 .add(R.id.fragment_container, planFragment, "3").hide(planFragment)
                 .add(R.id.fragment_container, chatFragment, "4").hide(chatFragment)
                 .add(R.id.fragment_container, profileFragment, "5").hide(profileFragment)
+                .add(R.id.fragment_container, notificationsFragment, "6").hide(notificationsFragment)
                 .commit();
 
         activeFragment = homeFragment;
@@ -191,7 +193,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                 startActivity(new Intent(this, AddOptionsActivity.class));
                 return;
             } else if (id == Constants.Navigation.NOTIFICATIONS) {
-                target = new com.upreyvan.carti.ui.notifications.NotificationsFragment();
+                target = notificationsFragment;
                 showBottomNav = false;
             }
         }
@@ -201,10 +203,10 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
             int enterAnim, exitAnim;
-            if (id == Constants.Navigation.CHAT || id == Constants.Navigation.PROFILE) {
+            if (id == Constants.Navigation.CHAT || id == Constants.Navigation.PROFILE || id == Constants.Navigation.NOTIFICATIONS) {
                 enterAnim = R.anim.slide_in_right;
                 exitAnim = R.anim.slide_out_left;
-            } else if (activeFragment == chatFragment || activeFragment == profileFragment) {
+            } else if (activeFragment == chatFragment || activeFragment == profileFragment || activeFragment == notificationsFragment) {
                 enterAnim = R.anim.slide_in_left;
                 exitAnim = R.anim.slide_out_right;
             } else {

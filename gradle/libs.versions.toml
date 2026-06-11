@@ -18,6 +18,7 @@ generativeai = "0.9.0"
 google-genai = "1.55.0"
 guava = "33.2.1-android"
 security-crypto = "1.1.0-alpha06"
+swiperefreshlayout = "1.1.0"
 
 [libraries]
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigation" }
@@ -40,6 +41,7 @@ generativeai = { group = "com.google.ai.client.generativeai", name = "generative
 googlegenai = { group = "com.google.genai", name = "google-genai", version.ref = "google-genai" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -64,6 +64,7 @@ public class HomeViewModel extends BaseViewModel {
     public LiveData<List<BaseMultiItem>> getUiState() { return uiState; }
 
     public void refreshData() {
+        setLoading(true);
         transRepo.refreshTransactions();
         memberRepo.refreshMembers();
         aiInsight = null;
@@ -121,12 +122,28 @@ public class HomeViewModel extends BaseViewModel {
         aiRepo.getInsights(ctxBuilder.toString(), new AiRepository.AiCallback() {
             @Override public void onSuccess(String response) {
                 isAiFetching = false;
-                aiInsight = response;
-                pref.setAiInsightsCache(response);
+                setLoading(false);
+                
+                // Force parse to ensure it's not just a generic message
+                try {
+                    String cleanJson = response.replaceAll("```json", "").replaceAll("```", "").trim();
+                    if (cleanJson.startsWith("[")) {
+                        aiInsight = response;
+                        pref.setAiInsightsCache(response);
+                    } else {
+                        // Transform plain text response into JSON format
+                        aiInsight = "[{\"type\": \"INFO\", \"message\": \"" + response.replace("\"", "\\\"") + "\"}]";
+                        pref.setAiInsightsCache(aiInsight);
+                    }
+                } catch (Exception e) {
+                    aiInsight = response;
+                    pref.setAiInsightsCache(response);
+                }
                 rebuild(false);
             }
             @Override public void onError(Throwable t) {
                 isAiFetching = false;
+                setLoading(false);
                 if (aiInsight == null) {
                     aiInsight = "[{\"type\": \"INFO\", \"message\": \"Kakatapos ko lang mag-analyze, check mo dashboard natin! 🙌\"}]";
                     rebuild(false);
@@ -140,6 +157,11 @@ public class HomeViewModel extends BaseViewModel {
 
     private void rebuild(boolean instant) {
         Runnable task = () -> {
+            long lastAiCheck = pref.getAiInsightsTimestamp();
+            if (lastAiCheck > 0 && lastAiCheck < Utils.getStartOfDayMillis()) {
+                aiInsight = null;
+            }
+
             if (allTransactionsList != null) {
                 Calendar cal = Calendar.getInstance();
                 long curStart = Utils.getMonthStartMillis(cal);

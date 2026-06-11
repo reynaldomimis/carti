@@ -96,6 +96,7 @@ dependencies {
 
     implementation(libs.guava)
     implementation(libs.security.crypto)
+    implementation(libs.swiperefreshlayout)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

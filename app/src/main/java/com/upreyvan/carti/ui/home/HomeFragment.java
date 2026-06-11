@@ -82,9 +82,16 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
         rv.setItemViewCacheSize(10);
         rv.setHasFixedSize(true);
         setupSmoothScrolling(rv);
+
+        getBinding().swipeRefresh.setOnRefreshListener(() -> viewModel.refreshData());
+        getBinding().swipeRefresh.setColorSchemeResources(R.color.carti_primary_green);
     }
 
     private void observeViewModel() {
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            getBinding().swipeRefresh.setRefreshing(loading);
+        });
+
         viewModel.getUiState().observe(getViewLifecycleOwner(), state -> {
             if (state == null) return;
             homeAdapter.submitList(state.stream().map(this::enrich).collect(Collectors.toList()));

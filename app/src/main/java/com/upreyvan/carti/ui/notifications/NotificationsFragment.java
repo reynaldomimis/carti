@@ -86,8 +86,11 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.notifications_title);
+        getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).navigateTo(com.upreyvan.carti.utils.Constants.Navigation.HOME);
+            }
         });
         
         if (pref.isAdmin()) {
