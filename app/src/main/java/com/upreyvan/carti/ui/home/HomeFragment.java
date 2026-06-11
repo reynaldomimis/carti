@@ -70,7 +70,14 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
     private void observeNotifications() {
         com.upreyvan.carti.repository.NotificationRepository.getInstance(requireContext())
                 .getUnreadCount().observe(getViewLifecycleOwner(), count -> {
-                    getBinding().notifBadge.setVisibility(count != null && count > 0 ? View.VISIBLE : View.GONE);
+                    boolean hasUnread = count != null && count > 0;
+                    getBinding().notifBadge.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                            androidx.core.content.ContextCompat.getColor(requireContext(), 
+                            hasUnread ? R.color.carti_primary_green : R.color.nav_inactive)
+                    ));
+                    // Keep it visible as gray if read, or you can still hide it if preferred.
+                    // The user asked for gray when read.
+                    getBinding().notifBadge.setVisibility(View.VISIBLE);
                 });
     }
 

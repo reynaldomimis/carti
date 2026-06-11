@@ -47,9 +47,7 @@ public class QuickAddBottomSheetFragment extends BaseBottomSheetFragment<BottomS
     private void setupRecyclerView() {
         List<AddOption> options = new ArrayList<>();
         options.add(new AddOption(R.drawable.ic_arrow_up, R.color.status_red, R.color.status_red_tonal, R.string.add_options_expense, R.string.add_options_expense_desc, null));
-        options.add(new AddOption(R.drawable.ic_arrow_down, R.color.green_primary, R.color.mint_green_alpha, R.string.action_add_income, R.string.income_mode_title, null));
         options.add(new AddOption(R.drawable.ic_calendar, R.color.dash_orange, R.color.dash_orange_alpha, R.string.add_options_bills, R.string.add_options_bills_desc, null));
-        options.add(new AddOption(R.drawable.ic_person, R.color.icon_debt, R.color.log_debt, R.string.add_options_debt, R.string.add_options_debt_desc, null));
         options.add(new AddOption(R.drawable.ic_trophy, R.color.carti_primary_green, R.color.mint_green_alpha, R.string.add_options_goal, R.string.add_options_goal_desc, null));
 
         GenericAdapter<AddOption, ItemAddOptionHorizontalBinding> adapter = new GenericAdapter<>(

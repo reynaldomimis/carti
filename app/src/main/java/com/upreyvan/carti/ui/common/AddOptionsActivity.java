@@ -81,7 +81,6 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
     private List<AddOption> getAddOptions() {
         List<AddOption> options = new ArrayList<>();
         options.add(new AddOption(R.drawable.ic_chart, R.color.icon_food, R.color.log_food, R.string.add_options_expense, R.string.add_options_expense_desc, null));
-        options.add(new AddOption(R.drawable.ic_calendar, R.color.icon_debt, R.color.log_debt, R.string.add_options_debt, R.string.add_options_debt_desc, null));
         options.add(new AddOption(R.drawable.ic_add, R.color.mint_green, R.color.tonal_button_bg, R.string.add_options_goal, R.string.add_options_goal_desc, null));
         options.add(new AddOption(R.drawable.ic_person, R.color.icon_fare, R.color.log_fare, R.string.add_options_invite, R.string.add_options_invite_desc, null));
         options.add(new AddOption(R.drawable.ic_calendar, R.color.carti_primary_blue, R.color.log_water, R.string.add_options_bills, R.string.add_options_bills_desc, null));
