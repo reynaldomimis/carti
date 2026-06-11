@@ -66,7 +66,6 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             @Override public void afterTextChanged(Editable s) {}
         };
 
-        getBinding().etBillName.addTextChangedListener(validationWatcher);
         getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etAmount));
         getBinding().etAmount.addTextChangedListener(validationWatcher);
         getBinding().actCategory.addTextChangedListener(validationWatcher);
@@ -74,7 +73,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
     }
 
     private void validateForm() {
-        String name = getBinding().etBillName.getText().toString().trim();
+        String name = getBinding().actCategory.getText().toString().trim();
         String amountStr = getBinding().etAmount.getText().toString().trim();
         String date = getBinding().etDueDate.getText().toString().trim();
         double amount = StringHelper.parseDouble(amountStr);
@@ -135,7 +134,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
         });
 
         getBinding().btnSave.setOnClickListener(v -> {
-            String billName = getBinding().etBillName.getText() != null ? getBinding().etBillName.getText().toString().trim() : "";
+            String billName = getBinding().actCategory.getText().toString().trim();
             String amountStr = getBinding().etAmount.getText() != null ? getBinding().etAmount.getText().toString().trim() : "";
             String category = getBinding().actCategory.getText().toString();
 

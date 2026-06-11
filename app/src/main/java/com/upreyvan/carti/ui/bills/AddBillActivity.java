@@ -47,11 +47,11 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
 
     private void setupClickListeners() {
         getBinding().btnSave.setOnClickListener(v -> {
-            String name = getBinding().etBillName.getText().toString();
+            String name = getBinding().actCategory.getText().toString();
             String amountText = getBinding().etAmount.getText().toString();
             String category = getBinding().actCategory.getText().toString();
 
-            if (Validator.isEmpty(getBinding().etBillName) || Validator.isEmpty(getBinding().etAmount) || category.isEmpty()) {
+            if (category.isEmpty() || Validator.isEmpty(getBinding().etAmount)) {
                 showToast(getString(R.string.msg_fill_all_fields), Status.WARNING);
                 return;
             }

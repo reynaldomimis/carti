@@ -57,21 +57,20 @@
         app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutBillName"
-        style="@style/CartiInputLayout"
+        android:id="@+id/layoutCategory"
+        style="@style/CartiInputLayout.Dropdown"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/spacing_medium"
         android:layout_marginTop="@dimen/spacing_small"
         app:layout_constraintTop_toBottomOf="@id/labelBillName">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etBillName"
+        <AutoCompleteTextView
+            android:id="@+id/actCategory"
             style="@style/CartiEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_bill_name"
-            android:inputType="textCapWords" />
+            android:inputType="none" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -85,8 +84,8 @@
         android:text="@string/label_amount_peso"
         android:textAllCaps="true"
         app:layout_constraintEnd_toStartOf="@+id/labelDueDate"
-        app:layout_constraintStart_toStartOf="@id/layoutBillName"
-        app:layout_constraintTop_toBottomOf="@id/layoutBillName" />
+        app:layout_constraintStart_toStartOf="@id/layoutCategory"
+        app:layout_constraintTop_toBottomOf="@id/layoutCategory" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/labelDueDate"
@@ -97,7 +96,7 @@
         android:letterSpacing="0.1"
         android:text="@string/label_due_date"
         android:textAllCaps="true"
-        app:layout_constraintEnd_toEndOf="@id/layoutBillName"
+        app:layout_constraintEnd_toEndOf="@id/layoutCategory"
         app:layout_constraintStart_toEndOf="@id/labelAmount"
         app:layout_constraintTop_toTopOf="@id/labelAmount" />
 
@@ -141,37 +140,6 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/labelCategory"
-        style="@style/DashLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_large"
-        android:letterSpacing="0.1"
-        android:text="@string/label_category"
-        android:textAllCaps="true"
-        app:layout_constraintStart_toStartOf="@id/layoutBillName"
-        app:layout_constraintTop_toBottomOf="@id/layoutAmount" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutCategory"
-        style="@style/CartiInputLayout.Dropdown"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_medium"
-        android:layout_marginTop="@dimen/spacing_small"
-        app:layout_constraintTop_toBottomOf="@id/labelCategory">
-
-        <AutoCompleteTextView
-            android:id="@+id/actCategory"
-            style="@style/CartiEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="none" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Status -->
-    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/labelStatus"
         style="@style/DashLabel"
         android:layout_width="wrap_content"
@@ -180,8 +148,8 @@
         android:letterSpacing="0.1"
         android:text="@string/label_status"
         android:textAllCaps="true"
-        app:layout_constraintStart_toStartOf="@id/layoutBillName"
-        app:layout_constraintTop_toBottomOf="@id/layoutCategory" />
+        app:layout_constraintStart_toStartOf="@id/layoutCategory"
+        app:layout_constraintTop_toBottomOf="@id/layoutAmount" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/layoutStatus"
@@ -221,7 +189,7 @@
         android:letterSpacing="0.1"
         android:text="@string/label_notes_optional"
         android:textAllCaps="true"
-        app:layout_constraintStart_toStartOf="@id/layoutBillName"
+        app:layout_constraintStart_toStartOf="@id/layoutCategory"
         app:layout_constraintTop_toBottomOf="@id/tvStatusDesc" />
 
     <com.google.android.material.textfield.TextInputLayout

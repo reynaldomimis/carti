@@ -125,31 +125,24 @@ public class NotificationRepository {
     }
 
     public void markAsRead(String notificationId) {
-        AppwriteManager.getInstance(realtimeRepo.getContext())
-                .updateDocument(
-                com.upreyvan.carti.utils.Constants.Appwrite.DATABASE_ID,
-                com.upreyvan.carti.utils.Constants.Appwrite.COL_NOTIFICATIONS,
-                notificationId,
-                new java.util.HashMap<String, Object>() {{ put("status", "read"); }},
-                new AppwriteManager.AppwriteCallback<Document<Map<String, Object>>>() {
-                    @Override
-                    public void onSuccess(Document<Map<String, Object>> result) {
-                        synchronized (currentNotifications) {
-                            for (Notification n : currentNotifications) {
-                                if (n.getId().equals(notificationId)) {
-                                    n.setStatus("read");
-                                    break;
-                                }
-                            }
-                            notificationsLiveData.postValue(new ArrayList<>(currentNotifications));
-                            updateUnreadCount();
+        apiHelper.markNotificationRead(notificationId, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                synchronized (currentNotifications) {
+                    for (Notification n : currentNotifications) {
+                        if (n.getId().equals(notificationId)) {
+                            n.setStatus("read");
+                            break;
                         }
                     }
-                    @Override public void onError(Throwable error) {
-                        Log.e("NotificationRepository", "Mark as read error: " + error.getMessage());
-                    }
+                    notificationsLiveData.postValue(new ArrayList<>(currentNotifications));
+                    updateUnreadCount();
                 }
-        );
+            }
+            @Override public void onError(Throwable error) {
+                Log.e("NotificationRepository", "Mark as read error: " + error.getMessage());
+            }
+        });
     }
 
     public void markAllAsRead() {
@@ -221,6 +214,7 @@ public class NotificationRepository {
         n.setTargetUserId((String) data.get("targetUserId"));
         n.setStatus((String) data.get("status"));
         n.setCategory((String) data.get("category"));
+        n.setNotes((String) data.get("notes"));
         
         String tsStr = (String) data.get("timestamp");
         n.setTimestamp(tsStr);

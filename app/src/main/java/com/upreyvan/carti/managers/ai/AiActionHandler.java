@@ -89,6 +89,10 @@ public class AiActionHandler {
                     transactionRepository.updateOrAddCategory(catName, allocAmount, null, false);
                     if (callback != null) callback.onSuccess(null);
                 }
+                case "NOTIF_READ_ALL" -> {
+                    com.upreyvan.carti.repository.NotificationRepository.getInstance(context).markAllAsRead();
+                    if (callback != null) callback.onSuccess(null);
+                }
                 default -> Log.w("AiActionHandler", "Unknown AI intent/action: " + intent);
             }
         } catch (Exception e) {
@@ -99,6 +103,7 @@ public class AiActionHandler {
     private String normalizeToStandardType(String intent) {
         if (intent == null) return "EXPENSE";
         String s = intent.toUpperCase();
+        if (s.contains("NOTIF") && s.contains("READ")) return "NOTIF_READ_ALL";
         if (s.contains("INCOME") || s.contains("KITA") || s.contains("SAHOD")) return "INCOME";
         if (s.contains("DEBT") || s.contains("UTANG")) return "DEBT";
         if (s.contains("GOAL") || s.contains("IPON")) return "GOAL";

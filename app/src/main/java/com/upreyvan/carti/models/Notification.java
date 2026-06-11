@@ -15,6 +15,7 @@ public class Notification {
     private String timestamp;
     private String status;
     private String category;
+    private String notes;
     private long timestampMillis;
 
     public Notification() {}
@@ -53,6 +54,9 @@ public class Notification {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
     public long getTimestampMillis() { return timestampMillis; }
     public void setTimestampMillis(long timestampMillis) { this.timestampMillis = timestampMillis; }

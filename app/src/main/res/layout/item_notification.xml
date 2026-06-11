@@ -21,13 +21,40 @@
             android:id="@+id/tvTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
             android:fontFamily="@font/plus_jakarta_sans_bold"
             android:textColor="@color/text_primary"
             android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tvStatus"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/placeholder_name" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
+            android:textColor="@color/carti_primary_green"
+            android:textSize="10sp"
+            android:textAllCaps="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/tvTitle"
+            app:layout_constraintEnd_toStartOf="@id/viewUnreadDot"
+            app:layout_constraintTop_toTopOf="@id/tvTitle"
+            tools:text="PENDING"
+            tools:visibility="visible" />
+
+        <View
+            android:id="@+id/viewUnreadDot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/badge_dot"
+            android:backgroundTint="@color/carti_primary_green"
+            app:layout_constraintBottom_toBottomOf="@id/tvTitle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvTitle" />
 
         <TextView
             android:id="@+id/tvDescription"

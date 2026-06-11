@@ -54,6 +54,10 @@ public class Constants {
         public static final String GET_NOTIFICATIONS = "get_notifications";
         public static final String MARK_NOTIFICATION_READ = "mark_notification_read";
         public static final String MARK_ALL_NOTIFICATIONS_READ = "mark_all_notifications_read";
+
+        // AI Actions
+        public static final String GET_AI_INSIGHTS = "get_ai_insights";
+        public static final String GET_CHAT_AI = "get_chat_ai";
     }
 
     public static final class Keys {

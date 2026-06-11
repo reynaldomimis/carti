@@ -109,8 +109,14 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
 
     private void setupRecyclerView() {
         adapter = new NotificationAdapter();
-        adapter.setOnAcceptListener(viewModel::approveMember);
-        adapter.setOnDenyListener(viewModel::rejectMember);
+        adapter.setOnAcceptListener(notification -> {
+            viewModel.approveMember(notification.getCategory());
+            viewModel.markAsRead(notification.getId());
+        });
+        adapter.setOnDenyListener(notification -> {
+            viewModel.rejectMember(notification.getCategory());
+            viewModel.markAsRead(notification.getId());
+        });
         adapter.setOnItemClickListener(notification -> {
             if (notification.isUnread()) {
                 viewModel.markAsRead(notification.getId());

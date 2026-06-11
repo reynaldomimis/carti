@@ -12,6 +12,7 @@ import com.upreyvan.carti.managers.PreferenceManager;
 import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.repository.AiRepository;
 import com.upreyvan.carti.repository.ChatRepository;
+import com.upreyvan.carti.repository.NotificationRepository;
 import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.models.ChatMessage;
 import com.upreyvan.carti.models.Transaction;
@@ -36,6 +37,7 @@ public class ChatViewModel extends BaseViewModel {
     private final ChatRepository chatRepo;
     private final AiRepository aiRepo;
     private final TransactionRepository transRepo;
+    private final NotificationRepository notificationRepo;
     private final PreferenceManager pref;
     
     private final MutableLiveData<Boolean> isAiThinking = new MutableLiveData<>(false);
@@ -59,6 +61,7 @@ public class ChatViewModel extends BaseViewModel {
         this.chatRepo = ChatRepository.getInstance(application);
         this.aiRepo = AiRepository.getInstance(application);
         this.transRepo = TransactionRepository.getInstance(application);
+        this.notificationRepo = NotificationRepository.getInstance(application);
         
         messagesLiveData.addSource(chatRepo.getChatStream(), payload -> {
             if (payload != null) {
@@ -159,6 +162,12 @@ public class ChatViewModel extends BaseViewModel {
                         if ("LOG".equals(status)) {
                             isClarifying = false;
                             handleParsedIntent(localResult);
+                        } else if ("ACTION".equals(status)) {
+                            String intent = localResult.optString("type");
+                            if ("NOTIF_READ".equals(intent)) {
+                                notificationRepo.markAllAsRead();
+                                sendAiResponse("Sure! I've marked all your notifications as read. 🐧");
+                            }
                         } else if ("PENDING".equals(status)) {
                             pendingTransaction = localResult;
                             sendAiResponse(localResult.optString("message"));

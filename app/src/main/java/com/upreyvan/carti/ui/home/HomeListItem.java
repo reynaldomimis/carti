@@ -287,6 +287,7 @@ public interface HomeListItem extends BaseMultiItem {
             Transaction t = transaction.getTransaction();
             String username = transaction.getUsername() != null && !transaction.getUsername().isEmpty() ? transaction.getUsername() : "Someone";
             String type = t.getType() != null ? t.getType().toUpperCase() : "EXPENSE";
+            String category = t.getCategory() != null ? t.getCategory() : "Expense";
 
             int amountColor;
             int amountFormatRes;
@@ -336,17 +337,20 @@ public interface HomeListItem extends BaseMultiItem {
                 b.tvTimestamp.setText(Utils.getTimeAgo(t.getTimestampMillis()));
             }
 
-            b.tvTitle.setText(t.getTitle() != null ? t.getTitle() : t.getCategory());
-
             String note = t.getNote();
+            String filteredNote = "";
             if (note != null && !note.isEmpty()) {
-                String filteredNote = note.replace("Logged by Carti AI", "").replace("Logged by AI", "").trim();
-                b.tvDescription.setText(filteredNote.isEmpty() ? actionLabel : String.format("%s: %s", actionLabel, filteredNote));
-                b.tvDescription.setVisibility(View.VISIBLE);
-            } else {
-                b.tvDescription.setText(actionLabel);
-                b.tvDescription.setVisibility(View.VISIBLE);
+                filteredNote = note.replace("Logged by Carti AI", "").replace("Logged by AI", "").trim();
             }
+
+            if (!filteredNote.isEmpty()) {
+                b.tvTitle.setText(String.format("%s (%s)", category, filteredNote));
+            } else {
+                b.tvTitle.setText(category);
+            }
+
+            b.tvDescription.setText(actionLabel);
+            b.tvDescription.setVisibility(View.VISIBLE);
 
             String formattedAmount = Utils.formatCurrency(t.getAmount());
             b.tvAmount.setText(b.getRoot().getContext().getString(amountFormatRes, formattedAmount));

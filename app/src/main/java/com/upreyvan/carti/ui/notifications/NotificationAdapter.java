@@ -11,7 +11,7 @@ import java.util.Collections;
 public class NotificationAdapter extends BaseAdapter<Notification, ItemNotificationBinding> {
 
     public interface OnNotificationActionListener {
-        void onAction(String applicantId);
+        void onAction(Notification notification);
     }
 
     private OnNotificationActionListener onAcceptListener;
@@ -30,16 +30,32 @@ public class NotificationAdapter extends BaseAdapter<Notification, ItemNotificat
               (inflater, parent) -> ItemNotificationBinding.inflate(inflater, parent, false),
               (binding, notification, position, count) -> {
                   binding.tvTitle.setText(notification.getTitle());
-                  binding.tvDescription.setText(notification.getContent());
+                  
+                  String description = notification.getContent();
+                  if (notification.getNotes() != null && !notification.getNotes().trim().isEmpty()) {
+                      description += "\n" + notification.getNotes().trim();
+                  }
+                  binding.tvDescription.setText(description);
                   binding.tvTime.setText(Utils.getTimeAgo(notification.getTimestampMillis()));
+
+                  boolean isBill = "bill".equalsIgnoreCase(notification.getType()) || 
+                                 (notification.getTitle() != null && notification.getTitle().toUpperCase().startsWith("BILL:"));
+                  
+                  if (isBill) {
+                      binding.tvStatus.setVisibility(View.VISIBLE);
+                      binding.tvStatus.setText("PENDING");
+                  } else {
+                      binding.tvStatus.setVisibility(View.GONE);
+                  }
 
                   boolean isJoinRequest = "family".equalsIgnoreCase(notification.getType()) && 
                                         "New Join Request".equalsIgnoreCase(notification.getTitle());
                   
                   binding.layoutActions.setVisibility(isJoinRequest ? View.VISIBLE : View.GONE);
                   
-                  // Visual feedback for unread status
-                  binding.getRoot().setAlpha(notification.isUnread() ? 1.0f : 0.6f);
+                  boolean isUnread = notification.isUnread();
+                  binding.viewUnreadDot.setVisibility(isUnread ? View.VISIBLE : View.GONE);
+                  binding.getRoot().setAlpha(isUnread ? 1.0f : 0.6f);
               });
     }
 
@@ -54,8 +70,12 @@ public class NotificationAdapter extends BaseAdapter<Notification, ItemNotificat
         if (isJoinRequest) {
             holder.binding.btnAccept.setOnClickListener(v -> {
                 if (onAcceptListener != null) {
-                    // Extracting ID from content or metadata if available. 
-                    // Currently relying on the parent view to handle specific join request logic if needed.
+                    onAcceptListener.onAction(notification);
+                }
+            });
+            holder.binding.btnDeny.setOnClickListener(v -> {
+                if (onDenyListener != null) {
+                    onDenyListener.onAction(notification);
                 }
             });
         }

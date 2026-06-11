@@ -23,6 +23,7 @@ public class LocalIntentParser {
     private static final String[] KW_ASK_TYPE = {"anong type", "expense ba", "income ba", "classification"};
     private static final String[] KW_SUMMARY = {"summary", "report", "stats", "status", "analytics", "breakdown", "detalye", "history"};
     private static final String[] KW_ADVICE = {"tips", "advice", "paano", "bakit", "help", "coach", "tipid", "analysis"};
+    private static final String[] KW_NOTIF_READ = {"mark all as read", "basahin lahat", "read all", "clear notifications", "napanood ko na lahat", "mark read"};
     private static final String[] KW_PROFANITY = {"gago", "tarantado", "puta", "tangina", "bakla", "bading", "tomboy", "t-bird", "tanga", "bobu", "bobo", "stupid", "idiot", "pangit", "panget", "sino ka", "ano ka", "lalaki ka", "babae ka", "lesbian", "gay"};
 
     public static JSONObject parse(Context context, String rawInput) {
@@ -75,6 +76,7 @@ public class LocalIntentParser {
                 return buildPending("NEED_AMOUNT", 0, cleanedItem, "How much for " + cleanedItem + "? 🐧");
             }
 
+            if (containsAny(input, KW_NOTIF_READ)) return buildResult(IntentType.NOTIF_READ, "ACTION", false, 0.9, "", "", "notif_read_all");
             if (containsAny(input, KW_SUMMARY)) return buildResult(IntentType.SUMMARY, "INSIGHT", false, 0.9, "", "", "summary");
             if (containsAny(input, KW_ASK_AMOUNT)) return buildResult(IntentType.ASK_AMOUNT, "INSIGHT", false, 0.9, "", "", "ask_amount");
             if (containsAny(input, KW_ASK_CATEGORY)) return buildResult(IntentType.ASK_CATEGORY, "INSIGHT", false, 0.9, "", "", "ask_category");
@@ -134,7 +136,7 @@ public class LocalIntentParser {
     }
 
     public enum IntentType {
-        GREETING, EXPENSE_LOG, INCOME_LOG, DEBT_LOG, GOAL_LOG, ALLOCATION_LOG, SUMMARY, ASK_AMOUNT, ASK_CATEGORY, ASK_TYPE, PROFANITY, UNKNOWN
+        GREETING, EXPENSE_LOG, INCOME_LOG, DEBT_LOG, GOAL_LOG, ALLOCATION_LOG, SUMMARY, ASK_AMOUNT, ASK_CATEGORY, ASK_TYPE, PROFANITY, UNKNOWN, NOTIF_READ
     }
 
     private static boolean containsAny(String input, String[] keywords) {

@@ -322,10 +322,6 @@ public class ApiHelper {
         );
     }
 
-    public void fetchNotifications(AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        callAction(Constants.Actions.GET_NOTIFICATIONS, new HashMap<>(), callback);
-    }
-
     public void markNotificationRead(String notificationId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("notificationId", notificationId);
@@ -334,5 +330,18 @@ public class ApiHelper {
 
     public void markAllNotificationsRead(AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         callAction(Constants.Actions.MARK_ALL_NOTIFICATIONS_READ, new HashMap<>(), callback);
+    }
+
+    public void getAiInsights(String context, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("context", context);
+        callAction(Constants.Actions.GET_AI_INSIGHTS, params, callback);
+    }
+
+    public void getChatAi(String message, String context, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("message", message);
+        params.put("context", context);
+        callAction(Constants.Actions.GET_CHAT_AI, params, callback);
     }
 }

@@ -19,7 +19,9 @@ public class TransactionHandler {
         Transaction t = new Transaction();
         t.setAmount(amount);
         t.setCategory(categoryName);
-        t.setTitle(description + " (via " + source + ")");
+        // Use description as title if available, otherwise use category
+        t.setTitle((description != null && !description.trim().isEmpty()) ? description : categoryName);
+        t.setNote(description); // Keep original description in note field
         saveItem(context, TransactionType.EXPENSE, t, callback);
     }
 
