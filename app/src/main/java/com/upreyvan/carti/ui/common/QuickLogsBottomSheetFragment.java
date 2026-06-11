@@ -124,7 +124,6 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             getBinding().layoutForm.tilAmount.setError(getString(R.string.msg_invalid_amount));
             hasEnoughBalance = false;
         } else if (!isAmountEntered) {
-            // Option 1: Show warning if empty (User's request)
             getBinding().layoutForm.tilAmount.setError("Amount is required");
             hasEnoughBalance = false;
         } else {
@@ -221,10 +220,13 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             getBinding().layoutForm.etSubCategory.setText(""); 
 
             getBinding().layoutForm.etSubCategory.setOnItemClickListener((parent, v, position, id) -> {
-                String selected = (String) parent.getItemAtPosition(position);
-                viewModel.setCategory(selected);
-                getBinding().layoutForm.allocatedHeader.setText(getString(R.string.category_expense_label, selected));
-                UiHelper.applyCategoryStyle(getBinding().layoutForm.cvBalanceInfo, null, null, selected);
+                String selectedSub = (String) parent.getItemAtPosition(position);
+                // Keep the parent category in the ViewModel to preserve the Allocation info
+                viewModel.setCategory(parentCategoryName); 
+                
+                // Keep the header as the parent category (e.g., "Food Allocation" instead of "Candy Allocation")
+                getBinding().layoutForm.allocatedHeader.setText(getString(R.string.category_expense_label, parentCategoryName));
+                UiHelper.applyCategoryStyle(getBinding().layoutForm.cvBalanceInfo, null, null, parentCategoryName);
                 validateForm();
             });
         } else {
@@ -274,7 +276,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
         String title = getString(R.string.quick_log_title);
         String btnText = getString(R.string.label_save);
         
-        getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE); // Always show balance info if possible
+        getBinding().layoutForm.cvBalanceInfo.setVisibility(View.VISIBLE);
 
         switch (logType) {
             case DEBT:

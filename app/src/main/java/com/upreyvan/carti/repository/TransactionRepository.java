@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
@@ -52,6 +53,7 @@ public class TransactionRepository {
     private final AtomicBoolean isRefreshing = new AtomicBoolean(false);
     
     private final MutableLiveData<List<TransactionWithUser>> allTransactions = new MutableLiveData<>(new ArrayList<>());
+    private final MediatorLiveData<com.upreyvan.carti.models.FinancialSummary> financialSummary = new MediatorLiveData<>();
     private final List<TransactionWithUser> transactionCache = Collections.synchronizedList(new ArrayList<>());
     private final MutableLiveData<RecurringBudgetStats> recurringStatsLiveData = new MutableLiveData<>();
 
@@ -62,6 +64,14 @@ public class TransactionRepository {
     private TransactionRepository(Context context) {
         this.remoteDataSource = new TransactionRemoteDataSource(context);
         this.pref = PreferenceManager.getInstance(context);
+
+        financialSummary.addSource(allTransactions, list -> {
+            executor.execute(() -> {
+                com.upreyvan.carti.models.FinancialSummary summary = com.upreyvan.carti.managers.FinancialEngine.calculate(list);
+                financialSummary.postValue(summary);
+            });
+        });
+
         refreshTransactions();
     }
 
@@ -149,6 +159,14 @@ public class TransactionRepository {
     }
 
     public LiveData<List<TransactionWithUser>> getAllTransactions() { return allTransactions; }
+
+    /**
+     * Phase 4 Centralized Summary Engine.
+     * Exposes the computed financial state of the app in realtime.
+     */
+    public LiveData<com.upreyvan.carti.models.FinancialSummary> getFinancialSummary() {
+        return financialSummary;
+    }
 
     public LiveData<List<TransactionWithUser>> getTransactionsByType(String type) {
         return Transformations.map(allTransactions, list -> 

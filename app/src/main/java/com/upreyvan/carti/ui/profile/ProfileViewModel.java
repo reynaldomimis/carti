@@ -4,16 +4,17 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.managers.PreferenceManager;
-import com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback;
 import com.upreyvan.carti.repository.ProfileRepository;
-import io.appwrite.models.DocumentList;
-import io.appwrite.models.User;
+import com.upreyvan.carti.repository.TransactionRepository;
+import com.upreyvan.carti.models.FinancialSummary;
 import java.util.Map;
 
 public class ProfileViewModel extends BaseViewModel {
     private final ProfileRepository repository;
+    private final TransactionRepository transRepo;
     private final PreferenceManager pref;
     private final MutableLiveData<Integer> memberCount = new MutableLiveData<>(0);
     private final MutableLiveData<Boolean> logoutSuccess = new MutableLiveData<>(false);
@@ -23,6 +24,7 @@ public class ProfileViewModel extends BaseViewModel {
     public ProfileViewModel(@NonNull Application application) {
         super(application);
         this.repository = ProfileRepository.getInstance(application);
+        this.transRepo = TransactionRepository.getInstance(application);
         this.pref = PreferenceManager.getInstance(application);
     }
 
@@ -31,63 +33,55 @@ public class ProfileViewModel extends BaseViewModel {
     public LiveData<String> getActionSuccess() { return actionSuccess; }
     public LiveData<String> getError() { return error; }
 
+    /**
+     * Future-ready: Monthly Income stats from Central Engine.
+     */
+    public LiveData<Double> getMonthlyIncome() {
+        return Transformations.map(transRepo.getFinancialSummary(), FinancialSummary::monthlyIncome);
+    }
+
+    /**
+     * Future-ready: Monthly Savings stats (Income - Expense) from Central Engine.
+     */
+    public LiveData<Double> getMonthlySavings() {
+        return Transformations.map(transRepo.getFinancialSummary(), FinancialSummary::monthlySavings);
+    }
+
     public void fetchMemberCount() {
-        repository.getMembers(new AppwriteCallback<>() {
+        repository.getMembers(new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<io.appwrite.models.DocumentList<Map<String, Object>>>() {
             @Override
-            public void onSuccess(DocumentList<Map<String, Object>> result) {
-                if (result.getDocuments() != null) {
-                    memberCount.postValue(result.getDocuments().size());
-                }
+            public void onSuccess(io.appwrite.models.DocumentList<Map<String, Object>> result) {
+                memberCount.postValue(result.getDocuments().size());
             }
-            @Override public void onError(Throwable error) {}
+            @Override public void onError(Throwable e) { memberCount.postValue(0); }
         });
     }
 
     public void logout() {
         setLoading(true);
-        repository.logout(new AppwriteCallback<>() {
-            @Override
-            public void onSuccess(Object result) {
-                pref.clear();
-                setLoading(false);
-                logoutSuccess.postValue(true);
-            }
-            @Override public void onError(Throwable e) {
-                pref.clear();
-                setLoading(false);
-                logoutSuccess.postValue(true); 
-            }
+        repository.logout(new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Object>() {
+            @Override public void onSuccess(Object result) { setLoading(false); logoutSuccess.postValue(true); }
+            @Override public void onError(Throwable e) { setLoading(false); error.postValue(e.getMessage()); }
         });
     }
 
     public void logoutAll() {
         setLoading(true);
-        repository.logoutAll(new AppwriteCallback<>() {
-            @Override
-            public void onSuccess(Object result) {
-                pref.clear();
-                setLoading(false);
-                logoutSuccess.postValue(true);
-                actionSuccess.postValue("Signed out from all devices");
-            }
-            @Override public void onError(Throwable e) {
-                pref.clear();
-                setLoading(false);
-                logoutSuccess.postValue(true);
-            }
+        repository.logoutAll(new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Object>() {
+            @Override public void onSuccess(Object result) { setLoading(false); logoutSuccess.postValue(true); }
+            @Override public void onError(Throwable e) { setLoading(false); error.postValue(e.getMessage()); }
         });
     }
 
-    public void updatePassword(String newPass, String oldPass) {
+    public void updatePassword(String old, String next) {
         setLoading(true);
-        repository.updatePassword(newPass, oldPass, new AppwriteCallback<User<Map<String, Object>>>() {
-            @Override
-            public void onSuccess(User<Map<String, Object>> result) {
-                setLoading(false);
-                actionSuccess.postValue("Password updated successfully");
+        repository.updatePassword(old, next, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<io.appwrite.models.User<Map<String, Object>>>() {
+            @Override public void onSuccess(io.appwrite.models.User<Map<String, Object>> result) { 
+                setLoading(false); 
+                actionSuccess.postValue("Password updated successfully!");
             }
-            @Override public void onError(Throwable e) {
-                setLoading(false);
+            @Override public void onError(Throwable e) { 
+                setLoading(false); 
                 error.postValue(e.getMessage());
             }
         });
@@ -95,18 +89,9 @@ public class ProfileViewModel extends BaseViewModel {
 
     public void deleteAccount() {
         setLoading(true);
-        repository.deleteAccount(new AppwriteCallback<Map<String, Object>>() {
-            @Override
-            public void onSuccess(Map<String, Object> result) {
-                pref.clear();
-                setLoading(false);
-                logoutSuccess.postValue(true);
-                actionSuccess.postValue("Account deleted successfully");
-            }
-            @Override public void onError(Throwable e) {
-                setLoading(false);
-                error.postValue(e.getMessage());
-            }
+        repository.deleteAccount(new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override public void onSuccess(Map<String, Object> result) { setLoading(false); logoutSuccess.postValue(true); }
+            @Override public void onError(Throwable e) { setLoading(false); }
         });
     }
 }

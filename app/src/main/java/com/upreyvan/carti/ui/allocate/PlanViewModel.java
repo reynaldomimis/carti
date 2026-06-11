@@ -1,11 +1,9 @@
 package com.upreyvan.carti.ui.allocate;
 
 import android.app.Application;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
-
 import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.managers.PreferenceManager;
 import com.upreyvan.carti.repository.NotificationRepository;
@@ -15,15 +13,10 @@ import com.upreyvan.carti.models.BudgetCategoryItem;
 import com.upreyvan.carti.models.RecurringBudgetStats;
 import com.upreyvan.carti.models.TransactionType;
 import com.upreyvan.carti.models.TransactionWithUser;
-import com.upreyvan.carti.utils.Utils;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class PlanViewModel extends BaseViewModel {
     private final MediatorLiveData<List<BudgetCategoryItem>> budgets = new MediatorLiveData<>();
@@ -41,11 +34,10 @@ public class PlanViewModel extends BaseViewModel {
         notifRepo = NotificationRepository.getInstance(application);
         pref = PreferenceManager.getInstance(application);
         
-        budgets.addSource(transRepo.getBudgetPlanLiveData(), items -> loadData());
+        budgets.addSource(transRepo.getFinancialSummary(), fs -> loadData());
         budgets.addSource(transRepo.getAllTransactions(), items -> loadData());
         
         categories.addSource(transRepo.getBudgetPlanLiveData(), items -> loadData());
-        categories.addSource(transRepo.getAllTransactions(), items -> loadData());
         
         recurringStats.addSource(transRepo.getRecurringStatsLiveData(), recurringStats::postValue);
     }
@@ -61,43 +53,31 @@ public class PlanViewModel extends BaseViewModel {
         executor.execute(() -> {
             transRepo.processRecurringBudgets();
             
-            // 1. Load Budgets (ALLOCATIONS from Repository)
+            // 1. Load Budgets from Centralized Logic
             List<BudgetCategoryItem> consolidated = transRepo.getBudgetPlan();
-            if (consolidated == null) consolidated = new ArrayList<>();
-
             List<BudgetCategoryItem> budgetList = new ArrayList<>();
-            for (BudgetCategoryItem item : consolidated) {
-                if (item.getAmount() > 0) budgetList.add(item);
+            if (consolidated != null) {
+                for (BudgetCategoryItem item : consolidated) {
+                    if (item.getAmount() > 0) budgetList.add(item);
+                }
             }
             budgets.postValue(sortBudgetItems(budgetList));
 
-            // 2. Load Categories (from local CategoryManager as requested)
+            // 2. Load Base Categories
             List<com.upreyvan.carti.models.Category> localCats = com.upreyvan.carti.managers.CategoryManager.getInstance(getApplication()).getCategories();
             List<BudgetCategoryItem> categoryList = new ArrayList<>();
             for (com.upreyvan.carti.models.Category c : localCats) {
                 categoryList.add(new BudgetCategoryItem(
-                        c.getName(),
-                        c.getIconRes(),
-                        c.getIconColor(),
-                        c.getBackgroundColor(),
-                        0,
-                        0,
-                        c.getParentCategory(),
-                        0,
-                        false
+                        c.getName(), c.getIconRes(), c.getIconColor(), c.getBackgroundColor(),
+                        0, 0, c.getParentCategory(), 0, false
                 ));
             }
             categories.postValue(sortBudgetItems(categoryList));
         });
     }
 
-    public void deleteGoal(String goalId) {
-        transRepo.deleteItem(TransactionType.GOAL, goalId, null);
-    }
-
-    public void refresh() {
-        transRepo.refreshTransactions();
-    }
+    public void deleteGoal(String goalId) { transRepo.deleteItem(TransactionType.GOAL, goalId, null); }
+    public void refresh() { transRepo.refreshTransactions(); }
 
     private List<BudgetCategoryItem> sortBudgetItems(List<BudgetCategoryItem> list) {
         if (list == null) return new ArrayList<>();

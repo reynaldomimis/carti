@@ -8,7 +8,6 @@ import androidx.lifecycle.Transformations;
 import com.upreyvan.carti.base.BaseViewModel;
 import com.upreyvan.carti.repository.MemberRepository;
 import com.upreyvan.carti.repository.TransactionRepository;
-import com.upreyvan.carti.models.BudgetCategoryItem;
 import com.upreyvan.carti.models.Member;
 import com.upreyvan.carti.models.Transaction;
 import com.upreyvan.carti.utils.TransactionHandler;
@@ -27,15 +26,11 @@ public class QuickLogsViewModel extends BaseViewModel {
         this.transRepo = TransactionRepository.getInstance(application);
         this.memberRepo = MemberRepository.getInstance(application);
         
+        // Phase 4: Use Centralized Financial Summary for category balances
         this.remainingBalance = Transformations.switchMap(category, cat ->
-            Transformations.map(transRepo.getBudgetPlanLiveData(), list -> {
-                if (cat == null || list == null) return 0.0;
-                for (BudgetCategoryItem item : list) {
-                    if (cat.equalsIgnoreCase(item.getCategoryName())) {
-                        return item.getAmount() - item.getCurrentSpent();
-                    }
-                }
-                return 0.0;
+            Transformations.map(transRepo.getFinancialSummary(), fs -> {
+                if (cat == null || fs == null || fs.categoryBalances() == null) return 0.0;
+                return fs.categoryBalances().getOrDefault(cat, 0.0);
             })
         );
     }

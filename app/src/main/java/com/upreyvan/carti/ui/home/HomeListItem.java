@@ -95,36 +95,24 @@ public interface HomeListItem extends BaseMultiItem {
 
         @Override public Object getChangePayload(@NonNull BaseMultiItem newItem) {
             if (newItem instanceof DashboardItem other) {
-                Bundle diff = new Bundle();
-                if (state.balance() != other.state.balance()) diff.putDouble("balance", other.state.balance());
-                if (state.monthlyIncome() != other.state.monthlyIncome()) diff.putDouble("income", other.state.monthlyIncome());
-                if (state.monthlyExpense() != other.state.monthlyExpense()) diff.putDouble("expense", other.state.monthlyExpense());
-                if (state.monthlySavings() != other.state.monthlySavings()) diff.putDouble("savings", other.state.monthlySavings());
-                if (state.todayExpense() != other.state.todayExpense()) diff.putDouble("todayExpense", other.state.todayExpense());
-                if (state.monthlyBudget() != other.state.monthlyBudget()) diff.putDouble("budget", other.state.monthlyBudget());
-                return !diff.isEmpty() ? diff : null;
+                // Use a key-based payload to signal that the data has changed
+                // This prevents the RecyclerView from fully re-binding and flickering
+                return "update_dashboard"; 
             }
             return null;
         }
 
         @Override public void bind(@NonNull ViewBinding binding, int pos, int count, @NonNull List<Object> payloads) {
-            for (Object p : payloads) {
-                if (p instanceof Bundle b) {
-                    ViewHomeDashboardBinding vb = (ViewHomeDashboardBinding) binding;
-                    if (b.containsKey("balance")) vb.tvBalanceAmount.setText(Utils.formatCurrency(b.getDouble("balance")));
-                    if (b.containsKey("income")) vb.tvIncomeAmount.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal, b.getDouble("income")));
-                    if (b.containsKey("expense")) vb.tvExpensesAmount.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal, b.getDouble("expense")));
-                    if (b.containsKey("savings")) vb.tvTotalSavings.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal, b.getDouble("savings")));
-                    if (b.containsKey("todayExpense")) vb.tvTodayExpenseAmount.setText(Utils.formatCurrency(b.getDouble("todayExpense")));
-                    if (b.containsKey("budget")) vb.tvMonthlyBudgetAmount.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal, b.getDouble("budget")));
-                }
+            if (!payloads.isEmpty()) {
+                // Perform a surgical update of the UI values without re-inflating
+                bind(binding, pos, count);
             }
         }
     }
 
     record AIInsightItem(String message, String type) implements HomeListItem {
         @Override public int getViewType() { return TYPE_AI_INSIGHT; }
-        @Override public String getItemUniqueId() { return "AI_INSIGHT_" + message.hashCode(); }
+        @Override public String getItemUniqueId() { return "AI_INSIGHT"; } // Use fixed ID to stabilize position
         @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) { return ViewAiInsightBinding.inflate(inflater, parent, false); }
         @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
             ViewAiInsightBinding b = (ViewAiInsightBinding) binding;
@@ -135,6 +123,14 @@ public interface HomeListItem extends BaseMultiItem {
             } else {
                 b.tvInsightTitle.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.carti_primary_green));
             }
+        }
+        
+        @Override public Object getChangePayload(@NonNull BaseMultiItem newItem) {
+            return "update_insight";
+        }
+        
+        @Override public void bind(@NonNull ViewBinding binding, int pos, int count, @NonNull List<Object> payloads) {
+            if (!payloads.isEmpty()) bind(binding, pos, count);
         }
     }
 
@@ -196,9 +192,14 @@ public interface HomeListItem extends BaseMultiItem {
                 });
                 rv.setAdapter(newAdapter);
                 newAdapter.submitList(bills);
-            } else if (!Objects.equals(existingAdapter.getCurrentList(), bills)) {
+            } else {
                 existingAdapter.submitList(bills);
             }
+        }
+        
+        @Override public Object getChangePayload(@NonNull BaseMultiItem newItem) { return "update_bills"; }
+        @Override public void bind(@NonNull ViewBinding binding, int pos, int count, @NonNull List<Object> payloads) {
+            if (!payloads.isEmpty()) bind(binding, pos, count);
         }
     }
 
@@ -231,7 +232,7 @@ public interface HomeListItem extends BaseMultiItem {
                 newAdapter.setOnItemClickListener(listener::onActionClick);
                 rv.setAdapter(newAdapter);
                 newAdapter.submitList(actions);
-            } else if (!Objects.equals(existingAdapter.getCurrentList(), actions)) {
+            } else {
                 existingAdapter.submitList(actions);
             }
         }
@@ -267,7 +268,7 @@ public interface HomeListItem extends BaseMultiItem {
                 newAdapter.setOnItemLongClickListener(log -> { listener.onQuickLogLongClick(log); return true; });
                 rv.setAdapter(newAdapter);
                 newAdapter.submitList(logs);
-            } else if (!Objects.equals(existingAdapter.getCurrentList(), logs)) {
+            } else {
                 existingAdapter.submitList(logs);
             }
         }

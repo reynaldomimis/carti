@@ -35,6 +35,7 @@ public class HomeViewModel extends BaseViewModel {
     private final NotificationRepository notifRepo;
     private final MemberRepository memberRepo;
     private final AiRepository aiRepo;
+    private final com.upreyvan.carti.managers.ai.AiInsightEngine aiEngine;
     private final PreferenceManager pref;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -56,6 +57,7 @@ public class HomeViewModel extends BaseViewModel {
         notifRepo = NotificationRepository.getInstance(application);
         memberRepo = MemberRepository.getInstance(application);
         aiRepo = AiRepository.getInstance(application);
+        aiEngine = new com.upreyvan.carti.managers.ai.AiInsightEngine(application);
         pref = PreferenceManager.getInstance(application);
         setupDataStream();
         uiState.addSource(dataTrigger, v -> {});
@@ -64,15 +66,18 @@ public class HomeViewModel extends BaseViewModel {
     public LiveData<List<BaseMultiItem>> getUiState() { return uiState; }
 
     public void refreshData() {
+        // Only clear cache and show loading for manual refresh
         setLoading(true);
+        pref.setAiInsightsCache(""); 
+        aiInsight = null;
+        
         transRepo.refreshTransactions();
         memberRepo.refreshMembers();
-        aiInsight = null;
         fetchAiInsight();
     }
 
     private void setupDataStream() {
-        dataTrigger.addSource(transRepo.getAllTransactions(), v -> { allTransactionsList = v; rebuild(false); });
+        dataTrigger.addSource(transRepo.getFinancialSummary(), v -> rebuild(false));
         dataTrigger.addSource(notifRepo.getBills(pref.getFamilyId()), v -> { this.currentBills = v; rebuild(false); });
         dataTrigger.addSource(transRepo.getBudgetPlanLiveData(), v -> { this.currentPlan = v; rebuild(false); });
         dataTrigger.addSource(transRepo.getSyncingStatus(), v -> rebuild(false));
@@ -95,31 +100,15 @@ public class HomeViewModel extends BaseViewModel {
     }
 
     private void fetchAiInsight() {
-        if (currentDash == null || isAiFetching) return;
+        if (isAiFetching) return;
+        
+        com.upreyvan.carti.models.FinancialSummary fs = transRepo.getFinancialSummary().getValue();
+        if (fs == null) return;
         
         isAiFetching = true;
         rebuild(false); 
-        
-        StringBuilder ctxBuilder = new StringBuilder();
-        ctxBuilder.append(String.format("CURRENCY: Philippine Peso (PHP, ₱). Balance: ₱%.2f. Monthly Income: ₱%.2f. Monthly Expense: ₱%.2f.\n",
-                currentDash.balance, currentDash.monthlyIncome, currentDash.monthlyExpense));
-        
-        if (currentBills != null && !currentBills.isEmpty()) {
-            ctxBuilder.append("Upcoming/Overdue Bills:\n");
-            for (Bill b : currentBills) {
-                ctxBuilder.append(String.format("- %s (₱%.2f) Due: %s\n", b.getName(), b.getAmount(), b.getDate()));
-            }
-        }
-        
-        if (currentPlan != null && !currentPlan.isEmpty()) {
-            ctxBuilder.append("Budget Progress:\n");
-            for (BudgetCategoryItem p : currentPlan) {
-                double usage = p.getAmount() > 0 ? (p.getCurrentSpent() / p.getAmount()) * 100 : 0;
-                ctxBuilder.append(String.format("- %s: %.0f%% used.\n", p.getCategoryName(), usage));
-            }
-        }
 
-        aiRepo.getInsights(ctxBuilder.toString(), new AiRepository.AiCallback() {
+        aiEngine.generateInsights(fs, currentBills, new AiRepository.AiCallback() {
             @Override public void onSuccess(String response) {
                 isAiFetching = false;
                 setLoading(false);
@@ -162,49 +151,33 @@ public class HomeViewModel extends BaseViewModel {
                 aiInsight = null;
             }
 
-            if (allTransactionsList != null) {
-                Calendar cal = Calendar.getInstance();
-                long curStart = Utils.getMonthStartMillis(cal);
-                long curEnd = Utils.getMonthEndMillis(cal);
-                long todayStart = Utils.getStartOfDayMillis();
-                String curMonthQuery = Utils.formatMonthQuery(cal);
+            // Phase 4: Reuse Centralized Financial Summary
+            com.upreyvan.carti.models.FinancialSummary fs = transRepo.getFinancialSummary().getValue();
+            if (fs != null) {
+                // Stabilize state by copying from centralized engine once
+                this.currentDash = new DashboardState(
+                    fs.monthlyBalance(), 
+                    fs.monthlyIncome(), 
+                    fs.monthlyExpense(), 
+                    fs.totalAccumulatedSavings(),
+                    fs.incomeTrend(), 
+                    fs.expenseTrend(), 
+                    fs.savingsTrend(), 
+                    fs.todayExpense(), 
+                    fs.monthlyBudget()
+                );
                 
-                cal.add(Calendar.MONTH, -1);
-                long lstStart = Utils.getMonthStartMillis(cal);
-                long lstEnd = Utils.getMonthEndMillis(cal);
-                
-                double budget = 0, exp = 0, inc = 0, today = 0, lExp = 0, lInc = 0;
-                List<TransactionWithUser> recents = new ArrayList<>();
-                
-                for (TransactionWithUser tu : allTransactionsList) {
-                    Transaction t = tu.getTransaction();
-                    String type = t.getType();
-                    long ts = t.getTimestampMillis();
-                    
-                    boolean isCurMonth = ts >= curStart && ts <= curEnd;
-                    boolean isLstMonth = ts >= lstStart && ts <= lstEnd;
-                    
-                    if ("ALLOCATION".equalsIgnoreCase(type)) {
-                        if (t.getAllocationMonth() != null && t.getAllocationMonth().contains(curMonthQuery)) {
-                            budget += t.getAmount();
-                        }
-                    } else if ("EXPENSE".equalsIgnoreCase(type)) {
-                        if (isCurMonth) exp += t.getAmount();
-                        if (isLstMonth) lExp += t.getAmount();
-                        if (ts >= todayStart) today += t.getAmount();
-                    } else if ("INCOME".equalsIgnoreCase(type)) {
-                        if (isCurMonth) inc += t.getAmount();
-                        if (isLstMonth) lInc += t.getAmount();
-                    }
+                List<TransactionWithUser> all = transRepo.getAllTransactions().getValue();
+                if (all != null) {
+                    this.currentTransactions = all.stream().limit(5).collect(java.util.stream.Collectors.toList());
                 }
-                
-                // Get 5 most recent
-                recents = allTransactionsList.stream().limit(5).collect(java.util.stream.Collectors.toList());
-                this.currentTransactions = recents;
 
-                double bal = budget - exp;
-                this.currentDash = new DashboardState(bal, inc, exp, bal, calculateTrend(inc, lInc), calculateTrend(exp, lExp), 0, today, budget);
                 if (aiInsight == null) mainHandler.post(this::checkAiTrigger);
+            }
+
+            // Only rebuild UI if we have data to avoid flickering/excessive loading
+            if (currentDash == null && !transRepo.getSyncingStatus().getValue()) {
+                return;
             }
 
             List<BaseMultiItem> items = new ArrayList<>();

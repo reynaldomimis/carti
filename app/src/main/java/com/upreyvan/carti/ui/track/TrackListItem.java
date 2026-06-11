@@ -74,7 +74,9 @@ public interface TrackListItem extends BaseMultiItem {
             b.tvTotalBalance.setText(Utils.formatCurrency(balance));
             b.tvSummaryIncome.setText(b.getRoot().getContext().getString(R.string.format_currency_no_decimal_simple, income));
             b.tvSummaryExpense.setText(b.getRoot().getContext().getString(R.string.format_currency_no_decimal_simple, expense));
-            b.tvSavingsAmount.setText(String.format(Locale.getDefault(), "%s / %s", Utils.formatCurrency(saved), Utils.formatCurrency(target)));
+
+            b.tvSavingsAmount.setText(Utils.formatCurrency(saved));
+
             b.tvSavingsPercent.setText(b.getRoot().getContext().getString(R.string.percentage_format, progress));
             b.progressSavings.setProgress(progress);
         }
@@ -100,10 +102,8 @@ public interface TrackListItem extends BaseMultiItem {
                     if (b.containsKey("balance")) vb.tvTotalBalance.setText(Utils.formatCurrency(b.getDouble("balance")));
                     if (b.containsKey("income")) vb.tvSummaryIncome.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal_simple, b.getDouble("income")));
                     if (b.containsKey("expense")) vb.tvSummaryExpense.setText(vb.getRoot().getContext().getString(R.string.format_currency_no_decimal_simple, b.getDouble("expense")));
-                    if (b.containsKey("saved") || b.containsKey("target")) {
-                        double s = b.containsKey("saved") ? b.getDouble("saved") : saved;
-                        double t = b.containsKey("target") ? b.getDouble("target") : target;
-                        vb.tvSavingsAmount.setText(String.format(Locale.getDefault(), "%s / %s", Utils.formatCurrency(s), Utils.formatCurrency(t)));
+                    if (b.containsKey("saved")) {
+                        vb.tvSavingsAmount.setText(Utils.formatCurrency(b.getDouble("saved")));
                     }
                     if (b.containsKey("progress")) {
                         int pr = b.getInt("progress");
