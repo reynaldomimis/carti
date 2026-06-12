@@ -246,6 +246,15 @@ public class PreferenceManager {
     public void setAiIntroDone(boolean done) { getPrefs().edit().putBoolean("ai_intro_done", done).apply(); }
     public boolean isAiIntroDone() { return getPrefs().getBoolean("ai_intro_done", false); }
 
+    public void setNotificationsEnabled(boolean enabled) {
+        getPrefs().edit().putBoolean(Constants.Keys.KEY_NOTIFICATIONS_ENABLED, enabled).apply();
+    }
+
+    public boolean isNotificationsEnabled() {
+        // Standard Software Engineering: Default is ON (true)
+        return getPrefs().getBoolean(Constants.Keys.KEY_NOTIFICATIONS_ENABLED, true);
+    }
+
     public void saveUser(Map<String, Object> data) {
         if (data == null) return;
         

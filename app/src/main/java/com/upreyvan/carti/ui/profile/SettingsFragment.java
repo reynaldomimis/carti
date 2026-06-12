@@ -37,11 +37,15 @@ public class SettingsFragment extends BaseFragment<FragmentSettingsBinding> {
     private void setupItems() {
         getBinding().headerGeneral.tvHeader.setText(R.string.section_general);
 
+        com.upreyvan.carti.managers.PreferenceManager pref = com.upreyvan.carti.managers.PreferenceManager.getInstance(requireContext());
+        boolean isNotifEnabled = pref.isNotificationsEnabled();
+
         // Notifications
         getBinding().itemNotifications.tvTitle.setText(R.string.label_notifications);
-        getBinding().itemNotifications.tvDescription.setText(R.string.status_on);
-        getBinding().itemNotifications.switchWidget.setChecked(true);
+        getBinding().itemNotifications.tvDescription.setText(isNotifEnabled ? R.string.status_on : R.string.status_off);
+        getBinding().itemNotifications.switchWidget.setChecked(isNotifEnabled);
         getBinding().itemNotifications.switchWidget.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            pref.setNotificationsEnabled(isChecked);
             getBinding().itemNotifications.tvDescription.setText(isChecked ? R.string.status_on : R.string.status_off);
         });
         getBinding().itemNotifications.getRoot().setOnClickListener(v -> navigateTo(new NotificationSettingsFragment()));

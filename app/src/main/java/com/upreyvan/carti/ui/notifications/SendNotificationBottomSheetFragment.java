@@ -65,7 +65,7 @@ public class SendNotificationBottomSheetFragment extends BottomSheetDialogFragme
         }
         binding.tilContent.setError(null);
 
-        viewModel.saveBill(title, content, 0.0);
+        viewModel.saveBill(title, content, 0.0, "Announcement");
     }
 
     @Override

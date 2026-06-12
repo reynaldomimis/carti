@@ -105,10 +105,24 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
     }
 
     private void setupDropdowns() {
-        String[] categories = {"Water", "Electricity", "Internet/Wifi", "Load", "Rent", "Others"};
-        ArrayAdapter<String> catAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, categories);
+        List<com.upreyvan.carti.models.Category> allCategories = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).getCategories();
+        java.util.List<String> billSubcategories = new java.util.ArrayList<>();
+        for (com.upreyvan.carti.models.Category c : allCategories) {
+            if ("Bills".equalsIgnoreCase(c.getParentCategory())) {
+                billSubcategories.add(c.getName());
+            }
+        }
+        
+        // Fallback if no subcategories found (though defaults should be there)
+        if (billSubcategories.isEmpty()) {
+            billSubcategories = java.util.Arrays.asList("Water", "Electricity", "Internet/Wifi", "Load/Data", "Rent", "Others");
+        }
+
+        ArrayAdapter<String> catAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, billSubcategories);
         getBinding().actCategory.setAdapter(catAdapter);
-        getBinding().actCategory.setText(categories[0], false);
+        if (!billSubcategories.isEmpty()) {
+            getBinding().actCategory.setText(billSubcategories.get(0), false);
+        }
     }
 
     private void setupListeners() {
@@ -151,7 +165,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             String title = "BILL: " + billName;
             String content = "A new bill for " + category + " (" + Utils.formatCurrency(StringHelper.parseDouble(amountStr)) + ") is due on " + formattedDate;
 
-            viewModel.saveBill(title, content, StringHelper.parseDouble(amountStr));
+            viewModel.saveBill(title, content, StringHelper.parseDouble(amountStr), category);
         });
     }
 }

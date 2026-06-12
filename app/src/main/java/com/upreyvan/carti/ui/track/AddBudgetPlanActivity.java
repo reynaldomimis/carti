@@ -120,7 +120,7 @@ public class AddBudgetPlanActivity extends BaseActivity<ActivityAddBudgetPlanBin
         TransactionRepository.getInstance(this).getBudgetPlanLiveData().observe(this, items -> {
             if (items == null || items.isEmpty()) {
                 List<BudgetCategoryItem> defaults = new ArrayList<>();
-                defaults.add(new BudgetCategoryItem("Bills & Utilities", R.drawable.ic_calendar, R.color.icon_water, R.color.log_water, 8000, 0));
+                defaults.add(new BudgetCategoryItem("Bills", R.drawable.ic_calendar, R.color.icon_water, R.color.log_water, 8000, 0));
                 defaults.add(new BudgetCategoryItem("Grocery", R.drawable.ic_chart, R.color.icon_food, R.color.log_food, 12000, 0));
                 adapter.submitList(defaults);
             } else {

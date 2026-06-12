@@ -112,33 +112,33 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
 
         setupInputValidation();
 
+        // Always hide amount and recurring as per requirements: only Name and Icon
+        getBinding().labelAmount.setVisibility(View.GONE);
+        getBinding().layoutAmount.setVisibility(View.GONE);
+        getBinding().layoutRecurring.setVisibility(View.GONE);
+
         if (parentCategory != null) {
             getBinding().tvTitle.setText(R.string.title_add_sub_category);
             getBinding().tvSubtitle.setText(getString(R.string.desc_adding_sub_category, parentCategory));
             
-            // Show amount and recurring for sub-categories
-            getBinding().labelAmount.setVisibility(View.VISIBLE);
-            getBinding().layoutAmount.setVisibility(View.VISIBLE);
-            getBinding().layoutRecurring.setVisibility(View.VISIBLE);
+            // Default sub-category icon to parent's icon
+            com.upreyvan.carti.models.Category parent = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).getCategoryByName(parentCategory);
+            if (parent != null && parent.getIconRes() != 0) {
+                selectedIcon = parent.getIconRes();
+                getBinding().ivCategoryIcon.setImageResource(selectedIcon);
+                getBinding().ivCategoryIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
+            }
         }
 
         if (editingItem != null) {
             getBinding().tvTitle.setText(R.string.btn_edit);
             getBinding().etCategoryName.setText(editingItem.getCategoryName());
-            getBinding().etAmount.setText(String.valueOf(editingItem.getAmount()));
-            getBinding().switchRecurring.setChecked(editingItem.isRecurring());
             selectedIcon = editingItem.getIconRes();
             if (selectedIcon != 0) {
                 getBinding().ivCategoryIcon.setImageResource(selectedIcon);
                 getBinding().ivCategoryIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
             }
             parentCategory = editingItem.getParentCategory();
-
-            if (parentCategory != null) {
-                getBinding().labelAmount.setVisibility(View.VISIBLE);
-                getBinding().layoutAmount.setVisibility(View.VISIBLE);
-                getBinding().layoutRecurring.setVisibility(View.VISIBLE);
-            }
         }
         
         validateForm();
@@ -147,13 +147,66 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
     private void setupInputValidation() {
         TextWatcher validationWatcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validateForm(); }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { 
+                validateForm(); 
+                if (editingItem == null && selectedIcon == R.drawable.ic_chart) {
+                    suggestIcon(s.toString());
+                }
+            }
             @Override public void afterTextChanged(Editable s) {}
         };
 
         getBinding().etCategoryName.addTextChangedListener(validationWatcher);
         getBinding().etAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etAmount));
         getBinding().etAmount.addTextChangedListener(validationWatcher);
+    }
+
+    private void suggestIcon(String name) {
+        if (name == null || name.isEmpty()) return;
+        String clean = name.toLowerCase().trim();
+        
+        int suggested = R.drawable.ic_chart;
+        
+        // Comprehensive Keyword Matching using Android built-in icons
+        if (clean.contains("food") || clean.contains("kain") || clean.contains("meal") || clean.contains("eat") || clean.contains("restau")) {
+            suggested = android.R.drawable.ic_menu_gallery; 
+        } else if (clean.contains("water") || clean.contains("tubig") || clean.contains("drink")) {
+            suggested = android.R.drawable.ic_menu_compass;
+        } else if (clean.contains("elect") || clean.contains("kuryente") || clean.contains("meralco") || clean.contains("light") || clean.contains("power")) {
+            suggested = R.drawable.ic_calendar;
+        } else if (clean.contains("fare") || clean.contains("trans") || clean.contains("gas") || clean.contains("fuel") || clean.contains("car") || clean.contains("drive") || clean.contains("taxi")) {
+            suggested = android.R.drawable.ic_dialog_map;
+        } else if (clean.contains("load") || clean.contains("data") || clean.contains("internet") || clean.contains("wifi") || clean.contains("phone") || clean.contains("call")) {
+            suggested = android.R.drawable.ic_menu_send;
+        } else if (clean.contains("bill") || clean.contains("rent") || clean.contains("calendar") || clean.contains("due") || clean.contains("tax")) {
+            suggested = R.drawable.ic_calendar;
+        } else if (clean.contains("store") || clean.contains("grocery") || clean.contains("shop") || clean.contains("mall") || clean.contains("buy")) {
+            suggested = android.R.drawable.ic_input_add;
+        } else if (clean.contains("debt") || clean.contains("utang") || clean.contains("loan") || clean.contains("credit") || clean.contains("pay")) {
+            suggested = android.R.drawable.ic_lock_lock;
+        } else if (clean.contains("health") || clean.contains("med") || clean.contains("hospital") || clean.contains("clinic") || clean.contains("doctor")) {
+            suggested = android.R.drawable.ic_menu_compass;
+        } else if (clean.contains("school") || clean.contains("educ") || clean.contains("study") || clean.contains("book") || clean.contains("class")) {
+            suggested = android.R.drawable.ic_menu_edit;
+        } else if (clean.contains("repair") || clean.contains("fix") || clean.contains("home") || clean.contains("house") || clean.contains("maintain")) {
+            suggested = android.R.drawable.ic_menu_manage;
+        } else if (clean.contains("pet") || clean.contains("dog") || clean.contains("cat") || clean.contains("animal")) {
+            suggested = android.R.drawable.ic_menu_view;
+        } else if (clean.contains("save") || clean.contains("bank") || clean.contains("money") || clean.contains("cash") || clean.contains("wallet")) {
+            suggested = android.R.drawable.ic_menu_save;
+        } else if (clean.contains("entertain") || clean.contains("movie") || clean.contains("music") || clean.contains("game") || clean.contains("fun")) {
+            suggested = android.R.drawable.ic_menu_slideshow;
+        } else if (clean.contains("personal") || clean.contains("care") || clean.contains("self") || clean.contains("beauty")) {
+            suggested = android.R.drawable.ic_menu_myplaces;
+        } else if (clean.contains("work") || clean.contains("job") || clean.contains("office") || clean.contains("biz")) {
+            suggested = android.R.drawable.ic_menu_agenda;
+        }
+
+        if (suggested != R.drawable.ic_chart) {
+            selectedIcon = suggested;
+            getBinding().ivCategoryIcon.setImageResource(selectedIcon);
+            getBinding().ivCategoryIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
+        }
     }
 
     private void validateForm() {

@@ -127,13 +127,30 @@
             android:layout_marginHorizontal="@dimen/screen_padding"
             android:layout_marginTop="@dimen/gap_card">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvCategories"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                tools:itemCount="4"
-                tools:listitem="@layout/item_category_row" />
+                android:orientation="vertical">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvCategories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_category_row" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnViewMore"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="View More"
+                    android:visibility="gone"
+                    android:textColor="@color/carti_primary_green"
+                    android:textAllCaps="false"
+                    app:rippleColor="@color/mint_green_alpha" />
+            </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 

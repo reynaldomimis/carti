@@ -78,10 +78,23 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
     }
 
     private void setupCategoryDropdown() {
-        String[] categories = {"Water", "Electricity", "Internet/Wifi", "Load", "Rent", "Others"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
+        java.util.List<com.upreyvan.carti.models.Category> allCategories = com.upreyvan.carti.managers.CategoryManager.getInstance(this).getCategories();
+        java.util.List<String> billSubcategories = new java.util.ArrayList<>();
+        for (com.upreyvan.carti.models.Category c : allCategories) {
+            if ("Bills".equalsIgnoreCase(c.getParentCategory())) {
+                billSubcategories.add(c.getName());
+            }
+        }
+        
+        if (billSubcategories.isEmpty()) {
+            billSubcategories = java.util.Arrays.asList("Water", "Electricity", "Internet/Wifi", "Load/Data", "Rent", "Others");
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, billSubcategories);
         getBinding().actCategory.setAdapter(adapter);
-        getBinding().actCategory.setText(categories[0], false);
+        if (!billSubcategories.isEmpty()) {
+            getBinding().actCategory.setText(billSubcategories.get(0), false);
+        }
     }
 }
 

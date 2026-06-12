@@ -36,6 +36,20 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private Fragment homeFragment, trackFragment, planFragment, chatFragment, profileFragment, notificationsFragment;
     private Fragment activeFragment;
 
+    private final androidx.activity.result.ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), isGranted -> {
+                // Permission handled
+            });
+
+    private void requestNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) !=
+                    android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+
     @Override
     protected ActivityMainBinding inflateBinding(LayoutInflater inflater) {
         return ActivityMainBinding.inflate(inflater);
@@ -51,6 +65,8 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     private void proceed() {
         if (isInit) return;
         isInit = true;
+
+        requestNotificationPermission();
         
         setupDynamicPadding(getBinding().fragmentContainer, getBinding().bottomNavContainer);
 
@@ -77,14 +93,27 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
             }
         });
 
-        if (getIntent().getBooleanExtra("show_home", false)) {
-            navigateTo(Constants.Navigation.HOME);
-        }
+        handleIntent(getIntent());
 
         getBinding().bottomNavContainer.setVisibility(View.INVISIBLE);
         getBinding().bottomNavContainer.setAlpha(0f);
         getBinding().bottomNavContainer.setTranslationY(200f);
         new Handler(Looper.getMainLooper()).postDelayed(() -> setBottomNavVisibility(true), 200);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent == null) return;
+        
+        if (intent.getBooleanExtra("show_home", false)) {
+            navigateTo(Constants.Navigation.HOME);
+        }
+        
+        String navigateTo = intent.getStringExtra("navigate_to");
+        if ("chat".equals(navigateTo)) {
+            navigateTo(Constants.Navigation.CHAT);
+        } else if ("notifications".equals(navigateTo)) {
+            navigateTo(Constants.Navigation.NOTIFICATIONS);
+        }
     }
 
     private void setupFragments() {
@@ -105,6 +134,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
                 .commit();
 
         activeFragment = homeFragment;
+        com.upreyvan.carti.utils.AppLifecycleTracker.setActiveFragment(activeFragment);
         setTabActive(getBinding().tabHome);
 
         TransactionRepository.getInstance(this)
@@ -127,11 +157,21 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        com.upreyvan.carti.utils.AppLifecycleTracker.setAppInForeground(true);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        com.upreyvan.carti.utils.AppLifecycleTracker.setAppInForeground(false);
+    }
+
+    @Override
     protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
-        if (intent.getBooleanExtra("show_home", false)) {
-            navigateTo(Constants.Navigation.HOME);
-        }
+        handleIntent(intent);
     }
 
     private void setupTabs() {
@@ -222,6 +262,7 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
             transaction.hide(activeFragment).show(target).commit();
             activeFragment = target;
+            com.upreyvan.carti.utils.AppLifecycleTracker.setActiveFragment(activeFragment);
             setBottomNavVisibility(showBottomNav);
         }
     }

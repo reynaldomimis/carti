@@ -302,11 +302,12 @@ public class ApiHelper {
         );
     }
 
-    public void sendAnnouncement(String title, String content, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+    public void sendAnnouncement(String title, String content, double amount, String category, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         Map<String, Object> params = new HashMap<>();
         params.put("title", title);
         params.put("content", content);
         params.put("amount", amount);
+        params.put("category", category);
         callAction(Constants.Actions.SEND_ANNOUNCEMENT, params, callback);
     }
 

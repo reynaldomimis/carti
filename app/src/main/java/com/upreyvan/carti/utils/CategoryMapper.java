@@ -20,7 +20,7 @@ public class CategoryMapper {
         addSynonyms(Categories.TRANSPORTATION, "transportation", "tran", "fare", "grab", "jeep", "tricycle", "gas", "fuel", "angkas", "joyride", "pasahe", "mrt", "lrt", "bus");
         
         // Bills
-        addSynonyms(Categories.BILLS, "bills", "bill", "bayad", "utility", "meralco", "maynilad", "internet", "wifi", "kuryente", "tubig", "pldt", "converge");
+        addSynonyms(Categories.BILLS, "bills", "bill", "bayad", "utility", "meralco", "maynilad", "internet", "wifi", "kuryente", "tubig", "pldt", "converge", "load", "data", "rent");
         
         // Shopping
         addSynonyms(Categories.SHOPPING, "shopping", "shop", "buy", "mall", "shopee", "lazada", "grocery", "groceries", "damit", "sapatos", "bag");
@@ -29,7 +29,40 @@ public class CategoryMapper {
         addSynonyms(Categories.HEALTH, "health", "med", "doctor", "hospital", "gamot", "pharmacy", "clinic", "vitamins", "checkup");
         
         // Education
-        addSynonyms(Categories.EDUCATION, "education", "school", "educ", "tuition", "books", "baon", "uniform", "pencil", "papel");
+        addSynonyms(Categories.EDUCATION, "education", "school", "educ", "tuition", "books", "baon", "uniform", "pencil", "papel", "enrollment", "module");
+        
+        // Personal Care
+        addSynonyms("Personal Care", "personal care", "toiletries", "soap", "shampoo", "salon", "barber", "skincare", "cosmetics", "hygiene");
+
+        // Entertainment
+        addSynonyms("Entertainment", "entertainment", "movie", "cinema", "date", "outing", "travel", "vacation", "netflix", "spotify", "games", "hobby");
+
+        // Home Repair
+        addSynonyms("Home Repair", "home repair", "maintenance", "furniture", "appliance", "hardware", "renovation", "plumbing", "electrical fix");
+
+        // Pets
+        addSynonyms("Pets", "pets", "pet food", "vet", "veterinary", "dog", "cat", "grooming");
+
+        // Savings
+        addSynonyms("Savings", "savings", "investment", "insurance", "emergency fund", "alkansya", "ipon");
+
+        // Allowance
+        addSynonyms("Allowance", "allowance", "baon", "pocket money", "daily allowance");
+
+        // Church/Donation
+        addSynonyms("Church/Donation", "church", "donation", "tithe", "abuloy", "charity", "offering", "ikapu");
+
+        // Gifts/Celebration
+        addSynonyms("Gifts/Celebration", "gift", "birthday", "celebration", "party", "wedding", "handog", "regalo");
+
+        // Laundry
+        addSynonyms("Laundry", "laundry", "labada", "dry clean", "detergent");
+
+        // Household Help
+        addSynonyms("Household Help", "nanny", "helper", "driver", "yaya", "sweldo ng katulong", "maid");
+
+        // Emergency
+        addSynonyms("Emergency", "emergency", "unexpected", "sakuna", "nasiraan");
         
         // Electricity
         addSynonyms(Categories.ELECTRICITY, "electricity", "kuryente", "light", "power", "electric");

@@ -96,6 +96,23 @@ public class RealtimeManager {
             NotificationRepository.getInstance(context).handleRealtimeEvent(payload, isDelete);
         } else if (path.contains(Constants.Appwrite.COL_MESSAGES)) {
             chatStream.postValue(payload);
+            if (!isDelete) {
+                String senderId = (String) payload.get("senderId");
+                if (!pref.getUserId().equals(senderId)) {
+                    // Standard Software Engineering logic: 
+                    // Skip system notification if user is already in the chat room
+                    if (com.upreyvan.carti.utils.AppLifecycleTracker.isChatActive()) return;
+
+                    String senderName = (String) payload.get("senderName");
+                    String text = (String) payload.get("text");
+                    com.upreyvan.carti.utils.NotificationHelper.showNotification(
+                        context, 
+                        senderName != null ? senderName : "New Message", 
+                        text,
+                        true
+                    );
+                }
+            }
         } else if (path.contains(Constants.Appwrite.COL_USERS)) {
             userUpdateStream.postValue(payload);
             MemberRepository.getInstance(context).refreshMembers();

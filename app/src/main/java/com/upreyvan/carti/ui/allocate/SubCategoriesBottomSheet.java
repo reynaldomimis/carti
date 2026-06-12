@@ -72,10 +72,8 @@ public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomShee
                 (binding, item, pos, count) -> {
                     binding.tvCategoryName.setText(item.getCategoryName());
                     binding.ivCategoryIcon.setImageResource(item.getIconRes() != 0 ? item.getIconRes() : R.drawable.ic_chart);
-                    int bgColor = item.getBgColor() != 0 ? item.getBgColor() : R.color.mint_green_alpha;
-                    int iconColor = item.getIconColor() != 0 ? item.getIconColor() : R.color.carti_primary_green;
-                    binding.cardIcon.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(getResources().getColor(bgColor, null)));
-                    binding.ivCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(iconColor, null)));
+                    
+                    com.upreyvan.carti.utils.UiHelper.applyCategoryStyle(null, binding.cardIcon, binding.ivCategoryIcon, item.getCategoryName());
 
                     binding.btnOptions.setVisibility(View.VISIBLE);
                     binding.btnOptions.setOnClickListener(v -> showSubCategoryOptions(item, v));

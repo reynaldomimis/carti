@@ -31,9 +31,9 @@ public class BillsViewModel extends BaseViewModel {
 
     public LiveData<Boolean> getSaveSuccess() { return saveSuccess; }
 
-    public void saveBill(String title, String content, double amount) {
+    public void saveBill(String title, String content, double amount, String category) {
         setLoading(true);
-        repository.sendAnnouncement(title, content, amount, new AppwriteCallback<>() {
+        repository.sendAnnouncement(title, content, amount, category, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 setLoading(false);

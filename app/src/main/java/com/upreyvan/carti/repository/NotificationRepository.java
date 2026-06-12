@@ -68,6 +68,17 @@ public class NotificationRepository {
                 Notification n = mapToNotification(id, data);
                 if (n != null) {
                     currentNotifications.add(0, n);
+                    
+                    // Standard Software Engineering logic: 
+                    // Skip system notification if user is already viewing the notifications list
+                    if (com.upreyvan.carti.utils.AppLifecycleTracker.isNotificationsActive()) return;
+
+                    // Show system notification for new items
+                    com.upreyvan.carti.utils.NotificationHelper.showNotification(
+                        realtimeRepo.getContext(), 
+                        n.getTitle(), 
+                        n.getContent()
+                    );
                 }
             }
             notificationsLiveData.postValue(new ArrayList<>(currentNotifications));
@@ -163,8 +174,8 @@ public class NotificationRepository {
 
     public LiveData<Integer> getUnreadCount() { return unreadCount; }
 
-    public void sendAnnouncement(String title, String content, double amount, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        apiHelper.sendAnnouncement(title, content, amount, callback);
+    public void sendAnnouncement(String title, String content, double amount, String category, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        apiHelper.sendAnnouncement(title, content, amount, category, callback);
     }
 
     public void deleteNotification(String id, AppwriteManager.AppwriteCallback<Object> callback) {

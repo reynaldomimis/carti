@@ -25,6 +25,8 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
     private PlanViewModel viewModel;
     private GenericAdapter<BudgetCategoryItem, ItemBudgetCardBinding> budgetAdapter;
     private GenericAdapter<BudgetCategoryItem, ItemCategoryRowBinding> categoryAdapter;
+    private boolean isCategoriesExpanded = false;
+    private java.util.List<BudgetCategoryItem> fullParentCategories = new java.util.ArrayList<>();
 
     @Override
     protected FragmentBudgetBinding inflateBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -48,6 +50,10 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
         getBinding().layoutHeader.btnHeaderAction.setOnClickListener(v -> showAddBudgetBottomSheet());
 
         getBinding().btnAddCategory.setOnClickListener(v -> showAddCategoryBottomSheet());
+        getBinding().btnViewMore.setOnClickListener(v -> {
+            isCategoriesExpanded = true;
+            updateCategoryList();
+        });
     }
 
     private void setupAdapters() {
@@ -84,11 +90,21 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
             getBinding().cardEmptyBudgets.setVisibility(budgets.isEmpty() ? View.VISIBLE : View.GONE);
         });
         viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
-            java.util.List<BudgetCategoryItem> parentCategories = categories.stream()
+            fullParentCategories = categories.stream()
                     .filter(c -> c.getParentCategory() == null || c.getParentCategory().isEmpty())
                     .collect(java.util.stream.Collectors.toList());
-            categoryAdapter.submitList(new ArrayList<>(parentCategories));
+            updateCategoryList();
         });
+    }
+
+    private void updateCategoryList() {
+        if (!isCategoriesExpanded && fullParentCategories.size() > 10) {
+            categoryAdapter.submitList(new java.util.ArrayList<>(fullParentCategories.subList(0, 10)));
+            getBinding().btnViewMore.setVisibility(View.VISIBLE);
+        } else {
+            categoryAdapter.submitList(new java.util.ArrayList<>(fullParentCategories));
+            getBinding().btnViewMore.setVisibility(View.GONE);
+        }
     }
 
     private void showAddBudgetBottomSheet() {

@@ -98,6 +98,7 @@ public class Constants {
         public static final String KEY_AI_INTRO_DONE = "ai_intro_done";
         public static final String KEY_LAST_RECURRING_CHECK = "last_recurring_check";
         public static final String KEY_BUDGET_PLAN_ITEMS = "key_budget_plan_items";
+        public static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
 
         // Manager Keys
         public static final String KEY_CATEGORIES = "categories_list";
