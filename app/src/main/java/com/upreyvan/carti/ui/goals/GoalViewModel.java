@@ -62,6 +62,7 @@ public class GoalViewModel extends BaseViewModel {
     private void performSave(String name, double targetAmount, double savedAmount, String date, int iconRes, String iconUrl) {
         Transaction t = new Transaction();
         t.setTitle(name);
+        t.setCategory(name);
         t.setTargetAmount(targetAmount);
         t.setAmount(savedAmount);
         t.setTargetDate(date);

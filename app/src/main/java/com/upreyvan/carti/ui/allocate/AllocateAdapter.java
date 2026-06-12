@@ -8,10 +8,13 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.databinding.ItemAllocationChildBinding;
 import com.upreyvan.carti.databinding.ItemAllocationParentBinding;
+import com.upreyvan.carti.managers.CategoryManager;
 import com.upreyvan.carti.models.BudgetAllocation;
+import com.upreyvan.carti.models.Category;
 import com.upreyvan.carti.models.Transaction;
 import com.upreyvan.carti.utils.StringHelper;
 import com.upreyvan.carti.utils.Utils;
@@ -51,8 +54,19 @@ public class AllocateAdapter extends ListAdapter<BudgetAllocation, AllocateAdapt
 
         void bind(BudgetAllocation item) {
             b.tvTitle.setText(item.getTitle());
-            b.ivIcon.setImageResource(item.getIconRes());
-            b.cvIcon.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), item.getThemeColor()));
+            
+            // Centralized Style Implementation for Allocations
+            Category c = CategoryManager.getInstance(itemView.getContext()).getCategoryByName(item.getTitle());
+            if (c != null) {
+                b.ivIcon.setImageResource(c.getIconRes());
+                b.cvIcon.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), c.getBackgroundColor()));
+                b.ivIcon.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(itemView.getContext(), c.getIconColor())));
+            } else {
+                b.ivIcon.setImageResource(item.getIconRes() != 0 ? item.getIconRes() : R.drawable.ic_chart);
+                b.cvIcon.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.mint_green_alpha));
+                b.ivIcon.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(itemView.getContext(), R.color.carti_primary_green)));
+            }
+
             b.tvAmountLabel.setText(String.format("%s / %s", StringHelper.formatCompactCurrency(item.getCurrentSpent()), StringHelper.formatCompactCurrency(item.getAllocatedAmount())));
             
             int progress = item.getAllocatedAmount() > 0 ? (int) ((item.getCurrentSpent() / item.getAllocatedAmount()) * 100) : 0;

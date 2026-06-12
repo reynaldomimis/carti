@@ -5,7 +5,9 @@ import androidx.core.content.ContextCompat;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemBillBinding;
+import com.upreyvan.carti.managers.CategoryManager;
 import com.upreyvan.carti.models.Bill;
+import com.upreyvan.carti.models.Category;
 import com.upreyvan.carti.utils.Utils;
 
 public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
@@ -26,10 +28,16 @@ public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
 
                     b.tvBillAmount.setText(Utils.formatCurrency(item.getAmount()));
                     
-                    if (item.getIconResId() != 0) {
-                        b.ivBillIcon.setImageResource(item.getIconResId());
+                    // Centralized Style Implementation for Bills
+                    Category c = CategoryManager.getInstance(b.getRoot().getContext()).getCategoryByName(item.getCategory());
+                    if (c != null) {
+                        b.ivBillIcon.setImageResource(c.getIconRes());
+                        b.cardIcon.setCardBackgroundColor(ContextCompat.getColor(b.getRoot().getContext(), c.getBackgroundColor()));
+                        b.ivBillIcon.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(b.getRoot().getContext(), c.getIconColor())));
                     } else {
-                        b.ivBillIcon.setImageResource(R.drawable.ic_calendar);
+                        b.ivBillIcon.setImageResource(item.getIconResId() != 0 ? item.getIconResId() : R.drawable.ic_calendar);
+                        b.cardIcon.setCardBackgroundColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.surface_variant));
+                        b.ivBillIcon.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(b.getRoot().getContext(), R.color.carti_primary_green)));
                     }
 
                     String paidLabel = b.getRoot().getContext().getString(R.string.status_paid_label);

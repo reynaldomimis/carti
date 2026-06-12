@@ -21,6 +21,7 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.databinding.LayoutBottomSheetAddGoalBinding;
+import com.upreyvan.carti.models.ColorChoice;
 import com.upreyvan.carti.models.IconChoice;
 import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
@@ -169,11 +170,12 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
         IconPickerDialog dialog = new IconPickerDialog();
         dialog.setListener(new IconPickerDialog.OnIconSelectedListener() {
             @Override
-            public void onIconSelected(IconChoice icon) {
+            public void onIconSelected(IconChoice icon, ColorChoice color) {
                 selectedIcon = icon.getIconRes();
                 selectedImageUri = null;
                 getBinding().ivGoalIcon.setImageResource(selectedIcon);
-                getBinding().ivGoalIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
+                getBinding().ivGoalIcon.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(requireContext(), color.getColorRes())));
+                getBinding().cardIconContainer.setCardBackgroundColor(ContextCompat.getColor(requireContext(), color.getBgColorRes()));
             }
 
             @Override

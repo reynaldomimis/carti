@@ -145,8 +145,17 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                         shimmer.setVisibility(View.GONE);
                         binding.layoutContent.setVisibility(View.VISIBLE);
                         binding.tvGoalTitle.setText(goal.getTitle());
-                        binding.ivGoalIcon.setImageResource(goal.getIconRes());
-                        binding.ivGoalIcon.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.surface_variant));
+                        
+                        // Centralized Style Implementation
+                        binding.ivGoalIcon.setImageResource(goal.getIconRes() != 0 ? goal.getIconRes() : R.drawable.ic_trophy);
+                        binding.ivGoalIcon.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), goal.getIconBgColor()));
+                        binding.ivGoalIcon.setImageTintList(ContextCompat.getColorStateList(requireContext(), goal.getIconColor()));
+                        
+                        if (goal.getIconUrl() != null && !goal.getIconUrl().isEmpty()) {
+                            com.bumptech.glide.Glide.with(requireContext()).load(goal.getIconUrl()).into(binding.ivGoalIcon);
+                            binding.ivGoalIcon.setImageTintList(null);
+                        }
+
                         binding.tvGoalProgressAmount.setText(getString(R.string.goal_progress_amount_format,
                                 Utils.formatCurrency(goal.getAmount()),
                                 Utils.formatCurrency(goal.getTargetAmount())));

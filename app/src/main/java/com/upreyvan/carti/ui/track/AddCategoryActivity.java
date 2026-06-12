@@ -12,6 +12,7 @@ import com.upreyvan.carti.base.BaseActivity;
 import com.upreyvan.carti.managers.CategoryManager;
 import com.upreyvan.carti.databinding.ActivityAddCategoryBinding;
 import com.upreyvan.carti.models.Category;
+import com.upreyvan.carti.models.ColorChoice;
 import com.upreyvan.carti.models.IconChoice;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
 import com.upreyvan.carti.utils.Utils;
@@ -64,11 +65,12 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
             IconPickerDialog dialog = new IconPickerDialog();
             dialog.setListener(new IconPickerDialog.OnIconSelectedListener() {
                 @Override
-                public void onIconSelected(IconChoice icon) {
+                public void onIconSelected(IconChoice icon, ColorChoice color) {
                     selectedIconRes = icon.getIconRes();
                     selectedCustomIconUri = null;
                     getBinding().ivCategoryIcon.setImageResource(selectedIconRes);
-                    getBinding().ivCategoryIcon.setImageTintList(null);
+                    getBinding().ivCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(getColor(color.getColorRes())));
+                    getBinding().cardIconContainer.setCardBackgroundColor(getColor(color.getBgColorRes()));
                 }
                 @Override public void onUploadCustom() { pickImageLauncher.launch("image/*"); }
             });

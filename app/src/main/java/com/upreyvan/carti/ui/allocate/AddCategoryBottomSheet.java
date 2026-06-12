@@ -22,7 +22,9 @@ import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.BottomSheetAddCategoryBinding;
 import com.upreyvan.carti.models.BudgetCategoryItem;
+import com.upreyvan.carti.models.ColorChoice;
 import com.upreyvan.carti.models.IconChoice;
+import com.upreyvan.carti.ui.common.ColorPickerDialog;
 import com.upreyvan.carti.ui.common.IconPickerDialog;
 import com.upreyvan.carti.utils.UiHelper;
 import com.yalantis.ucrop.UCrop;
@@ -35,6 +37,8 @@ import java.util.UUID;
 public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetAddCategoryBinding> {
 
     private int selectedIcon = R.drawable.ic_chart;
+    private int selectedColor = R.color.carti_primary_green;
+    private int selectedBgColor = R.color.mint_green_alpha;
     private Uri selectedImageUri = null;
     private String parentCategory = null;
     private BudgetCategoryItem editingItem = null;
@@ -109,6 +113,7 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         getBinding().btnCancel.setOnClickListener(v -> dismiss());
         getBinding().btnSave.setOnClickListener(v -> saveCategory());
         getBinding().cardIconContainer.setOnClickListener(v -> showIconPicker());
+        getBinding().cardColorContainer.setOnClickListener(v -> showColorPicker());
 
         setupInputValidation();
 
@@ -121,12 +126,13 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
             getBinding().tvTitle.setText(R.string.title_add_sub_category);
             getBinding().tvSubtitle.setText(getString(R.string.desc_adding_sub_category, parentCategory));
             
-            // Default sub-category icon to parent's icon
+            // Default sub-category icon and color to parent's
             com.upreyvan.carti.models.Category parent = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).getCategoryByName(parentCategory);
-            if (parent != null && parent.getIconRes() != 0) {
+            if (parent != null) {
                 selectedIcon = parent.getIconRes();
-                getBinding().ivCategoryIcon.setImageResource(selectedIcon);
-                getBinding().ivCategoryIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
+                selectedColor = parent.getIconColor();
+                selectedBgColor = parent.getBackgroundColor();
+                updateIconAndColorUI();
             }
         }
 
@@ -134,14 +140,28 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
             getBinding().tvTitle.setText(R.string.btn_edit);
             getBinding().etCategoryName.setText(editingItem.getCategoryName());
             selectedIcon = editingItem.getIconRes();
-            if (selectedIcon != 0) {
-                getBinding().ivCategoryIcon.setImageResource(selectedIcon);
-                getBinding().ivCategoryIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
-            }
+            selectedColor = editingItem.getIconColor();
+            selectedBgColor = editingItem.getBgColor();
+            updateIconAndColorUI();
             parentCategory = editingItem.getParentCategory();
         }
         
         validateForm();
+    }
+
+    private void updateIconAndColorUI() {
+        if (selectedIcon != 0) {
+            getBinding().ivCategoryIcon.setImageResource(selectedIcon);
+        }
+        
+        int iconColor = ContextCompat.getColor(requireContext(), selectedColor);
+        int bgColor = ContextCompat.getColor(requireContext(), selectedBgColor);
+        
+        getBinding().ivCategoryIcon.setImageTintList(ColorStateList.valueOf(iconColor));
+        getBinding().cardIconContainer.setCardBackgroundColor(bgColor);
+        getBinding().cardIconContainer.setStrokeColor(iconColor);
+        
+        getBinding().cardColorContainer.setCardBackgroundColor(iconColor);
     }
 
     private void setupInputValidation() {
@@ -216,15 +236,27 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         getBinding().btnSave.setEnabled(isNameValid);
     }
 
+    private void showColorPicker() {
+        ColorPickerDialog dialog = new ColorPickerDialog();
+        dialog.setListener(color -> {
+            selectedColor = color.getColorRes();
+            selectedBgColor = color.getBgColorRes();
+            updateIconAndColorUI();
+        });
+        dialog.show(getChildFragmentManager(), "COLOR_PICKER");
+    }
+
     private void showIconPicker() {
         IconPickerDialog dialog = new IconPickerDialog();
+        dialog.setInitialColor(selectedColor); // Inherit current preview color
         dialog.setListener(new IconPickerDialog.OnIconSelectedListener() {
             @Override
-            public void onIconSelected(IconChoice icon) {
+            public void onIconSelected(IconChoice icon, ColorChoice color) {
                 selectedIcon = icon.getIconRes();
+                selectedColor = color.getColorRes();
+                selectedBgColor = color.getBgColorRes();
                 selectedImageUri = null;
-                getBinding().ivCategoryIcon.setImageResource(selectedIcon);
-                getBinding().ivCategoryIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.carti_primary_green)));
+                updateIconAndColorUI();
             }
 
             @Override
@@ -283,8 +315,8 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
                 editingItem != null ? editingItem.getCategoryName() : UUID.randomUUID().toString(),
                 name,
                 selectedIcon,
-                R.color.carti_primary_green,
-                R.color.mint_green_alpha,
+                selectedColor,
+                selectedBgColor,
                 false,
                 parentCategory
         );

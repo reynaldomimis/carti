@@ -352,14 +352,21 @@ public class TransactionRepository {
     }
 
     private void normalizeCategoryFields(Transaction t) {
-        if (t.getCategory() == null || "ALLOCATION".equalsIgnoreCase(t.getType())) return;
+        if (t.getCategory() == null) return;
 
         com.upreyvan.carti.managers.CategoryManager cm = com.upreyvan.carti.managers.CategoryManager.getInstance(pref.getContext());
         com.upreyvan.carti.models.Category c = cm.getCategoryByName(t.getCategory());
         
-        if (c != null && c.getParentCategory() != null && !c.getParentCategory().isEmpty()) {
-            t.setSubCategory(c.getName());
-            t.setCategory(c.getParentCategory());
+        if (c != null) {
+            // If transaction has no icon set, use category default
+            if (t.getIconRes() == 0 && (t.getIconUrl() == null || t.getIconUrl().isEmpty())) {
+                t.setIconRes(c.getIconRes());
+            }
+            
+            if (c.getParentCategory() != null && !c.getParentCategory().isEmpty() && !"ALLOCATION".equalsIgnoreCase(t.getType())) {
+                t.setSubCategory(c.getName());
+                t.setCategory(c.getParentCategory());
+            }
         }
     }
 
@@ -376,14 +383,14 @@ public class TransactionRepository {
         fields.put("username", pref.getUsername());
         fields.put("startDate", t.getStartDate() != null ? t.getStartDate() : Utils.getCurrentTimestamp());
         fields.put("isRecurring", t.isRecurring());
+        fields.put("iconRes", t.getIconRes());
+        fields.put("iconUrl", t.getIconUrl());
 
         String type = t.getType() != null ? t.getType().toUpperCase() : "EXPENSE";
 
         switch (type) {
             case "INCOME" -> {
                 fields.put("category", t.getCategory() != null ? t.getCategory() : "Income");
-                fields.put("iconRes", t.getIconRes());
-                fields.put("iconUrl", t.getIconUrl());
             }
             case "ALLOCATION" -> {
                 fields.put("category", t.getCategory() != null ? t.getCategory() : "Allocation");
@@ -391,22 +398,29 @@ public class TransactionRepository {
                 fields.put("allocationMonth", t.getAllocationMonth());
             }
             case "GOAL" -> {
+                fields.put("category", t.getCategory() != null ? t.getCategory() : t.getTitle());
                 fields.put("targetAmount", t.getTargetAmount());
                 fields.put("targetDate", t.getTargetDate());
-                fields.put("status", t.getStatus() != null ? t.getStatus() : "active");
-                fields.put("iconRes", t.getIconRes());
-                fields.put("iconUrl", t.getIconUrl());
+                
+                String status = t.getStatus();
+                if (Transaction.STATUS_PENDING.equals(status) || Transaction.STATUS_SYNCING.equals(status) || status == null) {
+                    status = "active";
+                }
+                fields.put("status", status);
             }
             case "DEBT" -> {
                 fields.put("category", t.getCategory() != null ? t.getCategory() : "Debt");
                 fields.put("targetDate", t.getTargetDate());
                 fields.put("isPaid", t.isPaid());
-                fields.put("status", t.getStatus() != null ? t.getStatus() : "unpaid");
+                
+                String status = t.getStatus();
+                if (Transaction.STATUS_PENDING.equals(status) || Transaction.STATUS_SYNCING.equals(status) || status == null) {
+                    status = "unpaid";
+                }
+                fields.put("status", status);
             }
             default -> {
                 fields.put("category", t.getCategory() != null ? t.getCategory() : "General");
-                fields.put("iconRes", t.getIconRes());
-                fields.put("iconUrl", t.getIconUrl());
             }
         }
 

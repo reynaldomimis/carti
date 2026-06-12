@@ -165,9 +165,23 @@ public class CategoryManager {
 
     public void updateCategory(String oldName, Category updated) {
         List<Category> categories = getCategories();
+        boolean isParent = updated.getParentCategory() == null || updated.getParentCategory().isEmpty();
+        
         for (int i = 0; i < categories.size(); i++) {
             if (categories.get(i).getName().equalsIgnoreCase(oldName)) {
                 categories.set(i, updated);
+                
+                // If this is a parent category being updated, sync its children's style
+                if (isParent) {
+                    for (Category c : categories) {
+                        if (updated.getName().equalsIgnoreCase(c.getParentCategory())) {
+                            c.setIconRes(updated.getIconRes());
+                            c.setIconColor(updated.getIconColor());
+                            c.setBackgroundColor(updated.getBackgroundColor());
+                        }
+                    }
+                }
+
                 saveCategories(categories);
                 return;
             }

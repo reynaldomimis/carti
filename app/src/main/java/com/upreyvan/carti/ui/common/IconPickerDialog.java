@@ -18,7 +18,9 @@ import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.GenericAdapter;
 import com.upreyvan.carti.managers.IconManager;
 import com.upreyvan.carti.databinding.DialogIconPickerBinding;
+import com.upreyvan.carti.databinding.ItemColorChoiceBinding;
 import com.upreyvan.carti.databinding.ItemIconChoiceBinding;
+import com.upreyvan.carti.models.ColorChoice;
 import com.upreyvan.carti.models.IconChoice;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,7 @@ import java.util.stream.Collectors;
 public class IconPickerDialog extends BottomSheetDialogFragment {
 
     public interface OnIconSelectedListener {
-        void onIconSelected(IconChoice icon);
+        void onIconSelected(IconChoice icon, ColorChoice color);
         void onUploadCustom();
         default boolean isUploadItem(IconChoice icon) {
             return "UPLOAD_CUSTOM_ACTION".equals(icon.getName());
@@ -38,9 +40,17 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
     private OnIconSelectedListener listener;
     private List<IconChoice> allIcons;
     private GenericAdapter<IconChoice, ItemIconChoiceBinding> adapter;
+    private GenericAdapter<ColorChoice, ItemColorChoiceBinding> colorAdapter;
+    private ColorChoice selectedColor;
+    private List<ColorChoice> availableColors;
+    private int initialColorRes = 0;
 
     public void setListener(OnIconSelectedListener listener) {
         this.listener = listener;
+    }
+
+    public void setInitialColor(int colorRes) {
+        this.initialColorRes = colorRes;
     }
 
     @NonNull
@@ -75,10 +85,69 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setupColors();
         setupRecyclerView();
         setupSearch();
         setupListeners();
         binding.btnClose.setOnClickListener(v -> dismiss());
+    }
+
+    private void setupColors() {
+        availableColors = new ArrayList<>();
+        availableColors.add(new ColorChoice(R.color.carti_primary_green, R.color.mint_green_alpha));
+        availableColors.add(new ColorChoice(R.color.icon_food, R.color.log_food));
+        availableColors.add(new ColorChoice(R.color.icon_fare, R.color.log_fare));
+        availableColors.add(new ColorChoice(R.color.icon_load, R.color.log_load));
+        availableColors.add(new ColorChoice(R.color.icon_store, R.color.log_store));
+        availableColors.add(new ColorChoice(R.color.icon_electricity, R.color.log_electricity));
+        availableColors.add(new ColorChoice(R.color.icon_water, R.color.log_water));
+        availableColors.add(new ColorChoice(R.color.icon_debt, R.color.log_debt));
+        availableColors.add(new ColorChoice(R.color.status_red, R.color.status_red_tonal));
+        availableColors.add(new ColorChoice(R.color.purple, R.color.tonal_button_bg));
+        availableColors.add(new ColorChoice(R.color.carti_primary_blue, R.color.white_10));
+        availableColors.add(new ColorChoice(R.color.dash_orange, R.color.dash_orange_alpha));
+        availableColors.add(new ColorChoice(R.color.gray, R.color.surface_variant));
+        availableColors.add(new ColorChoice(R.color.black, R.color.white_10));
+        availableColors.add(new ColorChoice(R.color.gradient_start, R.color.white_10));
+        availableColors.add(new ColorChoice(R.color.gradient_end, R.color.white_10));
+        availableColors.add(new ColorChoice(R.color.green_darker, R.color.mint_green_alpha));
+        availableColors.add(new ColorChoice(R.color.green_budget_status, R.color.mint_green_alpha));
+        availableColors.add(new ColorChoice(R.color.chat_progress_primary, R.color.chat_progress_track));
+        availableColors.add(new ColorChoice(R.color.dash_red, R.color.dash_red_alpha));
+
+        selectedColor = availableColors.get(0);
+        if (initialColorRes != 0) {
+            for (ColorChoice choice : availableColors) {
+                if (choice.getColorRes() == initialColorRes) {
+                    selectedColor = choice;
+                    break;
+                }
+            }
+        }
+
+        colorAdapter = new GenericAdapter<>(
+                ColorChoice.DIFF_CALLBACK,
+                (inflater, parent) -> ItemColorChoiceBinding.inflate(inflater, parent, false),
+                (binding, color) -> {
+                    binding.viewColor.setBackgroundColor(requireContext().getColor(color.getColorRes()));
+                    binding.getRoot().setCardBackgroundColor(requireContext().getColor(color.getBgColorRes()));
+                    if (color.equals(selectedColor)) {
+                        binding.getRoot().setStrokeColor(requireContext().getColor(R.color.white));
+                        binding.getRoot().setStrokeWidth(com.upreyvan.carti.utils.Utils.dpToPx(requireContext(), 2));
+                    } else {
+                        binding.getRoot().setStrokeWidth(0);
+                    }
+                }
+        );
+
+        colorAdapter.setOnItemClickListener(color -> {
+            selectedColor = color;
+            colorAdapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
+        });
+
+        binding.rvColors.setAdapter(colorAdapter);
+        colorAdapter.submitList(availableColors);
     }
 
     private void setupRecyclerView() {
@@ -93,8 +162,10 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
                     if ("UPLOAD_CUSTOM_ACTION".equals(icon.getName())) {
                         binding.ivIcon.setColorFilter(requireContext().getColor(R.color.carti_primary_green));
                         binding.getRoot().setStrokeColor(requireContext().getColor(R.color.carti_primary_green));
+                        binding.getRoot().setCardBackgroundColor(requireContext().getColor(R.color.mint_green_alpha));
                     } else {
-                        binding.ivIcon.setColorFilter(requireContext().getColor(R.color.text_secondary));
+                        binding.ivIcon.setColorFilter(requireContext().getColor(selectedColor.getColorRes()));
+                        binding.getRoot().setCardBackgroundColor(requireContext().getColor(selectedColor.getBgColorRes()));
                         binding.getRoot().setStrokeColor(requireContext().getColor(R.color.card_border));
                     }
                 }
@@ -104,7 +175,7 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
                 if ("UPLOAD_CUSTOM_ACTION".equals(icon.getName())) {
                     listener.onUploadCustom();
                 } else {
-                    listener.onIconSelected(icon);
+                    listener.onIconSelected(icon, selectedColor);
                 }
             }
             dismiss();

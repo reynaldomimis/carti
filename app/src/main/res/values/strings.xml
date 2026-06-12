@@ -622,6 +622,7 @@
     <string name="label_category_icon">Category icon</string>
     <string name="desc_category_icon">Used in transaction lists.</string>
     <string name="label_choose_icon_caps">CHOOSE ICON</string>
+    <string name="label_choose_color_caps">CHOOSE COLOR</string>
     <string name="label_category_name_caps">CATEGORY NAME</string>
     <string name="label_description_caps">DESCRIPTION</string>
     <string name="hint_description_category">e.g. Monthly grocery spending</string>
@@ -635,6 +636,7 @@
     <string name="hint_income_source_business">Source (e.g. Business, Bonus)</string>
     <string name="hint_income_source_salary">Source (e.g. Salary, Freelance)</string>
     <string name="label_select_icon">Select Icon</string>
+    <string name="label_select_color">Select Color</string>
     <string name="hint_search_icons">Search icons...</string>
     <string name="label_upload_device">Upload from Device</string>
     <string name="msg_deleted_balance_updated">Deleted and balance updated</string>

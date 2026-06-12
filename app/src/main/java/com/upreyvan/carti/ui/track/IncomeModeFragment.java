@@ -69,13 +69,11 @@ public class IncomeModeFragment extends BaseFragment<FragmentIncomeModeBinding> 
                         binding.tvAmount.setText(String.format(Locale.getDefault(), "+₱%,.2f", income.getAmount()));
                         binding.tvDate.setText(Utils.getTimeAgo(income.getTimestampMillis()));
                         
-                        if (ValueHelper.toStr(income.getTitle()).toLowerCase().contains("salary")) {
-                            binding.ivIcon.setImageResource(R.drawable.ic_calendar);
-                            binding.viewIconBg.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.log_food));
-                        } else {
-                            binding.ivIcon.setImageResource(R.drawable.ic_chart);
-                            binding.viewIconBg.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.log_fare));
-                        }
+                        // Centralized Style Implementation for Incomes
+                        com.upreyvan.carti.utils.TransactionHelper.hydrateStyle(income);
+                        binding.ivIcon.setImageResource(income.getIconRes() != 0 ? income.getIconRes() : R.drawable.ic_chart);
+                        binding.viewIconBg.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), income.getIconBgColor()));
+                        binding.ivIcon.setImageTintList(ContextCompat.getColorStateList(requireContext(), income.getIconColor()));
                     }
             );
             incomeAdapter.setOnItemLongClickListener(income -> {

@@ -7,16 +7,16 @@
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="@android:color/transparent"
-    app:cardCornerRadius="@dimen/radius_medium"
+    app:cardCornerRadius="24dp"
     app:cardElevation="0dp"
     app:strokeColor="@color/card_border"
     app:strokeWidth="@dimen/stroke_width_thin">
 
     <ImageView
         android:id="@+id/ivIcon"
-        android:layout_width="@dimen/spacing_xxl"
-        android:layout_height="@dimen/spacing_xxl"
-        android:padding="@dimen/radius_medium"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="12dp"
         android:scaleType="centerInside"
         android:contentDescription="@null"
         app:tint="@color/text_secondary" />

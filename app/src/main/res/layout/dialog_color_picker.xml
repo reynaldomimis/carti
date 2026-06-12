@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_large"
         android:layout_marginTop="@dimen/spacing_large"
-        android:text="@string/label_select_icon"
+        android:text="@string/label_select_color"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/handle" />
 
@@ -41,58 +41,15 @@
         app:layout_constraintTop_toTopOf="@id/tvTitle"
         app:tint="@color/text_primary" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilSearch"
-        style="@style/CartiInputLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_large"
-        android:layout_marginTop="@dimen/spacing_medium"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:startIconDrawable="@android:drawable/ic_menu_search">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etSearch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_search_icons"
-            android:inputType="text" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <TextView
-        android:id="@+id/labelSelectColor"
-        style="@style/DashLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/spacing_large"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:text="SELECT ICON COLOR"
-        android:letterSpacing="0.1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tilSearch" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvColors"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_small"
-        android:clipToPadding="false"
-        android:orientation="horizontal"
-        android:paddingHorizontal="@dimen/spacing_large"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/labelSelectColor"
-        tools:listitem="@layout/item_color_choice" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvIcons"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
         android:layout_marginTop="@dimen/spacing_medium"
         android:clipToPadding="false"
         android:paddingHorizontal="@dimen/spacing_large"
         android:paddingBottom="@dimen/spacing_medium"
-        app:layout_constraintTop_toBottomOf="@id/rvColors"
-        tools:listitem="@layout/item_icon_choice" />
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        tools:listitem="@layout/item_color_choice" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
