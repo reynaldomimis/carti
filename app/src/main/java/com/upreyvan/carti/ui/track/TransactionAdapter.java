@@ -154,15 +154,21 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
                 binding.tvTimestamp.setText(Utils.getTimeAgo(item.getTimestampMillis()));
             }
 
-            binding.tvTitle.setText(item.getTitle() != null ? item.getTitle() : item.getCategory());
+            String category = item.getCategory() != null ? item.getCategory() : "Expense";
+            String subCategory = item.getSubCategory();
+            if (subCategory != null && !subCategory.isEmpty()) {
+                binding.tvTitle.setText(String.format("%s (%s)", category, subCategory));
+            } else {
+                binding.tvTitle.setText(category);
+            }
 
             String note = item.getNote();
+            String filteredNote = "";
             if (note != null && !note.isEmpty()) {
-                String filteredNote = note.replace("Logged by Carti AI", "").replace("Logged by AI", "").trim();
-                binding.tvDescription.setText(filteredNote.isEmpty() ? actionLabel : String.format("%s: %s", actionLabel, filteredNote));
-            } else {
-                binding.tvDescription.setText(actionLabel);
+                filteredNote = note.replace("Logged by Carti AI", "").replace("Logged by AI", "").trim();
             }
+            binding.tvDescription.setText(!filteredNote.isEmpty() ? filteredNote : actionLabel);
+            binding.tvDescription.setVisibility(View.VISIBLE);
             
             String formattedAmount = Utils.formatCurrency(item.getAmount());
             binding.tvAmount.setText(binding.getRoot().getContext().getString(amountFormatRes, formattedAmount));

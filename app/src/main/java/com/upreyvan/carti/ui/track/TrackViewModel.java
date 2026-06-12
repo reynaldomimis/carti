@@ -70,6 +70,24 @@ public class TrackViewModel extends BaseViewModel {
 
             // Centralized Budget/Allocation logic
             this.currentAllocations = repo.getBudgetPlan();
+            
+            // Re-sync spent amounts from Financial Summary for accurate numerators
+            Map<String, Double> spentMap = new HashMap<>();
+            for (com.upreyvan.carti.models.FinancialSummary.CategoryTotal ct : fs.categoryBreakdown()) {
+                if (ct.category() != null) {
+                    spentMap.put(ct.category().toLowerCase().trim(), ct.amount());
+                }
+            }
+            
+            for (BudgetCategoryItem item : currentAllocations) {
+                if (item.getCategoryName() == null) continue;
+                String key = item.getCategoryName().toLowerCase().trim();
+                double spent = spentMap.getOrDefault(key, 0.0);
+                item.setCurrentSpent(spent);
+                if (item.getAmount() > 0) {
+                    item.setPercentage((int)((spent / item.getAmount()) * 100));
+                }
+            }
 
             mainHandler.post(() -> {
                 items.add(new TrackListItem.SummaryItem(

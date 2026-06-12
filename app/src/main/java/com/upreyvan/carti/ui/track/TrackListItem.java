@@ -320,17 +320,22 @@ public interface TrackListItem extends BaseMultiItem {
 
             b.tvUserAction.setText(username);
             b.tvTimestamp.setText(Utils.getTimeAgo(t.getTimestampMillis()));
-            b.tvTitle.setText(t.getTitle() != null ? t.getTitle() : t.getCategory());
+
+            String category = t.getCategory() != null ? t.getCategory() : "Expense";
+            String subCategory = t.getSubCategory();
+            if (subCategory != null && !subCategory.isEmpty()) {
+                b.tvTitle.setText(String.format("%s (%s)", category, subCategory));
+            } else {
+                b.tvTitle.setText(category);
+            }
 
             String note = t.getNote();
+            String filteredNote = "";
             if (note != null && !note.isEmpty()) {
-                String filteredNote = note.replace("Logged by Carti AI", "").replace("Logged by AI", "").trim();
-                b.tvDescription.setText(filteredNote.isEmpty() ? actionLabel : String.format("%s: %s", actionLabel, filteredNote));
-                b.tvDescription.setVisibility(View.VISIBLE);
-            } else {
-                b.tvDescription.setText(actionLabel);
-                b.tvDescription.setVisibility(View.VISIBLE);
+                filteredNote = note.replace("Logged by Carti AI", "").replace("Logged by AI", "").trim();
             }
+            b.tvDescription.setText(!filteredNote.isEmpty() ? filteredNote : actionLabel);
+            b.tvDescription.setVisibility(View.VISIBLE);
             
             String formattedAmount = Utils.formatCurrency(t.getAmount());
             b.tvAmount.setText(b.getRoot().getContext().getString(amountFormatRes, formattedAmount));

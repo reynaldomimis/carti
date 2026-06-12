@@ -15,7 +15,6 @@ public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
                 (inflater, parent) -> ItemBillBinding.inflate(inflater, parent, false),
                 (b, item, pos, count) -> {
                     b.tvBillName.setText(item.getName());
-                    b.tvBillCategory.setText(item.getCategory());
                     
                     String dateText = item.getDate();
                     if (dateText != null && !dateText.isEmpty()) {
