@@ -12,11 +12,14 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
+import com.upreyvan.carti.managers.CategoryManager;
 import com.upreyvan.carti.databinding.FragmentPlanBinding;
 import com.upreyvan.carti.ui.bills.BillsFragment;
 import com.upreyvan.carti.ui.goals.GoalFragment;
 
-public class PlanFragment extends BaseFragment<FragmentPlanBinding> {
+public class PlanFragment extends BaseFragment<FragmentPlanBinding> implements CategoryManager.OnCategoryUpdatedListener {
+
+    private PlanViewModel viewModel;
 
     public static PlanFragment newInstance(boolean track) {
         return new PlanFragment();
@@ -30,9 +33,23 @@ public class PlanFragment extends BaseFragment<FragmentPlanBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        PlanViewModel viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
+        CategoryManager.getInstance(requireContext()).addListener(this);
         setupViewPager();
         viewModel.loadData();
+    }
+
+    @Override
+    public void onDestroyView() {
+        CategoryManager.getInstance(requireContext()).removeListener(this);
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onCategoriesChanged() {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> viewModel.loadData());
+        }
     }
 
     private void setupViewPager() {

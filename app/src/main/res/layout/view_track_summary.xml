@@ -162,17 +162,15 @@
                 app:layout_constraintTop_toTopOf="@id/tvSavingsAmount"
                 tools:text="40%" />
 
-            <com.google.android.material.progressindicator.LinearProgressIndicator
+            <ProgressBar
                 android:id="@+id/progressSavings"
+                style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="8dp"
                 android:layout_marginTop="@dimen/spacing_small"
-                app:indicatorColor="@color/mint_green"
-                app:layout_constraintTop_toBottomOf="@id/tvSavingsAmount"
-                app:trackColor="@color/border_subtle"
-                app:trackCornerRadius="@dimen/radius_full"
-                app:trackThickness="@dimen/spacing_small"
-                tools:progress="40" />
+                android:progress="40"
+                android:progressDrawable="@drawable/bg_smooth_progress"
+                app:layout_constraintTop_toBottomOf="@id/tvSavingsAmount" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>

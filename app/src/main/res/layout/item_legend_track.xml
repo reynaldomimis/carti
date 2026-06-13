@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingVertical="@dimen/spacing_xs">
+    android:paddingVertical="@dimen/spacing_xxs">
 
     <View
         android:id="@+id/viewColor"
@@ -18,7 +18,7 @@
         style="@style/CartiTextDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/spacing_small"
+        android:layout_marginStart="@dimen/spacing_xs"
         android:layout_weight="1"
         tools:text="@string/label_food" />
 
@@ -27,7 +27,7 @@
         style="@style/CartiHeaderSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/spacing_small"
+        android:layout_marginStart="@dimen/spacing_xs"
         tools:text="@string/placeholder_percentage" />
 
 </LinearLayout>

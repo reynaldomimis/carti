@@ -103,13 +103,15 @@ public class FinancialEngine {
         double expenseTrend = calculateTrend(expense, lastExpense);
         double savingsTrend = calculateTrend(monthlyBalance, (budget - lastExpense));
 
-        // 3. Category Breakdown for Chart
+        // 3. Category Breakdown for Chart (STRICTLY type = EXPENSE)
         List<FinancialSummary.CategoryTotal> breakdown = new ArrayList<>();
-        double finalExpense = expense;
+        double totalExpenseForChart = expense;
         categoryTotals.forEach((cat, sum) -> {
-            double percent = finalExpense > 0 ? (sum / finalExpense) * 100 : 0;
+            double percent = totalExpenseForChart > 0 ? (sum / totalExpenseForChart) * 100 : 0;
             breakdown.add(new FinancialSummary.CategoryTotal(cat, sum, percent, 0, 0));
         });
+        
+        Utils.sortAlphabetically(breakdown, FinancialSummary.CategoryTotal::category);
 
         // 4. Category Balances for Budget Info
         Map<String, Double> categoryBalances = new HashMap<>();

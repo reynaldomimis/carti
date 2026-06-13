@@ -48,6 +48,10 @@ public class HelpFragment extends BaseFragment<FragmentHelpBinding> {
         faqItems.add(new FaqItem(getString(R.string.faq_q6), getString(R.string.faq_a6)));
         faqItems.add(new FaqItem(getString(R.string.faq_q7), getString(R.string.faq_a7)));
         faqItems.add(new FaqItem(getString(R.string.faq_q8), getString(R.string.faq_a8)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q9), getString(R.string.faq_a9)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q10), getString(R.string.faq_a10)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q11), getString(R.string.faq_a11)));
+        faqItems.add(new FaqItem(getString(R.string.faq_q12), getString(R.string.faq_a12)));
 
         GenericAdapter<FaqItem, ItemFaqBinding> adapter = new GenericAdapter<>(
                 FaqItem.DIFF_CALLBACK,
@@ -55,6 +59,17 @@ public class HelpFragment extends BaseFragment<FragmentHelpBinding> {
                 (binding, item, position, count) -> {
                     binding.tvQuestion.setText(item.getQuestion());
                     binding.tvAnswer.setText(item.getAnswer());
+                    
+                    boolean isExpanded = item.isExpanded();
+                    binding.tvAnswer.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+                    binding.ivArrow.setRotation(isExpanded ? 90f : 0f);
+                    
+                    binding.layoutQuestion.setOnClickListener(v -> {
+                        item.setExpanded(!isExpanded);
+                        // Refresh just this item
+                        binding.tvAnswer.setVisibility(item.isExpanded() ? View.VISIBLE : View.GONE);
+                        binding.ivArrow.setRotation(item.isExpanded() ? 90f : 0f);
+                    });
                 }
         );
         adapter.submitList(faqItems);

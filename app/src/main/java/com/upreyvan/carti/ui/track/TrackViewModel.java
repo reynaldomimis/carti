@@ -14,6 +14,8 @@ import com.upreyvan.carti.models.BudgetCategoryItem;
 import com.upreyvan.carti.models.TrackCategory;
 import com.upreyvan.carti.models.Transaction;
 import com.upreyvan.carti.models.TransactionWithUser;
+import com.upreyvan.carti.utils.Utils;
+
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -70,6 +72,7 @@ public class TrackViewModel extends BaseViewModel {
 
             // Centralized Budget/Allocation logic
             this.currentAllocations = repo.getBudgetPlan();
+            Utils.sortAlphabetically(this.currentAllocations, BudgetCategoryItem::getCategoryName);
             
             // Re-sync spent amounts from Financial Summary for accurate numerators
             Map<String, Double> spentMap = new HashMap<>();

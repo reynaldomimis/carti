@@ -117,11 +117,12 @@ public interface HomeListItem extends BaseMultiItem {
         @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
             ViewAiInsightBinding b = (ViewAiInsightBinding) binding;
             b.tvInsightMessage.setText(message);
+            b.tvInsightTitle.setVisibility(View.GONE); // Hide "AI Insight" label as requested
 
             if ("OVERDUE_BILL".equals(type) || "BUDGET_WARNING".equals(type)) {
-                b.tvInsightTitle.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.status_red));
+                b.ivCarti.setColorFilter(ContextCompat.getColor(b.getRoot().getContext(), R.color.status_red));
             } else {
-                b.tvInsightTitle.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.carti_primary_green));
+                b.ivCarti.setColorFilter(null);
             }
         }
         

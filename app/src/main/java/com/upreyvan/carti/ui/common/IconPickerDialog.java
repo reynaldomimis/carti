@@ -22,6 +22,9 @@ import com.upreyvan.carti.databinding.ItemColorChoiceBinding;
 import com.upreyvan.carti.databinding.ItemIconChoiceBinding;
 import com.upreyvan.carti.models.ColorChoice;
 import com.upreyvan.carti.models.IconChoice;
+import com.upreyvan.carti.utils.ColorHelper;
+import com.upreyvan.carti.utils.Utils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,7 +45,6 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
     private GenericAdapter<IconChoice, ItemIconChoiceBinding> adapter;
     private GenericAdapter<ColorChoice, ItemColorChoiceBinding> colorAdapter;
     private ColorChoice selectedColor;
-    private List<ColorChoice> availableColors;
     private int initialColorRes = 0;
 
     public void setListener(OnIconSelectedListener listener) {
@@ -57,7 +59,6 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
-        
         if (dialog.getWindow() != null) {
             dialog.getWindow().setNavigationBarColor(requireContext().getColor(R.color.white));
             View decorView = dialog.getWindow().getDecorView();
@@ -66,7 +67,6 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
             decorView.setSystemUiVisibility(flags);
             dialog.getWindow().setDimAmount(0.4f);
         }
-
         return dialog;
     }
 
@@ -88,34 +88,13 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
         setupColors();
         setupRecyclerView();
         setupSearch();
-        setupListeners();
         binding.btnClose.setOnClickListener(v -> dismiss());
     }
 
     private void setupColors() {
-        availableColors = new ArrayList<>();
-        availableColors.add(new ColorChoice(R.color.carti_primary_green, R.color.mint_green_alpha));
-        availableColors.add(new ColorChoice(R.color.icon_food, R.color.log_food));
-        availableColors.add(new ColorChoice(R.color.icon_fare, R.color.log_fare));
-        availableColors.add(new ColorChoice(R.color.icon_load, R.color.log_load));
-        availableColors.add(new ColorChoice(R.color.icon_store, R.color.log_store));
-        availableColors.add(new ColorChoice(R.color.icon_electricity, R.color.log_electricity));
-        availableColors.add(new ColorChoice(R.color.icon_water, R.color.log_water));
-        availableColors.add(new ColorChoice(R.color.icon_debt, R.color.log_debt));
-        availableColors.add(new ColorChoice(R.color.status_red, R.color.status_red_tonal));
-        availableColors.add(new ColorChoice(R.color.purple, R.color.tonal_button_bg));
-        availableColors.add(new ColorChoice(R.color.carti_primary_blue, R.color.white_10));
-        availableColors.add(new ColorChoice(R.color.dash_orange, R.color.dash_orange_alpha));
-        availableColors.add(new ColorChoice(R.color.gray, R.color.surface_variant));
-        availableColors.add(new ColorChoice(R.color.black, R.color.white_10));
-        availableColors.add(new ColorChoice(R.color.gradient_start, R.color.white_10));
-        availableColors.add(new ColorChoice(R.color.gradient_end, R.color.white_10));
-        availableColors.add(new ColorChoice(R.color.green_darker, R.color.mint_green_alpha));
-        availableColors.add(new ColorChoice(R.color.green_budget_status, R.color.mint_green_alpha));
-        availableColors.add(new ColorChoice(R.color.chat_progress_primary, R.color.chat_progress_track));
-        availableColors.add(new ColorChoice(R.color.dash_red, R.color.dash_red_alpha));
-
+        List<ColorChoice> availableColors = ColorHelper.getAvailableColors();
         selectedColor = availableColors.get(0);
+        
         if (initialColorRes != 0) {
             for (ColorChoice choice : availableColors) {
                 if (choice.getColorRes() == initialColorRes) {
@@ -131,9 +110,9 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
                 (binding, color) -> {
                     binding.viewColor.setBackgroundColor(requireContext().getColor(color.getColorRes()));
                     binding.getRoot().setCardBackgroundColor(requireContext().getColor(color.getBgColorRes()));
-                    if (color.equals(selectedColor)) {
+                    if (color.isSelected()) {
                         binding.getRoot().setStrokeColor(requireContext().getColor(R.color.white));
-                        binding.getRoot().setStrokeWidth(com.upreyvan.carti.utils.Utils.dpToPx(requireContext(), 2));
+                        binding.getRoot().setStrokeWidth(Utils.dpToPx(requireContext(), 2));
                     } else {
                         binding.getRoot().setStrokeWidth(0);
                     }
@@ -142,12 +121,30 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
 
         colorAdapter.setOnItemClickListener(color -> {
             selectedColor = color;
-            colorAdapter.notifyDataSetChanged();
-            adapter.notifyDataSetChanged();
+            
+            // Centralized DiffUtil Update for Colors
+            List<ColorChoice> newColors = new ArrayList<>();
+            for (ColorChoice c : colorAdapter.getCurrentList()) {
+                newColors.add(new ColorChoice(c.getColorRes(), c.getBgColorRes(), c.equals(color)));
+            }
+            colorAdapter.submitList(newColors);
+
+            // Centralized DiffUtil Update for Icons (all change tint)
+            List<IconChoice> newIcons = new ArrayList<>();
+            for (IconChoice i : adapter.getCurrentList()) {
+                newIcons.add(new IconChoice(i.getName(), i.getIconRes(), i.isSelected()));
+            }
+            adapter.submitList(newIcons);
         });
 
         binding.rvColors.setAdapter(colorAdapter);
-        colorAdapter.submitList(availableColors);
+        
+        // Initial set with selection
+        List<ColorChoice> initialColors = new ArrayList<>();
+        for (ColorChoice c : availableColors) {
+            initialColors.add(new ColorChoice(c.getColorRes(), c.getBgColorRes(), c.equals(selectedColor)));
+        }
+        colorAdapter.submitList(initialColors);
     }
 
     private void setupRecyclerView() {
@@ -211,9 +208,5 @@ public class IconPickerDialog extends BottomSheetDialogFragment {
                                 icon.getName().toLowerCase().contains(query.toLowerCase()))
                 .collect(Collectors.toList());
         adapter.submitList(filtered);
-    }
-
-    private void setupListeners() {
-        // Button removed from UI, action moved to list item
     }
 }

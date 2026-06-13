@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseBottomSheetFragment;
 import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.managers.CategoryManager;
 import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.BottomSheetSubCategoriesBinding;
 import com.upreyvan.carti.databinding.ItemCategoryRowBinding;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomSheetSubCategoriesBinding> {
+public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomSheetSubCategoriesBinding> implements CategoryManager.OnCategoryUpdatedListener {
     private static final String ARG_PARENT_CATEGORY = "parent_category";
     private String parentCategory;
     private PlanViewModel viewModel;
@@ -54,6 +55,7 @@ public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomShee
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
+        CategoryManager.getInstance(requireContext()).addListener(this);
         
         setupAdapter();
         observeViewModel();
@@ -64,6 +66,19 @@ public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomShee
             AddCategoryBottomSheet addBs = AddCategoryBottomSheet.newInstance(parentCategory);
             addBs.show(getChildFragmentManager(), "AddSubCategory");
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        CategoryManager.getInstance(requireContext()).removeListener(this);
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onCategoriesChanged() {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> viewModel.loadData());
+        }
     }
 
     private void setupAdapter() {

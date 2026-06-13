@@ -494,6 +494,14 @@
     <string name="faq_a7">You can delete your entire account and all associated data directly from the Security settings. This process is immediate and irreversible.</string>
     <string name="faq_q8">Does Carti share my data with third parties?</string>
     <string name="faq_a8">No. Your financial data is strictly used for your family\'s tracking purposes. We do not share or sell your data to advertisers or third-party services.</string>
+    <string name="faq_q9">How can I manage my budget plan?</string>
+    <string name="faq_a9">Go to the Plan tab and select "Budget". From there, you can add new categories, set limits, and track your remaining balance in real-time.</string>
+    <string name="faq_q10">Can I customize my profile avatar?</string>
+    <string name="faq_a10">Yes! In your Profile screen, you can click on your avatar to upload a custom photo or use the generated initials based on your username.</string>
+    <string name="faq_q11">What happens when I delete a category?</string>
+    <string name="faq_a11">Deleting a parent category will also remove all its sub-categories. However, previous transactions linked to that category will remain in your history but might be shown as "Uncategorized".</string>
+    <string name="faq_q12">Is there a dark mode available?</string>
+    <string name="faq_a12">Currently, Carti uses a clean, light-themed design for maximum readability. We are working on a dark mode option for a future update!</string>
     <string name="section_contact">Contact Us</string>
     <string name="label_email_support">Email Support</string>
     <string name="label_report_bug">Report a Bug</string>

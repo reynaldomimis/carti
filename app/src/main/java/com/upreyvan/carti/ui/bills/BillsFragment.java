@@ -115,11 +115,14 @@ public class BillsFragment extends BaseFragment<FragmentBillsBinding> {
 
     private void updateBillList(List<Bill> bills) {
         if (bills == null) return;
-        if (!showingAllBills && bills.size() > MAX_BILLS_DISPLAY) {
-            billAdapter.submitList(new ArrayList<>(bills.subList(0, MAX_BILLS_DISPLAY)));
+        List<Bill> sortedBills = new ArrayList<>(bills);
+        Utils.sortAlphabetically(sortedBills, Bill::getName);
+        
+        if (!showingAllBills && sortedBills.size() > MAX_BILLS_DISPLAY) {
+            billAdapter.submitList(new ArrayList<>(sortedBills.subList(0, MAX_BILLS_DISPLAY)));
             getBinding().btnViewAllBills.setVisibility(View.VISIBLE);
         } else {
-            billAdapter.submitList(new ArrayList<>(bills));
+            billAdapter.submitList(sortedBills);
             getBinding().btnViewAllBills.setVisibility(View.GONE);
         }
     }

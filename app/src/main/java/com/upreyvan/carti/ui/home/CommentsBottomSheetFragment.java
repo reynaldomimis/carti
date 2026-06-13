@@ -162,6 +162,19 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
         getBinding().btnSend.setOnClickListener(v -> postComment());
         getBinding().btnClose.setOnClickListener(v -> dismiss());
 
+        // Disable send button by default and add text listener to avoid spamming
+        getBinding().btnSend.setEnabled(false);
+        getBinding().btnSend.setAlpha(0.5f);
+        getBinding().etComment.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                boolean hasText = s != null && !s.toString().trim().isEmpty();
+                getBinding().btnSend.setEnabled(hasText);
+                getBinding().btnSend.setAlpha(hasText ? 1.0f : 0.5f);
+            }
+            @Override public void afterTextChanged(android.text.Editable s) {}
+        });
+
         getBinding().etComment.requestFocus();
         Utils.showKeyboard(requireContext(), getBinding().etComment);
     }

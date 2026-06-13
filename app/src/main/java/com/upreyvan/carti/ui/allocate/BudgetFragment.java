@@ -26,6 +26,8 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
     private GenericAdapter<BudgetCategoryItem, ItemBudgetCardBinding> budgetAdapter;
     private GenericAdapter<BudgetCategoryItem, ItemCategoryRowBinding> categoryAdapter;
     private boolean isCategoriesExpanded = false;
+    private boolean isBudgetsExpanded = false;
+    private java.util.List<BudgetCategoryItem> fullBudgets = new java.util.ArrayList<>();
     private java.util.List<BudgetCategoryItem> fullParentCategories = new java.util.ArrayList<>();
 
     @Override
@@ -53,6 +55,11 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
         getBinding().btnViewMore.setOnClickListener(v -> {
             isCategoriesExpanded = true;
             updateCategoryList();
+        });
+
+        getBinding().btnViewMoreBudgets.setOnClickListener(v -> {
+            isBudgetsExpanded = true;
+            updateBudgetList();
         });
     }
 
@@ -86,24 +93,37 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
 
     private void observeViewModel() {
         viewModel.getBudgets().observe(getViewLifecycleOwner(), budgets -> {
-            budgetAdapter.submitList(new ArrayList<>(budgets));
+            fullBudgets = new ArrayList<>(budgets);
+            Utils.sortAlphabetically(fullBudgets, BudgetCategoryItem::getCategoryName);
+            updateBudgetList();
             getBinding().cardEmptyBudgets.setVisibility(budgets.isEmpty() ? View.VISIBLE : View.GONE);
         });
         viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
             fullParentCategories = categories.stream()
                     .filter(c -> c.getParentCategory() == null || c.getParentCategory().isEmpty())
                     .collect(java.util.stream.Collectors.toList());
+            Utils.sortAlphabetically(fullParentCategories, BudgetCategoryItem::getCategoryName);
             updateCategoryList();
         });
     }
 
     private void updateCategoryList() {
-        if (!isCategoriesExpanded && fullParentCategories.size() > 10) {
-            categoryAdapter.submitList(new java.util.ArrayList<>(fullParentCategories.subList(0, 10)));
+        if (!isCategoriesExpanded && fullParentCategories.size() > 9) {
+            categoryAdapter.submitList(new java.util.ArrayList<>(fullParentCategories.subList(0, 9)));
             getBinding().btnViewMore.setVisibility(View.VISIBLE);
         } else {
             categoryAdapter.submitList(new java.util.ArrayList<>(fullParentCategories));
             getBinding().btnViewMore.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateBudgetList() {
+        if (!isBudgetsExpanded && fullBudgets.size() > 9) {
+            budgetAdapter.submitList(new java.util.ArrayList<>(fullBudgets.subList(0, 9)));
+            getBinding().btnViewMoreBudgets.setVisibility(View.VISIBLE);
+        } else {
+            budgetAdapter.submitList(new java.util.ArrayList<>(fullBudgets));
+            getBinding().btnViewMoreBudgets.setVisibility(View.GONE);
         }
     }
 

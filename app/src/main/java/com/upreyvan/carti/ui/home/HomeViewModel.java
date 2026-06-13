@@ -216,23 +216,13 @@ public class HomeViewModel extends BaseViewModel {
                 items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.due_bills_header), null, false, null, null));
                 items.add(new HomeListItem.BillContainerItem(new ArrayList<>(currentBills), null, null));
             }
-            items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.quick_actions_title), null, false, null, null));
-            List<QuickLogItem> act = new ArrayList<>();
-            act.add(new QuickLogItem(getApplication().getString(R.string.add_options_expense), R.drawable.ic_add, R.color.status_red_tonal, R.color.status_red));
-            act.add(new QuickLogItem(getApplication().getString(R.string.action_add_income), R.drawable.ic_arrow_up, R.color.dash_green_alpha, R.color.dash_green));
-            act.add(new QuickLogItem(getApplication().getString(R.string.action_family_chat), R.drawable.ic_sync, R.color.log_fare, R.color.carti_primary_blue));
-            act.add(new QuickLogItem(getApplication().getString(R.string.action_manage_goals), R.drawable.ic_trophy, R.color.mint_green_alpha, R.color.mint_green));
-            items.add(new HomeListItem.QuickActionsItem(act, null, null));
             if (currentPlan != null && !currentPlan.isEmpty()) {
                 items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.quick_log_title), getApplication().getString(R.string.quick_log_subtitle), false, null, null));
                 List<QuickLogItem> logs = new ArrayList<>();
                 for (BudgetCategoryItem p : currentPlan) logs.add(new QuickLogItem(p.getCategoryName(), p.getIconRes(), p.getBgColor(), p.getIconColor()));
 
-                logs.sort((a, b) -> {
-                    if (a.getTitle().equalsIgnoreCase("Others")) return 1;
-                    if (b.getTitle().equalsIgnoreCase("Others")) return -1;
-                    return a.getTitle().compareToIgnoreCase(b.getTitle());
-                });
+                // Centralized Sorting for Quick Logs on Home
+                Utils.sortAlphabetically(logs, QuickLogItem::getTitle);
 
                 items.add(new HomeListItem.QuickLogItemContainer(logs, null, null));
             }

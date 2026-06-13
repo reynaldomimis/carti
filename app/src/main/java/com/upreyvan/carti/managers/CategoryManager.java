@@ -17,6 +17,25 @@ public class CategoryManager {
     private final SharedPreferences prefs;
     private final Gson gson;
     private final Context context;
+    private final List<OnCategoryUpdatedListener> listeners = new ArrayList<>();
+
+    public interface OnCategoryUpdatedListener {
+        void onCategoriesChanged();
+    }
+
+    public void addListener(OnCategoryUpdatedListener listener) {
+        if (!listeners.contains(listener)) listeners.add(listener);
+    }
+
+    public void removeListener(OnCategoryUpdatedListener listener) {
+        listeners.remove(listener);
+    }
+
+    private void notifyListeners() {
+        for (OnCategoryUpdatedListener listener : new ArrayList<>(listeners)) {
+            listener.onCategoriesChanged();
+        }
+    }
 
     private CategoryManager(Context context) {
         this.context = context.getApplicationContext();
@@ -161,6 +180,7 @@ public class CategoryManager {
         List<Category> categories = getCategories();
         categories.add(category);
         saveCategories(categories);
+        notifyListeners();
     }
 
     public void updateCategory(String oldName, Category updated) {
@@ -183,6 +203,7 @@ public class CategoryManager {
                 }
 
                 saveCategories(categories);
+                notifyListeners();
                 return;
             }
         }
@@ -193,6 +214,7 @@ public class CategoryManager {
         List<Category> categories = getCategories();
         categories.removeIf(c -> c.getName().equalsIgnoreCase(name) || name.equalsIgnoreCase(c.getParentCategory()));
         saveCategories(categories);
+        notifyListeners();
     }
 
     public void updateCategories(List<Category> categories) {

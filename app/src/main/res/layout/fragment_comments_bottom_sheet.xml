@@ -129,6 +129,8 @@
                 android:contentDescription="@string/btn_send"
                 android:src="@drawable/ic_send"
                 android:stateListAnimator="@animator/btn_press"
+                android:enabled="false"
+                android:alpha="0.5"
                 app:tint="@color/carti_primary_green" />
 
         </LinearLayout>

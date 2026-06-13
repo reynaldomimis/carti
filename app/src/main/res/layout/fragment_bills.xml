@@ -34,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/gap_section"
-            android:paddingHorizontal="@dimen/screen_padding" />
+            android:layout_marginHorizontal="@dimen/screen_padding" />
 
         <!-- Bills List -->
         <com.google.android.material.card.MaterialCardView

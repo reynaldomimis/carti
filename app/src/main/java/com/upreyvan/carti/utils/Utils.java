@@ -100,6 +100,28 @@ public class Utils {
         picker.show(fm, "DATE_RANGE_PICKER");
     }
 
+    /**
+     * Centralized Sorting Helper to ensure consistent alphabetical order across the app.
+     */
+    public static <T> void sortAlphabetically(List<T> list, java.util.function.Function<T, String> mapper) {
+        if (list == null || list.isEmpty()) return;
+        list.sort((a, b) -> {
+            String s1 = mapper.apply(a);
+            String s2 = mapper.apply(b);
+            if (s1 == null) return 1;
+            if (s2 == null) return -1;
+            
+            boolean aOther = s1.equalsIgnoreCase("Others") || s1.equalsIgnoreCase("Other");
+            boolean bOther = s2.equalsIgnoreCase("Others") || s2.equalsIgnoreCase("Other");
+            
+            if (aOther && bOther) return 0;
+            if (aOther) return 1;
+            if (bOther) return -1;
+            
+            return s1.compareToIgnoreCase(s2);
+        });
+    }
+
     public static String joinStrings(List<?> list, String delimiter) {
         if (list == null || list.isEmpty()) return "";
         StringBuilder sb = new StringBuilder();

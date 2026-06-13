@@ -31,6 +31,18 @@
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             app:spanCount="3" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnViewMoreBudgets"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/screen_padding"
+            android:text="View More"
+            android:visibility="gone"
+            android:textColor="@color/carti_primary_green"
+            android:textAllCaps="false"
+            app:rippleColor="@color/mint_green_alpha" />
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardEmptyBudgets"
             style="@style/DashCard"
