@@ -60,6 +60,10 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             getBinding().etAmount.setText(String.valueOf(editingBill.getAmount()));
             getBinding().etDueDate.setText(editingBill.getDate());
             formattedDate = editingBill.getDate();
+
+            // Hide notes when updating as requested
+            getBinding().labelNotes.setVisibility(View.GONE);
+            getBinding().layoutNotes.setVisibility(View.GONE);
         } else if (getArguments() != null) {
             formattedDate = getArguments().getString(ARG_DATE);
             getBinding().etDueDate.setText(formattedDate);

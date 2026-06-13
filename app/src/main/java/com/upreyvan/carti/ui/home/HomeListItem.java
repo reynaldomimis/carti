@@ -22,6 +22,7 @@ import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.utils.AvatarHelper;
 import com.upreyvan.carti.utils.Utils;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public interface HomeListItem extends BaseMultiItem {
@@ -379,7 +380,12 @@ public interface HomeListItem extends BaseMultiItem {
                     b.tvReactionEmoji.setVisibility(View.VISIBLE);
                     b.tvLikesCount.setVisibility(View.VISIBLE);
                     b.tvReactionEmoji.setText(myReaction != null && !myReaction.isEmpty() ? myReaction : "👍");
-                    b.tvLikesCount.setText(rNames != null && !rNames.isEmpty() ? rNames : String.valueOf(likesCount));
+                    
+                    if (likesCount == 1 && rNames != null && !rNames.isEmpty()) {
+                        b.tvLikesCount.setText(rNames);
+                    } else {
+                        b.tvLikesCount.setText(String.valueOf(likesCount));
+                    }
                 } else {
                     b.tvReactionEmoji.setVisibility(View.GONE);
                     b.tvLikesCount.setVisibility(View.GONE);
@@ -459,17 +465,20 @@ public interface HomeListItem extends BaseMultiItem {
                     ItemTransactionBinding vb = (ItemTransactionBinding) binding;
                     Transaction t = transaction.getTransaction();
                     
-                    if (b.containsKey("likes")) {
-                        int likes = b.getInt("likes");
-                        vb.tvLikesCount.setText(String.valueOf(likes));
+                    if (b.containsKey("likes") || b.containsKey("reactorNames")) {
+                        int likes = b.containsKey("likes") ? b.getInt("likes") : t.getLikesCount();
+                        String names = b.containsKey("reactorNames") ? b.getString("reactorNames") : transaction.getReactorNames();
+                        
+                        if (likes == 1 && names != null && !names.isEmpty()) {
+                            vb.tvLikesCount.setText(names);
+                        } else {
+                            vb.tvLikesCount.setText(String.valueOf(likes));
+                        }
+                        
+                        vb.tvLikesCount.setVisibility(likes > 0 ? View.VISIBLE : View.GONE);
+                        vb.tvReactionEmoji.setVisibility(likes > 0 ? View.VISIBLE : View.GONE);
                         vb.layoutLikesSummaryClickable.setVisibility(likes > 0 || t.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
                         vb.divider.setVisibility(vb.layoutLikesSummaryClickable.getVisibility());
-                    }
-                    
-                    if (b.containsKey("reactorNames")) {
-                        String names = b.getString("reactorNames");
-                        vb.tvLikesCount.setText(names != null && !names.isEmpty() ? names : String.valueOf(t.getLikesCount()));
-                        vb.tvLikesCount.setVisibility((names != null && !names.isEmpty()) || t.getLikesCount() > 0 ? View.VISIBLE : View.GONE);
                     }
                     
                     if (b.containsKey("myReaction")) {

@@ -196,7 +196,11 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
 
             if (likesCount > 0) {
                 binding.layoutLikesSummaryClickable.setVisibility(View.VISIBLE);
-                binding.tvLikesCount.setText(rNames != null && !rNames.isEmpty() ? rNames : String.valueOf(likesCount));
+                if (likesCount == 1 && rNames != null && !rNames.isEmpty()) {
+                    binding.tvLikesCount.setText(rNames);
+                } else {
+                    binding.tvLikesCount.setText(String.valueOf(likesCount));
+                }
             } else {
                 binding.layoutLikesSummaryClickable.setVisibility(View.GONE);
             }

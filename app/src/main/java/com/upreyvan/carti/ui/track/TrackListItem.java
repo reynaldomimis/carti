@@ -363,7 +363,12 @@ public interface TrackListItem extends BaseMultiItem {
                     b.tvReactionEmoji.setVisibility(View.VISIBLE);
                     b.tvLikesCount.setVisibility(View.VISIBLE);
                     b.tvReactionEmoji.setText(myReaction != null && !myReaction.isEmpty() ? myReaction : "👍");
-                    b.tvLikesCount.setText(rNames != null && !rNames.isEmpty() ? rNames : String.valueOf(likesCount));
+                    
+                    if (likesCount == 1 && rNames != null && !rNames.isEmpty()) {
+                        b.tvLikesCount.setText(rNames);
+                    } else {
+                        b.tvLikesCount.setText(String.valueOf(likesCount));
+                    }
                 } else {
                     b.tvReactionEmoji.setVisibility(View.GONE);
                     b.tvLikesCount.setVisibility(View.GONE);
