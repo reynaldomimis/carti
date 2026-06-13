@@ -232,6 +232,9 @@ public class TransactionRepository {
 
         data.setType(normalizeType(type, data.getType()));
         
+        // Ensure styling is applied for optimistic UI
+        com.upreyvan.carti.utils.TransactionHelper.hydrateStyle(data);
+        
         // Optimistic UI update
         String tempId = "temp_" + System.currentTimeMillis();
         data.setId(tempId);
@@ -412,6 +415,12 @@ public class TransactionRepository {
                 fields.put("targetAmount", t.getTargetAmount());
                 fields.put("targetDate", t.getTargetDate());
                 
+                // Support contribution fields for Goal Analysis
+                if ("allocated".equalsIgnoreCase(t.getCategory())) {
+                    fields.put("allocatedTo", t.getAllocatedTo());
+                    fields.put("allocationMonth", t.getAllocationMonth());
+                }
+
                 String status = t.getStatus();
                 if (Transaction.STATUS_PENDING.equals(status) || Transaction.STATUS_SYNCING.equals(status) || status == null) {
                     status = "active";

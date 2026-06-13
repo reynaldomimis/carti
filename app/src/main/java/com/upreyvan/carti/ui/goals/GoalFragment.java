@@ -90,19 +90,27 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         int titleRes;
         int descRes;
 
+        // Base filter: Only show main goals (documents with target amounts), not contributions
+        List<TransactionWithUser> mainGoals = new ArrayList<>();
+        for (TransactionWithUser tu : allGoals) {
+            if (tu.getTransaction().getTargetAmount() > 0) {
+                mainGoals.add(tu);
+            }
+        }
+
         switch (position) {
             case 1 -> {
-                for (TransactionWithUser g : allGoals) if (!g.getTransaction().isCompleted()) filteredList.add(g);
+                for (TransactionWithUser g : mainGoals) if (!g.getTransaction().isCompleted()) filteredList.add(g);
                 titleRes = R.string.no_active_goals_title;
                 descRes = R.string.no_active_goals_desc;
             }
             case 2 -> {
-                for (TransactionWithUser g : allGoals) if (g.getTransaction().isCompleted()) filteredList.add(g);
+                for (TransactionWithUser g : mainGoals) if (g.getTransaction().isCompleted()) filteredList.add(g);
                 titleRes = R.string.no_completed_goals_title;
                 descRes = R.string.no_completed_goals_desc;
             }
             default -> {
-                filteredList.addAll(allGoals);
+                filteredList.addAll(mainGoals);
                 titleRes = R.string.no_goals_title;
                 descRes = R.string.no_goals_desc;
             }
@@ -137,10 +145,14 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                         binding.layoutContent.setVisibility(View.VISIBLE);
                         binding.tvGoalTitle.setText(goal.getTitle());
                         
-                        // Centralized Style Implementation
-                        binding.ivGoalIcon.setImageResource(goal.getIconRes() != 0 ? goal.getIconRes() : R.drawable.ic_trophy);
-                        binding.ivGoalIcon.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), goal.getIconBgColor()));
-                        binding.ivGoalIcon.setImageTintList(ContextCompat.getColorStateList(requireContext(), goal.getIconColor()));
+                        // Centralized Style Implementation with safety fallback
+                        int iconRes = goal.getIconRes() != 0 ? goal.getIconRes() : R.drawable.ic_trophy;
+                        int bgColorRes = goal.getIconBgColor() != 0 ? goal.getIconBgColor() : R.color.mint_green_alpha;
+                        int iconColorRes = goal.getIconColor() != 0 ? goal.getIconColor() : R.color.carti_primary_green;
+
+                        binding.ivGoalIcon.setImageResource(iconRes);
+                        binding.ivGoalIcon.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), bgColorRes));
+                        binding.ivGoalIcon.setImageTintList(ContextCompat.getColorStateList(requireContext(), iconColorRes));
                         
                         if (goal.getIconUrl() != null && !goal.getIconUrl().isEmpty()) {
                             com.bumptech.glide.Glide.with(requireContext()).load(goal.getIconUrl()).into(binding.ivGoalIcon);
@@ -154,6 +166,9 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                         binding.tvPercentage.setText(getString(R.string.percentage_format, goal.getProgress()));
                         binding.tvTargetDate.setText(goal.getTargetDate() != null ? 
                                 goal.getTargetDate() : getString(R.string.label_days_left, 0));
+
+                        binding.btnContribute.setOnClickListener(v -> 
+                                GoalContributeBottomSheetFragment.newInstance(goal).show(getChildFragmentManager(), "CONTRIBUTE_GOAL"));
                     }
                 }
         );

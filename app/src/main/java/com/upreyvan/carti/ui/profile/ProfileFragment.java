@@ -71,8 +71,7 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
     private void finishLogout() {
         RealtimeRepository.getInstance(requireContext()).stopListening();
         PreferenceManager.getInstance(requireContext()).clear();
-        startActivity(new Intent(requireContext(), LoginActivity.class)
-                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+        startActivity(new Intent(requireContext(), LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
         requireActivity().finish();
     }
 

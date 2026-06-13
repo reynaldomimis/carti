@@ -267,6 +267,7 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
         repository.postComment(transactionId, text, selectedParentId, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
+                if (getBinding() == null) return;
                 getBinding().etComment.setText("");
                 getBinding().btnSend.setEnabled(true);
 
@@ -282,6 +283,7 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
 
             @Override
             public void onError(Throwable error) {
+                if (getBinding() == null) return;
                 getBinding().btnSend.setEnabled(true);
                 showToast("Failed to post comment", UiHelper.Status.ERROR);
             }

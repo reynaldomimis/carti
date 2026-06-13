@@ -85,8 +85,19 @@ public class TransactionHelper {
         if (t == null) return;
         
         CategoryManager cm = CategoryManager.getInstance(CartiApplication.getAppContext());
-        Category c = cm.getCategoryByName(t.getCategory());
         
+        // Use sub-category first for more specific styling, then category
+        String catName = (t.getSubCategory() != null && !t.getSubCategory().isEmpty()) ? t.getSubCategory() : t.getCategory();
+        Category c = cm.getCategoryByName(catName);
+        
+        // Special handling for goal analysis contributions
+        if ("allocated".equalsIgnoreCase(t.getCategory()) && "GOAL".equalsIgnoreCase(t.getType())) {
+            t.setIconColor(R.color.carti_primary_green);
+            t.setIconBgColor(R.color.mint_green_alpha);
+            if (t.getIconRes() == 0) t.setIconRes(R.drawable.ic_chart);
+            return;
+        }
+
         if (c != null) {
             t.setIconColor(c.getIconColor());
             t.setIconBgColor(c.getBackgroundColor());
@@ -97,7 +108,7 @@ public class TransactionHelper {
             // Default styles based on transaction type if category not found
             String type = t.getType() != null ? t.getType().toUpperCase() : "EXPENSE";
             switch (type) {
-                case "GOAL" -> {
+                case "GOAL", "ALLOCATION"-> {
                     t.setIconColor(R.color.carti_primary_green);
                     t.setIconBgColor(R.color.mint_green_alpha);
                     if (t.getIconRes() == 0) t.setIconRes(R.drawable.ic_chart);
@@ -105,11 +116,6 @@ public class TransactionHelper {
                 case "DEBT" -> {
                     t.setIconColor(R.color.status_red);
                     t.setIconBgColor(R.color.status_red_tonal);
-                    if (t.getIconRes() == 0) t.setIconRes(R.drawable.ic_chart);
-                }
-                case "ALLOCATION" -> {
-                    t.setIconColor(R.color.carti_primary_green);
-                    t.setIconBgColor(R.color.mint_green_alpha);
                     if (t.getIconRes() == 0) t.setIconRes(R.drawable.ic_chart);
                 }
                 default -> {
