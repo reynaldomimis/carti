@@ -77,7 +77,10 @@ public class PlanViewModel extends BaseViewModel {
     }
 
     public void deleteGoal(String goalId) { transRepo.deleteItem(TransactionType.GOAL, goalId, null); }
-    public void refresh() { transRepo.refreshTransactions(); }
+    public void refresh() { 
+        transRepo.refreshTransactions(); 
+        com.upreyvan.carti.managers.CategoryManager.getInstance(getApplication()).refreshRemoteCategories(pref.getFamilyId());
+    }
 
     private List<BudgetCategoryItem> sortBudgetItems(List<BudgetCategoryItem> list) {
         if (list == null) return new ArrayList<>();

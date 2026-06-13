@@ -57,7 +57,7 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.title_add_category);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> finish());
     }
 
     private void setupListeners() {

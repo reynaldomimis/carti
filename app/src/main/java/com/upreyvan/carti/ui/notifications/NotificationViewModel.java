@@ -42,6 +42,25 @@ public class NotificationViewModel extends BaseViewModel {
         notificationRepo.markAllAsRead();
     }
 
+    public void deleteNotification(String id) {
+        setLoading(true);
+        notificationRepo.deleteNotification(id, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Object>() {
+            @Override public void onSuccess(Object result) {
+                setLoading(false);
+                actionSuccess.postValue("Notification deleted.");
+                loadAll();
+            }
+            @Override public void onError(Throwable e) {
+                setLoading(false);
+                error.postValue(e.getMessage());
+            }
+        });
+    }
+
+    public void clearActionSuccess() {
+        actionSuccess.setValue(null);
+    }
+
     public void approveMember(String userId) {
         setLoading(true);
         familyRepo.approveJoinRequest(userId, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Map<String, Object>>() {

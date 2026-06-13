@@ -39,7 +39,14 @@ public class TrackViewModel extends BaseViewModel {
 
     public LiveData<List<BaseMultiItem>> getUiState() { return uiState; }
     public List<BudgetCategoryItem> getAllocations() { return currentAllocations; }
-    public List<BudgetCategoryItem> getDisplayAllocations() { return isExpanded ? currentAllocations : currentAllocations.subList(0, Math.min(currentAllocations.size(), 5)); }
+    public List<BudgetCategoryItem> getDisplayAllocations() {
+        if (isExpanded) {
+            return new ArrayList<>(currentAllocations);
+        } else {
+            int end = Math.min(currentAllocations.size(), 5);
+            return new ArrayList<>(currentAllocations.subList(0, end));
+        }
+    }
     public void toggleExpansion() { isExpanded = !isExpanded; rebuild(); }
 
     private void setupDataStream() {

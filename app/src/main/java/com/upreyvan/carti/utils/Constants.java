@@ -26,6 +26,7 @@ public class Constants {
         public static final String COL_NOTIFICATIONS = com.upreyvan.carti.BuildConfig.APPWRITE_COL_NOTIFICATIONS;
         public static final String COL_LIKES = com.upreyvan.carti.BuildConfig.APPWRITE_COL_LIKES;
         public static final String COL_COMMENTS = com.upreyvan.carti.BuildConfig.APPWRITE_COL_COMMENTS;
+        public static final String COL_CATEGORIES = "categories";
 
         public static final String BUCKET_ICONS = "674ba40c003dbfe6ae1f";
     }
@@ -58,6 +59,8 @@ public class Constants {
         // AI Actions
         public static final String GET_AI_INSIGHTS = "get_ai_insights";
         public static final String GET_CHAT_AI = "get_chat_ai";
+        public static final String GET_CATEGORIES = "get_categories";
+        public static final String SYNC_CATEGORIES = "sync_categories";
     }
 
     public static final class Keys {

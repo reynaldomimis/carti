@@ -14,6 +14,7 @@ import com.upreyvan.carti.databinding.FragmentBillsBinding;
 import com.upreyvan.carti.models.Bill;
 import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.ui.allocate.PlanViewModel;
+import com.upreyvan.carti.utils.DialogHelper;
 import com.upreyvan.carti.utils.Utils;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -130,8 +131,48 @@ public class BillsFragment extends BaseFragment<FragmentBillsBinding> {
     private void setupBillsRecyclerView() {
         billAdapter = new BillAdapter();
         billAdapter.setOnItemClickListener(item -> BillDetailsBottomSheet.newInstance(item.getId(), item.getName()).show(getChildFragmentManager(), "BillDetailsBottomSheet"));
+        billAdapter.setOnBillInteractionListener(new BillAdapter.OnBillInteractionListener() {
+            @Override
+            public void onDelete(Bill item) {
+                confirmDeleteBill(item);
+            }
+
+            @Override
+            public void onEdit(Bill item, View anchor) {
+                showBillOptions(item, anchor);
+            }
+        });
         getBinding().rvBills.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvBills.setAdapter(billAdapter);
+    }
+
+    private void showBillOptions(Bill item, View anchor) {
+        androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
+        popup.getMenuInflater().inflate(R.menu.menu_category_options, popup.getMenu());
+        popup.getMenu().findItem(R.id.action_show_sub).setVisible(false);
+        popup.setOnMenuItemClickListener(menuItem -> {
+            int id = menuItem.getItemId();
+            if (id == R.id.action_edit) {
+                AddBillBottomSheet.newInstance(item).show(getChildFragmentManager(), "EditBillBottomSheet");
+                return true;
+            } else if (id == R.id.action_delete) {
+                confirmDeleteBill(item);
+                return true;
+            }
+            return false;
+        });
+        com.upreyvan.carti.utils.UiHelper.showPopupMenuWithIcons(popup);
+    }
+
+    private void confirmDeleteBill(Bill item) {
+        DialogHelper.showConfirmation(requireContext(), 
+                "Delete Bill?", 
+                "Are you sure you want to delete '" + item.getName() + "'?", 
+                "Delete", 
+                () -> {
+                    com.upreyvan.carti.ui.bills.BillsViewModel billsVm = new ViewModelProvider(this).get(com.upreyvan.carti.ui.bills.BillsViewModel.class);
+                    billsVm.deleteBill(item.getId());
+                });
     }
 
     private void showAddBillBottomSheet() {

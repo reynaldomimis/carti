@@ -5,12 +5,16 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.upreyvan.carti.R;
+import com.upreyvan.carti.datasource.ApiHelper;
+import com.upreyvan.carti.datasource.AppwriteManager;
 import com.upreyvan.carti.models.Category;
 import com.upreyvan.carti.utils.Constants;
 import com.upreyvan.carti.utils.SecurityManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class CategoryManager {
     private static CategoryManager instance;
@@ -63,7 +67,6 @@ public class CategoryManager {
             
             boolean needsSave = false;
             
-            // Migration: Ensure "Bills" exists
             Category billsParent = null;
             for (Category c : categories) {
                 if ("Bills".equalsIgnoreCase(c.getName())) {
@@ -77,7 +80,6 @@ public class CategoryManager {
                 needsSave = true;
             }
 
-            // Migration: Ensure ALL 20 default Bill subcategories exist and use Parent's icon AND COLOR
             String[] billSubs = {"Water", "Electricity", "Internet/Wifi", "Rent", "Load/Data", "Cable TV", "Subscription", "Credit Card", "Insurance", "Tuition", "Home Dues", "Gym", "Installment", "Garbage", "Landline", "LPG", "Vehicle Loan", "PhilHealth", "Netflix", "Spotify"};
             for (String subName : billSubs) {
                 boolean found = false;
@@ -87,7 +89,6 @@ public class CategoryManager {
                             c.setParentCategory("Bills");
                             needsSave = true;
                         }
-                        // FORCE sub-category to match parent's color and icon for synchronization
                         if (c.getIconColor() != billsParent.getIconColor() || c.getIconRes() != billsParent.getIconRes()) {
                             c.setIconRes(billsParent.getIconRes());
                             c.setIconColor(billsParent.getIconColor());
@@ -104,7 +105,6 @@ public class CategoryManager {
                 }
             }
 
-            // Migration: Ensure ALL 10 default Others subcategories exist and match Parent
             Category othersParent = null;
             for (Category c : categories) {
                 if ("Others".equalsIgnoreCase(c.getName()) && (c.getParentCategory() == null || c.getParentCategory().isEmpty())) {
@@ -139,7 +139,6 @@ public class CategoryManager {
                 }
             }
 
-            // Migration: Ensure Family Main Categories exist
             Object[][] familyMain = {
                 {"f1", "Education", android.R.drawable.ic_menu_edit, R.color.icon_fare, R.color.log_fare}, 
                 {"f2", "Personal Care", android.R.drawable.ic_menu_myplaces, R.color.icon_load, R.color.log_load}, 
@@ -191,7 +190,6 @@ public class CategoryManager {
             if (categories.get(i).getName().equalsIgnoreCase(oldName)) {
                 categories.set(i, updated);
                 
-                // If this is a parent category being updated, sync its children's style
                 if (isParent) {
                     for (Category c : categories) {
                         if (updated.getName().equalsIgnoreCase(c.getParentCategory())) {
@@ -219,6 +217,78 @@ public class CategoryManager {
 
     public void updateCategories(List<Category> categories) {
         saveCategories(categories);
+        notifyListeners();
+    }
+
+    public void refreshRemoteCategories(String familyId) {
+        AppwriteManager.getInstance(context).listDocuments(
+                Constants.Appwrite.DATABASE_ID,
+                Constants.Appwrite.COL_CATEGORIES,
+                java.util.Arrays.asList(
+                        io.appwrite.Query.Companion.equal("familyId", java.util.Arrays.asList(familyId, "system"))
+                ),
+                new AppwriteManager.AppwriteCallback<io.appwrite.models.DocumentList<Map<String, Object>>>() {
+                    @Override
+                    public void onSuccess(io.appwrite.models.DocumentList<Map<String, Object>> result) {
+                        List<Category> remoteList = new ArrayList<>();
+                        for (io.appwrite.models.Document<Map<String, Object>> doc : result.getDocuments()) {
+                            remoteList.add(mapToCategory(doc.getId(), doc.getData()));
+                        }
+                        if (!remoteList.isEmpty()) {
+                            updateCategories(remoteList);
+                        }
+                    }
+
+                    @Override public void onError(Throwable error) { android.util.Log.e("CategoryManager", "Refresh failed: " + error.getMessage()); }
+                }
+        );
+    }
+
+    private Category mapToCategory(String id, Map<String, Object> data) {
+        String name = (String) data.get("name");
+        int iconRes = ((Number) data.getOrDefault("iconRes", 0)).intValue();
+        int iconColor = ((Number) data.getOrDefault("iconColor", 0)).intValue();
+        int bgColor = ((Number) data.getOrDefault("backgroundColor", 0)).intValue();
+        String parent = (String) data.get("parentCategory");
+        return new Category(id, name, iconRes, iconColor, bgColor, false, parent);
+    }
+
+    public void deleteCategoryRemote(String categoryId) {
+        ApiHelper helper = new ApiHelper(context);
+        helper.deleteCategory(categoryId, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override public void onSuccess(Map<String, Object> result) { refreshRemoteCategories(PreferenceManager.getInstance(context).getFamilyId()); }
+            @Override public void onError(Throwable error) {}
+        });
+    }
+
+    public void updateCategoryRemote(String categoryId, Category category) {
+        ApiHelper helper = new ApiHelper(context);
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", category.getName());
+        data.put("iconRes", category.getIconRes());
+        data.put("iconColor", category.getIconColor());
+        data.put("backgroundColor", category.getBackgroundColor());
+        data.put("parentCategory", category.getParentCategory());
+        
+        helper.updateCategory(categoryId, data, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override public void onSuccess(Map<String, Object> result) { refreshRemoteCategories(PreferenceManager.getInstance(context).getFamilyId()); }
+            @Override public void onError(Throwable error) {}
+        });
+    }
+
+    public List<Map<String, Object>> getCategoriesForSync(String familyId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Category c : getCategories()) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", c.getName());
+            map.put("iconRes", c.getIconRes());
+            map.put("iconColor", c.getIconColor());
+            map.put("backgroundColor", c.getBackgroundColor());
+            map.put("parentCategory", c.getParentCategory());
+            map.put("familyId", familyId);
+            list.add(map);
+        }
+        return list;
     }
 
     public Category getCategoryByName(String name) {
@@ -257,7 +327,6 @@ public class CategoryManager {
         defaults.add(new Category("6", "Health", android.R.drawable.ic_menu_compass, R.color.status_red, R.color.status_red_tonal, true));
         defaults.add(new Category("7", "Debt/Utang", android.R.drawable.ic_lock_lock, R.color.icon_debt, R.color.log_debt, true));
         
-        // Family-oriented Main Categories
         defaults.add(new Category("f1", "Education", android.R.drawable.ic_menu_edit, R.color.icon_fare, R.color.log_fare, true));
         defaults.add(new Category("f2", "Personal Care", android.R.drawable.ic_menu_myplaces, R.color.icon_load, R.color.log_load, true));
         defaults.add(new Category("f3", "Shopping", android.R.drawable.ic_input_add, R.color.icon_store, R.color.log_store, true));
@@ -266,17 +335,14 @@ public class CategoryManager {
         defaults.add(new Category("f6", "Pets", android.R.drawable.ic_menu_view, R.color.icon_food, R.color.log_food, true));
         defaults.add(new Category("f7", "Savings", android.R.drawable.ic_menu_save, R.color.carti_primary_green, R.color.mint_green_alpha, true));
 
-        // Bills Main Category
         Category bills = new Category("10", "Bills", R.drawable.ic_calendar, R.color.icon_electricity, R.color.log_electricity, true);
         defaults.add(bills);
         
-        // Bills Subcategories - Use parent icon and colors
         String[] billSubs = {"Water", "Electricity", "Internet/Wifi", "Rent", "Load/Data", "Cable TV", "Subscription", "Credit Card", "Insurance", "Tuition", "Home Dues", "Gym", "Installment", "Garbage", "Landline", "LPG", "Vehicle Loan", "PhilHealth", "Netflix", "Spotify"};
         for (int i = 0; i < billSubs.length; i++) {
             defaults.add(new Category("10" + i, billSubs[i], bills.getIconRes(), bills.getIconColor(), bills.getBackgroundColor(), true, "Bills"));
         }
 
-        // Others Main Category and subcategories
         Category others = new Category("8", "Others", android.R.drawable.ic_menu_more, R.color.icon_others, R.color.log_others, true);
         defaults.add(others);
         String[] otherSubs = {"Allowance", "Church/Donation", "Gifts/Celebration", "Laundry", "Household Help", "Miscellaneous", "Emergency", "Business/Side Hustle", "Special Occasion", "Tithe/Abuloy"};

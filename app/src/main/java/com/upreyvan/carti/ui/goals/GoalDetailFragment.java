@@ -134,7 +134,7 @@ public class GoalDetailFragment extends BaseFragment<FragmentGoalDetailBinding> 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(ValueHelper.toStr(goal.getTitle()));
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
 

@@ -88,9 +88,15 @@ public class HomeViewModel extends BaseViewModel {
             String cached = pref.getAiInsightsCache();
             long timestamp = pref.getAiInsightsTimestamp();
             
-            boolean isBoring = cached.toLowerCase().contains("no urgent");
+            // Production: 12 hours (12 * 60 * 60 * 1000)
+            // Testing: 0 (refresh every app open)
+            long refreshInterval = 0; 
             
-            if (!cached.isEmpty() && timestamp >= Utils.getStartOfDayMillis() && !isBoring) {
+            boolean isExpired = (System.currentTimeMillis() - timestamp) > refreshInterval;
+            boolean isBoring = cached.toLowerCase().contains("no urgent") || 
+                              cached.toLowerCase().contains("keep tracking"); // Mark static fallback as boring to force retry
+            
+            if (!cached.isEmpty() && !isExpired && !isBoring && refreshInterval > 0) {
                 aiInsight = cached;
                 rebuild(false);
             } else {
@@ -128,6 +134,9 @@ public class HomeViewModel extends BaseViewModel {
                     aiInsight = response;
                     pref.setAiInsightsCache(response);
                 }
+                
+                // Crucial: Update timestamp after a successful fetch to handle interval logic
+                // But since we are in testing (interval 0), this ensures it knows when it last fetched.
                 rebuild(false);
             }
             @Override public void onError(Throwable t) {
@@ -226,7 +235,7 @@ public class HomeViewModel extends BaseViewModel {
 
                 items.add(new HomeListItem.QuickLogItemContainer(logs, null, null));
             }
-            items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.recent_activity), null, currentTransactions != null && !currentTransactions.isEmpty(), "View All", null));
+            items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.recent_activity), null, currentTransactions != null && !currentTransactions.isEmpty(), getApplication().getString(R.string.see_all), null));
             
             Boolean isSyncing = transRepo.getSyncingStatus().getValue();
             if (Boolean.TRUE.equals(isSyncing) && (currentTransactions == null || currentTransactions.isEmpty())) {

@@ -42,7 +42,7 @@ public abstract class BaseGoalActivity extends BaseActivity<ActivityAddGoalBindi
         setupDynamicPadding(getBinding().layoutToolbar.getRoot(), getBinding().btnCreateGoal); 
     }
 
-    protected void setupToolbar() { getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish()); }
+    protected void setupToolbar() { getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> finish()); }
 
     private void setupDatePicker() {
         View.OnClickListener show = v -> {

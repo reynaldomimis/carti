@@ -110,7 +110,7 @@ public class AddDebtActivity extends BaseActivity<ActivityAddDebtBinding> {
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.add_debt_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> finish());
     }
 
     private void setupClickListeners() {

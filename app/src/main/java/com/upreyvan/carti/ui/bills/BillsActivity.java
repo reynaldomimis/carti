@@ -85,7 +85,7 @@ public class BillsActivity extends BaseActivity<ActivityBillsBinding> {
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.bills_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> finish());
     }
 
     private void setupDynamicPadding() {

@@ -45,6 +45,26 @@ public class BillsViewModel extends BaseViewModel {
         });
     }
 
+    public void updateBill(String id, String title, String content, double amount, String category) {
+        setLoading(true);
+        Map<String, Object> data = new java.util.HashMap<>();
+        data.put("title", title);
+        data.put("content", content);
+        data.put("amount", amount);
+        data.put("category", category);
+        
+        repository.updateNotification(id, data, new AppwriteCallback<Map<String, Object>>() {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
+                setLoading(false);
+                saveSuccess.postValue(true);
+            }
+            @Override public void onError(Throwable error) {
+                setLoading(false);
+            }
+        });
+    }
+
     public void payBill(String id, String name, double amount, String notes) {
         setLoading(true);
         TransactionRepository.getInstance(getApplication()).createItem(TransactionType.EXPENSE, amount, "Bills", name + ": " + notes, new AppwriteCallback<Map<String, Object>>() {

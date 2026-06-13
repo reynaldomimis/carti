@@ -323,6 +323,15 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
 
         manager.updateCategory(editingItem != null ? editingItem.getCategoryName() : name, cat);
 
+        // Perform Remote Sync (CUD via Cloud Function)
+        if (editingItem != null && editingItem.getCategoryName().length() > 20) { // Check if it looks like an ID
+            manager.updateCategoryRemote(editingItem.getCategoryName(), cat);
+        } else {
+            // For new categories, we can sync the entire list or add a createCategoryRemote
+            // Let's use syncCategories for simplicity as we have it in Cloud Function
+            manager.refreshRemoteCategories(com.upreyvan.carti.managers.PreferenceManager.getInstance(requireContext()).getFamilyId());
+        }
+
         // If user also set an amount, we save it as a budget (ALLOCATION) in the repo
         String amountStr = getBinding().etAmount.getText() != null ? getBinding().etAmount.getText().toString() : "0";
         if (!amountStr.isEmpty()) {

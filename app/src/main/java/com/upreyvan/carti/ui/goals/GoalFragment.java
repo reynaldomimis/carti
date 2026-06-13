@@ -108,16 +108,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
             }
         }
         
-        filteredList.sort((a, b) -> {
-            String n1 = a.getTransaction().getTitle();
-            String n2 = b.getTransaction().getTitle();
-            boolean aOther = "others".equalsIgnoreCase(n1);
-            boolean bOther = "others".equalsIgnoreCase(n2);
-            if (aOther && bOther) return 0;
-            if (aOther) return 1;
-            if (bOther) return -1;
-            return n1.compareToIgnoreCase(n2);
-        });
+        Utils.sortAlphabetically(filteredList, g -> g.getTransaction().getTitle());
 
         boolean isEmpty = filteredList.isEmpty() && !isLoading;
         getBinding().rvGoals.setVisibility(isEmpty ? View.GONE : View.VISIBLE);

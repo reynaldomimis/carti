@@ -82,6 +82,13 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
         getBinding().tabAddContainer.setOnClickListener(v -> QuickAddBottomSheetFragment.newInstance().show(getSupportFragmentManager(), "QuickAdd"));
         RealtimeRepository.getInstance(this).startListening();
+        
+        // Initial Remote Category Fetch
+        String familyId = com.upreyvan.carti.managers.PreferenceManager.getInstance(this).getFamilyId();
+        if (!familyId.isEmpty()) {
+            com.upreyvan.carti.managers.CategoryManager.getInstance(this).refreshRemoteCategories(familyId);
+        }
+
         setupBackPress();
 
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {

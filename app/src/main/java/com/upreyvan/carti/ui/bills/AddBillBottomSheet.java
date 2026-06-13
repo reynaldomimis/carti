@@ -28,12 +28,19 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
     private static final String ARG_DATE = "arg_date";
     private String formattedDate;
     private BillsViewModel viewModel;
+    private Bill editingBill;
 
     public static AddBillBottomSheet newInstance(String formattedDate) {
         AddBillBottomSheet fragment = new AddBillBottomSheet();
         Bundle args = new Bundle();
         args.putString(ARG_DATE, formattedDate);
         fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static AddBillBottomSheet newInstance(Bill bill) {
+        AddBillBottomSheet fragment = new AddBillBottomSheet();
+        fragment.editingBill = bill;
         return fragment;
     }
 
@@ -47,10 +54,16 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(BillsViewModel.class);
 
-        if (getArguments() != null) {
+        if (editingBill != null) {
+            getBinding().tvTitle.setText(R.string.btn_edit);
+            getBinding().actCategory.setText(editingBill.getCategory(), false);
+            getBinding().etAmount.setText(String.valueOf(editingBill.getAmount()));
+            getBinding().etDueDate.setText(editingBill.getDate());
+            formattedDate = editingBill.getDate();
+        } else if (getArguments() != null) {
             formattedDate = getArguments().getString(ARG_DATE);
+            getBinding().etDueDate.setText(formattedDate);
         }
-        getBinding().etDueDate.setText(formattedDate);
 
         setupDropdowns();
         setupListeners();
@@ -146,6 +159,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             String billName = getBinding().actCategory.getText().toString().trim();
             String amountStr = getBinding().etAmount.getText() != null ? getBinding().etAmount.getText().toString().trim() : "";
             String category = getBinding().actCategory.getText().toString();
+            String notes = getBinding().etNotes.getText() != null ? getBinding().etNotes.getText().toString().trim() : "";
 
             if (billName.isEmpty() || amountStr.isEmpty()) {
                 UiHelper.showSnackbar(getBinding().getRoot(), R.string.msg_fill_all_fields, UiHelper.Status.ERROR);
@@ -153,7 +167,7 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             }
 
             List<Bill> currentBills = viewModel.getBills().getValue();
-            if (currentBills != null) {
+            if (currentBills != null && editingBill == null) {
                 for (Bill b : currentBills) {
                     if (b.getName().equalsIgnoreCase(billName)) {
                         UiHelper.showSnackbar(getBinding().getRoot(), "This bill already exists", UiHelper.Status.WARNING);
@@ -163,9 +177,18 @@ public class AddBillBottomSheet extends BaseBottomSheetFragment<LayoutBottomShee
             }
 
             String title = "BILL: " + billName;
-            String content = "A new bill for " + category + " (" + Utils.formatCurrency(StringHelper.parseDouble(amountStr)) + ") is due on " + formattedDate;
+            String content = "A new bill for " + category + " (" + Utils.formatCurrency(StringHelper.parseDouble(amountStr)) + ") is due on " + formattedDate + ".";
+            
+            // Append notes if present with a newline for the notification list
+            if (!notes.isEmpty()) {
+                content += "\n\nNotes: " + notes;
+            }
 
-            viewModel.saveBill(title, content, StringHelper.parseDouble(amountStr), category);
+            if (editingBill != null) {
+                viewModel.updateBill(editingBill.getId(), title, content, StringHelper.parseDouble(amountStr), category);
+            } else {
+                viewModel.saveBill(title, content, StringHelper.parseDouble(amountStr), category);
+            }
         });
     }
 }

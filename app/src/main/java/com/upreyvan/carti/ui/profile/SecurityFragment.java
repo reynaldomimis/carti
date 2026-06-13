@@ -57,7 +57,7 @@ public class SecurityFragment extends BaseFragment<FragmentSecurityBinding> {
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.security_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
     }
 
     private void setupListeners() {

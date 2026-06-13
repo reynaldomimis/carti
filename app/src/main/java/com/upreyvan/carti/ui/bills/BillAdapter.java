@@ -1,5 +1,7 @@
 package com.upreyvan.carti.ui.bills;
 
+import android.view.View;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.upreyvan.carti.R;
@@ -11,6 +13,17 @@ import com.upreyvan.carti.models.Category;
 import com.upreyvan.carti.utils.Utils;
 
 public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
+
+    public interface OnBillInteractionListener {
+        void onDelete(Bill bill);
+        void onEdit(Bill bill, View anchor);
+    }
+
+    private OnBillInteractionListener interactionListener;
+
+    public void setOnBillInteractionListener(OnBillInteractionListener listener) {
+        this.interactionListener = listener;
+    }
 
     public BillAdapter() {
         super(Bill.DIFF_CALLBACK,
@@ -28,7 +41,6 @@ public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
 
                     b.tvBillAmount.setText(Utils.formatCurrency(item.getAmount()));
                     
-                    // Centralized Style Implementation for Bills
                     Category c = CategoryManager.getInstance(b.getRoot().getContext()).getCategoryByName(item.getCategory());
                     if (c != null) {
                         b.ivBillIcon.setImageResource(c.getIconRes());
@@ -49,5 +61,22 @@ public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
                         b.tvDueBadge.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.status_red));
                     }
                 });
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder<ItemBillBinding> holder, int position) {
+        super.onBindViewHolder(holder, position);
+        Bill item = getItem(position);
+        holder.binding.btnOptions.setOnClickListener(v -> {
+            if (interactionListener != null) interactionListener.onEdit(item, v);
+        });
+        
+        holder.binding.getRoot().setOnLongClickListener(v -> {
+            if (interactionListener != null) {
+                interactionListener.onDelete(item);
+                return true;
+            }
+            return false;
+        });
     }
 }

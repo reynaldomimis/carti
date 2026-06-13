@@ -28,7 +28,7 @@ public class NotificationSettingsFragment extends BaseFragment<FragmentNotificat
 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.notification_settings_title);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }

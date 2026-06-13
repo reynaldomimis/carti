@@ -115,7 +115,7 @@ public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.add_expense_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> finish());
     }
 
     private void setupClickListeners() {

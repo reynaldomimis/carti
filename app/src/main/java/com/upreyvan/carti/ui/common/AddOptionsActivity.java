@@ -57,7 +57,7 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.add_options_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> goBackToHome());
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> goBackToHome());
     }
 
     private void goBackToHome() {

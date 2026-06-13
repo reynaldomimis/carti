@@ -163,7 +163,7 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
             }
             return false;
         });
-        popup.show();
+        com.upreyvan.carti.utils.UiHelper.showPopupMenuWithIcons(popup);
     }
 
     private void confirmDeleteCategory(BudgetCategoryItem item) {
@@ -172,8 +172,15 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
                 "Are you sure you want to delete '" + item.getCategoryName() + "'? This will also delete all its sub-categories.",
                 "Delete",
                 () -> {
-                    com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).deleteCategory(item.getCategoryName());
+                    com.upreyvan.carti.managers.CategoryManager manager = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext());
+                    manager.deleteCategory(item.getCategoryName());
                     TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName());
+                    
+                    // Remote Delete if it has an ID
+                    if (item.getCategoryName().length() > 20) {
+                        manager.deleteCategoryRemote(item.getCategoryName());
+                    }
+
                     viewModel.loadData();
                 }
         );

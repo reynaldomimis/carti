@@ -44,7 +44,7 @@ public class InviteFamilyActivity extends BaseActivity<FragmentInviteFamilyBindi
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.invite_family_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> finish());
     }
 
     private void setupContent() {

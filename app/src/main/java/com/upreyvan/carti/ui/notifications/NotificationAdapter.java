@@ -38,6 +38,10 @@ public class NotificationAdapter extends BaseAdapter<Notification, ItemNotificat
                   binding.tvDescription.setText(description);
                   binding.tvTime.setText(Utils.getTimeAgo(notification.getTimestampMillis()));
 
+                  // Handle long descriptions (like those with extra details)
+                  binding.tvDescription.setMaxLines(Integer.MAX_VALUE);
+                  binding.tvDescription.setEllipsize(null);
+
                   boolean isJoinRequest = "family".equalsIgnoreCase(notification.getType()) && 
                                         "New Join Request".equalsIgnoreCase(notification.getTitle());
                   

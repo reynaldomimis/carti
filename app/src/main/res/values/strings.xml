@@ -16,8 +16,8 @@
     <string name="recent_expenses">Recent Expenses</string>
     <string name="recent_transactions">Recents transactions</string>
     <string name="track_summary">Track Summary</string>
-    <string name="see_all">See all</string>
-    <string name="see_less">See Less</string>
+    <string name="see_all">More</string>
+    <string name="see_less">Less</string>
 
 
     <!-- Quick Log Items -->

@@ -38,7 +38,7 @@ public class AddBillActivity extends BaseActivity<ActivityAddBillBinding> {
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.title_add_bill);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> finish());
     }
 
     private void setupStatusBar() {

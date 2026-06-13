@@ -58,7 +58,10 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
         });
         
         viewModel.getActionSuccess().observe(getViewLifecycleOwner(), msg -> {
-            if (msg != null) showToast(msg, UiHelper.Status.SUCCESS);
+            if (msg != null) {
+                showToast(msg, UiHelper.Status.SUCCESS);
+                viewModel.clearActionSuccess();
+            }
         });
         
         viewModel.getError().observe(getViewLifecycleOwner(), err -> {
@@ -87,7 +90,7 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.notifications_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).navigateTo(com.upreyvan.carti.utils.Constants.Navigation.HOME);
             }

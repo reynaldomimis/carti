@@ -129,7 +129,7 @@ public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomShee
             }
             return false;
         });
-        popup.show();
+        com.upreyvan.carti.utils.UiHelper.showPopupMenuWithIcons(popup);
     }
 
     private void confirmDeleteSubCategory(BudgetCategoryItem item) {
@@ -138,8 +138,14 @@ public class SubCategoriesBottomSheet extends BaseBottomSheetFragment<BottomShee
                 "Are you sure you want to delete '" + item.getCategoryName() + "'?",
                 "Delete",
                 () -> {
-                    com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).deleteCategory(item.getCategoryName());
+                    com.upreyvan.carti.managers.CategoryManager manager = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext());
+                    manager.deleteCategory(item.getCategoryName());
                     TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName());
+                    
+                    if (item.getCategoryName().length() > 20) {
+                        manager.deleteCategoryRemote(item.getCategoryName());
+                    }
+
                     viewModel.loadData();
                 }
         );

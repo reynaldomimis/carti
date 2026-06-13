@@ -179,10 +179,23 @@ public class NotificationRepository {
     }
 
     public void deleteNotification(String id, AppwriteManager.AppwriteCallback<Object> callback) {
-        AppwriteManager.getInstance(realtimeRepo.getContext()).deleteDocument(
-            com.upreyvan.carti.utils.Constants.Appwrite.DATABASE_ID,
-            com.upreyvan.carti.utils.Constants.Appwrite.COL_NOTIFICATIONS,
-            id, callback);
+        apiHelper.deleteNotification(id, new AppwriteManager.AppwriteCallback<Object>() {
+            @Override public void onSuccess(Object result) {
+                refreshNotifications();
+                if (callback != null) callback.onSuccess(result);
+            }
+            @Override public void onError(Throwable error) { if (callback != null) callback.onError(error); }
+        });
+    }
+
+    public void updateNotification(String id, Map<String, Object> data, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        apiHelper.updateNotification(id, data, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override public void onSuccess(Map<String, Object> result) {
+                refreshNotifications();
+                if (callback != null) callback.onSuccess(result);
+            }
+            @Override public void onError(Throwable error) { if (callback != null) callback.onError(error); }
+        });
     }
 
     public LiveData<List<Bill>> getBills(String familyId) {
@@ -249,7 +262,15 @@ public class NotificationRepository {
             
             if (content != null && content.toLowerCase().contains("due on ")) {
                 int index = content.toLowerCase().lastIndexOf("due on ");
-                date = content.substring(index + 7).trim();
+                String rawDatePart = content.substring(index + 7).trim();
+                // Extract only the date part before the period or newline to avoid including notes
+                if (rawDatePart.contains(".")) {
+                    date = rawDatePart.substring(0, rawDatePart.indexOf(".")).trim();
+                } else if (rawDatePart.contains("\n")) {
+                    date = rawDatePart.substring(0, rawDatePart.indexOf("\n")).trim();
+                } else {
+                    date = rawDatePart;
+                }
             } else {
                 Object timestamp = data.get("timestamp");
                 if (timestamp != null) date = Utils.formatTimestamp(timestamp.toString());

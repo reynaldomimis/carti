@@ -81,7 +81,7 @@ public class ResetPasswordActivity extends BaseActivity<ActivityResetPasswordBin
 
     private void setupUI() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.title_set_new_password);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> finish());
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> finish());
 
         getBinding().btnReset.setOnClickListener(v -> handleReset());
     }

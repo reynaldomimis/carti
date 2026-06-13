@@ -345,4 +345,39 @@ public class ApiHelper {
         params.put("context", context);
         callAction(Constants.Actions.GET_CHAT_AI, params, callback);
     }
+
+    public void syncCategories(List<Map<String, Object>> categories, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("categories", categories);
+        callAction(Constants.Actions.SYNC_CATEGORIES, data, callback);
+    }
+
+    public void updateCategory(String categoryId, Map<String, Object> updateData, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("categoryId", categoryId);
+        data.put("updateData", updateData);
+        callAction("update_category", data, callback);
+    }
+
+    public void deleteCategory(String categoryId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("categoryId", categoryId);
+        callAction("delete_category", data, callback);
+    }
+
+    public void updateNotification(String notificationId, Map<String, Object> updateData, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("notificationId", notificationId);
+        data.put("updateData", updateData);
+        callAction("update_notification", data, callback);
+    }
+
+    public void deleteNotification(String notificationId, AppwriteManager.AppwriteCallback<Object> callback) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("notificationId", notificationId);
+        callAction("delete_notification", data, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+            @Override public void onSuccess(Map<String, Object> result) { if (callback != null) callback.onSuccess(result); }
+            @Override public void onError(Throwable error) { if (callback != null) callback.onError(error); }
+        });
+    }
 }

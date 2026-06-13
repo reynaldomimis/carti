@@ -42,7 +42,7 @@ public class AddFundsFragment extends BaseFragment<FragmentAddFundsBinding> {
     private void setupToolbar() {
         getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.add_to_goal_title);
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
-        getBinding().layoutToolbar.btnBack.setOnClickListener(v -> {
+        getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> {
             if (getActivity() != null) getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }

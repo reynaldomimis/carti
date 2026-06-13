@@ -148,4 +148,23 @@ public class UiHelper {
     public static void applyCategoryStyle(View container, View iconBg, ImageView icon, String categoryName) {
         applyCategoryStyle(container, iconBg, icon, categoryName, true);
     }
+
+    public static void showPopupMenuWithIcons(androidx.appcompat.widget.PopupMenu popup) {
+        try {
+            java.lang.reflect.Field[] fields = popup.getClass().getDeclaredFields();
+            for (java.lang.reflect.Field field : fields) {
+                if ("mPopup".equals(field.getName())) {
+                    field.setAccessible(true);
+                    Object menuHelper = field.get(popup);
+                    Class<?> classPopupHelper = Class.forName(menuHelper.getClass().getName());
+                    java.lang.reflect.Method setForceIcons = classPopupHelper.getMethod("setForceShowIcon", boolean.class);
+                    setForceIcons.invoke(menuHelper, true);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        popup.show();
+    }
 }
