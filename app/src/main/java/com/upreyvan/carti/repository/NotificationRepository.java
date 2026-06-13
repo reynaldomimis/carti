@@ -169,6 +169,36 @@ public class NotificationRepository {
         });
     }
 
+    public void markAsPaid(String notificationId) {
+        Map<String, Object> data = new java.util.HashMap<>();
+        data.put("status", "PAID");
+        data.put("isRead", true);
+        
+        updateNotification(notificationId, data, null);
+    }
+
+    public void markBillAsPaidByCategory(String categoryName) {
+        if (categoryName == null || categoryName.isEmpty()) return;
+        
+        synchronized (currentNotifications) {
+            for (Notification n : currentNotifications) {
+                String title = n.getTitle();
+                if (title == null) continue;
+                
+                String upperTitle = title.toUpperCase();
+                // Check if it's a bill and matches the category name
+                boolean isBill = upperTitle.startsWith("BILL:") || upperTitle.startsWith("DUE TODAY:") || 
+                                upperTitle.startsWith("DUE TOMORROW:") || upperTitle.startsWith("OVERDUE:");
+                
+                if (isBill && title.toLowerCase().contains(categoryName.toLowerCase())) {
+                    if (!"PAID".equalsIgnoreCase(n.getStatus())) {
+                        markAsPaid(n.getId());
+                    }
+                }
+            }
+        }
+    }
+
     public void markAllAsRead() {
         apiHelper.markAllNotificationsRead(new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override

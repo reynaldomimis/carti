@@ -255,6 +255,16 @@ public class TransactionRepository {
                     transactionCache.removeIf(tu -> tempId.equals(tu.getTransaction().getId()));
                 }
                 handleRealtimeEvent(result, false);
+
+                // Auto-bridge: If adding an expense for 'Bills', update matching notifications to PAID
+                String cat = data.getCategory();
+                String sub = data.getSubCategory();
+                if ("Bills".equalsIgnoreCase(cat) && sub != null && !sub.isEmpty()) {
+                    NotificationRepository.getInstance(pref.getContext()).markBillAsPaidByCategory(sub);
+                } else if ("Bills".equalsIgnoreCase(cat)) {
+                    NotificationRepository.getInstance(pref.getContext()).markBillAsPaidByCategory(data.getTitle());
+                }
+
                 if (callback != null) callback.onSuccess(result);
             }
             @Override public void onError(Throwable error) {
