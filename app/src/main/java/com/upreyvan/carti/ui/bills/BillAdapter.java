@@ -30,35 +30,40 @@ public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
                 (inflater, parent) -> ItemBillBinding.inflate(inflater, parent, false),
                 (b, item, pos, count) -> {
                     b.tvBillName.setText(item.getName());
-                    
-                    String dateText = item.getDate();
-                    if (dateText != null && !dateText.isEmpty()) {
-                        b.tvDueBadge.setText(b.getRoot().getContext().getString(R.string.add_bill_at_date, dateText).replace("Add Bill for ", "Due "));
-                        b.tvDueBadge.setVisibility(android.view.View.VISIBLE);
-                    } else {
-                        b.tvDueBadge.setVisibility(android.view.View.GONE);
-                    }
-
                     b.tvBillAmount.setText(Utils.formatCurrency(item.getAmount()));
                     
-                    Category c = CategoryManager.getInstance(b.getRoot().getContext()).getCategoryByName(item.getCategory());
-                    if (c != null) {
-                        b.ivBillIcon.setImageResource(c.getIconRes());
-                        b.cardIcon.setCardBackgroundColor(ContextCompat.getColor(b.getRoot().getContext(), c.getBackgroundColor()));
-                        b.ivBillIcon.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(b.getRoot().getContext(), c.getIconColor())));
-                    } else {
-                        b.ivBillIcon.setImageResource(item.getIconResId() != 0 ? item.getIconResId() : R.drawable.ic_calendar);
-                        b.cardIcon.setCardBackgroundColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.surface_variant));
-                        b.ivBillIcon.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(b.getRoot().getContext(), R.color.carti_primary_green)));
-                    }
+                    String dateText = item.getDate();
+                    String status = item.getStatus();
 
-                    String paidLabel = b.getRoot().getContext().getString(R.string.status_paid_label);
-                    if (paidLabel.equalsIgnoreCase(item.getStatus())) {
-                        b.tvDueBadge.setBackgroundResource(R.drawable.bg_status_paid);
-                        b.tvDueBadge.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.green_primary));
-                    } else {
+                    if ("Overdue".equalsIgnoreCase(status)) {
+                        b.tvDueBadge.setText(R.string.label_overdue);
+                        b.tvDueBadge.setVisibility(android.view.View.VISIBLE);
                         b.tvDueBadge.setBackgroundResource(R.drawable.bg_status_unpaid);
                         b.tvDueBadge.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.status_red));
+                    } else if ("Due Today".equalsIgnoreCase(status)) {
+                        b.tvDueBadge.setText(R.string.label_due_today);
+                        b.tvDueBadge.setVisibility(android.view.View.VISIBLE);
+                        b.tvDueBadge.setBackgroundResource(R.drawable.bg_status_unpaid);
+                        b.tvDueBadge.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.status_red));
+                    } else if ("Due Tomorrow".equalsIgnoreCase(status)) {
+                        b.tvDueBadge.setText(R.string.label_due_tomorrow);
+                        b.tvDueBadge.setVisibility(android.view.View.VISIBLE);
+                        b.tvDueBadge.setBackgroundResource(R.drawable.bg_status_unpaid);
+                        b.tvDueBadge.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.status_red));
+                    } else if (dateText != null && !dateText.isEmpty()) {
+                        b.tvDueBadge.setText(b.getRoot().getContext().getString(R.string.add_bill_at_date, dateText).replace("Add Bill for ", "Due "));
+                        b.tvDueBadge.setVisibility(android.view.View.VISIBLE);
+                        
+                        String paidLabel = b.getRoot().getContext().getString(R.string.status_paid_label);
+                        if (paidLabel.equalsIgnoreCase(status)) {
+                            b.tvDueBadge.setBackgroundResource(R.drawable.bg_status_paid);
+                            b.tvDueBadge.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.green_primary));
+                        } else {
+                            b.tvDueBadge.setBackgroundResource(R.drawable.bg_status_unpaid);
+                            b.tvDueBadge.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.text_secondary));
+                        }
+                    } else {
+                        b.tvDueBadge.setVisibility(android.view.View.GONE);
                     }
                 });
     }

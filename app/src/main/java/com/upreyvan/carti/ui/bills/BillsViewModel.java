@@ -70,7 +70,22 @@ public class BillsViewModel extends BaseViewModel {
         TransactionRepository.getInstance(getApplication()).createItem(TransactionType.EXPENSE, amount, "Bills", name + ": " + notes, new AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
-                deleteBill(id);
+                // Bridge Logic: Mark as 'paid' and seen (isRead=true)
+                Map<String, Object> update = new java.util.HashMap<>();
+                update.put("status", "PAID");
+                update.put("isRead", true);
+
+                repository.updateNotification(id, update, new AppwriteCallback<Map<String, Object>>() {
+                    @Override public void onSuccess(Map<String, Object> result) {
+                        repository.refreshBills(pref.getFamilyId());
+                        setLoading(false);
+                        saveSuccess.postValue(true);
+                    }
+                    @Override public void onError(Throwable error) {
+                        setLoading(false);
+                        saveSuccess.postValue(true);
+                    }
+                });
             }
             @Override public void onError(Throwable error) {
                 setLoading(false);

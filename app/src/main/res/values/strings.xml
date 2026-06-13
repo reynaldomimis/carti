@@ -144,8 +144,8 @@
     <string name="add_options_invite_desc">Add family members</string>
     <string name="add_options_category">Category</string>
     <string name="add_options_category_desc">Create new category</string>
-    <string name="add_options_bills">Bills</string>
-    <string name="add_options_bills_desc">Manage your monthly bills</string>
+    <string name="add_options_bills">Bills Reminder</string>
+    <string name="add_options_bills_desc">Set a reminder for your family bills</string>
     <string name="add_options_budget_plan">Budget Plan</string>
     <string name="add_options_budget_plan_desc">Plan your monthly spending</string>
 
@@ -696,6 +696,9 @@
     <string name="desc_next_month">Next Month</string>
     <string name="view_all_bills">View All Bills</string>
     <string name="no_upcoming_bills">No upcoming bills</string>
+    <string name="label_overdue">Overdue</string>
+    <string name="label_due_today">Due Today</string>
+    <string name="label_due_tomorrow">Due Tomorrow</string>
 
     <!-- Dashboard Strings -->
     <string name="label_total_balance">Total Balance</string>
@@ -767,7 +770,6 @@
     <string name="label_balance">allocated</string>
     <string name="label_unpaid_bills">UNPAID BILLS</string>
     <string name="label_paid_bills">PAID BILLS</string>
-    <string name="label_overdue">OVERDUE</string>
     <string name="label_debts_summary">DEBTS</string>
     <string name="label_tap_to_view">Tap to view</string>
     <string name="no_upcoming_bills_desc">Your scheduled bill reminders will appear here.</string>

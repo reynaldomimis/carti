@@ -317,7 +317,8 @@ public class ApiHelper {
                 Constants.Appwrite.COL_NOTIFICATIONS,
                 Arrays.asList(
                         Query.Companion.equal("familyId", familyId),
-                        Query.Companion.orderDesc("$createdAt")
+                        Query.Companion.orderDesc("$createdAt"),
+                        Query.Companion.limit(100)
                 ),
                 callback
         );

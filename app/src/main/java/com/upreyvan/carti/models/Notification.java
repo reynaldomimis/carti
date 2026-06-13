@@ -14,6 +14,7 @@ public class Notification {
     private String targetUserId;
     private String timestamp;
     private String status;
+    private boolean isRead;
     private String category;
     private String notes;
     private long timestampMillis;
@@ -61,8 +62,11 @@ public class Notification {
     public long getTimestampMillis() { return timestampMillis; }
     public void setTimestampMillis(long timestampMillis) { this.timestampMillis = timestampMillis; }
 
+    public boolean isRead() { return isRead; }
+    public void setRead(boolean read) { isRead = read; }
+
     public boolean isUnread() {
-        return "unread".equalsIgnoreCase(status);
+        return !isRead;
     }
 
     @Override

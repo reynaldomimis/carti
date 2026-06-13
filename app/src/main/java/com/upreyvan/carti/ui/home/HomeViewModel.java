@@ -223,7 +223,15 @@ public class HomeViewModel extends BaseViewModel {
             if (currentPlan == null || currentPlan.isEmpty()) items.add(new HomeListItem.BudgetPromptItem(null));
             if (currentBills != null && !currentBills.isEmpty()) {
                 items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.due_bills_header), null, false, null, null));
-                items.add(new HomeListItem.BillContainerItem(new ArrayList<>(currentBills), null, null));
+                
+                // Dashboard awareness: Show all UNPAID bills regardless of how far the due date is
+                List<Bill> unpaidBills = currentBills.stream()
+                        .filter(b -> !"Paid".equalsIgnoreCase(b.getStatus()))
+                        .collect(java.util.stream.Collectors.toList());
+                
+                if (!unpaidBills.isEmpty()) {
+                    items.add(new HomeListItem.BillContainerItem(unpaidBills, null, null));
+                }
             }
             if (currentPlan != null && !currentPlan.isEmpty()) {
                 items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.quick_log_title), getApplication().getString(R.string.quick_log_subtitle), false, null, null));

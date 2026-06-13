@@ -35,10 +35,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="9sp"
+            android:letterSpacing="0.02"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvBillName"
-            tools:text="Due May 20" />
+            tools:text="DUE TODAY" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvStatus"

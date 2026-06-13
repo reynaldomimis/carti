@@ -184,10 +184,29 @@ public interface HomeListItem extends BaseMultiItem {
                 GenericAdapter<Bill, ItemBillDueCardBinding> newAdapter = new GenericAdapter<>(Bill.DIFF_CALLBACK, (i, p) -> ItemBillDueCardBinding.inflate(i, p, false), (bind, bill, p, c) -> {
                     bind.tvBillName.setText(bill.getName());
                     String dateText = bill.getDate();
-                    if (dateText != null && !dateText.isEmpty()) {
+                    String status = bill.getStatus();
+                    
+                    if ("Overdue".equalsIgnoreCase(status) || "Due Today".equalsIgnoreCase(status) || "Due Tomorrow".equalsIgnoreCase(status)) {
+                        int labelRes = "Overdue".equalsIgnoreCase(status) ? R.string.label_overdue : 
+                                     ("Due Today".equalsIgnoreCase(status) ? R.string.label_due_today : R.string.label_due_tomorrow);
+                        
+                        bind.tvDueDate.setText(labelRes);
+                        bind.tvDueDate.setTextColor(ContextCompat.getColor(bind.getRoot().getContext(), R.color.status_red));
+                        bind.tvStatus.setBackgroundResource(R.drawable.bg_status_unpaid);
+                        bind.tvStatus.setTextColor(ContextCompat.getColor(bind.getRoot().getContext(), R.color.status_red));
+                    } else if (dateText != null && !dateText.isEmpty()) {
                         bind.tvDueDate.setText(bind.getRoot().getContext().getString(R.string.add_bill_at_date, dateText).replace("Add Bill for ", "Due "));
+                        bind.tvDueDate.setTextColor(ContextCompat.getColor(bind.getRoot().getContext(), R.color.text_secondary));
+                        
+                        if (bind.getRoot().getContext().getString(R.string.status_paid_label).equalsIgnoreCase(status)) {
+                            bind.tvStatus.setBackgroundResource(R.drawable.bg_status_paid);
+                            bind.tvStatus.setTextColor(ContextCompat.getColor(bind.getRoot().getContext(), R.color.green_primary));
+                        } else {
+                            bind.tvStatus.setBackgroundResource(R.drawable.bg_status_unpaid);
+                            bind.tvStatus.setTextColor(ContextCompat.getColor(bind.getRoot().getContext(), R.color.status_red));
+                        }
                     } else {
-                        bind.tvDueDate.setText(bill.getStatus());
+                        bind.tvDueDate.setText(status);
                     }
                     bind.tvStatus.setText(Utils.formatCurrency(bill.getAmount()));
                     bind.getRoot().setOnClickListener(v -> listener.onBillClick(bill));

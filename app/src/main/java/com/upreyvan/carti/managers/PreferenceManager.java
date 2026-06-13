@@ -177,28 +177,9 @@ public class PreferenceManager {
                 .apply();
     }
 
-    public void resetLastSyncTime() {
-        getPrefs().edit().remove(Constants.Keys.KEY_LAST_SYNC_TIME).apply();
-    }
-
-    public String getLastSyncTime() {
-        return getPrefs().getString(Constants.Keys.KEY_LAST_SYNC_TIME, "1970-01-01T00:00:00.000Z");
-    }
-
-    public void setBudgetPlanDismissedMonth(String month) {
-        getPrefs().edit().putString(Constants.Keys.KEY_BUDGET_PLAN_DISMISSED_MONTH, month).apply();
-    }
-
-    public String getBudgetPlanDismissedMonth() {
-        return getPrefs().getString(Constants.Keys.KEY_BUDGET_PLAN_DISMISSED_MONTH, "");
-    }
 
     public void setHasNotifications(boolean has) {
         getPrefs().edit().putBoolean(Constants.Keys.KEY_HAS_NOTIFICATIONS, has).apply();
-    }
-
-    public boolean hasNotifications() {
-        return getPrefs().getBoolean(Constants.Keys.KEY_HAS_NOTIFICATIONS, false);
     }
 
     public void setAdminId(String adminId) {

@@ -2,6 +2,7 @@ package com.upreyvan.carti.ui.notifications;
 
 import android.view.View;
 import androidx.annotation.NonNull;
+import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseAdapter;
 import com.upreyvan.carti.databinding.ItemNotificationBinding;
 import com.upreyvan.carti.models.Notification;
@@ -48,8 +49,18 @@ public class NotificationAdapter extends BaseAdapter<Notification, ItemNotificat
                   binding.layoutActions.setVisibility(isJoinRequest ? View.VISIBLE : View.GONE);
                   
                   boolean isUnread = notification.isUnread();
-                  binding.viewUnreadDot.setVisibility(isUnread ? View.VISIBLE : View.GONE);
-                  binding.getRoot().setAlpha(isUnread ? 1.0f : 0.6f);
+                  boolean isPaid = "paid".equalsIgnoreCase(notification.getStatus());
+
+                  // 1. Dot Logic (Green/Gray)
+                  binding.viewUnreadDot.setVisibility(isPaid ? View.GONE : View.VISIBLE);
+                  
+                  int dotColor = isUnread ? R.color.carti_primary_green : R.color.nav_inactive;
+                  binding.viewUnreadDot.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                          androidx.core.content.ContextCompat.getColor(binding.getRoot().getContext(), dotColor)
+                  ));
+
+                  // 2. Opacity Logic (Messenger-style)
+                  binding.getRoot().setAlpha(isUnread ? 1.0f : 0.7f);
               });
     }
 

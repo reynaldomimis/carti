@@ -24,7 +24,7 @@ public class NotificationRepository {
     private static NotificationRepository instance;
     private final RealtimeRepository realtimeRepo;
     private final ApiHelper apiHelper;
-    private MediatorLiveData<List<Bill>> billsLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<List<Bill>> billsLiveData = new MediatorLiveData<>();
     private final List<Bill> currentBills = new ArrayList<>();
     private final MediatorLiveData<List<Notification>> notificationsLiveData = new MediatorLiveData<>();
     private final List<Notification> currentNotifications = new ArrayList<>();
@@ -69,15 +69,25 @@ public class NotificationRepository {
                 if (n != null) {
                     currentNotifications.add(0, n);
                     
-                    // Standard Software Engineering logic: 
-                    // Skip system notification if user is already viewing the notifications list
-                    if (com.upreyvan.carti.utils.AppLifecycleTracker.isNotificationsActive()) return;
+                    String type = n.getType();
+                    boolean isUrgent = "bill".equalsIgnoreCase(type) || "announcement".equalsIgnoreCase(type);
 
-                    // Show system notification for new items
+                    // Skip tray alert ONLY for non-urgent items if user is already on the notifications screen
+                    if (!isUrgent && com.upreyvan.carti.utils.AppLifecycleTracker.isNotificationsActive()) return;
+
+                    // If user is in chat, ignore social/chat alerts, but ALWAYS show Bill/Announcement alerts
+                    if (!isUrgent && com.upreyvan.carti.utils.AppLifecycleTracker.isChatActive()) return;
+
+                    // Messenger-style: Only notify if status is unread
+                    if (!n.isUnread()) return;
+
+                    boolean isChatNotif = "chat".equalsIgnoreCase(type) || "social".equalsIgnoreCase(type);
+                    // Show system notification
                     com.upreyvan.carti.utils.NotificationHelper.showNotification(
                         realtimeRepo.getContext(), 
                         n.getTitle(), 
-                        n.getContent()
+                        n.getContent(),
+                        isChatNotif
                     );
                 }
             }
@@ -136,13 +146,16 @@ public class NotificationRepository {
     }
 
     public void markAsRead(String notificationId) {
-        apiHelper.markNotificationRead(notificationId, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
+        Map<String, Object> data = new java.util.HashMap<>();
+        data.put("isRead", true);
+        
+        updateNotification(notificationId, data, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 synchronized (currentNotifications) {
                     for (Notification n : currentNotifications) {
                         if (n.getId().equals(notificationId)) {
-                            n.setStatus("read");
+                            n.setRead(true);
                             break;
                         }
                     }
@@ -162,7 +175,7 @@ public class NotificationRepository {
             public void onSuccess(Map<String, Object> result) {
                 synchronized (currentNotifications) {
                     for (Notification n : currentNotifications) {
-                        n.setStatus("read");
+                        n.setRead(true);
                     }
                     notificationsLiveData.postValue(new ArrayList<>(currentNotifications));
                     updateUnreadCount();
@@ -189,40 +202,45 @@ public class NotificationRepository {
     }
 
     public void updateNotification(String id, Map<String, Object> data, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        // Use gateway (Appwrite Function) for security as requested
         apiHelper.updateNotification(id, data, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
-            @Override public void onSuccess(Map<String, Object> result) {
+            @Override
+            public void onSuccess(Map<String, Object> result) {
                 refreshNotifications();
+                refreshBills(pref.getFamilyId());
                 if (callback != null) callback.onSuccess(result);
             }
-            @Override public void onError(Throwable error) { if (callback != null) callback.onError(error); }
+
+            @Override
+            public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
+        });
+    }
+
+    public void refreshBills(String familyId) {
+        apiHelper.getNotifications(familyId, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
+            @Override
+            public void onSuccess(DocumentList<Map<String, Object>> result) {
+                synchronized (currentBills) {
+                    currentBills.clear();
+                    if (result != null && result.getDocuments() != null) {
+                        for (Document<Map<String, Object>> doc : result.getDocuments()) {
+                            Bill bill = mapToBill(doc.getId(), doc.getData());
+                            if (bill != null) currentBills.add(bill);
+                        }
+                    }
+                    billsLiveData.postValue(new ArrayList<>(currentBills));
+                }
+            }
+            @Override public void onError(Throwable error) {}
         });
     }
 
     public LiveData<List<Bill>> getBills(String familyId) {
         if (billsLiveData.getValue() == null || !familyId.equals(lastFamilyId)) {
             lastFamilyId = familyId;
-            currentBills.clear();
-            
-            apiHelper.getNotifications(familyId, new AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>>() {
-                @Override
-                public void onSuccess(DocumentList<Map<String, Object>> result) {
-                    synchronized (currentBills) {
-                        currentBills.clear();
-                        if (result != null && result.getDocuments() != null) {
-                            for (Document<Map<String, Object>> doc : result.getDocuments()) {
-                                Bill bill = mapToBill(doc.getId(), doc.getData());
-                                if (bill != null) currentBills.add(bill);
-                            }
-                        }
-                        billsLiveData.postValue(new ArrayList<>(currentBills));
-                    }
-                }
-
-                @Override
-                public void onError(Throwable error) {
-                    billsLiveData.postValue(new ArrayList<>(currentBills));
-                }
-            });
+            refreshBills(familyId);
         }
         return billsLiveData;
     }
@@ -237,6 +255,11 @@ public class NotificationRepository {
         n.setFamilyId((String) data.get("familyId"));
         n.setTargetUserId((String) data.get("targetUserId"));
         n.setStatus((String) data.get("status"));
+        
+        Object isReadObj = data.get("isRead");
+        if (isReadObj instanceof Boolean) n.setRead((Boolean) isReadObj);
+        else if (isReadObj instanceof String) n.setRead(Boolean.parseBoolean((String) isReadObj));
+
         n.setCategory((String) data.get("category"));
         n.setNotes((String) data.get("notes"));
         
@@ -255,15 +278,23 @@ public class NotificationRepository {
         if (data == null) return null;
         
         String title = (String) data.get("title");
-        if (title != null && title.toUpperCase().startsWith("BILL: ")) {
-            String name = title.substring(6).trim();
+        if (title == null) return null;
+
+        String upperTitle = title.toUpperCase();
+        boolean isBill = upperTitle.startsWith("BILL: ") || 
+                        upperTitle.startsWith("OVERDUE: ") || 
+                        upperTitle.startsWith("DUE TODAY: ") || 
+                        upperTitle.startsWith("DUE TOMORROW: ");
+
+        if (isBill) {
+            String name = title.substring(title.indexOf(":") + 1).trim();
             String content = (String) data.get("content");
             String date = "";
             
+            // Try to extract date from content or timestamp
             if (content != null && content.toLowerCase().contains("due on ")) {
                 int index = content.toLowerCase().lastIndexOf("due on ");
                 String rawDatePart = content.substring(index + 7).trim();
-                // Extract only the date part before the period or newline to avoid including notes
                 if (rawDatePart.contains(".")) {
                     date = rawDatePart.substring(0, rawDatePart.indexOf(".")).trim();
                 } else if (rawDatePart.contains("\n")) {
@@ -271,7 +302,10 @@ public class NotificationRepository {
                 } else {
                     date = rawDatePart;
                 }
-            } else {
+            }
+            
+            // Fallback to timestamp if date extraction failed
+            if (date.isEmpty()) {
                 Object timestamp = data.get("timestamp");
                 if (timestamp != null) date = Utils.formatTimestamp(timestamp.toString());
                 else {
@@ -290,17 +324,119 @@ public class NotificationRepository {
             String category = (String) data.get("category");
             if (category == null) category = "Bill";
 
+            // Check database status first
+            String dbStatus = (String) data.get("status");
+            String statusLabel = "Upcoming";
+            int iconRes = R.drawable.ic_calendar;
+
+            if ("PAID".equalsIgnoreCase(dbStatus)) {
+                statusLabel = "Paid";
+            } else if (!date.isEmpty()) {
+                try {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault());
+                    java.util.Date dueDate = sdf.parse(date);
+                    if (dueDate != null) {
+                        java.util.Calendar now = java.util.Calendar.getInstance();
+                        now.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                        now.set(java.util.Calendar.MINUTE, 0);
+                        now.set(java.util.Calendar.SECOND, 0);
+                        now.set(java.util.Calendar.MILLISECOND, 0);
+
+                        java.util.Calendar due = java.util.Calendar.getInstance();
+                        due.setTime(dueDate);
+                        due.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                        due.set(java.util.Calendar.MINUTE, 0);
+                        due.set(java.util.Calendar.SECOND, 0);
+                        due.set(java.util.Calendar.MILLISECOND, 0);
+
+                        if (due.before(now)) {
+                            statusLabel = "Overdue";
+                        } else if (due.equals(now)) {
+                            statusLabel = "Due Today";
+                            iconRes = R.drawable.ic_bell;
+                        } else {
+                            java.util.Calendar tomorrow = (java.util.Calendar) now.clone();
+                            tomorrow.add(java.util.Calendar.DAY_OF_YEAR, 1);
+                            if (due.equals(tomorrow)) {
+                                statusLabel = "Due Tomorrow";
+                                iconRes = R.drawable.ic_bell;
+                            }
+                        }
+
+                        // Auto-update server if status changed and not yet updated
+                        checkAndAutoUpdateBillStatus(id, title, content, statusLabel, name);
+                    }
+                } catch (Exception ignored) {}
+            }
+
             return new Bill(
                     id,
                     (String) data.get("familyId"),
                     name,
                     date,
-                    "Upcoming",
-                    R.drawable.ic_calendar,
+                    statusLabel,
+                    iconRes,
                     amount,
                     category
             );
         }
         return null;
+    }
+
+    private void checkAndAutoUpdateBillStatus(String id, String title, String content, String status, String name) {
+        boolean isOverdue = "Overdue".equals(status);
+        boolean isDueToday = "Due Today".equals(status);
+        boolean isDueTomorrow = "Due Tomorrow".equals(status);
+        
+        if (!isOverdue && !isDueToday && !isDueTomorrow) return;
+
+        String prefix = isOverdue ? "OVERDUE: " : (isDueToday ? "DUE TODAY: " : "DUE TOMORROW: ");
+        
+        // Check if title already has the correct prefix to avoid redundant updates
+        if (title.startsWith(prefix)) return;
+
+        // Messenger-style check: Only update server once per transition per device 
+        String prefKey = "notified_" + id + "_" + status;
+        if (pref.getContext().getSharedPreferences("BillNotifs", Context.MODE_PRIVATE).getBoolean(prefKey, false)) return;
+
+        String icon = isOverdue ? "⚠️ " : "🔔 ";
+        String newTitle = prefix + name;
+        
+        // Generate descriptive content based on status
+        String descriptiveSentence;
+        if (isOverdue) {
+            descriptiveSentence = "This bill for " + name + " is now OVERDUE. Please settle it to avoid extra charges.";
+        } else if (isDueToday) {
+            descriptiveSentence = "Friendly reminder: Your " + name + " bill is due TODAY. Don't forget to pay!";
+        } else {
+            descriptiveSentence = "Heads up! Your " + name + " bill is due TOMORROW. Please prepare your payment.";
+        }
+
+        // Keep any existing notes from the original content
+        String existingNotes = "";
+        if (content != null) {
+            if (content.contains("Notes: ")) {
+                existingNotes = content.substring(content.indexOf("Notes: "));
+            } else if (content.contains("Details: ")) {
+                existingNotes = content.substring(content.indexOf("Details: "));
+            }
+        }
+
+        String newContent = icon + descriptiveSentence + (existingNotes.isEmpty() ? "" : "\n\n" + existingNotes);
+        
+        java.util.Map<String, Object> update = new java.util.HashMap<>();
+        update.put("title", newTitle);
+        update.put("content", newContent);
+        update.put("isRead", false); 
+        update.put("status", isOverdue ? "OVERDUE" : (isDueToday ? "DUE_TODAY" : "DUE_TOMORROW"));
+
+        updateNotification(id, update, new AppwriteManager.AppwriteCallback<>() {
+            @Override
+            public void onSuccess(java.util.Map<String, Object> result) {
+                pref.getContext().getSharedPreferences("BillNotifs", Context.MODE_PRIVATE)
+                    .edit().putBoolean(prefKey, true).apply();
+            }
+            @Override public void onError(Throwable error) {}
+        });
     }
 }

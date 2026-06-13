@@ -23,11 +23,8 @@ public class NotificationHelper {
             return;
         }
 
-        // 2. Standard Software Engineering logic: 
-        // Skip system notifications if the app is currently open (foreground)
-        if (com.upreyvan.carti.utils.AppLifecycleTracker.isAppInForeground()) {
-            return;
-        }
+        // Granular logic is now handled in the Repository/Tracker 
+        // to allow notifications even when app is open (e.g. while on Home screen)
 
         createNotificationChannel(context);
 
@@ -55,6 +52,9 @@ public class NotificationHelper {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
             int notifId = isChat ? 1001 : 1002;
             notificationManager.notify(notifId, builder.build());
+            
+            // Play sound for all notifications (Foreground & Background)
+            playNotificationSound(context);
         } catch (SecurityException e) {
             e.printStackTrace();
         }
@@ -69,7 +69,7 @@ public class NotificationHelper {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID, 
                     CHANNEL_NAME, 
-                    NotificationManager.IMPORTANCE_HIGH // High importance for sound/popup
+                    NotificationManager.IMPORTANCE_HIGH
             );
             channel.setDescription(CHANNEL_DESC);
             channel.enableLights(true);
