@@ -47,19 +47,25 @@ public class RealtimeManager {
     }
 
     public synchronized void startListening() {
+        if (subscription != null) return;
+        
         String familyId = pref.getFamilyId();
-        if (familyId == null || familyId.isEmpty() || subscription != null) return;
+        java.util.List<String> channelList = new java.util.ArrayList<>();
+        
+        // Essential channels for all users (including those onboarding)
+        channelList.add(RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_USERS));
+        
+        // Channels that require a familyId
+        if (familyId != null && !familyId.isEmpty()) {
+            channelList.add(RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_TRANSACTIONS));
+            channelList.add(RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_NOTIFICATIONS));
+            channelList.add(RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_MESSAGES));
+            channelList.add(RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_COMMENTS));
+            channelList.add(RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_LIKES));
+            channelList.add(RealtimeHelper.getDocumentChannel(Constants.Appwrite.COL_FAMILIES, familyId));
+        }
 
-        String[] channels = {
-                RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_TRANSACTIONS),
-                RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_NOTIFICATIONS),
-                RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_USERS),
-                RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_MESSAGES),
-                RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_COMMENTS),
-                RealtimeHelper.getCollectionChannel(Constants.Appwrite.COL_LIKES),
-                RealtimeHelper.getDocumentChannel(Constants.Appwrite.COL_FAMILIES, familyId)
-        };
-
+        String[] channels = channelList.toArray(new String[0]);
         subscription = realtimeHelper.subscribe(channels, event -> {
             Map<String, Object> payload = RealtimeHelper.getPayload(event);
             Collection<String> events = event.getEvents();
@@ -73,9 +79,13 @@ public class RealtimeManager {
     }
 
     private boolean belongsToCurrentFamily(String path, Map<String, Object> payload, String familyId) {
-        boolean isGlobal = path.contains(Constants.Appwrite.COL_FAMILIES)
-                || path.contains(Constants.Appwrite.COL_USERS);
+        // User updates are personalized or global, ignore family check during onboarding
+        if (path.contains(Constants.Appwrite.COL_USERS)) return true;
+        
+        boolean isGlobal = path.contains(Constants.Appwrite.COL_FAMILIES);
         if (isGlobal) return true;
+
+        if (familyId == null || familyId.isEmpty()) return false;
 
         Object payloadFamilyId = payload.get("familyId");
         return familyId.equals(String.valueOf(payloadFamilyId));

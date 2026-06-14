@@ -42,6 +42,10 @@ public class NotificationViewModel extends BaseViewModel {
         notificationRepo.markAllAsRead();
     }
 
+    public void updateNotification(String id, java.util.Map<String, Object> data) {
+        notificationRepo.updateNotification(id, data, null);
+    }
+
     public void deleteNotification(String id) {
         setLoading(true);
         notificationRepo.deleteNotification(id, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Object>() {
@@ -65,6 +69,7 @@ public class NotificationViewModel extends BaseViewModel {
         setLoading(true);
         familyRepo.approveJoinRequest(userId, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override public void onSuccess(Map<String, Object> result) {
+                setLoading(false);
                 actionSuccess.postValue("Member approved successfully!");
                 loadAll();
             }
@@ -79,6 +84,7 @@ public class NotificationViewModel extends BaseViewModel {
         setLoading(true);
         familyRepo.rejectJoinRequest(userId, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Map<String, Object>>() {
             @Override public void onSuccess(Map<String, Object> result) {
+                setLoading(false);
                 actionSuccess.postValue("Join request rejected.");
                 loadAll();
             }

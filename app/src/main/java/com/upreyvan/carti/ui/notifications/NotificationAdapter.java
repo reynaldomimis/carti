@@ -46,12 +46,26 @@ public class NotificationAdapter extends BaseAdapter<Notification, ItemNotificat
                   boolean isJoinRequest = "family".equalsIgnoreCase(notification.getType()) && 
                                         "New Join Request".equalsIgnoreCase(notification.getTitle());
                   
-                  binding.layoutActions.setVisibility(isJoinRequest ? View.VISIBLE : View.GONE);
+                  String status = notification.getStatus();
+                  if (isJoinRequest && notification.isRead()) {
+                      if ("APPROVED".equalsIgnoreCase(status)) {
+                          binding.tvDescription.setText("Request Approved");
+                          binding.tvDescription.setTextColor(androidx.core.content.ContextCompat.getColor(binding.getRoot().getContext(), R.color.carti_primary_green));
+                      } else if ("DECLINED".equalsIgnoreCase(status)) {
+                          binding.tvDescription.setText("Declined Request");
+                          binding.tvDescription.setTextColor(androidx.core.content.ContextCompat.getColor(binding.getRoot().getContext(), R.color.status_red));
+                      }
+                  } else {
+                      binding.tvDescription.setTextColor(androidx.core.content.ContextCompat.getColor(binding.getRoot().getContext(), R.color.text_secondary));
+                  }
+
+                  // Hide buttons if already handled (isRead = true)
+                  binding.layoutActions.setVisibility((isJoinRequest && !notification.isRead()) ? View.VISIBLE : View.GONE);
                   
                   boolean isUnread = notification.isUnread();
-                  boolean isPaid = "paid".equalsIgnoreCase(notification.getStatus());
+                  boolean isPaid = "PAID".equalsIgnoreCase(notification.getStatus());
 
-                  // 1. Dot Logic (Green/Gray)
+                  // 1. Dot Logic (Green/Gray) - Hides completely if PAID
                   binding.viewUnreadDot.setVisibility(isPaid ? View.GONE : View.VISIBLE);
                   
                   int dotColor = isUnread ? R.color.carti_primary_green : R.color.nav_inactive;

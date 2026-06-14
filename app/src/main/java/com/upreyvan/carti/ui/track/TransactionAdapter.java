@@ -177,7 +177,6 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
             AvatarHelper.loadUserAvatar(binding.getRoot().getContext(), binding.ivAvatar, username, itemWithUser.getUserAvatarUrl());
 
             String myReaction = itemWithUser.getMyReaction();
-            String lastEmoji = item.getLastEmoji();
 
             if (myReaction != null && !myReaction.isEmpty()) {
                 binding.tvBtnLikeIcon.setText(myReaction);
@@ -187,7 +186,7 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
                 binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.icon_electricity));
             }
 
-            binding.tvReactionEmoji.setText(myReaction != null && !myReaction.isEmpty() ? myReaction : (lastEmoji != null && !lastEmoji.isEmpty() ? lastEmoji : "👍"));
+            binding.tvReactionEmoji.setText(itemWithUser.getDisplayEmoji());
             
             int likesCount = item.getLikesCount();
             int commentCount = item.getCommentCount();

@@ -76,15 +76,13 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
         viewModel.getUserStatus().observe(getViewLifecycleOwner(), userDoc -> {
             if (userDoc == null) return;
             
-            String familyId = String.valueOf(userDoc.get("familyId"));
-            String pendingFamilyId = String.valueOf(userDoc.get("pendingFamilyId"));
+            String familyId = com.upreyvan.carti.utils.ValueHelper.toStr(userDoc.get("familyId"));
+            String pendingFamilyId = com.upreyvan.carti.utils.ValueHelper.toStr(userDoc.get("pendingFamilyId"));
 
-            if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
+            if (!familyId.isEmpty()) {
                 handleApproved(userDoc);
-            } else if ("declined".equals(pendingFamilyId)) {
+            } else if (pendingFamilyId.isEmpty() || "declined".equals(pendingFamilyId)) {
                 handleDeclined();
-            } else {
-                showToast("Still pending approval...", com.upreyvan.carti.utils.UiHelper.Status.INFO);
             }
         });
 
@@ -115,15 +113,19 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
             handleDeclined();
         } else if (isWaiting) {
             getBinding().tvTitle.setText("Waiting for Approval");
-            getBinding().tvDescription.setText("Ang iyong request ay naisend na. Hintayin ang approval ng Family Head.");
+            getBinding().tvDescription.setText("Your request has been sent. Please wait for the Family Head's approval.");
             getBinding().layoutInviteCode.setVisibility(View.GONE);
-            getBinding().btnStatus.setText("Check Status");
-            getBinding().btnStatus.setOnClickListener(v -> viewModel.fetchUserStatus());
+            
+            // Hide button while waiting as requested, realtime listener will handle the transition
+            getBinding().btnStatus.setVisibility(View.GONE);
+            getBinding().btnCopy.setVisibility(View.GONE);
+
+            RealtimeRepository.getInstance(requireContext()).startListening();
             startRealtimeListener();
         } else {
             String inviteCode = args.getString(ARG_INVITE_CODE);
             getBinding().tvTitle.setText("Family Created!");
-            getBinding().tvDescription.setText("I-share ang code na ito sa iyong family members.");
+            getBinding().tvDescription.setText("Share this code with your family members.");
             getBinding().tvInviteCode.setText(inviteCode);
             getBinding().layoutInviteCode.setVisibility(View.VISIBLE);
             getBinding().btnStatus.setText("Go to Home");
@@ -138,12 +140,18 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
 
         RealtimeRepository.getInstance(requireContext()).getUserUpdateStream().observe(getViewLifecycleOwner(), payload -> {
             if (payload != null) {
-                String familyId = String.valueOf(payload.get("familyId"));
-                String pendingFamilyId = String.valueOf(payload.get("pendingFamilyId"));
+                // Check if the update is for the current user
+                String updateUserId = com.upreyvan.carti.utils.ValueHelper.toStr(payload.get("$id"));
+                if (!userId.equals(updateUserId)) return;
 
-                if (familyId != null && !familyId.isEmpty() && !"null".equals(familyId)) {
+                String familyId = com.upreyvan.carti.utils.ValueHelper.toStr(payload.get("familyId"));
+                String pendingFamilyId = com.upreyvan.carti.utils.ValueHelper.toStr(payload.get("pendingFamilyId"));
+
+                if (!familyId.isEmpty()) {
+                    // Approved! Refresh user status to trigger handleApproved
                     viewModel.fetchUserStatus();
-                } else if ("declined".equals(pendingFamilyId)) {
+                } else if (pendingFamilyId.isEmpty() || "declined".equals(pendingFamilyId)) {
+                    // Declined or reset - show declined screen
                     handleDeclined();
                 }
             }
@@ -156,7 +164,9 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
         
         getBinding().tvTitle.setText("Welcome to the Family!");
         getBinding().tvDescription.setText("Your request has been approved!");
+        
         getBinding().btnStatus.setText("Go to Home");
+        getBinding().btnStatus.setVisibility(View.VISIBLE);
         getBinding().btnStatus.setOnClickListener(v -> finishOnboarding());
         
         new android.os.Handler().postDelayed(() -> {
@@ -168,7 +178,9 @@ public class OnboardingStatusFragment extends BaseFragment<FragmentOnboardingSta
         getBinding().tvTitle.setText("Request Declined");
         getBinding().tvDescription.setText("We're sorry, but your request was declined. You can try joining another family or create your own.");
         getBinding().layoutInviteCode.setVisibility(View.GONE);
+        
         getBinding().btnStatus.setText("Try New Code");
+        getBinding().btnStatus.setVisibility(View.VISIBLE);
         getBinding().btnStatus.setOnClickListener(v -> {
             PreferenceManager pref = PreferenceManager.getInstance(requireContext());
             pref.setOnboardingFinished(false);

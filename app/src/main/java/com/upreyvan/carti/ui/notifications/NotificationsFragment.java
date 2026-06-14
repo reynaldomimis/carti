@@ -114,11 +114,19 @@ public class NotificationsFragment extends BaseFragment<FragmentNotificationsBin
         adapter = new NotificationAdapter();
         adapter.setOnAcceptListener(notification -> {
             viewModel.approveMember(notification.getCategory());
-            viewModel.markAsRead(notification.getId());
+            
+            java.util.Map<String, Object> update = new java.util.HashMap<>();
+            update.put("isRead", true);
+            update.put("status", "APPROVED");
+            viewModel.updateNotification(notification.getId(), update);
         });
         adapter.setOnDenyListener(notification -> {
             viewModel.rejectMember(notification.getCategory());
-            viewModel.markAsRead(notification.getId());
+            
+            java.util.Map<String, Object> update = new java.util.HashMap<>();
+            update.put("isRead", true);
+            update.put("status", "DECLINED");
+            viewModel.updateNotification(notification.getId(), update);
         });
         adapter.setOnItemClickListener(notification -> {
             if (notification.isUnread()) {

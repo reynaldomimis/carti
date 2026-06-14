@@ -98,6 +98,14 @@ public class TransactionWithUser {
         return sb.toString();
     }
 
+    public String getDisplayEmoji() {
+        if (myReaction != null && !myReaction.isEmpty()) return myReaction;
+        if (reactions != null && !reactions.isEmpty()) {
+            return reactions.get(reactions.size() - 1).getEmojiType();
+        }
+        return transaction != null && transaction.getLastEmoji() != null ? transaction.getLastEmoji() : "👍";
+    }
+
     public TransactionWithUser copy() {
         TransactionWithUser copy = new TransactionWithUser();
         copy.transaction = this.transaction != null ? this.transaction.copy() : null;

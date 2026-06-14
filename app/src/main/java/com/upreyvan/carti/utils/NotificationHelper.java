@@ -52,9 +52,6 @@ public class NotificationHelper {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
             int notifId = isChat ? 1001 : 1002;
             notificationManager.notify(notifId, builder.build());
-            
-            // Play sound for all notifications (Foreground & Background)
-            playNotificationSound(context);
         } catch (SecurityException e) {
             e.printStackTrace();
         }

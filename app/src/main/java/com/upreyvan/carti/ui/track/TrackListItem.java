@@ -362,7 +362,7 @@ public interface TrackListItem extends BaseMultiItem {
                 if (likesCount > 0) {
                     b.tvReactionEmoji.setVisibility(View.VISIBLE);
                     b.tvLikesCount.setVisibility(View.VISIBLE);
-                    b.tvReactionEmoji.setText(myReaction != null && !myReaction.isEmpty() ? myReaction : "👍");
+                    b.tvReactionEmoji.setText(transaction.getDisplayEmoji());
                     
                     if (likesCount == 1 && rNames != null && !rNames.isEmpty()) {
                         b.tvLikesCount.setText(rNames);

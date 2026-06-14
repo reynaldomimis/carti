@@ -31,6 +31,7 @@ public class NotificationRepository {
     private final MutableLiveData<Integer> unreadCount = new MutableLiveData<>(0);
     private final PreferenceManager pref;
     private String lastFamilyId = "";
+    private final java.util.Set<String> pendingStatusUpdates = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
 
     private NotificationRepository(Context context) {
         this.realtimeRepo = RealtimeRepository.getInstance(context);
@@ -80,6 +81,14 @@ public class NotificationRepository {
 
                     // Messenger-style: Only notify if status is unread
                     if (!n.isUnread()) return;
+
+                    // Performance & Spam Protection: 
+                    // Only show system tray notifications for events that happened in the last 2 minutes
+                    // to prevent "notification bomb" when the app connects and receives historical unread items.
+                    long now = System.currentTimeMillis();
+                    if (now - n.getTimestampMillis() > 120000) { // 2 minutes
+                        return;
+                    }
 
                     boolean isChatNotif = "chat".equalsIgnoreCase(type) || "social".equalsIgnoreCase(type);
                     // Show system notification
@@ -294,11 +303,13 @@ public class NotificationRepository {
         n.setNotes((String) data.get("notes"));
         
         String tsStr = (String) data.get("timestamp");
-        n.setTimestamp(tsStr);
-        if (tsStr != null) n.setTimestampMillis(Utils.getMillisFromIso(tsStr));
-        else {
-            String createdAt = (String) data.get("$createdAt");
-            if (createdAt != null) n.setTimestampMillis(Utils.getMillisFromIso(createdAt));
+        if (tsStr == null) tsStr = (String) data.get("$createdAt");
+        
+        if (tsStr != null) {
+            n.setTimestamp(tsStr);
+            n.setTimestampMillis(Utils.getMillisFromIso(tsStr));
+        } else {
+            n.setTimestampMillis(System.currentTimeMillis());
         }
         
         return n;
@@ -420,6 +431,9 @@ public class NotificationRepository {
         
         if (!isOverdue && !isDueToday && !isDueTomorrow) return;
 
+        // Prevent multiple simultaneous update requests for the same notification
+        if (pendingStatusUpdates.contains(id)) return;
+
         String prefix = isOverdue ? "OVERDUE: " : (isDueToday ? "DUE TODAY: " : "DUE TOMORROW: ");
         
         // Check if title already has the correct prefix to avoid redundant updates
@@ -428,6 +442,8 @@ public class NotificationRepository {
         // Messenger-style check: Only update server once per transition per device 
         String prefKey = "notified_" + id + "_" + status;
         if (pref.getContext().getSharedPreferences("BillNotifs", Context.MODE_PRIVATE).getBoolean(prefKey, false)) return;
+
+        pendingStatusUpdates.add(id);
 
         String icon = isOverdue ? "⚠️ " : "🔔 ";
         String newTitle = prefix + name;
@@ -463,10 +479,13 @@ public class NotificationRepository {
         updateNotification(id, update, new AppwriteManager.AppwriteCallback<>() {
             @Override
             public void onSuccess(java.util.Map<String, Object> result) {
+                pendingStatusUpdates.remove(id);
                 pref.getContext().getSharedPreferences("BillNotifs", Context.MODE_PRIVATE)
                     .edit().putBoolean(prefKey, true).apply();
             }
-            @Override public void onError(Throwable error) {}
+            @Override public void onError(Throwable error) {
+                pendingStatusUpdates.remove(id);
+            }
         });
     }
 }

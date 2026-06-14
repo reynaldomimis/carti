@@ -398,7 +398,7 @@ public interface HomeListItem extends BaseMultiItem {
                 if (likesCount > 0) {
                     b.tvReactionEmoji.setVisibility(View.VISIBLE);
                     b.tvLikesCount.setVisibility(View.VISIBLE);
-                    b.tvReactionEmoji.setText(myReaction != null && !myReaction.isEmpty() ? myReaction : "👍");
+                    b.tvReactionEmoji.setText(transaction.getDisplayEmoji());
                     
                     if (likesCount == 1 && rNames != null && !rNames.isEmpty()) {
                         b.tvLikesCount.setText(rNames);
@@ -484,10 +484,12 @@ public interface HomeListItem extends BaseMultiItem {
                     ItemTransactionBinding vb = (ItemTransactionBinding) binding;
                     Transaction t = transaction.getTransaction();
                     
-                    if (b.containsKey("likes") || b.containsKey("reactorNames")) {
+                    if (b.containsKey("myReaction") || b.containsKey("likes") || b.containsKey("reactorNames")) {
                         int likes = b.containsKey("likes") ? b.getInt("likes") : t.getLikesCount();
                         String names = b.containsKey("reactorNames") ? b.getString("reactorNames") : transaction.getReactorNames();
                         
+                        vb.tvReactionEmoji.setText(transaction.getDisplayEmoji());
+
                         if (likes == 1 && names != null && !names.isEmpty()) {
                             vb.tvLikesCount.setText(names);
                         } else {
@@ -498,18 +500,6 @@ public interface HomeListItem extends BaseMultiItem {
                         vb.tvReactionEmoji.setVisibility(likes > 0 ? View.VISIBLE : View.GONE);
                         vb.layoutLikesSummaryClickable.setVisibility(likes > 0 || t.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
                         vb.divider.setVisibility(vb.layoutLikesSummaryClickable.getVisibility());
-                    }
-                    
-                    if (b.containsKey("myReaction")) {
-                        String reaction = b.getString("myReaction");
-                        boolean hasReac = reaction != null && !reaction.isEmpty();
-
-                        vb.tvBtnLikeIcon.setText(hasReac ? reaction : "👍");
-                        vb.tvBtnLikeText.setTextColor(ContextCompat.getColor(vb.getRoot().getContext(), 
-                            hasReac ? R.color.carti_primary_green : R.color.text_secondary));
-                        
-                        vb.tvReactionEmoji.setText(hasReac ? reaction : "👍");
-                        vb.tvReactionEmoji.setVisibility(t.getLikesCount() > 0 ? View.VISIBLE : View.GONE);
                     }
 
                     if (b.containsKey("comments")) {

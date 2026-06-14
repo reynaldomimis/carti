@@ -132,17 +132,20 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         notificationsFragment = new com.upreyvan.carti.ui.notifications.NotificationsFragment();
 
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment_container, homeFragment, "1")
-                .add(R.id.fragment_container, trackFragment, "2").hide(trackFragment)
-                .add(R.id.fragment_container, planFragment, "3").hide(planFragment)
-                .add(R.id.fragment_container, chatFragment, "4").hide(chatFragment)
-                .add(R.id.fragment_container, profileFragment, "5").hide(profileFragment)
-                .add(R.id.fragment_container, notificationsFragment, "6").hide(notificationsFragment)
+                .add(R.id.fragment_container, homeFragment, String.valueOf(Constants.Navigation.HOME))
+                .add(R.id.fragment_container, trackFragment, String.valueOf(Constants.Navigation.TRACK)).hide(trackFragment)
+                .add(R.id.fragment_container, planFragment, String.valueOf(Constants.Navigation.PLAN)).hide(planFragment)
+                .add(R.id.fragment_container, chatFragment, String.valueOf(Constants.Navigation.CHAT)).hide(chatFragment)
+                .add(R.id.fragment_container, profileFragment, String.valueOf(Constants.Navigation.PROFILE)).hide(profileFragment)
+                .add(R.id.fragment_container, notificationsFragment, String.valueOf(Constants.Navigation.NOTIFICATIONS)).hide(notificationsFragment)
                 .commit();
 
         activeFragment = homeFragment;
         com.upreyvan.carti.utils.AppLifecycleTracker.setActiveFragment(activeFragment);
         setTabActive(getBinding().tabHome);
+
+        // Ensure fragments are attached before handling intents
+        getSupportFragmentManager().executePendingTransactions();
 
         TransactionRepository.getInstance(this)
                 .getSyncingStatus().observe(this, isSyncing -> {
@@ -246,6 +249,11 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         }
 
         if (target != null && target != activeFragment) {
+            // Safety check for activeFragment to prevent crash if not yet initialized
+            if (activeFragment == null) {
+                activeFragment = homeFragment;
+            }
+
             getSupportFragmentManager().popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
@@ -263,11 +271,16 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
 
             transaction.setCustomAnimations(enterAnim, exitAnim);
 
-            if (!target.isAdded()) {
-                transaction.add(R.id.fragment_container, target);
+            // Important: Check if the fragment is already added to avoid "Fragment already added" crash
+            if (!target.isAdded() && getSupportFragmentManager().findFragmentByTag(String.valueOf(id)) == null) {
+                transaction.add(R.id.fragment_container, target, String.valueOf(id));
             }
 
-            transaction.hide(activeFragment).show(target).commit();
+            if (activeFragment != null && activeFragment.isAdded()) {
+                transaction.hide(activeFragment);
+            }
+            
+            transaction.show(target).commit();
             activeFragment = target;
             com.upreyvan.carti.utils.AppLifecycleTracker.setActiveFragment(activeFragment);
             setBottomNavVisibility(showBottomNav);
