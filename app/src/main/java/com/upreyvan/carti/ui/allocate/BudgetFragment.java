@@ -93,6 +93,12 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
 
     private void observeViewModel() {
         viewModel.getBudgets().observe(getViewLifecycleOwner(), budgets -> {
+            if (getBinding().shimmerBudgets.isShimmerStarted()) {
+                getBinding().shimmerBudgets.stopShimmer();
+                getBinding().shimmerBudgets.setVisibility(View.GONE);
+                getBinding().rvBudgets.setVisibility(View.VISIBLE);
+            }
+
             fullBudgets = new ArrayList<>(budgets);
             Utils.sortAlphabetically(fullBudgets, BudgetCategoryItem::getCategoryName);
             updateBudgetList();

@@ -95,29 +95,44 @@ public class AddGoalBottomSheetFragment extends BaseBottomSheetFragment<LayoutBo
         getBinding().etTargetAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etTargetAmount));
         getBinding().etTargetAmount.addTextChangedListener(validationWatcher);
         getBinding().etSavedAmount.addTextChangedListener(new com.upreyvan.carti.utils.AmountTextWatcher(getBinding().etSavedAmount));
+        getBinding().etSavedAmount.addTextChangedListener(validationWatcher);
         getBinding().etTargetDate.addTextChangedListener(validationWatcher);
     }
 
     private void validateForm() {
         String name = getBinding().etGoalName.getText().toString().trim();
         String targetStr = getBinding().etTargetAmount.getText().toString().trim();
+        String savedStr = getBinding().etSavedAmount.getText().toString().trim();
         String date = getBinding().etTargetDate.getText().toString().trim();
 
         double target = com.upreyvan.carti.utils.StringHelper.parseDouble(targetStr);
-        boolean isAmountEntered = !targetStr.isEmpty();
+        double saved = com.upreyvan.carti.utils.StringHelper.parseDouble(savedStr);
         
-        boolean isValid = !name.isEmpty() && isAmountEntered && target > 0 && !date.isEmpty();
+        boolean isTargetEntered = !targetStr.isEmpty();
+        
+        // New Discrepancy Prevention: Target must be >= Initial Savings
+        boolean isAmountValid = isTargetEntered && target > 0 && target >= saved;
+        
+        boolean isValid = !name.isEmpty() && isAmountValid && !date.isEmpty();
         boolean isLoading = viewModel.getIsLoading().getValue() != null && viewModel.getIsLoading().getValue();
 
         getBinding().btnSave.setEnabled(isValid && !isLoading);
 
-        if (isAmountEntered && target <= 0) {
-            getBinding().layoutTargetAmount.setError("Please enter a valid amount");
-        } else if (!isAmountEntered) {
-            getBinding().layoutTargetAmount.setError("Target amount is required");
+        // Inline Error Feedback
+        if (isTargetEntered) {
+            if (target <= 0) {
+                getBinding().layoutTargetAmount.setError("Please enter a valid amount");
+            } else if (target < saved) {
+                getBinding().layoutTargetAmount.setError("Target cannot be less than saved amount");
+                getBinding().layoutSavedAmount.setError("Exceeds target limit");
+            } else {
+                getBinding().layoutTargetAmount.setError(null);
+                getBinding().layoutSavedAmount.setError(null);
+                getBinding().layoutTargetAmount.setErrorEnabled(false);
+                getBinding().layoutSavedAmount.setErrorEnabled(false);
+            }
         } else {
-            getBinding().layoutTargetAmount.setError(null);
-            getBinding().layoutTargetAmount.setErrorEnabled(false);
+            getBinding().layoutTargetAmount.setError("Target amount is required");
         }
     }
 

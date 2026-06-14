@@ -47,16 +47,17 @@
             style="@style/CartiCaption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:paddingHorizontal="4dp"
-            android:paddingVertical="1dp"
-            android:text="@string/status_unpaid"
+            android:layout_marginTop="4dp"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
             android:textColor="@color/status_red"
-            android:textSize="8sp"
-            android:textAllCaps="true"
+            android:textSize="9sp"
+            android:textAllCaps="false"
+            android:fontFamily="@font/plus_jakarta_sans_bold"
             android:background="@drawable/bg_status_unpaid"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDueDate" />
+            app:layout_constraintTop_toBottomOf="@id/tvDueDate"
+            tools:text="₱100.00" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>

@@ -268,7 +268,7 @@ public class HomeViewModel extends BaseViewModel {
     public record DashboardState(double balance, double monthlyIncome, double monthlyExpense, double monthlySavings, double incomeTrend, double expenseTrend, double savingsTrend, double todayExpense, double monthlyBudget) {}
 
     public void toggleLike(TransactionWithUser item) {
-        transRepo.toggleLike(item, "👍");
+        transRepo.toggleLike(item, com.upreyvan.carti.utils.ReactionHelper.REAC_LIKE);
     }
 
     public void toggleReaction(TransactionWithUser item, String emoji) {

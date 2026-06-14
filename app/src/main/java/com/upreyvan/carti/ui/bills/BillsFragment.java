@@ -130,7 +130,7 @@ public class BillsFragment extends BaseFragment<FragmentBillsBinding> {
 
     private void setupBillsRecyclerView() {
         billAdapter = new BillAdapter();
-        billAdapter.setOnItemClickListener(item -> BillDetailsBottomSheet.newInstance(item.getId(), item.getName()).show(getChildFragmentManager(), "BillDetailsBottomSheet"));
+        billAdapter.setOnItemClickListener(null); // Removed click listener for the card as requested
         billAdapter.setOnBillInteractionListener(new BillAdapter.OnBillInteractionListener() {
             @Override
             public void onDelete(Bill item) {

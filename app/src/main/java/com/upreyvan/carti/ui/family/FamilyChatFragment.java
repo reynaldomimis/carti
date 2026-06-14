@@ -151,7 +151,7 @@ public class FamilyChatFragment extends BaseFragment<FragmentFamilyChatBinding> 
             }
         });
 
-        getBinding().layoutInput.btnEmojiLike.setOnClickListener(v -> viewModel.sendMessage("👍"));
+        getBinding().layoutInput.btnEmojiLike.setOnClickListener(v -> viewModel.sendMessage(com.upreyvan.carti.utils.ReactionHelper.REAC_LIKE));
     }
 
     private void updateEmptyState(boolean empty) {

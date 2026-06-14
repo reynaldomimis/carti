@@ -1,6 +1,9 @@
 package com.upreyvan.carti.realtime;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -109,8 +112,7 @@ public class RealtimeManager {
             if (!isDelete) {
                 String senderId = (String) payload.get("senderId");
                 if (!pref.getUserId().equals(senderId)) {
-                    // Standard Software Engineering logic: 
-                    // Skip system notification if user is already in the chat room
+                    // Suppression Rule: Skip tray notification ONLY if user is already in the chat room
                     if (com.upreyvan.carti.utils.AppLifecycleTracker.isChatActive()) return;
 
                     String senderName = (String) payload.get("senderName");

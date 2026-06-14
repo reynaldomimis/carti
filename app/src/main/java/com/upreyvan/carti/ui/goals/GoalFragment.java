@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -20,6 +22,7 @@ import com.upreyvan.carti.databinding.ItemGoalBinding;
 import com.upreyvan.carti.models.Transaction;
 import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.ui.allocate.PlanViewModel;
+import com.upreyvan.carti.utils.DateHelper;
 import com.upreyvan.carti.utils.SwipeToDeleteHelper;
 import com.upreyvan.carti.utils.Utils;
 import java.util.ArrayList;
@@ -55,7 +58,8 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
 
     private void setupUI() {
         getBinding().layoutHeader.tvHeaderTitle.setText(R.string.label_setup_goals);
-        getBinding().layoutHeader.tvHeaderSubtitle.setText(Utils.formatMonthYear(Calendar.getInstance()));
+        // maangas and general label for goals
+        getBinding().layoutHeader.tvHeaderSubtitle.setText("Plan your vision. Secure your future.");
         getBinding().layoutHeader.btnHeaderAction.setText(R.string.btn_add_goal);
         getBinding().layoutHeader.btnHeaderAction.setOnClickListener(v -> 
                 AddGoalBottomSheetFragment.newInstance().show(getChildFragmentManager(), "ADD_GOAL"));
@@ -68,7 +72,12 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     private void observeViewModel() {
         viewModel.getGoals().observe(getViewLifecycleOwner(), goals -> {
             if (goals != null) {
-                isLoading = false;
+                if (isLoading) {
+                    getBinding().shimmerGoals.stopShimmer();
+                    getBinding().shimmerGoals.setVisibility(View.GONE);
+                    getBinding().rvGoals.setVisibility(View.VISIBLE);
+                    isLoading = false;
+                }
                 allGoals = goals;
                 filterGoals(getBinding().tabLayout.getSelectedTabPosition());
             }
@@ -99,13 +108,17 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         }
 
         switch (position) {
-            case 1 -> {
-                for (TransactionWithUser g : mainGoals) if (!g.getTransaction().isCompleted()) filteredList.add(g);
+            case 1 -> { // Active
+                for (TransactionWithUser g : mainGoals) {
+                    if ("ACTIVE".equalsIgnoreCase(g.getTransaction().getStatus())) filteredList.add(g);
+                }
                 titleRes = R.string.no_active_goals_title;
                 descRes = R.string.no_active_goals_desc;
             }
-            case 2 -> {
-                for (TransactionWithUser g : mainGoals) if (g.getTransaction().isCompleted()) filteredList.add(g);
+            case 2 -> { // Completed
+                for (TransactionWithUser g : mainGoals) {
+                    if ("COMPLETED".equalsIgnoreCase(g.getTransaction().getStatus())) filteredList.add(g);
+                }
                 titleRes = R.string.no_completed_goals_title;
                 descRes = R.string.no_completed_goals_desc;
             }
@@ -116,7 +129,8 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
             }
         }
         
-        Utils.sortAlphabetically(filteredList, g -> g.getTransaction().getTitle());
+        // Sort by timestamp descending (Latest first)
+        filteredList.sort((g1, g2) -> Long.compare(g2.getTransaction().getTimestampMillis(), g1.getTransaction().getTimestampMillis()));
 
         boolean isEmpty = filteredList.isEmpty() && !isLoading;
         getBinding().rvGoals.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
@@ -128,6 +142,20 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         }
 
         adapter.submitList(filteredList);
+    }
+
+    private double calculateGoalSum(Transaction goal) {
+        double total = 0;
+        for (TransactionWithUser tu : allGoals) {
+            Transaction t = tu.getTransaction();
+            // UNIQUE LINK: Sum by allocatedTo ID primarily, fallback to Title only for legacy data
+            if ("GOAL".equalsIgnoreCase(t.getType()) && t.getTargetAmount() <= 0) {
+                if (goal.getId().equals(t.getAllocatedTo()) || goal.getTitle().equalsIgnoreCase(t.getCategory())) {
+                    total += t.getAmount();
+                }
+            }
+        }
+        return total;
     }
 
     private void setupRecyclerView() {
@@ -159,25 +187,88 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                             binding.ivGoalIcon.setImageTintList(null);
                         }
 
+                        // Use dynamic calculation for the numerator (sum of all related transactions)
+                        double currentProgressAmount = calculateGoalSum(goal);
+                        double targetGoalAmount = goal.getTargetAmount();
+
+                        // Progress Calculation
+                        int progress = (int) Math.min(100, (currentProgressAmount / targetGoalAmount) * 100);
+
                         binding.tvGoalProgressAmount.setText(getString(R.string.goal_progress_amount_format,
-                                Utils.formatCurrency(goal.getAmount()),
-                                Utils.formatCurrency(goal.getTargetAmount())));
-                        binding.progressIndicator.setProgress(goal.getProgress());
-                        binding.tvPercentage.setText(getString(R.string.percentage_format, goal.getProgress()));
-                        binding.tvTargetDate.setText(goal.getTargetDate() != null ? 
-                                goal.getTargetDate() : getString(R.string.label_days_left, 0));
+                                Utils.formatCurrency(currentProgressAmount),
+                                Utils.formatCurrency(targetGoalAmount)));
+                        
+                        binding.progressIndicator.setProgress(progress);
+                        binding.tvPercentage.setText(getString(R.string.percentage_format, progress));
+                        
+                        // Target Date Formatting
+                        String dateStr = goal.getTargetDate();
+                        if (dateStr != null && !dateStr.isEmpty()) {
+                            long millis = com.upreyvan.carti.utils.DateHelper.getMillisFromIso(dateStr);
+                            binding.tvTargetDate.setText(String.format("Target Date: %s", com.upreyvan.carti.utils.DateHelper.formatDate(millis)));
+                        } else {
+                            binding.tvTargetDate.setText(getString(R.string.label_days_left, 0));
+                        }
+
+                        // Contributor Avatar Stack logic
+                        binding.avatarStack.removeAllViews();
+                        java.util.Map<String, String> uniqueContributors = new java.util.LinkedHashMap<>();
+                        for (TransactionWithUser tu : allGoals) {
+                            Transaction contribution = tu.getTransaction();
+                            // Identify contribution by type GOAL and matching either ID or Title
+                            // and ensure it's not the main goal document itself
+                            if ("GOAL".equalsIgnoreCase(contribution.getType()) && 
+                                contribution.getTargetAmount() <= 0 &&
+                                (goal.getId().equals(contribution.getAllocatedTo()) || 
+                                 goal.getTitle().equalsIgnoreCase(contribution.getCategory()))) {
+
+                                String userId = contribution.getUserId();
+                                String userName = tu.getUsername() != null ? tu.getUsername() : contribution.getUsername();
+                                if (userId != null) {
+                                    uniqueContributors.put(userId, userName);
+                                }
+                            }
+                        }
+
+                        List<String> contributorIds = new ArrayList<>(uniqueContributors.keySet());
+                        int displayCount = Math.min(contributorIds.size(), 3);
+                        for (int idx = 0; idx < displayCount; idx++) {
+                            com.google.android.material.imageview.ShapeableImageView iv = new com.google.android.material.imageview.ShapeableImageView(requireContext());
+                            int avatarSize = com.upreyvan.carti.utils.Utils.dpToPx(requireContext(), 24);
+                            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(avatarSize, avatarSize);
+                            if (idx > 0) lp.setMarginStart(com.upreyvan.carti.utils.Utils.dpToPx(requireContext(), -8));
+                            iv.setLayoutParams(lp);
+                            iv.setShapeAppearanceModel(iv.getShapeAppearanceModel().toBuilder()
+                                    .setAllCorners(com.google.android.material.shape.CornerFamily.ROUNDED, (float) avatarSize / 2)
+                                    .build());
+                            iv.setStrokeColor(android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE));
+                            iv.setStrokeWidth((float) com.upreyvan.carti.utils.Utils.dpToPx(requireContext(), 1));
+                            
+                            String userId = contributorIds.get(idx);
+                            String userName = uniqueContributors.get(userId);
+                            com.upreyvan.carti.utils.AvatarHelper.loadUserAvatar(requireContext(), iv, userName);
+                            binding.avatarStack.addView(iv);
+                        }
+
+                        if (contributorIds.size() > 3) {
+                            TextView tvPlus = new TextView(requireContext());
+                            tvPlus.setText(String.format(java.util.Locale.getDefault(), "+%d", contributorIds.size() - 3));
+                            tvPlus.setTextSize(10);
+                            tvPlus.setPadding(com.upreyvan.carti.utils.Utils.dpToPx(requireContext(), 4), 0, 0, 0);
+                            tvPlus.setGravity(android.view.Gravity.CENTER_VERTICAL);
+                            binding.avatarStack.addView(tvPlus);
+                        }
+                        
+                        binding.avatarStack.setVisibility(contributorIds.isEmpty() ? View.GONE : View.VISIBLE);
 
                         binding.btnContribute.setOnClickListener(v -> 
                                 GoalContributeBottomSheetFragment.newInstance(goal).show(getChildFragmentManager(), "CONTRIBUTE_GOAL"));
                     }
                 }
         );
-        adapter.setOnItemClickListener(item -> navigateTo(GoalDetailFragment.newInstance(item.getTransaction().getId())));
-        adapter.setOnItemLongClickListener(item -> {
-            UpdateGoalBottomSheetFragment.newInstance(item.getTransaction().getId())
-                    .show(getChildFragmentManager(), "UPDATE_GOAL");
-            return true;
-        });
+        // Removed item click and long click listeners to prevent redundant navigation and bottom sheets
+        adapter.setOnItemClickListener(null);
+        adapter.setOnItemLongClickListener(null);
         
         getBinding().rvGoals.setLayoutManager(new LinearLayoutManager(requireContext()));
         getBinding().rvGoals.setAdapter(adapter);
@@ -193,7 +284,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                 List<TransactionWithUser> restoredList = new ArrayList<>(adapter.getCurrentList());
                 restoredList.add(pos, goalToDelete);
                 adapter.submitList(restoredList);
-            }, () -> viewModel.deleteGoal(goalToDelete.getTransaction().getId()));
+            }, () -> viewModel.deleteGoal(goalToDelete.getTransaction()));
         });
     }
 }

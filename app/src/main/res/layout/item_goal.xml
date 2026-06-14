@@ -13,21 +13,21 @@
         android:layout_height="wrap_content">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/layoutContent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_medium">
+        android:id="@+id/layoutContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="6dp">
 
-            <!-- Goal Image/Icon -->
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivGoalIcon"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:scaleType="centerCrop"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
-                tools:src="@drawable/ic_image" />
+        <!-- Goal Image/Icon -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivGoalIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="fitXY"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
+            tools:src="@drawable/ic_image" />
 
             <!-- Goal Title -->
             <TextView
@@ -35,8 +35,10 @@
                 style="@style/CartiTextTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_medium"
-                android:layout_marginEnd="@dimen/spacing_small"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:paddingTop="0dp"
+                android:textSize="13sp"
                 app:layout_constraintEnd_toStartOf="@+id/btnContribute"
                 app:layout_constraintStart_toEndOf="@id/ivGoalIcon"
                 app:layout_constraintTop_toTopOf="@id/ivGoalIcon"
@@ -61,8 +63,8 @@
                 style="@style/CartiSubHeader"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xxs"
-                android:textSize="@dimen/text_size_body_small"
+                android:layout_marginTop="4dp"
+                android:textSize="@dimen/text_size_xxs"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/tvGoalTitle"
                 app:layout_constraintTop_toBottomOf="@id/tvGoalTitle"
@@ -73,7 +75,7 @@
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="0dp"
                 android:layout_height="6dp"
-                android:layout_marginTop="@dimen/spacing_medium"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="@dimen/spacing_small"
                 android:progress="42"
                 android:progressDrawable="@drawable/bg_smooth_progress"

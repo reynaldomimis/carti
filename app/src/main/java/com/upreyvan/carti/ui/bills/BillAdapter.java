@@ -76,12 +76,7 @@ public class BillAdapter extends BaseAdapter<Bill, ItemBillBinding> {
             if (interactionListener != null) interactionListener.onEdit(item, v);
         });
         
-        holder.binding.getRoot().setOnLongClickListener(v -> {
-            if (interactionListener != null) {
-                interactionListener.onDelete(item);
-                return true;
-            }
-            return false;
-        });
+        // Removed long click delete functionality as it is redundant (available in menu)
+        holder.binding.getRoot().setOnLongClickListener(null);
     }
 }

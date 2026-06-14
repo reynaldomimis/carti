@@ -195,7 +195,7 @@ public class TransactionRepository {
     public LiveData<List<TransactionWithUser>> getTransactionsByAllocation(String goalId) {
         return Transformations.map(allTransactions, list -> 
             list.stream()
-                .filter(tu -> java.util.Objects.equals(goalId, tu.getTransaction().getAllocatedTo()))
+                .filter(tu -> goalId.equals(tu.getTransaction().getAllocatedTo()))
                 .collect(Collectors.toList())
         );
     }
@@ -268,6 +268,11 @@ public class TransactionRepository {
                     NotificationRepository.getInstance(pref.getContext()).markBillAsPaidByCategory(data.getTitle());
                 }
 
+                // Goal Contribution Logic: If this is a contribution, update the parent goal document
+                if ("GOAL".equalsIgnoreCase(data.getType()) && data.getTitle().startsWith("Contribution:") && data.getAllocatedTo() != null) {
+                    updateGoalProgress(data.getAllocatedTo(), data.getCategory(), data.getAmount());
+                }
+
                 if (callback != null) callback.onSuccess(result);
             }
             @Override public void onError(Throwable error) {
@@ -280,16 +285,78 @@ public class TransactionRepository {
         });
     }
 
-    public void addTransaction(Transaction t, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        createItem(t != null ? t.getType() : null, t, callback);
+    private void updateGoalProgress(String anchorId, String goalTitle, double contributionAmount) {
+        executor.execute(() -> {
+            TransactionWithUser goalWithUser = null;
+            double totalSum = 0;
+            String targetTag = null;
+            List<String> linkedIds = new ArrayList<>();
+            
+            synchronized (transactionCache) {
+                // 1. Identify the parent goal using the anchorId (which could be the ID or the tag)
+                for (TransactionWithUser tu : transactionCache) {
+                    Transaction t = tu.getTransaction();
+                    if (anchorId.equals(t.getId()) || anchorId.equals(t.getAllocatedTo())) {
+                        if (t.getTargetAmount() > 0) {
+                            goalWithUser = tu;
+                            targetTag = t.getAllocatedTo();
+                            break;
+                        }
+                    }
+                }
+
+                if (goalWithUser == null || targetTag == null) return;
+
+                // 2. Identify all related transactions strictly by Type=GOAL and AllocatedTo=Tag
+                for (TransactionWithUser tu : transactionCache) {
+                    Transaction t = tu.getTransaction();
+                    if ("GOAL".equalsIgnoreCase(t.getType()) && targetTag.equals(t.getAllocatedTo())) {
+                        if (t.getTargetAmount() <= 0) {
+                            totalSum += t.getAmount();
+                        }
+                        linkedIds.add(t.getId());
+                    }
+                }
+            }
+
+            if (goalWithUser != null) {
+                Transaction mainGoal = goalWithUser.getTransaction();
+                String mainId = mainGoal.getId();
+                
+                // Status Determination
+                String newStatus = (totalSum >= mainGoal.getTargetAmount() && mainGoal.getTargetAmount() > 0) 
+                        ? "COMPLETED" : "ACTIVE";
+                
+                Map<String, Object> updateFields = new HashMap<>();
+                updateFields.put("amount", totalSum);
+                updateFields.put("status", newStatus);
+                
+                remoteDataSource.updateTransaction(mainId, updateFields, new AppwriteManager.AppwriteCallback<>() {
+                    @Override public void onSuccess(Map<String, Object> result) {
+                        handleRealtimeEvent(result, false);
+                        
+                        // 3. CASCADE UPDATE: Update all linked contributions to match the goal's status
+                        // Use the shared 'targetTag' as the filter for the cascade
+                        for (String id : linkedIds) {
+                            if (id.equals(mainId)) continue; // Already updated
+                            
+                            Map<String, Object> statusUpdate = new HashMap<>();
+                            statusUpdate.put("status", newStatus);
+                            remoteDataSource.updateTransaction(id, statusUpdate, new AppwriteManager.AppwriteCallback<>() {
+                                @Override public void onSuccess(Map<String, Object> r) { handleRealtimeEvent(r, false); }
+                                @Override public void onError(Throwable e) { Log.e(TAG, "Cascade update failed for " + id); }
+                            });
+                        }
+                    }
+                    @Override public void onError(Throwable error) { Log.e(TAG, "Goal update failed: " + error.getMessage()); }
+                });
+            }
+        });
     }
+
 
     public void createItem(TransactionType type, double amount, String category, String note, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         createItem(type != null ? type.value() : null, amount, category, note, callback);
-    }
-
-    public void addTransaction(double amount, String type, String category, String note, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
-        createItem(type, amount, category, note, callback);
     }
 
     public void createItem(String type, double amount, String category, String note, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
@@ -371,7 +438,6 @@ public class TransactionRepository {
         com.upreyvan.carti.models.Category c = cm.getCategoryByName(t.getCategory());
         
         if (c != null) {
-            // If transaction has no icon set, use category default
             if (t.getIconRes() == 0 && (t.getIconUrl() == null || t.getIconUrl().isEmpty())) {
                 t.setIconRes(c.getIconRes());
             }
@@ -385,6 +451,15 @@ public class TransactionRepository {
 
     private Map<String, Object> mapTransactionFields(Transaction t) {
         normalizeCategoryFields(t);
+
+        // Refactor for Goals: Auto-month and simplified linking
+        if ("GOAL".equalsIgnoreCase(t.getType())) {
+            // 1. Ensure allocationMonth is set
+            if (t.getAllocationMonth() == null || t.getAllocationMonth().isEmpty()) {
+                t.setAllocationMonth(Utils.formatMonthQuery(Calendar.getInstance()));
+            }
+        }
+
         Map<String, Object> fields = new HashMap<>();
         fields.put("amount", t.getAmount());
         fields.put("type", t.getType());
@@ -399,6 +474,13 @@ public class TransactionRepository {
         fields.put("iconRes", t.getIconRes());
         fields.put("iconUrl", t.getIconUrl());
 
+        if (t.getAllocatedTo() != null && !t.getAllocatedTo().isEmpty()) {
+            fields.put("allocatedTo", t.getAllocatedTo());
+        }
+        if (t.getAllocationMonth() != null && !t.getAllocationMonth().isEmpty()) {
+            fields.put("allocationMonth", t.getAllocationMonth());
+        }
+
         String type = t.getType() != null ? t.getType().toUpperCase() : "EXPENSE";
 
         switch (type) {
@@ -407,25 +489,22 @@ public class TransactionRepository {
             }
             case "ALLOCATION" -> {
                 fields.put("category", t.getCategory() != null ? t.getCategory() : "Allocation");
-                fields.put("allocatedTo", t.getAllocatedTo());
-                fields.put("allocationMonth", t.getAllocationMonth());
             }
             case "GOAL" -> {
                 fields.put("category", t.getCategory() != null ? t.getCategory() : t.getTitle());
                 fields.put("targetAmount", t.getTargetAmount());
+                fields.put("amount", t.getAmount());
                 fields.put("targetDate", t.getTargetDate());
-                
-                // Support contribution fields for Goal Analysis
-                if ("allocated".equalsIgnoreCase(t.getCategory())) {
-                    fields.put("allocatedTo", t.getAllocatedTo());
-                    fields.put("allocationMonth", t.getAllocationMonth());
-                }
 
                 String status = t.getStatus();
                 if (Transaction.STATUS_PENDING.equals(status) || Transaction.STATUS_SYNCING.equals(status) || status == null) {
-                    status = "active";
+                    if (t.getTargetAmount() > 0 && t.getAmount() >= t.getTargetAmount()) {
+                        status = "COMPLETED";
+                    } else {
+                        status = "ACTIVE";
+                    }
                 }
-                fields.put("status", status);
+                fields.put("status", status.toUpperCase());
             }
             case "DEBT" -> {
                 fields.put("category", t.getCategory() != null ? t.getCategory() : "Debt");
@@ -448,6 +527,40 @@ public class TransactionRepository {
         }
 
         return fields;
+    }
+
+    public void deleteGoalCascade(String goalId, String goalTitle, AppwriteManager.AppwriteCallback<Object> callback) {
+        executor.execute(() -> {
+            List<String> idsToDelete = new ArrayList<>();
+            idsToDelete.add(goalId); // Parent goal
+
+            synchronized (transactionCache) {
+                for (TransactionWithUser tu : transactionCache) {
+                    Transaction t = tu.getTransaction();
+                    if ("GOAL".equalsIgnoreCase(t.getType())) {
+                        // Match contributions by allocatedTo link or category fallback
+                        boolean isMatch = goalId.equals(t.getAllocatedTo()) || goalTitle.equalsIgnoreCase(t.getCategory());
+                        
+                        if (isMatch && !idsToDelete.contains(t.getId())) {
+                            idsToDelete.add(t.getId());
+                        }
+                    }
+                }
+            }
+
+            // 2. Optimistic local delete
+            synchronized (transactionCache) {
+                transactionCache.removeIf(tu -> idsToDelete.contains(tu.getTransaction().getId()));
+                allTransactions.postValue(new ArrayList<>(transactionCache));
+            }
+
+            // 3. Batch delete from server (Sequential for stability in current architecture)
+            for (String id : idsToDelete) {
+                remoteDataSource.deleteTransaction(id, null);
+            }
+            
+            if (callback != null) callback.onSuccess("Goal and contributions deleted");
+        });
     }
 
     public void deleteItem(TransactionType type, String id, AppwriteManager.AppwriteCallback<Object> callback) {
@@ -617,8 +730,6 @@ public class TransactionRepository {
     }
 
     public LiveData<Double> getBalance() {
-        // Current System: Available Balance is based on ALLOCATION-based budgeting.
-        // Allocation represents shared planned distribution, not actual earned money.
         return Transformations.switchMap(getSumByType("ALLOCATION"), budget ->
                Transformations.map(getSumByType("EXPENSE"), expense -> budget - expense)
         );

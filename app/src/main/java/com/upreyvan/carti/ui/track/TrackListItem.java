@@ -27,6 +27,7 @@ import com.upreyvan.carti.models.Transaction;
 import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.utils.AvatarHelper;
 import com.upreyvan.carti.utils.DialogHelper;
+import com.upreyvan.carti.utils.ReactionHelper;
 import com.upreyvan.carti.utils.Utils;
 import com.upreyvan.carti.utils.ValueHelper;
 import java.util.ArrayList;
@@ -346,9 +347,11 @@ public interface TrackListItem extends BaseMultiItem {
             String myReaction = transaction.getMyReaction();
             if (myReaction != null && !myReaction.isEmpty()) {
                 b.tvBtnLikeIcon.setText(myReaction);
-                b.tvBtnLikeText.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.carti_primary_green));
+                b.tvBtnLikeText.setText(ReactionHelper.getLabel(myReaction));
+                b.tvBtnLikeText.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), ReactionHelper.getColor(myReaction)));
             } else {
-                b.tvBtnLikeIcon.setText("👍");
+                b.tvBtnLikeIcon.setText(ReactionHelper.REAC_LIKE);
+                b.tvBtnLikeText.setText(ReactionHelper.getLabel(ReactionHelper.REAC_LIKE));
                 b.tvBtnLikeText.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.text_secondary));
             }
 

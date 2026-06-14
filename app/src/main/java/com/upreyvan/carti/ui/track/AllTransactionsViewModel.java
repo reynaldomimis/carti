@@ -93,7 +93,7 @@ public class AllTransactionsViewModel extends BaseViewModel {
         }).start();
     }
 
-    public void toggleLike(TransactionWithUser item) { repo.toggleLike(item, "👍"); }
+    public void toggleLike(TransactionWithUser item) { repo.toggleLike(item, com.upreyvan.carti.utils.ReactionHelper.REAC_LIKE); }
     public void toggleReaction(TransactionWithUser item, String emoji) { repo.toggleLike(item, emoji); }
     public void deleteTransaction(com.upreyvan.carti.models.Transaction t, com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<Object> cb) {
         repo.deleteItem(t.getType(), t.getId(), cb);

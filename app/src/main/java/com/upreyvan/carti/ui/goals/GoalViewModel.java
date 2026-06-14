@@ -68,6 +68,12 @@ public class GoalViewModel extends BaseViewModel {
         t.setTargetDate(date);
         t.setIconRes(iconRes);
         t.setIconUrl(iconUrl);
+        t.setStatus("ACTIVE");
+        
+        // MAANGAS MOVE: Generate a UUID now and use it as the 'allocatedTo' for the parent too.
+        // This way, the parent and all its contributions share the exact same tag.
+        String goalTag = "G-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        t.setAllocatedTo(goalTag);
 
         repository.createItem(TransactionType.GOAL, t, loadingCallback(() -> saveSuccess.postValue(true), error));
     }

@@ -61,7 +61,7 @@ public class Transaction {
         this.id = "";
         this.type = "EXPENSE";
         this.category = "General";
-        this.status = "active";
+        this.status = "ACTIVE";
         this.members = new ArrayList<>();
         this.isPaid = false;
         this.startDate = Utils.getCurrentTimestamp();

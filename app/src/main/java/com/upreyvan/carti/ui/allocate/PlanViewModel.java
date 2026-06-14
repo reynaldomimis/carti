@@ -11,6 +11,7 @@ import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.models.Bill;
 import com.upreyvan.carti.models.BudgetCategoryItem;
 import com.upreyvan.carti.models.RecurringBudgetStats;
+import com.upreyvan.carti.models.Transaction;
 import com.upreyvan.carti.models.TransactionType;
 import com.upreyvan.carti.models.TransactionWithUser;
 import java.util.ArrayList;
@@ -76,7 +77,10 @@ public class PlanViewModel extends BaseViewModel {
         });
     }
 
-    public void deleteGoal(String goalId) { transRepo.deleteItem(TransactionType.GOAL, goalId, null); }
+    public void deleteGoal(Transaction goal) { 
+        transRepo.deleteGoalCascade(goal.getId(), goal.getTitle(), null); 
+    }
+
     public void refresh() { 
         transRepo.refreshTransactions(); 
         com.upreyvan.carti.managers.CategoryManager.getInstance(getApplication()).refreshRemoteCategories(pref.getFamilyId());

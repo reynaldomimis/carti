@@ -20,6 +20,7 @@ import com.upreyvan.carti.models.QuickLogItem;
 import com.upreyvan.carti.models.Transaction;
 import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.utils.AvatarHelper;
+import com.upreyvan.carti.utils.ReactionHelper;
 import com.upreyvan.carti.utils.Utils;
 import java.util.List;
 import java.util.Locale;
@@ -382,9 +383,11 @@ public interface HomeListItem extends BaseMultiItem {
             String myReaction = transaction.getMyReaction();
             if (myReaction != null && !myReaction.isEmpty()) {
                 b.tvBtnLikeIcon.setText(myReaction);
-                b.tvBtnLikeText.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.carti_primary_green));
+                b.tvBtnLikeText.setText(ReactionHelper.getLabel(myReaction));
+                b.tvBtnLikeText.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), ReactionHelper.getColor(myReaction)));
             } else {
-                b.tvBtnLikeIcon.setText("👍");
+                b.tvBtnLikeIcon.setText(ReactionHelper.REAC_LIKE);
+                b.tvBtnLikeText.setText(ReactionHelper.getLabel(ReactionHelper.REAC_LIKE));
                 b.tvBtnLikeText.setTextColor(ContextCompat.getColor(b.getRoot().getContext(), R.color.text_secondary));
             }
 
@@ -487,6 +490,7 @@ public interface HomeListItem extends BaseMultiItem {
                     if (b.containsKey("myReaction") || b.containsKey("likes") || b.containsKey("reactorNames")) {
                         int likes = b.containsKey("likes") ? b.getInt("likes") : t.getLikesCount();
                         String names = b.containsKey("reactorNames") ? b.getString("reactorNames") : transaction.getReactorNames();
+                        String myReac = b.containsKey("myReaction") ? b.getString("myReaction") : transaction.getMyReaction();
                         
                         vb.tvReactionEmoji.setText(transaction.getDisplayEmoji());
 
@@ -500,6 +504,16 @@ public interface HomeListItem extends BaseMultiItem {
                         vb.tvReactionEmoji.setVisibility(likes > 0 ? View.VISIBLE : View.GONE);
                         vb.layoutLikesSummaryClickable.setVisibility(likes > 0 || t.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
                         vb.divider.setVisibility(vb.layoutLikesSummaryClickable.getVisibility());
+
+                        if (myReac != null && !myReac.isEmpty()) {
+                            vb.tvBtnLikeIcon.setText(myReac);
+                            vb.tvBtnLikeText.setText(ReactionHelper.getLabel(myReac));
+                            vb.tvBtnLikeText.setTextColor(ContextCompat.getColor(vb.getRoot().getContext(), ReactionHelper.getColor(myReac)));
+                        } else {
+                            vb.tvBtnLikeIcon.setText(ReactionHelper.REAC_LIKE);
+                            vb.tvBtnLikeText.setText(ReactionHelper.getLabel(ReactionHelper.REAC_LIKE));
+                            vb.tvBtnLikeText.setTextColor(ContextCompat.getColor(vb.getRoot().getContext(), R.color.text_secondary));
+                        }
                     }
 
                     if (b.containsKey("comments")) {

@@ -14,6 +14,7 @@ import com.upreyvan.carti.models.Transaction;
 import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.utils.AvatarHelper;
 import com.upreyvan.carti.utils.DialogHelper;
+import com.upreyvan.carti.utils.ReactionHelper;
 import com.upreyvan.carti.utils.Utils;
 import java.util.Locale;
 import java.util.Objects;
@@ -180,9 +181,11 @@ public class TransactionAdapter extends ListAdapter<TransactionWithUser, Transac
 
             if (myReaction != null && !myReaction.isEmpty()) {
                 binding.tvBtnLikeIcon.setText(myReaction);
-                binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.carti_primary_blue));
+                binding.tvBtnLikeText.setText(ReactionHelper.getLabel(myReaction));
+                binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), ReactionHelper.getColor(myReaction)));
             } else {
-                binding.tvBtnLikeIcon.setText("👍");
+                binding.tvBtnLikeIcon.setText(ReactionHelper.REAC_LIKE);
+                binding.tvBtnLikeText.setText(ReactionHelper.getLabel(ReactionHelper.REAC_LIKE));
                 binding.tvBtnLikeText.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.icon_electricity));
             }
 

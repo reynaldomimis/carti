@@ -42,6 +42,15 @@ public class GoalContributeBottomSheetFragment extends BaseBottomSheetFragment<B
     private void setupUI() {
         if (goal == null) return;
         getBinding().tvTitle.setText("Contribute to " + goal.getTitle());
+        
+        // Show Target and Remaining prominent at the top
+        double currentSum = goal.getAmount(); // This is the master sum from DB
+        double remaining = Math.max(0, goal.getTargetAmount() - currentSum);
+        
+        getBinding().tvSubtitle.setText(String.format("Target: %s • Remaining: %s", 
+                Utils.formatCurrency(goal.getTargetAmount()),
+                Utils.formatCurrency(remaining)));
+        
         getBinding().labelCategory.setVisibility(View.GONE);
         getBinding().layoutCategory.setVisibility(View.GONE);
         getBinding().labelSubCategory.setVisibility(View.GONE);
@@ -56,13 +65,25 @@ public class GoalContributeBottomSheetFragment extends BaseBottomSheetFragment<B
         getBinding().etAmount.addTextChangedListener(new AmountTextWatcher(getBinding().etAmount));
         getBinding().etAmount.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { validate(); }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { 
+                getBinding().tilAmount.setError(null);
+                validate(); 
+            }
             @Override public void afterTextChanged(Editable s) {}
         });
 
         getBinding().btnContribute.setOnClickListener(v -> {
             if (!checkNetwork()) return;
             double amount = StringHelper.parseDouble(getBinding().etAmount.getText().toString());
+            
+            double currentSum = goal.getAmount();
+            double remaining = goal.getTargetAmount() - currentSum;
+            
+            if (amount > (remaining + 0.01)) {
+                getBinding().tilAmount.setError("Amount exceeds remaining target of " + Utils.formatCurrency(remaining));
+                return;
+            }
+            
             saveContribution(amount);
         });
     }
@@ -71,8 +92,17 @@ public class GoalContributeBottomSheetFragment extends BaseBottomSheetFragment<B
         String amountStr = getBinding().etAmount.getText().toString().trim();
         double amount = StringHelper.parseDouble(amountStr);
         boolean isAmountEntered = !amountStr.isEmpty();
-        boolean isValidAmount = amount > 0;
-        getBinding().btnContribute.setEnabled(isAmountEntered && isValidAmount);
+        
+        double currentSum = goal.getAmount();
+        double remaining = goal.getTargetAmount() - currentSum;
+        
+        if (isAmountEntered && amount > (remaining + 0.01)) {
+            getBinding().tilAmount.setError("Exceeds target limit");
+            getBinding().btnContribute.setEnabled(false);
+        } else {
+            getBinding().tilAmount.setError(null);
+            getBinding().btnContribute.setEnabled(isAmountEntered && amount > 0);
+        }
     }
 
     private void saveContribution(double amount) {
@@ -81,12 +111,26 @@ public class GoalContributeBottomSheetFragment extends BaseBottomSheetFragment<B
         com.upreyvan.carti.models.Transaction t = new com.upreyvan.carti.models.Transaction();
         t.setAmount(amount);
         t.setType("GOAL"); 
-        t.setCategory("allocated"); 
+        t.setCategory(goal.getTitle());
         t.setTitle("Contribution: " + goal.getTitle());
-        t.setNote("Manual contribution to goal: " + goal.getTitle());
-        t.setAllocatedTo(goal.getId());
-        t.setAllocationMonth(com.upreyvan.carti.utils.Utils.formatMonthQuery(java.util.Calendar.getInstance()));
+        
+        // UNIQUE LINKING: Use the parent's tag (G-XXXX) so all transactions share the same group ID
+        String groupTag = (goal.getAllocatedTo() != null && !goal.getAllocatedTo().isEmpty()) ? goal.getAllocatedTo() : goal.getId();
+        t.setAllocatedTo(groupTag);
+
+        // Inherit metadata from parent goal
+        t.setTargetDate(goal.getTargetDate());
         t.setMembers(goal.getMembers());
+        
+        // Dynamic Status: If this contribution completes the goal, mark as COMPLETED
+        double potentialTotal = goal.getAmount() + amount;
+        if (potentialTotal >= goal.getTargetAmount() && goal.getTargetAmount() > 0) {
+            t.setStatus("COMPLETED");
+        } else {
+            t.setStatus("ACTIVE");
+        }
+
+        t.setAllocationMonth(com.upreyvan.carti.utils.Utils.formatMonthQuery(java.util.Calendar.getInstance()));
         
         com.upreyvan.carti.repository.TransactionRepository.getInstance(requireContext())
             .createItem("GOAL", t,

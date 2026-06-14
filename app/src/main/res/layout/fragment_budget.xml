@@ -18,6 +18,30 @@
             android:id="@+id/layoutHeader"
             layout="@layout/view_plan_header" />
 
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmerBudgets"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/spacing_small"
+            android:layout_marginTop="@dimen/gap_card"
+            app:shimmer_auto_start="true">
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="3">
+
+                <include layout="@layout/item_budget_shimmer" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" />
+                <include layout="@layout/item_budget_shimmer" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" />
+                <include layout="@layout/item_budget_shimmer" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" />
+                <include layout="@layout/item_budget_shimmer" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" />
+                <include layout="@layout/item_budget_shimmer" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" />
+                <include layout="@layout/item_budget_shimmer" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" />
+
+            </GridLayout>
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvBudgets"
             android:layout_width="match_parent"
@@ -25,9 +49,11 @@
             android:paddingHorizontal="@dimen/spacing_small"
             android:layout_marginTop="@dimen/gap_card"
             android:clipToPadding="false"
+            android:visibility="gone"
             android:nestedScrollingEnabled="false"
             tools:itemCount="6"
             tools:listitem="@layout/item_budget_card"
+            tools:visibility="visible"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             app:spanCount="3" />
 

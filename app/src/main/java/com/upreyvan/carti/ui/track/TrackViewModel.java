@@ -145,7 +145,7 @@ public class TrackViewModel extends BaseViewModel {
 
     public void sync() { repo.refreshTransactions(); }
 
-    public void toggleLike(TransactionWithUser item) { repo.toggleLike(item, "👍"); }
+    public void toggleLike(TransactionWithUser item) { repo.toggleLike(item, com.upreyvan.carti.utils.ReactionHelper.REAC_LIKE); }
 
     public void toggleReaction(TransactionWithUser item, String emoji) { repo.toggleLike(item, emoji); }
 

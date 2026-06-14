@@ -54,14 +54,7 @@ public class DialogHelper {
         popup.setElevation(16f);
 
         View.OnClickListener listener = v -> {
-            String selectedEmoji = "👍";
-            int id = v.getId();
-            if (id == R.id.reac_love) selectedEmoji = "❤️";
-            else if (id == R.id.reac_haha) selectedEmoji = "😂";
-            else if (id == R.id.reac_wow) selectedEmoji = "😮";
-            else if (id == R.id.reac_sad) selectedEmoji = "😢";
-            else if (id == R.id.reac_angry) selectedEmoji = "😡";
-            
+            String selectedEmoji = ReactionHelper.getEmoji(v.getId());
             if (callback != null) callback.onEmojiSelected(selectedEmoji);
             popup.dismiss();
         };
