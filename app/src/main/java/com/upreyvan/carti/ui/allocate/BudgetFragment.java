@@ -181,8 +181,7 @@ public class BudgetFragment extends BaseFragment<FragmentBudgetBinding> {
                     com.upreyvan.carti.managers.CategoryManager manager = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext());
                     manager.deleteCategory(item.getCategoryName());
                     TransactionRepository.getInstance(requireContext()).deleteCategory(item.getCategoryName());
-                    
-                    // Remote Delete if it has an ID
+
                     if (item.getCategoryName().length() > 20) {
                         manager.deleteCategoryRemote(item.getCategoryName());
                     }

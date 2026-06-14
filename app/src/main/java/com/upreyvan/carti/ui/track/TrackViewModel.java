@@ -135,8 +135,12 @@ public class TrackViewModel extends BaseViewModel {
                 }
 
                 // Recent Expenses Section
-                items.add(new TrackListItem.SectionHeaderItem(getApplication().getString(R.string.recent_expenses), getApplication().getString(R.string.see_all), null));
-                for (TransactionWithUser tu : recentExpenses) items.add(new TrackListItem.TransactionItem(tu, null));
+                items.add(new TrackListItem.SectionHeaderItem(getApplication().getString(R.string.recent_expenses), getApplication().getString(R.string.see_all), !recentExpenses.isEmpty(), null));
+                if (recentExpenses.isEmpty()) {
+                    items.add(new TrackListItem.EmptyStateItem("No expense recorded yet"));
+                } else {
+                    for (TransactionWithUser tu : recentExpenses) items.add(new TrackListItem.TransactionItem(tu, null));
+                }
 
                 uiState.setValue(items);
             });

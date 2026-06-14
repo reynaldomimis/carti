@@ -14,7 +14,6 @@ import com.upreyvan.carti.databinding.ActivityAddOptionsBinding;
 import com.upreyvan.carti.databinding.ItemAddOptionBinding;
 import com.upreyvan.carti.models.AddOption;
 import com.upreyvan.carti.ui.bills.BillsActivity;
-import com.upreyvan.carti.ui.track.AddBudgetPlanActivity;
 import com.upreyvan.carti.ui.debt.AddDebtActivity;
 import com.upreyvan.carti.ui.family.InviteFamilyActivity;
 import com.upreyvan.carti.ui.goals.AddGoalActivity;
@@ -64,6 +63,14 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra("show_home", true);
+        startActivity(intent);
+        finish();
+    }
+
+    private void goBackToPlan() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra("show_plan", true);
         startActivity(intent);
         finish();
     }
@@ -124,7 +131,7 @@ public class AddOptionsActivity extends BaseActivity<ActivityAddOptionsBinding> 
             } else if (titleId == R.string.add_options_bills) {
                 intent = new Intent(this, BillsActivity.class);
             } else if (titleId == R.string.add_options_budget_plan) {
-                intent = new Intent(this, AddBudgetPlanActivity.class);
+                goBackToPlan();
             } else if (titleId == R.string.add_options_announcement) {
                 new SendNotificationBottomSheetFragment().show(getSupportFragmentManager(), "SendNotificationBottomSheet");
             }

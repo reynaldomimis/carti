@@ -25,7 +25,6 @@ import com.upreyvan.carti.models.TransactionWithUser;
 import com.upreyvan.carti.ui.bills.BillDetailsBottomSheet;
 import com.upreyvan.carti.ui.common.QuickLogsBottomSheetFragment;
 import com.upreyvan.carti.ui.goals.UpdateGoalBottomSheetFragment;
-import com.upreyvan.carti.ui.track.AddBudgetPlanActivity;
 import com.upreyvan.carti.ui.track.AllTransactionsFragment;
 import com.upreyvan.carti.ui.track.ExpenseEditBottomSheet;
 import com.upreyvan.carti.ui.track.IncomeEditBottomSheet;
@@ -125,7 +124,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> implements H
         getBinding().tvGreetingSub.setText(String.format("%s • %s", getString(R.string.days_to_go, sm.getDaysUntilNextPayday()), Utils.formatDateShort(sm.getNextPayday())));
     }
 
-    @Override public void onBudgetPromptClick() { startActivity(new Intent(requireContext(), AddBudgetPlanActivity.class)); }
+    @Override public void onBudgetPromptClick() {
+        if (getActivity() instanceof MainActivity main) {
+            main.navigateTo(Constants.Navigation.PLAN);
+        }
+    }
     @Override public void onBillClick(Bill bill) { BillDetailsBottomSheet.newInstance(bill.getId(), bill.getName()).show(getChildFragmentManager(), "BillDetails"); }
     @Override public void onActionClick(com.upreyvan.carti.models.QuickLogItem item) {
         MainActivity main = (MainActivity) getActivity(); if (main == null) return;

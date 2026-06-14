@@ -58,6 +58,7 @@ public interface TrackListItem extends BaseMultiItem {
     int TYPE_ALLOCATION_HEADER = 3;
     int TYPE_SECTION_HEADER = 5;
     int TYPE_TRANSACTION = 6;
+    int TYPE_EMPTY_STATE = 7;
 
     @Override default int getViewType() { return 0; }
     @Override default String getItemUniqueId() { return ""; }
@@ -255,7 +256,7 @@ public interface TrackListItem extends BaseMultiItem {
         }
     }
 
-    record SectionHeaderItem(String title, String actionText, OnTrackInteractionListener listener) implements TrackListItem {
+    record SectionHeaderItem(String title, String actionText, boolean showAction, OnTrackInteractionListener listener) implements TrackListItem {
         @Override public int getViewType() { return TYPE_SECTION_HEADER; }
         @Override public String getItemUniqueId() { return "header_" + title; }
         @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) { return ViewSectionHeaderBinding.inflate(inflater, parent, false); }
@@ -263,8 +264,8 @@ public interface TrackListItem extends BaseMultiItem {
             ViewSectionHeaderBinding b = (ViewSectionHeaderBinding) binding;
             b.tvSectionTitle.setText(title);
             b.btnSectionAction.setText(actionText);
-            b.btnSectionAction.setVisibility(View.VISIBLE);
-            b.btnSectionAction.setOnClickListener(v -> listener.onSeeAllTransactions());
+            b.btnSectionAction.setVisibility(showAction ? View.VISIBLE : View.GONE);
+            b.btnSectionAction.setOnClickListener(v -> { if (listener != null) listener.onSeeAllTransactions(); });
         }
     }
 
@@ -429,6 +430,16 @@ public interface TrackListItem extends BaseMultiItem {
                     popup.show();
                 });
             }
+        }
+    }
+
+    record EmptyStateItem(String message) implements TrackListItem {
+        @Override public int getViewType() { return TYPE_EMPTY_STATE; }
+        @Override public String getItemUniqueId() { return "empty_" + message; }
+        @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) { return ViewEmptyStateBinding.inflate(inflater, parent, false); }
+        @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
+            ViewEmptyStateBinding b = (ViewEmptyStateBinding) binding;
+            b.tvEmptyMessage.setText(message);
         }
     }
 }

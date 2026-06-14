@@ -122,13 +122,8 @@ public class GoalContributeBottomSheetFragment extends BaseBottomSheetFragment<B
         t.setTargetDate(goal.getTargetDate());
         t.setMembers(goal.getMembers());
         
-        // Dynamic Status: If this contribution completes the goal, mark as COMPLETED
-        double potentialTotal = goal.getAmount() + amount;
-        if (potentialTotal >= goal.getTargetAmount() && goal.getTargetAmount() > 0) {
-            t.setStatus("COMPLETED");
-        } else {
-            t.setStatus("ACTIVE");
-        }
+        // UX CHANGE: Manual completion flow. Status remains ACTIVE even if target reached.
+        t.setStatus("ACTIVE");
 
         t.setAllocationMonth(com.upreyvan.carti.utils.Utils.formatMonthQuery(java.util.Calendar.getInstance()));
         

@@ -532,12 +532,10 @@ public interface HomeListItem extends BaseMultiItem {
     record EmptyStateItem(String message) implements HomeListItem {
         @Override public int getViewType() { return TYPE_EMPTY_STATE; }
         @Override public String getItemUniqueId() { return "EMPTY_" + message; }
-        @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) { return ViewSectionHeaderBinding.inflate(inflater, parent, false); }
+        @NonNull @Override public ViewBinding inflateBinding(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) { return ViewEmptyStateBinding.inflate(inflater, parent, false); }
         @Override public void bind(@NonNull ViewBinding binding, int pos, int count) {
-            ViewSectionHeaderBinding b = (ViewSectionHeaderBinding) binding;
-            b.tvSectionTitle.setText(message);
-            b.tvSectionTitle.setGravity(android.view.Gravity.CENTER);
-            b.btnSectionAction.setVisibility(View.GONE);
+            ViewEmptyStateBinding b = (ViewEmptyStateBinding) binding;
+            b.tvEmptyMessage.setText(message);
         }
     }
 }

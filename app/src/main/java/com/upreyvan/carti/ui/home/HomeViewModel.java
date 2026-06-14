@@ -134,9 +134,7 @@ public class HomeViewModel extends BaseViewModel {
                     aiInsight = response;
                     pref.setAiInsightsCache(response);
                 }
-                
-                // Crucial: Update timestamp after a successful fetch to handle interval logic
-                // But since we are in testing (interval 0), this ensures it knows when it last fetched.
+
                 rebuild(false);
             }
             @Override public void onError(Throwable t) {
@@ -192,35 +190,54 @@ public class HomeViewModel extends BaseViewModel {
             List<BaseMultiItem> items = new ArrayList<>();
             if (currentDash != null) items.add(new HomeListItem.DashboardItem(currentDash));
             
-            if (isAiFetching) {
-                items.add(new HomeListItem.AIInsightItem(
-                        "Analyzing your Carti finances... 🤔",
-                        "INFO"
-                ));
-            } else if (aiInsight != null && !aiInsight.isEmpty()) {
-                try {
-                    String cleanJson = aiInsight.replaceAll("```json", "").replaceAll("```", "").trim();
-                    org.json.JSONArray arr = new org.json.JSONArray(cleanJson);
-                    if (arr.length() > 0) {
-                        for (int i = 0; i < arr.length(); i++) {
-                            org.json.JSONObject obj = arr.getJSONObject(i);
-                            String msg = obj.optString("message", obj.optString("text"));
-                            items.add(new HomeListItem.AIInsightItem(msg, obj.optString("type")));
+            // Master Source Check for AI Insights: Hide if Master Source (Plan) has NO DATA
+            boolean hasMasterPlan = currentPlan != null && !currentPlan.isEmpty();
+
+            if (hasMasterPlan) {
+                if (isAiFetching) {
+                    items.add(new HomeListItem.AIInsightItem(
+                            "Analyzing your Carti finances... 🤔",
+                            "INFO"
+                    ));
+                } else if (aiInsight != null && !aiInsight.isEmpty()) {
+                    try {
+                        String cleanJson = aiInsight.replaceAll("```json", "").replaceAll("```", "").trim();
+                        org.json.JSONArray arr = new org.json.JSONArray(cleanJson);
+                        if (arr.length() > 0) {
+                            for (int i = 0; i < arr.length(); i++) {
+                                org.json.JSONObject obj = arr.getJSONObject(i);
+                                String msg = obj.optString("message", obj.optString("text"));
+                                items.add(new HomeListItem.AIInsightItem(msg, obj.optString("type")));
+                            }
+                        } else {
+                            items.add(new HomeListItem.AIInsightItem("Laging tandaan: Ang pag-iipon ay para sa iyong future! 🙌", "INFO"));
                         }
-                    } else {
-                        items.add(new HomeListItem.AIInsightItem("Laging tandaan: Ang pag-iipon ay para sa iyong future! 🙌", "INFO"));
-                    }
-                } catch (Exception e) {
-                    String cleanMsg = aiInsight.replaceAll("[\\*\\[\\]]", "").trim();
-                    if (!cleanMsg.isEmpty()) {
-                        items.add(new HomeListItem.AIInsightItem(cleanMsg, "INFO"));
-                    } else {
-                        items.add(new HomeListItem.AIInsightItem("Kakatapos ko lang mag-analyze, check mo dashboard natin! 🙌", "INFO"));
+                    } catch (Exception e) {
+                        String cleanMsg = aiInsight.replaceAll("[\\*\\[\\]]", "").trim();
+                        if (!cleanMsg.isEmpty()) {
+                            items.add(new HomeListItem.AIInsightItem(cleanMsg, "INFO"));
+                        } else {
+                            items.add(new HomeListItem.AIInsightItem("Kakatapos ko lang mag-analyze, check mo dashboard natin! 🙌", "INFO"));
+                        }
                     }
                 }
             }
 
-            if (currentPlan == null || currentPlan.isEmpty()) items.add(new HomeListItem.BudgetPromptItem(null));
+            // Master Source Sync: Only show Quick Log if Master Source (Plan) has data
+            if (hasMasterPlan) {
+                items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.quick_log_title), getApplication().getString(R.string.quick_log_subtitle), false, null, null));
+                List<QuickLogItem> logs = new ArrayList<>();
+                for (BudgetCategoryItem p : currentPlan) logs.add(new QuickLogItem(p.getCategoryName(), p.getIconRes(), p.getBgColor(), p.getIconColor()));
+
+                // Centralized Sorting for Quick Logs on Home
+                Utils.sortAlphabetically(logs, QuickLogItem::getTitle);
+
+                items.add(new HomeListItem.QuickLogItemContainer(logs, null, null));
+            } else {
+                // If Master source has NO DATA, show Setup Budget Plan card as requested
+                items.add(new HomeListItem.BudgetPromptItem(null));
+            }
+
             if (currentBills != null && !currentBills.isEmpty()) {
                 items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.due_bills_header), null, false, null, null));
                 
@@ -232,16 +249,6 @@ public class HomeViewModel extends BaseViewModel {
                 if (!unpaidBills.isEmpty()) {
                     items.add(new HomeListItem.BillContainerItem(unpaidBills, null, null));
                 }
-            }
-            if (currentPlan != null && !currentPlan.isEmpty()) {
-                items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.quick_log_title), getApplication().getString(R.string.quick_log_subtitle), false, null, null));
-                List<QuickLogItem> logs = new ArrayList<>();
-                for (BudgetCategoryItem p : currentPlan) logs.add(new QuickLogItem(p.getCategoryName(), p.getIconRes(), p.getBgColor(), p.getIconColor()));
-
-                // Centralized Sorting for Quick Logs on Home
-                Utils.sortAlphabetically(logs, QuickLogItem::getTitle);
-
-                items.add(new HomeListItem.QuickLogItemContainer(logs, null, null));
             }
             items.add(new HomeListItem.SectionHeaderItem(getApplication().getString(R.string.recent_activity), null, currentTransactions != null && !currentTransactions.isEmpty(), getApplication().getString(R.string.see_all), null));
             
@@ -263,8 +270,6 @@ public class HomeViewModel extends BaseViewModel {
         if (instant) task.run();
         else executor.execute(task);
     }
-
-    private double calculateTrend(double c, double p) { return p == 0 ? 0 : ((c - p) / p) * 100; }
     public record DashboardState(double balance, double monthlyIncome, double monthlyExpense, double monthlySavings, double incomeTrend, double expenseTrend, double savingsTrend, double todayExpense, double monthlyBudget) {}
 
     public void toggleLike(TransactionWithUser item) {

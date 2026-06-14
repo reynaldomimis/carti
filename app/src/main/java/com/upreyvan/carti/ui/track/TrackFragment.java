@@ -57,7 +57,7 @@ public class TrackFragment extends BaseFragment<FragmentTrackBinding> implements
     private BaseMultiItem enrich(BaseMultiItem item) {
         if (item instanceof TrackListItem.SummaryItem s) return new TrackListItem.SummaryItem(s.balance(), s.income(), s.expense(), s.saved(), s.target(), s.progress(), this);
         if (item instanceof TrackListItem.AllocationHeaderItem a) return new TrackListItem.AllocationHeaderItem(a.totalAllocation(), a.totalSpent(), a.isExpanded(), a.allocations(), this, sharedPool);
-        if (item instanceof TrackListItem.SectionHeaderItem s) return new TrackListItem.SectionHeaderItem(s.title(), s.actionText(), this);
+        if (item instanceof TrackListItem.SectionHeaderItem s) return new TrackListItem.SectionHeaderItem(s.title(), s.actionText(), s.showAction(), this);
         if (item instanceof TrackListItem.TransactionItem t) return new TrackListItem.TransactionItem(t.transaction(), this);
         return item;
     }

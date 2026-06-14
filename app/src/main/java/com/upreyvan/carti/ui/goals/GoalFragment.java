@@ -16,6 +16,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.upreyvan.carti.R;
 import com.upreyvan.carti.base.BaseFragment;
 import com.upreyvan.carti.base.GenericAdapter;
+import com.upreyvan.carti.managers.PreferenceManager;
 import com.upreyvan.carti.repository.RealtimeRepository;
 import com.upreyvan.carti.databinding.FragmentGoalBinding;
 import com.upreyvan.carti.databinding.ItemGoalBinding;
@@ -35,6 +36,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
     private List<TransactionWithUser> allGoals = new ArrayList<>();
     private PlanViewModel viewModel;
     private RealtimeRepository realtimeRepo;
+    private PreferenceManager pref;
     private boolean isLoading = true;
 
     @Override
@@ -47,6 +49,7 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
         realtimeRepo = RealtimeRepository.getInstance(requireContext());
+        pref = PreferenceManager.getInstance(requireContext());
         
         setupUI();
         setupTabs();
@@ -58,11 +61,9 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
 
     private void setupUI() {
         getBinding().layoutHeader.tvHeaderTitle.setText(R.string.label_setup_goals);
-        // maangas and general label for goals
         getBinding().layoutHeader.tvHeaderSubtitle.setText("Plan your vision. Secure your future.");
         getBinding().layoutHeader.btnHeaderAction.setText(R.string.btn_add_goal);
-        getBinding().layoutHeader.btnHeaderAction.setOnClickListener(v -> 
-                AddGoalBottomSheetFragment.newInstance().show(getChildFragmentManager(), "ADD_GOAL"));
+        getBinding().layoutHeader.btnHeaderAction.setOnClickListener(v -> AddGoalBottomSheetFragment.newInstance().show(getChildFragmentManager(), "ADD_GOAL"));
     }
 
     private void observeRealtimeChanges() {
@@ -99,7 +100,6 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
         int titleRes;
         int descRes;
 
-        // Base filter: Only show main goals (documents with target amounts), not contributions
         List<TransactionWithUser> mainGoals = new ArrayList<>();
         for (TransactionWithUser tu : allGoals) {
             if (tu.getTransaction().getTargetAmount() > 0) {
@@ -121,6 +121,13 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                 }
                 titleRes = R.string.no_completed_goals_title;
                 descRes = R.string.no_completed_goals_desc;
+            }
+            case 3 -> { // Canceled
+                for (TransactionWithUser g : mainGoals) {
+                    if ("CANCELED".equalsIgnoreCase(g.getTransaction().getStatus()) || "CANCELLED".equalsIgnoreCase(g.getTransaction().getStatus())) filteredList.add(g);
+                }
+                titleRes = R.string.no_canceled_goals_title;
+                descRes = R.string.no_canceled_goals_desc;
             }
             default -> {
                 filteredList.addAll(mainGoals);
@@ -201,13 +208,65 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                         binding.progressIndicator.setProgress(progress);
                         binding.tvPercentage.setText(getString(R.string.percentage_format, progress));
                         
-                        // Target Date Formatting
-                        String dateStr = goal.getTargetDate();
-                        if (dateStr != null && !dateStr.isEmpty()) {
-                            long millis = com.upreyvan.carti.utils.DateHelper.getMillisFromIso(dateStr);
-                            binding.tvTargetDate.setText(String.format("Target Date: %s", com.upreyvan.carti.utils.DateHelper.formatDate(millis)));
+                        // NEW TARGET DATE & STATUS UX
+                        binding.tvTargetDate.setText(com.upreyvan.carti.utils.GoalHelper.getGoalStatusLabel(requireContext(), goal));
+                        binding.tvTargetDate.setTextColor(com.upreyvan.carti.utils.GoalHelper.getLabelColor(requireContext(), goal));
+
+                        // DYNAMIC BUTTON BEHAVIOR: OWNER VS NON-OWNER RULES
+                        String statusStr = goal.getStatus() != null ? goal.getStatus().toUpperCase() : "ACTIVE";
+                        String currentUserId = pref.getUserId();
+                        
+                        // Robust Ownership Check: Handling possible mapping mismatches or nulls
+                        boolean isOwner = false;
+                        if (currentUserId != null && !currentUserId.isEmpty()) {
+                            isOwner = currentUserId.equals(goal.getUserId()) || 
+                                     currentUserId.equals(itemWithUser.getTransaction().getUserId());
+                        }
+
+                        // Reset button state
+                        binding.btnContribute.setVisibility(View.VISIBLE);
+                        binding.btnContribute.setEnabled(true);
+                        binding.btnContribute.setClickable(true);
+                        binding.btnContribute.setElevation(0);
+                        binding.btnContribute.setStrokeWidth(0);
+                        binding.btnContribute.setPadding(com.upreyvan.carti.utils.Utils.dpToPx(requireContext(), 12), 0, com.upreyvan.carti.utils.Utils.dpToPx(requireContext(), 12), 0);
+                        binding.btnContribute.setTypeface(null, android.graphics.Typeface.NORMAL);
+
+                        if ("ACTIVE".equals(statusStr)) {
+                            if (isOwner) {
+                                // OWNER FLOW
+                                if (com.upreyvan.carti.utils.GoalHelper.isTargetReached(goal)) {
+                                    // REACHED -> Check Status (Red)
+                                    binding.btnContribute.setText("Check Status");
+                                    binding.btnContribute.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.status_red_tonal));
+                                    binding.btnContribute.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_red));
+                                    binding.btnContribute.setStrokeColor(ContextCompat.getColorStateList(requireContext(), R.color.status_red));
+                                    binding.btnContribute.setStrokeWidth(com.upreyvan.carti.utils.Utils.dpToPx(requireContext(), 1));
+
+                                    binding.btnContribute.setOnClickListener(v -> 
+                                            GoalStatusBottomSheetFragment.newInstance(goal, true).show(getChildFragmentManager(), "GOAL_STATUS_MANAGE"));
+                                } else {
+                                    // NOT REACHED -> Action (Green)
+                                    binding.btnContribute.setText("Action");
+                                    binding.btnContribute.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.mint_green_alpha));
+                                    binding.btnContribute.setTextColor(ContextCompat.getColor(requireContext(), R.color.carti_primary_green));
+
+                                    binding.btnContribute.setOnClickListener(v -> 
+                                            GoalStatusBottomSheetFragment.newInstance(goal, false).show(getChildFragmentManager(), "GOAL_ACTIONS"));
+                                }
+                            } else {
+                                // NON-OWNER FLOW -> Always directly "Contribute"
+                                binding.btnContribute.setText("Contribute");
+                                binding.btnContribute.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.mint_green_alpha));
+                                binding.btnContribute.setTextColor(ContextCompat.getColor(requireContext(), R.color.carti_primary_green));
+
+                                binding.btnContribute.setOnClickListener(v -> 
+                                        GoalContributeBottomSheetFragment.newInstance(goal).show(getChildFragmentManager(), "CONTRIBUTE_GOAL"));
+                            }
                         } else {
-                            binding.tvTargetDate.setText(getString(R.string.label_days_left, 0));
+                            // COMPLETED or CANCELED: Hide action buttons for everyone
+                            binding.btnContribute.setVisibility(View.GONE);
+                            binding.btnContribute.setOnClickListener(null);
                         }
 
                         // Contributor Avatar Stack logic
@@ -215,8 +274,6 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                         java.util.Map<String, String> uniqueContributors = new java.util.LinkedHashMap<>();
                         for (TransactionWithUser tu : allGoals) {
                             Transaction contribution = tu.getTransaction();
-                            // Identify contribution by type GOAL and matching either ID or Title
-                            // and ensure it's not the main goal document itself
                             if ("GOAL".equalsIgnoreCase(contribution.getType()) && 
                                 contribution.getTargetAmount() <= 0 &&
                                 (goal.getId().equals(contribution.getAllocatedTo()) || 
@@ -260,9 +317,6 @@ public class GoalFragment extends BaseFragment<FragmentGoalBinding> {
                         }
                         
                         binding.avatarStack.setVisibility(contributorIds.isEmpty() ? View.GONE : View.VISIBLE);
-
-                        binding.btnContribute.setOnClickListener(v -> 
-                                GoalContributeBottomSheetFragment.newInstance(goal).show(getChildFragmentManager(), "CONTRIBUTE_GOAL"));
                     }
                 }
         );

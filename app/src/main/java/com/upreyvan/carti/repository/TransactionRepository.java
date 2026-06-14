@@ -323,30 +323,18 @@ public class TransactionRepository {
                 Transaction mainGoal = goalWithUser.getTransaction();
                 String mainId = mainGoal.getId();
                 
-                // Status Determination
-                String newStatus = (totalSum >= mainGoal.getTargetAmount() && mainGoal.getTargetAmount() > 0) 
-                        ? "COMPLETED" : "ACTIVE";
+                // UX CHANGE: Manual completion flow. We no longer auto-update status to COMPLETED here.
+                // Status remains ACTIVE even if target reached, until user explicitly manages it.
                 
                 Map<String, Object> updateFields = new HashMap<>();
                 updateFields.put("amount", totalSum);
-                updateFields.put("status", newStatus);
                 
                 remoteDataSource.updateTransaction(mainId, updateFields, new AppwriteManager.AppwriteCallback<>() {
                     @Override public void onSuccess(Map<String, Object> result) {
                         handleRealtimeEvent(result, false);
                         
-                        // 3. CASCADE UPDATE: Update all linked contributions to match the goal's status
-                        // Use the shared 'targetTag' as the filter for the cascade
-                        for (String id : linkedIds) {
-                            if (id.equals(mainId)) continue; // Already updated
-                            
-                            Map<String, Object> statusUpdate = new HashMap<>();
-                            statusUpdate.put("status", newStatus);
-                            remoteDataSource.updateTransaction(id, statusUpdate, new AppwriteManager.AppwriteCallback<>() {
-                                @Override public void onSuccess(Map<String, Object> r) { handleRealtimeEvent(r, false); }
-                                @Override public void onError(Throwable e) { Log.e(TAG, "Cascade update failed for " + id); }
-                            });
-                        }
+                        // CASCADE UPDATE: Since status is no longer auto-changed here, 
+                        // we only sync the amount. Cascade status updates will happen in manual completion.
                     }
                     @Override public void onError(Throwable error) { Log.e(TAG, "Goal update failed: " + error.getMessage()); }
                 });
@@ -466,9 +454,12 @@ public class TransactionRepository {
         fields.put("title", t.getTitle());
         fields.put("note", t.getNote());
         fields.put("sub_category", t.getSubCategory());
-        fields.put("userId", pref.getUserId());
-        fields.put("familyId", pref.getFamilyId());
-        fields.put("username", pref.getUsername());
+        
+        // Ownership Preservation: Use existing if available, otherwise current user
+        fields.put("userId", t.getUserId() != null ? t.getUserId() : pref.getUserId());
+        fields.put("familyId", t.getFamilyId() != null ? t.getFamilyId() : pref.getFamilyId());
+        fields.put("username", t.getUsername() != null ? t.getUsername() : pref.getUsername());
+
         fields.put("startDate", t.getStartDate() != null ? t.getStartDate() : Utils.getCurrentTimestamp());
         fields.put("isRecurring", t.isRecurring());
         fields.put("iconRes", t.getIconRes());
@@ -1072,7 +1063,7 @@ public class TransactionRepository {
 
     public List<BudgetCategoryItem> getBudgetPlan() {
         List<TransactionWithUser> list = allTransactions.getValue();
-        if (list == null) return getDefaultCategories();
+        if (list == null) return new ArrayList<>();
 
         String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
         Map<String, BudgetCategoryItem> aggMap = new HashMap<>();
@@ -1104,12 +1095,12 @@ public class TransactionRepository {
                     }
                 });
 
-        return aggMap.isEmpty() ? getDefaultCategories() : new ArrayList<>(aggMap.values());
+        return new ArrayList<>(aggMap.values());
     }
 
     public LiveData<List<BudgetCategoryItem>> getBudgetPlanLiveData() {
         return Transformations.map(allTransactions, list -> {
-            if (list == null) return getDefaultCategories();
+            if (list == null) return new ArrayList<>();
 
             String currentMonth = Utils.formatMonthQuery(Calendar.getInstance());
 
@@ -1161,7 +1152,7 @@ public class TransactionRepository {
                     }
                 });
 
-            if (allocationAggMap.isEmpty()) return getDefaultCategories();
+            if (allocationAggMap.isEmpty()) return new ArrayList<>();
 
             for (BudgetCategoryItem item : allocationAggMap.values()) {
                 String catKey = item.getCategoryName().toLowerCase(java.util.Locale.ROOT).trim();
@@ -1223,9 +1214,6 @@ public class TransactionRepository {
     }
 
     public void processRecurringBudgets() {
-        // Financial Logic: Allocation and Income are separate concepts.
-        // Recurring Allocation should carry over as Allocation to maintain budget consistency.
-        // It must NOT be treated as or converted into earned Income.
         String currentMonthKey = String.format(java.util.Locale.US, "%d-%02d", 
                 Calendar.getInstance().get(Calendar.YEAR), 
                 Calendar.getInstance().get(Calendar.MONTH) + 1);
@@ -1277,9 +1265,7 @@ public class TransactionRepository {
             List<CategorySum> expenses) {
 
         List<BudgetCategoryItem> basePlan = new ArrayList<>();
-        if (dbAllocations == null || dbAllocations.isEmpty()) {
-            basePlan = getDefaultCategories();
-        } else {
+        if (dbAllocations != null && !dbAllocations.isEmpty()) {
             Map<String, BudgetCategoryItem> aggregated = new LinkedHashMap<>();
             for (TransactionWithUser tu : dbAllocations) {
                 Transaction t = tu.getTransaction();
@@ -1429,6 +1415,45 @@ public class TransactionRepository {
                         (t.getAllocationMonth() != null && t.getAllocationMonth().startsWith(currentMonth)) &&
                         (t.getCategory().equalsIgnoreCase(name) || Objects.equals(t.getNote(), name)))
             .forEach(t -> deleteItem(TransactionType.ALLOCATION, t.getId(), null));
+    }
+
+    public void completeGoalCascade(Transaction goal, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        executor.execute(() -> {
+            String tag = goal.getAllocatedTo();
+            if (tag == null || tag.isEmpty()) {
+                goal.setStatus("COMPLETED");
+                updateItem(goal.getType(), goal.getId(), goal, callback);
+                return;
+            }
+
+            List<String> linkedIds = new ArrayList<>();
+            synchronized (transactionCache) {
+                for (TransactionWithUser tu : transactionCache) {
+                    Transaction t = tu.getTransaction();
+                    if (tag.equals(t.getAllocatedTo())) {
+                        linkedIds.add(t.getId());
+                    }
+                }
+            }
+
+            goal.setStatus("COMPLETED");
+            updateItem(goal.getType(), goal.getId(), goal, new AppwriteManager.AppwriteCallback<>() {
+                @Override
+                public void onSuccess(Map<String, Object> result) {
+                    for (String id : linkedIds) {
+                        if (id.equals(goal.getId())) continue;
+                        Map<String, Object> statusFields = new HashMap<>();
+                        statusFields.put("status", "COMPLETED");
+                        remoteDataSource.updateTransaction(id, statusFields, new AppwriteManager.AppwriteCallback<>() {
+                            @Override public void onSuccess(Map<String, Object> r) { handleRealtimeEvent(r, false); }
+                            @Override public void onError(Throwable e) { Log.e(TAG, "Cascade complete failed: " + id); }
+                        });
+                    }
+                    if (callback != null) callback.onSuccess(result);
+                }
+                @Override public void onError(Throwable error) { if (callback != null) callback.onError(error); }
+            });
+        });
     }
 
     public static class CategorySum {

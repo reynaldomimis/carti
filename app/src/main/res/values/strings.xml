@@ -456,7 +456,9 @@
     <string name="tab_active_goals">Active</string>
     <string name="tab_completed_goals">Completed</string>
     <string name="tab_all_goals">All</string>
-    <string name="tab_paused_goals">Paused</string>
+    <string name="tab_canceled_goals">Canceled</string>
+    <string name="no_canceled_goals_title">No Canceled Goals</string>
+    <string name="no_canceled_goals_desc">Your canceled goals will appear here.</string>
     <string name="label_days_left">%d days left</string>
     <string name="overall_percentage_target_format">%d%% of target</string>
 
@@ -738,7 +740,7 @@
     <string name="next_payday_for">Payday for %s</string>
     <string name="days_to_go">%d days to go</string>
     <string name="payday_date_format">%s</string>
-    <string name="no_transactions_yet">No expenses recorded yet.</string>
+    <string name="no_transactions_yet">No expense recorded yet</string>
     <string name="no_quick_logs_yet">No budget categories found. Create a budget plan to start logging.</string>
     <string name="hint_search_transactions">Search transactions...</string>
     <string name="quick_actions_title">Shortcuts</string>

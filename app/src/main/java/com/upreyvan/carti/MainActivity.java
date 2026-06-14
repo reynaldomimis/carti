@@ -113,6 +113,8 @@ public class MainActivity extends BaseActivity<ActivityMainBinding> {
         
         if (intent.getBooleanExtra("show_home", false)) {
             navigateTo(Constants.Navigation.HOME);
+        } else if (intent.getBooleanExtra("show_plan", false)) {
+            navigateTo(Constants.Navigation.PLAN);
         }
         
         String navigateTo = intent.getStringExtra("navigate_to");

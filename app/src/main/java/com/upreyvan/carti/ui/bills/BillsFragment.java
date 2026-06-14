@@ -62,7 +62,7 @@ public class BillsFragment extends BaseFragment<FragmentBillsBinding> {
         getBinding().layoutEmptyBills.setVisibility(View.GONE);
 
         viewModel.getBills().observe(getViewLifecycleOwner(), bills -> {
-            updateSummary(bills, viewModel.getDebts().getValue());
+            updateSummary(bills);
             getBinding().pbBills.setVisibility(View.GONE);
             if (bills == null || bills.isEmpty()) {
                 getBinding().layoutBillsContent.setVisibility(View.GONE);
@@ -73,14 +73,11 @@ public class BillsFragment extends BaseFragment<FragmentBillsBinding> {
                 updateBillList(bills);
             }
         });
-
-        viewModel.getDebts().observe(getViewLifecycleOwner(), debts -> 
-                updateSummary(viewModel.getBills().getValue(), debts));
     }
 
-    private void updateSummary(List<Bill> bills, List<TransactionWithUser> debts) {
+    private void updateSummary(List<Bill> bills) {
         int unpaid = 0, paid = 0, overdue = 0;
-        double unpaidAmt = 0, paidAmt = 0, overdueAmt = 0, debtAmt = 0;
+        double unpaidAmt = 0, paidAmt = 0, overdueAmt = 0;
 
         if (bills != null) {
             for (Bill b : bills) {
@@ -96,22 +93,14 @@ public class BillsFragment extends BaseFragment<FragmentBillsBinding> {
                 }
             }
         }
-        
-        if (debts != null) {
-            for (TransactionWithUser d : debts) {
-                debtAmt += d.getTransaction().getAmount();
-            }
-        }
 
         getBinding().layoutSummary.tvUnpaidCount.setText(String.valueOf(unpaid));
         getBinding().layoutSummary.tvPaidCount.setText(String.valueOf(paid));
         getBinding().layoutSummary.tvOverdueCount.setText(String.valueOf(overdue));
-        getBinding().layoutSummary.tvDebtsCount.setText(String.valueOf(debts != null ? debts.size() : 0));
 
         getBinding().layoutSummary.tvUnpaidAmount.setText(Utils.formatCurrency(unpaidAmt)); 
         getBinding().layoutSummary.tvPaidAmount.setText(Utils.formatCurrency(paidAmt));
         getBinding().layoutSummary.tvOverdueAmount.setText(Utils.formatCurrency(overdueAmt));
-        getBinding().layoutSummary.tvDebtsAmount.setText(Utils.formatCurrency(debtAmt));
     }
 
     private void updateBillList(List<Bill> bills) {

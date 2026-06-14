@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_white"
+    android:paddingBottom="@dimen/spacing_large">
+
+    <View
+        android:id="@+id/handle"
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:background="@drawable/bg_handle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvTitle"
+        style="@style/DashAmountSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="Goal Management"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/handle" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvSubtitle"
+        style="@style/CartiTextDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="What would you like to do with this goal?"
+        app:layout_constraintStart_toStartOf="@id/tvTitle"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <ImageButton
+        android:id="@+id/btnClose"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="@dimen/spacing_medium"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_close"
+        app:layout_constraintBottom_toBottomOf="@id/tvTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvTitle"
+        app:tint="@color/text_primary" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/spacing_medium"
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnContribute"
+            style="@style/CartiButton.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:text="Add Funds / Contribute"
+            android:visibility="gone"
+            app:icon="@drawable/ic_add"
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnComplete"
+            style="@style/CartiButton.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:text="Mark as Complete"
+            android:visibility="gone"
+            app:icon="@drawable/ic_trophy"
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExtend"
+            style="@style/CartiButton.Tonal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:text="Extend target date"
+            android:textColor="@color/text_primary"
+            android:visibility="gone"
+            app:backgroundTint="@color/tonal_button_bg"
+            app:icon="@drawable/ic_calendar"
+            app:iconTint="@color/text_primary"
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancel"
+            style="@style/CartiButton.Tonal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancel Goal"
+            android:textColor="@color/text_primary"
+            app:backgroundTint="@color/tonal_button_bg"
+            app:icon="@drawable/ic_close"
+            app:iconTint="@color/status_red" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
