@@ -68,10 +68,14 @@ public class PlanViewModel extends BaseViewModel {
             List<com.upreyvan.carti.models.Category> localCats = com.upreyvan.carti.managers.CategoryManager.getInstance(getApplication()).getCategories();
             List<BudgetCategoryItem> categoryList = new ArrayList<>();
             for (com.upreyvan.carti.models.Category c : localCats) {
-                categoryList.add(new BudgetCategoryItem(
-                        c.getName(), c.getIconRes(), c.getIconColor(), c.getBackgroundColor(),
-                        0, 0, c.getParentCategory(), 0, false
-                ));
+                // If it's already in the budget list, don't duplicate it as a base category
+                boolean alreadyInBudget = budgetList.stream().anyMatch(b -> b.getCategoryName().equalsIgnoreCase(c.getName()));
+                if (!alreadyInBudget) {
+                    categoryList.add(new BudgetCategoryItem(
+                            c.getName(), c.getIconRes(), c.getIconColor(), c.getBackgroundColor(),
+                            0, 0, c.getParentCategory(), 0, false
+                    ));
+                }
             }
             categories.postValue(sortBudgetItems(categoryList));
         });

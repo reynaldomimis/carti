@@ -67,7 +67,26 @@ public class TransactionRepository {
 
         financialSummary.addSource(allTransactions, list -> {
             executor.execute(() -> {
-                com.upreyvan.carti.models.FinancialSummary summary = com.upreyvan.carti.managers.FinancialEngine.calculate(list);
+                // Ensure all transactions have their category names resolved for calculation grouping
+                com.upreyvan.carti.managers.CategoryManager cm = com.upreyvan.carti.managers.CategoryManager.getInstance(pref.getContext());
+                List<TransactionWithUser> hydratedList = new ArrayList<>();
+                for (TransactionWithUser tu : list) {
+                    TransactionWithUser copy = tu.copy();
+                    Transaction t = copy.getTransaction();
+                    
+                    // Resolve latest category name for grouping (handles both ID and legacy name)
+                    com.upreyvan.carti.models.Category c = cm.getCategoryById(t.getCategory());
+                    if (c == null) {
+                        c = cm.getCategoryByName(t.getCategory());
+                    }
+
+                    if (c != null) {
+                        t.setCategory(c.getName()); 
+                    }
+                    hydratedList.add(copy);
+                }
+                
+                com.upreyvan.carti.models.FinancialSummary summary = com.upreyvan.carti.managers.FinancialEngine.calculate(hydratedList);
                 financialSummary.postValue(summary);
             });
         });
@@ -423,16 +442,26 @@ public class TransactionRepository {
         if (t.getCategory() == null) return;
 
         com.upreyvan.carti.managers.CategoryManager cm = com.upreyvan.carti.managers.CategoryManager.getInstance(pref.getContext());
-        com.upreyvan.carti.models.Category c = cm.getCategoryByName(t.getCategory());
+        
+        // Try looking up by ID first (modern way) then by name (legacy support)
+        com.upreyvan.carti.models.Category c = cm.getCategoryById(t.getCategory());
+        if (c == null) {
+            c = cm.getCategoryByName(t.getCategory());
+        }
         
         if (c != null) {
+            // Crucial: Store the category ID in the transaction's category field for database reference
+            t.setCategory(c.getId());
+
             if (t.getIconRes() == 0 && (t.getIconUrl() == null || t.getIconUrl().isEmpty())) {
                 t.setIconRes(c.getIconRes());
             }
             
             if (c.getParentCategory() != null && !c.getParentCategory().isEmpty() && !"ALLOCATION".equalsIgnoreCase(t.getType())) {
                 t.setSubCategory(c.getName());
-                t.setCategory(c.getParentCategory());
+                // If it's a subcategory, we might want to store the parent's ID or keep the current ID.
+                // The user said "maging refreence id nalang yang categry". 
+                // Let's store the subcategory's ID as the main category reference.
             }
         }
     }
@@ -1176,13 +1205,7 @@ public class TransactionRepository {
     }
 
     public List<BudgetCategoryItem> getDefaultCategories() {
-        List<BudgetCategoryItem> items = new ArrayList<>();
-        items.add(new BudgetCategoryItem("Food", R.drawable.ic_chart, R.color.icon_food, R.color.log_food, 0, 0));
-        items.add(new BudgetCategoryItem("Transportation", R.drawable.ic_chart, R.color.icon_fare, R.color.log_fare, 0, 0));
-        items.add(new BudgetCategoryItem("Shopping", R.drawable.ic_chart, R.color.icon_store, R.color.log_store, 0, 0));
-        items.add(new BudgetCategoryItem("Health", R.drawable.ic_chart, R.color.status_red, R.color.status_red_tonal, 0, 0));
-        items.add(new BudgetCategoryItem("Others", R.drawable.ic_chart, R.color.icon_others, R.color.log_others, 0, 0));
-        return items;
+        return new ArrayList<>();
     }
 
     public LiveData<RecurringBudgetStats> getRecurringStatsLiveData() {

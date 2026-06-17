@@ -324,12 +324,28 @@ public class AddCategoryBottomSheet extends BaseBottomSheetFragment<BottomSheetA
         manager.updateCategory(editingItem != null ? editingItem.getCategoryName() : name, cat);
 
         // Perform Remote Sync (CUD via Cloud Function)
+        com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<java.util.Map<java.lang.String, Object>> callback = new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<>() {
+            @Override
+            public void onSuccess(java.util.Map<String, Object> result) {
+                if (isAdded()) {
+                    com.upreyvan.carti.utils.UiHelper.showSnackbar(getBinding().getRoot(), "Category synced to cloud", com.upreyvan.carti.utils.UiHelper.Status.SUCCESS);
+                    PlanViewModel viewModel = new ViewModelProvider(requireActivity()).get(PlanViewModel.class);
+                    viewModel.loadData();
+                }
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                if (isAdded()) {
+                    com.upreyvan.carti.utils.UiHelper.showSnackbar(getBinding().getRoot(), "Cloud sync failed: " + error.getMessage(), com.upreyvan.carti.utils.UiHelper.Status.ERROR);
+                }
+            }
+        };
+
         if (editingItem != null && editingItem.getCategoryName().length() > 20) { // Check if it looks like an ID
-            manager.updateCategoryRemote(editingItem.getCategoryName(), cat);
+            manager.updateCategoryRemote(editingItem.getCategoryName(), cat, callback);
         } else {
-            // For new categories, we can sync the entire list or add a createCategoryRemote
-            // Let's use syncCategories for simplicity as we have it in Cloud Function
-            manager.refreshRemoteCategories(com.upreyvan.carti.managers.PreferenceManager.getInstance(requireContext()).getFamilyId());
+            manager.addCategoryRemote(cat, callback);
         }
 
         // If user also set an amount, we save it as a budget (ALLOCATION) in the repo

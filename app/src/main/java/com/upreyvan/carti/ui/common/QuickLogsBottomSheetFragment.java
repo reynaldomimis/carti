@@ -320,8 +320,12 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
             double amountVal = StringHelper.parseDouble(getBinding().layoutForm.etAmount.getText().toString());
             String description = getBinding().layoutForm.etDescription.getText().toString();
             
-            String finalCategory = (logType == LogType.EXPENSE && !subCategoryToSave.isEmpty()) ? subCategoryToSave : categoryToSave;
-            if (finalCategory.isEmpty()) finalCategory = selectedCategory;
+            String categoryLookup = (logType == LogType.EXPENSE && !subCategoryToSave.isEmpty()) ? subCategoryToSave : categoryToSave;
+            if (categoryLookup.isEmpty()) categoryLookup = selectedCategory;
+
+            // Resolve ID for category reference
+            com.upreyvan.carti.models.Category catObj = com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).getCategoryByName(categoryLookup);
+            String finalCategory = (catObj != null) ? catObj.getId() : categoryLookup;
 
             switch (logType) {
                 case EXPENSE:
@@ -331,7 +335,7 @@ public class QuickLogsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
                     viewModel.saveDebt(amountVal, categoryToSave, description);
                     break;
                 case GOAL:
-                    viewModel.saveGoal(amountVal, selectedCategory);
+                    viewModel.saveGoal(amountVal, finalCategory);
                     break;
             }
         });

@@ -56,122 +56,13 @@ public class CategoryManager {
 
     public List<Category> getCategories() {
         String json = prefs.getString(Constants.Keys.KEY_CATEGORIES + "_v2", null);
-        List<Category> categories;
-        if (json == null) {
-            categories = getDefaultCategories();
-            saveCategories(categories);
-            PreferenceManager.getInstance(context).resetAllSyncTimestamps();
-        } else {
+        List<Category> categories = new ArrayList<>();
+        
+        if (json != null) {
             Type type = new TypeToken<ArrayList<Category>>() {}.getType();
             categories = gson.fromJson(json, type);
-            
-            boolean needsSave = false;
-            
-            Category billsParent = null;
-            for (Category c : categories) {
-                if ("Bills".equalsIgnoreCase(c.getName())) {
-                    billsParent = c;
-                    break;
-                }
-            }
-            if (billsParent == null) {
-                billsParent = new Category("10", "Bills", R.drawable.ic_calendar, R.color.icon_electricity, R.color.log_electricity, true);
-                categories.add(billsParent);
-                needsSave = true;
-            }
-
-            String[] billSubs = {"Water", "Electricity", "Internet/Wifi", "Rent", "Load/Data", "Cable TV", "Subscription", "Credit Card", "Insurance", "Tuition", "Home Dues", "Gym", "Installment", "Garbage", "Landline", "LPG", "Vehicle Loan", "PhilHealth", "Netflix", "Spotify"};
-            for (String subName : billSubs) {
-                boolean found = false;
-                for (Category c : categories) {
-                    if (c.getName().equalsIgnoreCase(subName)) {
-                        if (!"Bills".equalsIgnoreCase(c.getParentCategory())) {
-                            c.setParentCategory("Bills");
-                            needsSave = true;
-                        }
-                        if (c.getIconColor() != billsParent.getIconColor() || c.getIconRes() != billsParent.getIconRes()) {
-                            c.setIconRes(billsParent.getIconRes());
-                            c.setIconColor(billsParent.getIconColor());
-                            c.setBackgroundColor(billsParent.getBackgroundColor());
-                            needsSave = true;
-                        }
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    categories.add(new Category("sub_" + subName.toLowerCase().replace("/", "_"), subName, billsParent.getIconRes(), billsParent.getIconColor(), billsParent.getBackgroundColor(), true, "Bills"));
-                    needsSave = true;
-                }
-            }
-
-            Category othersParent = null;
-            for (Category c : categories) {
-                if ("Others".equalsIgnoreCase(c.getName()) && (c.getParentCategory() == null || c.getParentCategory().isEmpty())) {
-                    othersParent = c;
-                    break;
-                }
-            }
-            if (othersParent != null) {
-                String[] otherSubs = {"Allowance", "Church/Donation", "Gifts/Celebration", "Laundry", "Household Help", "Miscellaneous", "Emergency", "Business/Side Hustle", "Special Occasion", "Tithe/Abuloy"};
-                for (String subName : otherSubs) {
-                    boolean found = false;
-                    for (Category c : categories) {
-                        if (c.getName().equalsIgnoreCase(subName)) {
-                            if (!"Others".equalsIgnoreCase(c.getParentCategory())) {
-                                c.setParentCategory("Others");
-                                needsSave = true;
-                            }
-                            if (c.getIconColor() != othersParent.getIconColor() || c.getIconRes() != othersParent.getIconRes()) {
-                                c.setIconRes(othersParent.getIconRes());
-                                c.setIconColor(othersParent.getIconColor());
-                                c.setBackgroundColor(othersParent.getBackgroundColor());
-                                needsSave = true;
-                            }
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        categories.add(new Category("sub_other_" + subName.toLowerCase().replace("/", "_"), subName, othersParent.getIconRes(), othersParent.getIconColor(), othersParent.getBackgroundColor(), true, "Others"));
-                        needsSave = true;
-                    }
-                }
-            }
-
-            Object[][] familyMain = {
-                {"f1", "Education", android.R.drawable.ic_menu_edit, R.color.icon_fare, R.color.log_fare}, 
-                {"f2", "Personal Care", android.R.drawable.ic_menu_myplaces, R.color.icon_load, R.color.log_load}, 
-                {"f3", "Shopping", android.R.drawable.ic_input_add, R.color.icon_store, R.color.log_store}, 
-                {"f4", "Home Repair", android.R.drawable.ic_menu_manage, R.color.icon_others, R.color.log_others}, 
-                {"f5", "Entertainment", android.R.drawable.ic_menu_slideshow, R.color.purple, R.color.tonal_button_bg}, 
-                {"f6", "Pets", android.R.drawable.ic_menu_view, R.color.icon_food, R.color.log_food}, 
-                {"f7", "Savings", android.R.drawable.ic_menu_save, R.color.carti_primary_green, R.color.mint_green_alpha}
-            };
-            for (Object[] main : familyMain) {
-                boolean found = false;
-                for (Category c : categories) {
-                    if (c.getName().equalsIgnoreCase((String)main[1])) {
-                        if (c.getIconRes() == R.drawable.ic_chart || c.getIconColor() == R.color.icon_others || c.getIconColor() == 0) {
-                            c.setIconRes((Integer)main[2]);
-                            c.setIconColor((Integer)main[3]);
-                            c.setBackgroundColor((Integer)main[4]);
-                            needsSave = true;
-                        }
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    categories.add(new Category((String)main[0], (String)main[1], (Integer)main[2], (Integer)main[3], (Integer)main[4], true));
-                    needsSave = true;
-                }
-            }
-
-            if (needsSave) {
-                saveCategories(categories);
-            }
         }
+
         return sortCategories(categories);
     }
 
@@ -182,13 +73,15 @@ public class CategoryManager {
         notifyListeners();
     }
 
-    public void updateCategory(String oldName, Category updated) {
+    public void updateCategory(String id, Category updated) {
         List<Category> categories = getCategories();
         boolean isParent = updated.getParentCategory() == null || updated.getParentCategory().isEmpty();
-        
+        boolean found = false;
+
         for (int i = 0; i < categories.size(); i++) {
-            if (categories.get(i).getName().equalsIgnoreCase(oldName)) {
+            if (categories.get(i).getId().equals(id)) {
                 categories.set(i, updated);
+                found = true;
                 
                 if (isParent) {
                     for (Category c : categories) {
@@ -199,20 +92,27 @@ public class CategoryManager {
                         }
                     }
                 }
-
-                saveCategories(categories);
-                notifyListeners();
-                return;
+                break;
             }
         }
-        addCategory(updated);
-    }
-
-    public void deleteCategory(String name) {
-        List<Category> categories = getCategories();
-        categories.removeIf(c -> c.getName().equalsIgnoreCase(name) || name.equalsIgnoreCase(c.getParentCategory()));
+        
+        if (!found) {
+            categories.add(updated);
+        }
+        
         saveCategories(categories);
         notifyListeners();
+    }
+
+    public void deleteCategory(String id) {
+        List<Category> categories = getCategories();
+        Category toDelete = getCategoryById(id);
+        if (toDelete != null) {
+            String name = toDelete.getName();
+            categories.removeIf(c -> c.getId().equals(id) || name.equalsIgnoreCase(c.getParentCategory()));
+            saveCategories(categories);
+            notifyListeners();
+        }
     }
 
     public void updateCategories(List<Category> categories) {
@@ -261,7 +161,7 @@ public class CategoryManager {
         });
     }
 
-    public void updateCategoryRemote(String categoryId, Category category) {
+    public void updateCategoryRemote(String categoryId, Category category, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
         ApiHelper helper = new ApiHelper(context);
         Map<String, Object> data = new HashMap<>();
         data.put("name", category.getName());
@@ -271,8 +171,13 @@ public class CategoryManager {
         data.put("parentCategory", category.getParentCategory());
         
         helper.updateCategory(categoryId, data, new AppwriteManager.AppwriteCallback<Map<String, Object>>() {
-            @Override public void onSuccess(Map<String, Object> result) { refreshRemoteCategories(PreferenceManager.getInstance(context).getFamilyId()); }
-            @Override public void onError(Throwable error) {}
+            @Override public void onSuccess(Map<String, Object> result) { 
+                refreshRemoteCategories(PreferenceManager.getInstance(context).getFamilyId());
+                if (callback != null) callback.onSuccess(result);
+            }
+            @Override public void onError(Throwable error) {
+                if (callback != null) callback.onError(error);
+            }
         });
     }
 
@@ -291,10 +196,38 @@ public class CategoryManager {
         return list;
     }
 
+    public void addCategoryRemote(Category category, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", category.getName());
+        map.put("iconRes", category.getIconRes());
+        map.put("iconColor", category.getIconColor());
+        map.put("backgroundColor", category.getBackgroundColor());
+        map.put("parentCategory", category.getParentCategory());
+        map.put("familyId", PreferenceManager.getInstance(context).getFamilyId());
+        list.add(map);
+
+        ApiHelper helper = new ApiHelper(context);
+        helper.syncCategories(list, callback);
+    }
+
+    public void syncAllToRemote(String familyId, AppwriteManager.AppwriteCallback<Map<String, Object>> callback) {
+        ApiHelper helper = new ApiHelper(context);
+        helper.syncCategories(getCategoriesForSync(familyId), callback);
+    }
+
     public Category getCategoryByName(String name) {
         if (name == null) return null;
         for (Category c : getCategories()) {
             if (c.getName().equalsIgnoreCase(name)) return c;
+        }
+        return null;
+    }
+
+    public Category getCategoryById(String id) {
+        if (id == null) return null;
+        for (Category c : getCategories()) {
+            if (id.equals(c.getId())) return c;
         }
         return null;
     }
@@ -316,40 +249,5 @@ public class CategoryManager {
             return a.getName().compareToIgnoreCase(b.getName());
         });
         return sorted;
-    }
-
-    private List<Category> getDefaultCategories() {
-        List<Category> defaults = new ArrayList<>();
-        defaults.add(new Category("1", "Food", android.R.drawable.ic_menu_gallery, R.color.icon_food, R.color.log_food, true));
-        defaults.add(new Category("2", "Transport", android.R.drawable.ic_dialog_map, R.color.icon_fare, R.color.log_fare, true));
-        defaults.add(new Category("3", "Grocery", android.R.drawable.ic_input_add, R.color.icon_others, R.color.log_others, true));
-        defaults.add(new Category("5", "Sari-sari", android.R.drawable.ic_menu_agenda, R.color.icon_store, R.color.log_store, true));
-        defaults.add(new Category("6", "Health", android.R.drawable.ic_menu_compass, R.color.status_red, R.color.status_red_tonal, true));
-        defaults.add(new Category("7", "Debt/Utang", android.R.drawable.ic_lock_lock, R.color.icon_debt, R.color.log_debt, true));
-        
-        defaults.add(new Category("f1", "Education", android.R.drawable.ic_menu_edit, R.color.icon_fare, R.color.log_fare, true));
-        defaults.add(new Category("f2", "Personal Care", android.R.drawable.ic_menu_myplaces, R.color.icon_load, R.color.log_load, true));
-        defaults.add(new Category("f3", "Shopping", android.R.drawable.ic_input_add, R.color.icon_store, R.color.log_store, true));
-        defaults.add(new Category("f4", "Home Repair", android.R.drawable.ic_menu_manage, R.color.icon_others, R.color.log_others, true));
-        defaults.add(new Category("f5", "Entertainment", android.R.drawable.ic_menu_slideshow, R.color.purple, R.color.tonal_button_bg, true));
-        defaults.add(new Category("f6", "Pets", android.R.drawable.ic_menu_view, R.color.icon_food, R.color.log_food, true));
-        defaults.add(new Category("f7", "Savings", android.R.drawable.ic_menu_save, R.color.carti_primary_green, R.color.mint_green_alpha, true));
-
-        Category bills = new Category("10", "Bills", R.drawable.ic_calendar, R.color.icon_electricity, R.color.log_electricity, true);
-        defaults.add(bills);
-        
-        String[] billSubs = {"Water", "Electricity", "Internet/Wifi", "Rent", "Load/Data", "Cable TV", "Subscription", "Credit Card", "Insurance", "Tuition", "Home Dues", "Gym", "Installment", "Garbage", "Landline", "LPG", "Vehicle Loan", "PhilHealth", "Netflix", "Spotify"};
-        for (int i = 0; i < billSubs.length; i++) {
-            defaults.add(new Category("10" + i, billSubs[i], bills.getIconRes(), bills.getIconColor(), bills.getBackgroundColor(), true, "Bills"));
-        }
-
-        Category others = new Category("8", "Others", android.R.drawable.ic_menu_more, R.color.icon_others, R.color.log_others, true);
-        defaults.add(others);
-        String[] otherSubs = {"Allowance", "Church/Donation", "Gifts/Celebration", "Laundry", "Household Help", "Miscellaneous", "Emergency", "Business/Side Hustle", "Special Occasion", "Tithe/Abuloy"};
-        for (int i = 0; i < otherSubs.length; i++) {
-            defaults.add(new Category("80" + i, otherSubs[i], others.getIconRes(), others.getIconColor(), others.getBackgroundColor(), true, "Others"));
-        }
-
-        return defaults;
     }
 }

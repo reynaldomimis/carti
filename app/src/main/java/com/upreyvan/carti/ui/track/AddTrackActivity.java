@@ -130,7 +130,11 @@ public class AddTrackActivity extends BaseActivity<ActivityAddTrackBinding> {
             
             double val = StringHelper.parseDouble(getBinding().layoutForm.etAmount.getText().toString());
             String desc = getBinding().layoutForm.etDescription.getText().toString();
-            String finalCat = sub.isEmpty() ? cat : sub;
+            String categoryLookup = sub.isEmpty() ? cat : sub;
+
+            // Resolve ID for category reference
+            Category catObj = CategoryManager.getInstance(this).getCategoryByName(categoryLookup);
+            String finalCat = (catObj != null) ? catObj.getId() : categoryLookup;
             
             viewModel.saveTrack(val, finalCat, desc, "Cash");
         });

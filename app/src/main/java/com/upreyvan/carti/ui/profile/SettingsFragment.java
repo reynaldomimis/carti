@@ -57,6 +57,33 @@ public class SettingsFragment extends BaseFragment<FragmentSettingsBinding> {
         // Language
         getBinding().itemLanguage.tvTitle.setText(R.string.label_language);
         getBinding().itemLanguage.tvStatus.setText(R.string.status_language_english);
-        getBinding().itemLanguage.divider.setVisibility(View.GONE);
+
+        // Sync Categories
+        getBinding().itemSyncCategories.tvTitle.setText("Sync Categories");
+        getBinding().itemSyncCategories.tvStatus.setText("Local to Cloud");
+        getBinding().itemSyncCategories.divider.setVisibility(View.GONE);
+        getBinding().itemSyncCategories.getRoot().setOnClickListener(v -> {
+            String familyId = pref.getFamilyId();
+            if (familyId.isEmpty()) {
+                showToast("Please join a family first", com.upreyvan.carti.utils.UiHelper.Status.ERROR);
+                return;
+            }
+
+            showLoading(true, "Migrating categories...");
+            com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).syncAllToRemote(familyId, new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<>() {
+                @Override
+                public void onSuccess(java.util.Map<String, Object> result) {
+                    showLoading(false);
+                    showToast("Categories migrated successfully", com.upreyvan.carti.utils.UiHelper.Status.SUCCESS);
+                    com.upreyvan.carti.managers.CategoryManager.getInstance(requireContext()).refreshRemoteCategories(familyId);
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    showLoading(false);
+                    showToast("Sync failed: " + error.getMessage(), com.upreyvan.carti.utils.UiHelper.Status.ERROR);
+                }
+            });
+        });
     }
 }

@@ -40,6 +40,10 @@
                 android:id="@+id/itemLanguage"
                 layout="@layout/item_setting_status" />
 
+            <include
+                android:id="@+id/itemSyncCategories"
+                layout="@layout/item_setting_status" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

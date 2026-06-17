@@ -18,12 +18,18 @@ import com.upreyvan.carti.ui.common.IconPickerDialog;
 import com.upreyvan.carti.utils.Utils;
 import com.yalantis.ucrop.UCrop;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding> {
 
     private int selectedIconRes = R.drawable.ic_add;
+    private int selectedIconColor = R.color.icon_others;
+    private int selectedBgColor = R.color.log_others;
     private Uri selectedCustomIconUri = null;
+    private String categoryId = null;
+    private Category editingCategory = null;
 
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -49,28 +55,84 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        categoryId = getIntent().getStringExtra("category_id");
+        if (categoryId != null) {
+            editingCategory = CategoryManager.getInstance(this).getCategoryById(categoryId);
+            if (editingCategory != null) {
+                selectedIconRes = editingCategory.getIconRes();
+                selectedIconColor = editingCategory.getIconColor();
+                selectedBgColor = editingCategory.getBackgroundColor();
+            }
+        }
+
         setupDynamicPadding();
         setupToolbar();
+        setupInitialData();
+        setupParentDropdown();
         setupListeners();
     }
 
+    private void setupParentDropdown() {
+        List<Category> all = CategoryManager.getInstance(this).getCategories();
+        List<String> mainCategories = new java.util.ArrayList<>();
+        mainCategories.add("None (Main Category)");
+        
+        for (Category c : all) {
+            if (c.getParentCategory() == null || c.getParentCategory().isEmpty()) {
+                mainCategories.add(c.getName());
+            }
+        }
+
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mainCategories);
+        getBinding().spinnerParentCategory.setAdapter(adapter);
+        
+        if (editingCategory != null && editingCategory.getParentCategory() != null) {
+            getBinding().spinnerParentCategory.setText(editingCategory.getParentCategory(), false);
+        } else {
+            getBinding().spinnerParentCategory.setText(mainCategories.get(0), false);
+        }
+    }
+
     private void setupToolbar() {
-        getBinding().layoutToolbar.tvToolbarTitle.setText(R.string.title_add_category);
+        getBinding().layoutToolbar.tvToolbarTitle.setText(categoryId == null ? getString(R.string.title_add_category) : "Edit Category");
         getBinding().layoutToolbar.backButtonContainer.setVisibility(View.VISIBLE);
         getBinding().layoutToolbar.backButtonContainer.setOnClickListener(v -> finish());
     }
 
+    private void setupInitialData() {
+        if (editingCategory != null) {
+            getBinding().etCategoryName.setText(editingCategory.getName());
+            getBinding().ivCategoryIcon.setImageResource(selectedIconRes);
+            getBinding().ivCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(getColor(selectedIconColor)));
+            getBinding().cardIconContainer.setCardBackgroundColor(getColor(selectedBgColor));
+            getBinding().btnSave.setText("Update Category");
+            getBinding().btnDelete.setVisibility(View.VISIBLE);
+        }
+    }
+
     private void setupListeners() {
+        getBinding().btnDelete.setOnClickListener(v -> {
+            com.upreyvan.carti.utils.DialogHelper.showConfirmation(this, "Delete Category?", 
+                "Are you sure you want to delete this category? Subcategories might also be affected.", "Delete", () -> {
+                showLoading(true, "Deleting...");
+                CategoryManager.getInstance(this).deleteCategoryRemote(categoryId);
+                onOperationSuccess("Category Deleted!");
+            });
+        });
+
         getBinding().cardIconContainer.setOnClickListener(v -> {
             IconPickerDialog dialog = new IconPickerDialog();
             dialog.setListener(new IconPickerDialog.OnIconSelectedListener() {
                 @Override
                 public void onIconSelected(IconChoice icon, ColorChoice color) {
                     selectedIconRes = icon.getIconRes();
+                    selectedIconColor = color.getColorRes();
+                    selectedBgColor = color.getBgColorRes();
                     selectedCustomIconUri = null;
                     getBinding().ivCategoryIcon.setImageResource(selectedIconRes);
-                    getBinding().ivCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(getColor(color.getColorRes())));
-                    getBinding().cardIconContainer.setCardBackgroundColor(getColor(color.getBgColorRes()));
+                    getBinding().ivCategoryIcon.setImageTintList(android.content.res.ColorStateList.valueOf(getColor(selectedIconColor)));
+                    getBinding().cardIconContainer.setCardBackgroundColor(getColor(selectedBgColor));
                 }
                 @Override public void onUploadCustom() { pickImageLauncher.launch("image/*"); }
             });
@@ -83,11 +145,54 @@ public class AddCategoryActivity extends BaseActivity<ActivityAddCategoryBinding
                 showToast("Please enter a category name", com.upreyvan.carti.utils.UiHelper.Status.WARNING);
                 return;
             }
-            Category newCategory = new Category(UUID.randomUUID().toString(), name, selectedIconRes, R.color.icon_others, R.color.log_others, false);
-            CategoryManager.getInstance(this).addCategory(newCategory);
-            showToast("Category Saved!", com.upreyvan.carti.utils.UiHelper.Status.SUCCESS);
-            finish();
+
+            if (!checkNetwork()) return;
+
+            showLoading(true, categoryId == null ? "Saving category..." : "Updating category...");
+            
+            String parentInput = getBinding().spinnerParentCategory.getText().toString();
+            String parent = (parentInput.contains("None") || parentInput.isEmpty()) ? null : parentInput;
+
+            Category category = new Category(
+                    categoryId == null ? UUID.randomUUID().toString() : categoryId,
+                    name, 
+                    selectedIconRes, 
+                    selectedIconColor, 
+                    selectedBgColor, 
+                    false,
+                    parent
+            );
+            
+            com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<java.util.Map<java.lang.String, Object>> callback = new com.upreyvan.carti.datasource.AppwriteManager.AppwriteCallback<>() {
+                @Override
+                public void onSuccess(java.util.Map<String, Object> result) {
+                    onOperationSuccess(categoryId == null ? "Category Saved!" : "Category Updated!");
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    onOperationError(error);
+                }
+            };
+
+            if (categoryId == null) {
+                CategoryManager.getInstance(this).addCategoryRemote(category, callback);
+            } else {
+                CategoryManager.getInstance(this).updateCategoryRemote(categoryId, category, callback);
+            }
         });
+    }
+
+    private void onOperationSuccess(String message) {
+        showLoading(false);
+        CategoryManager.getInstance(this).refreshRemoteCategories(com.upreyvan.carti.managers.PreferenceManager.getInstance(this).getFamilyId());
+        showToast(message, com.upreyvan.carti.utils.UiHelper.Status.SUCCESS);
+        finish();
+    }
+
+    private void onOperationError(Throwable error) {
+        showLoading(false);
+        showToast("Operation failed: " + error.getMessage(), com.upreyvan.carti.utils.UiHelper.Status.ERROR);
     }
 
     private void startCrop(Uri uri) {

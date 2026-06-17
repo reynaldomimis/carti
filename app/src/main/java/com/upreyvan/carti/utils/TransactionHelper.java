@@ -86,9 +86,13 @@ public class TransactionHelper {
         
         CategoryManager cm = CategoryManager.getInstance(CartiApplication.getAppContext());
         
-        // Use sub-category first for more specific styling, then category
-        String catName = (t.getSubCategory() != null && !t.getSubCategory().isEmpty()) ? t.getSubCategory() : t.getCategory();
-        Category c = cm.getCategoryByName(catName);
+        // Prefer looking up by ID if possible, fallback to name for legacy support
+        Category c = cm.getCategoryById(t.getCategory());
+        if (c == null) {
+            // Use sub-category first for more specific styling, then category name
+            String catName = (t.getSubCategory() != null && !t.getSubCategory().isEmpty()) ? t.getSubCategory() : t.getCategory();
+            c = cm.getCategoryByName(catName);
+        }
         
         // Special handling for goal analysis contributions
         if ("allocated".equalsIgnoreCase(t.getCategory()) && "GOAL".equalsIgnoreCase(t.getType())) {

@@ -6,9 +6,9 @@ import androidx.annotation.DrawableRes;
 public class Category {
     private String id;
     private String name;
-    private @DrawableRes int iconRes;
-    private @ColorRes int iconColor;
-    private @ColorRes int backgroundColor;
+    private int iconRes;
+    private int iconColor;
+    private int backgroundColor;
     private boolean isDefault;
     private String parentCategory;
 
