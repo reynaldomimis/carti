@@ -28,12 +28,14 @@ import com.upreyvan.carti.repository.TransactionRepository;
 import com.upreyvan.carti.databinding.FragmentCommentsBottomSheetBinding;
 import com.upreyvan.carti.utils.AvatarHelper;
 import com.upreyvan.carti.models.Comment;
+import com.upreyvan.carti.utils.CommentHelper;
 import com.upreyvan.carti.utils.UiHelper;
 import com.upreyvan.carti.utils.Utils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.UUID;
 
 public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<FragmentCommentsBottomSheetBinding> {
 
@@ -46,6 +48,7 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
     private TransactionRepository repository;
     private PreferenceManager pref;
     private boolean shouldScrollToBottom = false;
+    private final List<Comment> currentComments = new ArrayList<>();
 
     public static CommentsBottomSheetFragment newInstance(String transactionId) {
         CommentsBottomSheetFragment fragment = new CommentsBottomSheetFragment();
@@ -103,7 +106,7 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
             if (payload != null) {
                 String tid = String.valueOf(payload.get("transactionId"));
                 if (transactionId.equals(tid)) {
-                    loadComments(false);
+                    patchRealtimeComment(payload);
                 }
             }
         });
@@ -120,6 +123,11 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
             @Override
             public void onDeleteComment(Comment comment) {
                 confirmDelete(comment);
+            }
+
+            @Override
+            public void onRetryComment(Comment comment) {
+                retryComment(comment);
             }
         });
         getBinding().rvComments.setAdapter(adapter);
@@ -192,11 +200,18 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
                 .setMessage("Are you sure you want to delete this comment?")
                 .setCancelable(false)
                 .setPositiveButton("Delete", (dialog, which) -> {
+                    int removedIndex = findCommentIndex(comment.getId());
+                    Comment removed = removedIndex >= 0 ? currentComments.remove(removedIndex) : null;
+                    renderComments();
                     repository.removeComment(comment.getId(), new AppwriteCallback<>() {
                         @Override public void onSuccess(Map<String, Object> result) {
-                            loadComments();
+                            // Realtime delete can arrive later; the local patch already removed it.
                         }
                         @Override public void onError(Throwable error) {
+                            if (removed != null) {
+                                currentComments.add(Math.min(removedIndex, currentComments.size()), removed);
+                                renderComments();
+                            }
                             showToast("Failed to delete comment", UiHelper.Status.ERROR);}
                     });
                 })
@@ -219,8 +234,9 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
             public void onSuccess(List<Comment> result) {
                 getBinding().layoutShimmer.setVisibility(View.GONE);
                 getBinding().rvComments.setVisibility(View.VISIBLE);
-                adapter.setAllComments(result);
-                getBinding().tvEmpty.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
+                currentComments.clear();
+                currentComments.addAll(result);
+                renderComments();
 
 
                 if (shouldScrollToBottom && !result.isEmpty()) {
@@ -262,31 +278,174 @@ public class CommentsBottomSheetFragment extends BaseBottomSheetFragment<Fragmen
         if (text.isEmpty()) return;
 
         getBinding().btnSend.setEnabled(false);
+        getBinding().etComment.setText("");
         shouldScrollToBottom = true;
         lastPostedParentId = selectedParentId;
-        repository.postComment(transactionId, text, selectedParentId, new AppwriteCallback<>() {
+        String parentId = selectedParentId;
+        selectedParentId = null;
+        getBinding().etComment.setHint("Write a comment...");
+
+        String localId = "local_" + UUID.randomUUID().toString().replace("-", "");
+        Comment local = new Comment(
+                localId,
+                transactionId,
+                pref.getUserId(),
+                pref.getUsername(),
+                text,
+                parentId,
+                Utils.getCurrentTimestamp(),
+                Utils.getCurrentTimestamp()
+        );
+        local.setStatus(Comment.Status.SENDING);
+        currentComments.add(local);
+        if (parentId != null) adapter.forceExpand(parentId);
+        renderComments();
+        scrollAfterPatch();
+
+        sendComment(localId, text, parentId);
+    }
+
+    private void retryComment(Comment comment) {
+        int idx = findCommentIndex(comment.getId());
+        if (idx < 0) return;
+
+        Comment retry = new Comment(
+                comment.getId(),
+                comment.getTransactionId(),
+                comment.getUserId(),
+                comment.getUsername(),
+                comment.getText(),
+                comment.getParentId(),
+                comment.getCreatedAt(),
+                Utils.getCurrentTimestamp()
+        );
+        retry.setStatus(Comment.Status.SENDING);
+        currentComments.set(idx, retry);
+        renderComments();
+        sendComment(retry.getId(), retry.getText(), retry.getParentId());
+    }
+
+    private void sendComment(String localId, String text, String parentId) {
+        repository.postComment(transactionId, text, parentId, new AppwriteCallback<>() {
             @Override
             public void onSuccess(Map<String, Object> result) {
                 if (getBinding() == null) return;
-                getBinding().etComment.setText("");
                 getBinding().btnSend.setEnabled(true);
 
-                if (selectedParentId != null) {
-                    adapter.forceExpand(selectedParentId);
-                }
+                Comment server = CommentHelper.parse(result);
+                server.setStatus(Comment.Status.SENT);
+                replaceLocalComment(localId, server);
 
-                selectedParentId = null;
-                getBinding().etComment.setHint("Write a comment...");
-                
-                loadComments(false);
+                if (parentId != null) {
+                    adapter.forceExpand(parentId);
+                }
+                renderComments();
+                scrollAfterPatch();
             }
 
             @Override
             public void onError(Throwable error) {
                 if (getBinding() == null) return;
                 getBinding().btnSend.setEnabled(true);
+                markLocalCommentFailed(localId);
                 showToast("Failed to post comment", UiHelper.Status.ERROR);
             }
         });
+    }
+
+    private void patchRealtimeComment(Map<String, Object> payload) {
+        String id = String.valueOf(payload.get("$id"));
+        if (id == null || id.isEmpty() || "null".equalsIgnoreCase(id)) return;
+
+        boolean isDelete = Boolean.TRUE.equals(payload.get("__isDelete"));
+        if (isDelete) {
+            int idx = findCommentIndex(id);
+            if (idx >= 0) {
+                currentComments.remove(idx);
+                renderComments();
+            }
+            return;
+        }
+
+        Comment incoming = CommentHelper.parse(payload);
+        incoming.setStatus(Comment.Status.SENT);
+
+        int existingIdx = findCommentIndex(incoming.getId());
+        if (existingIdx >= 0) {
+            Comment existing = currentComments.get(existingIdx);
+            if (!existing.equals(incoming)) {
+                currentComments.set(existingIdx, incoming);
+                renderComments();
+            }
+            return;
+        }
+
+        int pendingIdx = findMatchingPendingComment(incoming);
+        if (pendingIdx >= 0) {
+            currentComments.set(pendingIdx, incoming);
+        } else {
+            currentComments.add(incoming);
+        }
+        renderComments();
+        scrollAfterPatch();
+    }
+
+    private void renderComments() {
+        adapter.setAllComments(new ArrayList<>(currentComments));
+        getBinding().tvEmpty.setVisibility(currentComments.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    private int findCommentIndex(String id) {
+        for (int i = 0; i < currentComments.size(); i++) {
+            if (currentComments.get(i).getId().equals(id)) return i;
+        }
+        return -1;
+    }
+
+    private int findMatchingPendingComment(Comment incoming) {
+        for (int i = 0; i < currentComments.size(); i++) {
+            Comment c = currentComments.get(i);
+            boolean sameUser = c.getUserId().equals(incoming.getUserId());
+            boolean sameText = c.getText().equals(incoming.getText());
+            boolean sameParent = java.util.Objects.equals(c.getParentId(), incoming.getParentId());
+            if (c.getStatus() == Comment.Status.SENDING && sameUser && sameText && sameParent) return i;
+        }
+        return -1;
+    }
+
+    private void replaceLocalComment(String localId, Comment server) {
+        int localIdx = findCommentIndex(localId);
+        int serverIdx = findCommentIndex(server.getId());
+        if (serverIdx >= 0 && serverIdx != localIdx) {
+            currentComments.remove(serverIdx);
+            if (localIdx > serverIdx) localIdx--;
+        }
+        if (localIdx >= 0) currentComments.set(localIdx, server);
+        else if (findCommentIndex(server.getId()) < 0) currentComments.add(server);
+    }
+
+    private void markLocalCommentFailed(String localId) {
+        int idx = findCommentIndex(localId);
+        if (idx < 0) return;
+        Comment current = currentComments.get(idx);
+        Comment failed = new Comment(
+                current.getId(),
+                current.getTransactionId(),
+                current.getUserId(),
+                current.getUsername(),
+                current.getText(),
+                current.getParentId(),
+                current.getCreatedAt(),
+                Utils.getCurrentTimestamp()
+        );
+        failed.setStatus(Comment.Status.FAILED);
+        currentComments.set(idx, failed);
+        renderComments();
+    }
+
+    private void scrollAfterPatch() {
+        if (adapter.getItemCount() > 0) {
+            getBinding().rvComments.post(() -> getBinding().rvComments.smoothScrollToPosition(adapter.getItemCount() - 1));
+        }
     }
 }

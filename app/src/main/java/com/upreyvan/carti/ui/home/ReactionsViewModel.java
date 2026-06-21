@@ -49,4 +49,25 @@ public class ReactionsViewModel extends BaseViewModel {
             }
         });
     }
+
+    public void patchReaction(Map<String, Object> payload) {
+        if (payload == null) return;
+
+        String userId = String.valueOf(payload.get("userId"));
+        if (userId.isEmpty() || "null".equalsIgnoreCase(userId)) return;
+
+        List<Reactor> current = reactors.getValue();
+        List<Reactor> next = current != null ? new ArrayList<>(current) : new ArrayList<>();
+        boolean isDelete = Boolean.TRUE.equals(payload.get("__isDelete"));
+
+        next.removeIf(r -> userId.equals(r.getUserId()));
+
+        if (!isDelete) {
+            String username = String.valueOf(payload.get("username"));
+            String emoji = String.valueOf(payload.get("emojiType"));
+            next.add(0, new Reactor(username, emoji, 0, null, userId));
+        }
+
+        reactors.postValue(next);
+    }
 }

@@ -232,14 +232,22 @@ public class ApiHelper {
     }
 
     public void getComments(String transactionId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) { if (callback != null) callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+
         List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", familyId));
         queries.add(Query.Companion.equal("transactionId", transactionId));
         queries.add(Query.Companion.orderAsc("$createdAt"));
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_COMMENTS, queries, callback);
     }
 
     public void getLikes(String transactionId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) { if (callback != null) callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+
         List<String> queries = new ArrayList<>();
+        queries.add(Query.Companion.equal("familyId", familyId));
         queries.add(Query.Companion.equal("transactionId", transactionId));
         appwriteManager.listDocuments(Constants.Appwrite.DATABASE_ID, Constants.Appwrite.COL_LIKES, queries, callback);
     }
@@ -312,11 +320,14 @@ public class ApiHelper {
     }
 
     public void getNotifications(String familyId, AppwriteManager.AppwriteCallback<DocumentList<Map<String, Object>>> callback) {
+        String currentFamilyId = pref.getFamilyId();
+        if (currentFamilyId.isEmpty()) { if (callback != null) callback.onError(new Exception(Constants.ErrorCodes.NO_FAMILY)); return; }
+
         appwriteManager.listDocuments(
                 Constants.Appwrite.DATABASE_ID,
                 Constants.Appwrite.COL_NOTIFICATIONS,
                 Arrays.asList(
-                        Query.Companion.equal("familyId", familyId),
+                        Query.Companion.equal("familyId", currentFamilyId),
                         Query.Companion.orderDesc("$createdAt"),
                         Query.Companion.limit(100)
                 ),

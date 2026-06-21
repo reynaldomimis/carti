@@ -65,7 +65,7 @@ public class ReactionsBottomSheetFragment extends BaseBottomSheetFragment<Fragme
     private void setupRealtime() {
         RealtimeRepository.getInstance(requireContext()).getLikeStream().observe(getViewLifecycleOwner(), payload -> {
             if (payload != null && transactionId.equals(payload.get("transactionId"))) {
-                viewModel.loadReactions(transactionId);
+                viewModel.patchReaction(payload);
             }
         });
     }

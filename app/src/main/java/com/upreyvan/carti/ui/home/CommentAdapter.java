@@ -111,15 +111,20 @@ public class CommentAdapter extends BaseAdapter<Comment, ItemCommentBinding> {
         String itemUid = rawItemUid.equalsIgnoreCase("null") ? "" : rawItemUid;
 
         boolean isOwner = !uid.isEmpty() && uid.equalsIgnoreCase(itemUid);
-        boolean canDelete = isOwner || isAdmin;
+        boolean isSending = item.getStatus() == Comment.Status.SENDING;
+        boolean isFailed = item.getStatus() == Comment.Status.FAILED;
+        boolean canDelete = !isSending && (isOwner || isAdmin);
 
         binding.btnDelete.setVisibility(canDelete ? View.VISIBLE : View.GONE);
         binding.btnDelete.setOnClickListener(v -> {
             if (interactionListener != null) interactionListener.onDeleteComment(item);
         });
 
+        binding.btnReply.setText(isFailed ? "Retry" : "Reply");
         binding.btnReply.setOnClickListener(v -> {
-            if (interactionListener != null) interactionListener.onReplyComment(item);
+            if (interactionListener == null) return;
+            if (isFailed) interactionListener.onRetryComment(item);
+            else interactionListener.onReplyComment(item);
         });
 
         int basePadding = binding.getRoot().getContext().getResources().getDimensionPixelSize(R.dimen.spacing_medium);
@@ -129,7 +134,13 @@ public class CommentAdapter extends BaseAdapter<Comment, ItemCommentBinding> {
 
         binding.tvUserName.setText(item.getUsername());
         binding.tvCommentText.setText(item.getText());
-        binding.tvTime.setText(Utils.getTimeAgo(Utils.getMillisFromIso(item.getCreatedAt())));
+        if (isSending) {
+            binding.tvTime.setText("Sending...");
+        } else if (isFailed) {
+            binding.tvTime.setText("Failed to send");
+        } else {
+            binding.tvTime.setText(Utils.getTimeAgo(Utils.getMillisFromIso(item.getCreatedAt())));
+        }
 
         AvatarHelper.loadUserAvatar(binding.getRoot().getContext(), binding.ivAvatar, item.getUsername());
 
@@ -168,7 +179,7 @@ public class CommentAdapter extends BaseAdapter<Comment, ItemCommentBinding> {
         }
 
         holder.itemView.setOnClickListener(v -> {
-            if (interactionListener != null) interactionListener.onReplyComment(item);
+            if (interactionListener != null && !isFailed && !isSending) interactionListener.onReplyComment(item);
         });
     }
 
@@ -184,5 +195,6 @@ public class CommentAdapter extends BaseAdapter<Comment, ItemCommentBinding> {
     public interface OnCommentInteractionListener {
         void onReplyComment(Comment comment);
         void onDeleteComment(Comment comment);
+        void onRetryComment(Comment comment);
     }
 }

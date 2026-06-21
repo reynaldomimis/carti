@@ -123,11 +123,14 @@ public class NotificationRepository {
     public void refreshNotifications() {
         String userId = pref.getUserId();
         if (userId.isEmpty()) return;
+        String familyId = pref.getFamilyId();
+        if (familyId.isEmpty()) return;
 
         AppwriteManager.getInstance(realtimeRepo.getContext()).listDocuments(
                 com.upreyvan.carti.utils.Constants.Appwrite.DATABASE_ID,
                 com.upreyvan.carti.utils.Constants.Appwrite.COL_NOTIFICATIONS,
                 java.util.Arrays.asList(
+                        io.appwrite.Query.Companion.equal("familyId", familyId),
                         io.appwrite.Query.Companion.equal("targetUserId", userId),
                         io.appwrite.Query.Companion.orderDesc("timestamp")
                 ),

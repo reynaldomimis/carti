@@ -25,6 +25,8 @@ public class Comment {
     private final String updatedAt;
     @Nullable
     private String childSignature;
+    @NonNull
+    private Status status = Status.SENT;
 
     public Comment(@NonNull String id, @NonNull String transactionId, @NonNull String userId, @NonNull String username, @NonNull String text, @Nullable String parentId, @NonNull String createdAt, @NonNull String updatedAt) {
         this.id = id;
@@ -56,6 +58,15 @@ public class Comment {
     @Nullable
     public String getChildSignature() { return childSignature; }
     public void setChildSignature(@Nullable String childSignature) { this.childSignature = childSignature; }
+    @NonNull
+    public Status getStatus() { return status; }
+    public void setStatus(@NonNull Status status) { this.status = status; }
+
+    public enum Status {
+        SENDING,
+        SENT,
+        FAILED
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -70,12 +81,13 @@ public class Comment {
                 Objects.equals(getParentId(), comment.getParentId()) &&
                 Objects.equals(getCreatedAt(), comment.getCreatedAt()) &&
                 Objects.equals(getUpdatedAt(), comment.getUpdatedAt()) &&
-                Objects.equals(getChildSignature(), comment.getChildSignature());
+                Objects.equals(getChildSignature(), comment.getChildSignature()) &&
+                status == comment.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getTransactionId(), getUserId(), getText(), getUsername(), getParentId(), getCreatedAt(), getUpdatedAt(), getChildSignature());
+        return Objects.hash(getId(), getTransactionId(), getUserId(), getText(), getUsername(), getParentId(), getCreatedAt(), getUpdatedAt(), getChildSignature(), status);
     }
 
     public static final DiffUtil.ItemCallback<Comment> DIFF_CALLBACK = new DiffUtil.ItemCallback<Comment>() {

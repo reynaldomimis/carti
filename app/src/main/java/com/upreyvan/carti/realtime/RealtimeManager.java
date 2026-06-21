@@ -82,8 +82,14 @@ public class RealtimeManager {
     }
 
     private boolean belongsToCurrentFamily(String path, Map<String, Object> payload, String familyId) {
-        // User updates are personalized or global, ignore family check during onboarding
-        if (path.contains(Constants.Appwrite.COL_USERS)) return true;
+        if (path.contains(Constants.Appwrite.COL_USERS)) {
+            if (familyId == null || familyId.isEmpty()) return true;
+
+            Object payloadFamilyId = payload.get("familyId");
+            Object pendingFamilyId = payload.get("pendingFamilyId");
+            return familyId.equals(String.valueOf(payloadFamilyId)) ||
+                    familyId.equals(String.valueOf(pendingFamilyId));
+        }
         
         boolean isGlobal = path.contains(Constants.Appwrite.COL_FAMILIES);
         if (isGlobal) return true;
@@ -96,6 +102,9 @@ public class RealtimeManager {
 
     private void dispatch(String path, Map<String, Object> payload) {
         boolean isDelete = path.endsWith(".delete");
+        try {
+            payload.put("__isDelete", isDelete);
+        } catch (Exception ignored) {}
 
         if (path.contains(Constants.Appwrite.COL_LIKES)) {
             likeStream.postValue(payload);

@@ -841,6 +841,7 @@ public class TransactionRepository {
 
         boolean isUnlike = emoji.equals(item.getMyReaction());
         String currentLikeId = item.getMyLikeId();
+        TransactionWithUser rollbackSnapshot = item.copy();
 
         applyOptimisticLike(transId, myUserId, isUnlike, emoji);
 
@@ -851,7 +852,7 @@ public class TransactionRepository {
                 }
                 @Override public void onError(Throwable error) {
                     pendingToggles.remove(transId);
-                    refreshTransactions();
+                    restoreTransactionSnapshot(rollbackSnapshot);
                 }
             });
         } else {
@@ -861,10 +862,26 @@ public class TransactionRepository {
                 }
                 @Override public void onError(Throwable error) {
                     pendingToggles.remove(transId);
-                    refreshTransactions();
+                    restoreTransactionSnapshot(rollbackSnapshot);
                 }
             });
         }
+    }
+
+    private void restoreTransactionSnapshot(TransactionWithUser snapshot) {
+        if (snapshot == null || snapshot.getTransaction() == null) return;
+        String id = snapshot.getTransaction().getId();
+        executor.execute(() -> {
+            synchronized (transactionCache) {
+                for (int i = 0; i < transactionCache.size(); i++) {
+                    if (id.equals(transactionCache.get(i).getTransaction().getId())) {
+                        transactionCache.set(i, snapshot.copy());
+                        allTransactions.postValue(new ArrayList<>(transactionCache));
+                        return;
+                    }
+                }
+            }
+        });
     }
 
     private void applyOptimisticLike(String transId, String userId, boolean isUnlike, String emoji) {
